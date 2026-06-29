@@ -1,44 +1,61 @@
 'use client';
 
-import { useRef, useState, useEffect, useCallback, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Download, Loader2, Check, X,
-  Megaphone, Lock, Plus, Send
-} from 'lucide-react';
-import { useMasterContext } from '@/lib/supabase/context';
+import { useRef, useState, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { Download, Loader2, Check, X, Megaphone, Lock, Send } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useToast } from '@/lib/toast/context';
 import { UpgradePromptModal } from '@/components/shared/UpgradePromptModal';
-import { useWizardSchedule } from '@/lib/supabase/hooks/useWizardSchedule';
-import { useSlotsFromStore } from '@/lib/supabase/hooks/useSlotsFromStore';
-import { usePortfolioItems } from '@/lib/supabase/hooks/usePortfolioItems';
-import type { WorkingHoursConfig } from '@/types/database';
 import { parseError } from '@/lib/utils/errors';
-import { getNow } from '@/lib/utils/now';
-import { cn } from '@/lib/utils/cn';
 
 import { StoryCanvas } from './story/StoryCanvas';
-import {
-  PALETTES, MODES, PREMIUM_MODES, VALID_MODES, MODE_UPGRADE_COPY, INPUT_STYLE,
-} from './story/storyConstants';
-import { useServices, useActiveFlashDeals, useStarReviews } from './story/useStoryData';
+import { MODES } from './story/storyConstants';
+import { STEP_INDEX } from './story/storySteps';
 import { exportCanvasPng } from './story/storyExport';
-import type { Mode, StoryGeneratorProps } from './story/storyTypes';
+import { useStoryEditor } from './story/useStoryEditor';
+import { StoryPreview } from './story/StoryPreview';
+import { StepNav } from './story/StepNav';
+import { StepType } from './story/steps/StepType';
+import { StepContent } from './story/steps/StepContent';
+import { StepLook } from './story/steps/StepLook';
+import { StepStyle } from './story/steps/StepStyle';
+import { StepExport } from './story/steps/StepExport';
+import type { StepId, StoryGeneratorProps } from './story/storyTypes';
 
-export function StoryGenerator({ isOpen, onClose, items: externalItems, masterName, masterSlug, initialMode, initialPortfolioId }: StoryGeneratorProps = {}) {
-  const { profile, masterProfile } = useMasterContext();
+const SLIDE = { type: 'spring', stiffness: 360, damping: 30 } as const;
+const slideVariants = {
+  enter: (d: number) => ({ x: d > 0 ? 24 : -24, opacity: 0 }),
+  center: { x: 0, opacity: 1 },
+  exit: (d: number) => ({ x: d > 0 ? -24 : 24, opacity: 0 }),
+};
+const fadeVariants = {
+  enter: { opacity: 0 },
+  center: { opacity: 1 },
+  exit: { opacity: 0 },
+};
+
+export function StoryGenerator(props: StoryGeneratorProps = {}) {
+  const { isOpen, onClose } = props;
   const { showToast } = useToast();
+  const editor = useStoryEditor(props);
+  const {
+    state, set, currentStep, currentIndex, goNext, goBack, goToStep, isFirst, isLast, stepCompletion,
+    canvasSharedProps, isPremiumLocked, isBlurLocked, blurActive, upgradeCopy, showUpgradeModal, setShowUpgradeModal,
+    services, flashDeals, starReviews, selectedReview, slots, slotsLoading, flashWinSlots, flashWinSlotsLoading,
+    portfolioItems, isTMA, todayStr,
+  } = editor;
+
+  const reduce = useReducedMotion();
   const canvasRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const desktopPreviewPanelRef = useRef<HTMLDivElement>(null);
   const mobilePreviewPanelRef = useRef<HTMLDivElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const dirRef = useRef(1);
 
   const [desktopScale, setDesktopScale] = useState(0.8);
   const [mobileScale, setMobileScale] = useState(0.7);
-
-  const [isTMA, setIsTMA] = useState(false);
-  useEffect(() => { setIsTMA(!!window.Telegram?.WebApp?.initData); }, []);
+  const [exporting, setExporting] = useState(false);
+  const [exported, setExported] = useState(false);
 
   useEffect(() => {
     const el = desktopPreviewPanelRef.current;
@@ -64,163 +81,9 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
     return () => obs.disconnect();
   }, []);
 
-  const startMode: Mode = (initialMode && VALID_MODES.has(initialMode as Mode)) ? initialMode as Mode : 'announcement';
-
-  const [palIdx, setPalIdx] = useState(0);
-  const [mode, setMode] = useState<Mode>(startMode);
-  const [showAvatar, setShowAvatar] = useState(true);
-  const [showSticker, setShowSticker] = useState(true);
-  const [ctaText, setCtaText] = useState('Записатися онлайн');
-  const [exporting, setExporting] = useState(false);
-  const [exported, setExported] = useState(false);
-
-  const [annoText, setAnnoText] = useState('Тепер до мене можна записатися онлайн 24/7.');
-  const [slotsDate, setSlotsDate] = useState<string | null>(null);
-  const [selectedSvcId, setSelectedSvcId] = useState<string | null>(null);
-  const [vacStart, setVacStart] = useState<string | null>(null);
-  const [vacEnd, setVacEnd] = useState<string | null>(null);
-  const [dealIdx, setDealIdx] = useState(0);
-  const [selectedReviewId, setSelectedReviewId] = useState<string | null>(null);
-  const [flashWinSvcId, setFlashWinSvcId] = useState<string | null>(null);
-  const [flashWinDate, setFlashWinDate] = useState<string | null>(null);
-  const [flashWinTime, setFlashWinTime] = useState<string | null>(null);
-  const [flashWinDiscount, setFlashWinDiscount] = useState(20);
-
-  const [platePos, setPlatePos] = useState<'top' | 'center' | 'bottom'>('center');
-  const [textAlign, setTextAlign] = useState<'left' | 'center' | 'right'>('center');
-  const [transparency, setTransparency] = useState(38);
-
-  const [customBgPhoto, setCustomBgPhoto] = useState<string | null>(null);
-
-  const { data: portfolioItems = [] } = usePortfolioItems(externalItems);
-  const firstWithPhoto = externalItems?.find(i => i.photos.length > 0);
-  const [selectedBgPhotoId, setSelectedBgPhotoId] = useState<string | null>(
-    initialPortfolioId ?? firstWithPhoto?.id ?? null
-  );
-  const bgPhotoUrlRaw = useMemo(() => {
-    if (selectedBgPhotoId) {
-      const it = portfolioItems.find(i => i.id === selectedBgPhotoId);
-      return it?.photos[0]?.url ?? null;
-    }
-    return customBgPhoto;
-  }, [selectedBgPhotoId, portfolioItems, customBgPhoto]);
-
-  const [bgPhotoBlob, setBgPhotoBlob] = useState<string | null>(null);
-  const [isPhotoLoading, setIsPhotoLoading] = useState(false);
-  useEffect(() => {
-    if (!bgPhotoUrlRaw) { setBgPhotoBlob(null); setIsPhotoLoading(false); return; }
-    if (bgPhotoUrlRaw.startsWith('data:')) { setBgPhotoBlob(bgPhotoUrlRaw); setIsPhotoLoading(false); return; }
-    setIsPhotoLoading(true);
-    let cancelled = false;
-    fetch(bgPhotoUrlRaw, { cache: 'no-cache' })
-      .then(r => { if (!r.ok) throw new Error('Fetch failed'); return r.blob(); })
-      .then(b => new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(b);
-      }))
-      .then(dataUrl => { if (!cancelled) { setBgPhotoBlob(dataUrl); setIsPhotoLoading(false); } })
-      .catch((err) => {
-        console.warn('[StoryGenerator] bg photo load failed:', err);
-        if (!cancelled) { setBgPhotoBlob(null); setIsPhotoLoading(false); }
-      });
-    return () => { cancelled = true; };
-  }, [bgPhotoUrlRaw]);
-
-  const bgPhotoUrl = bgPhotoBlob;
-
-  const [blurActive, setBlurActive] = useState(false);
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const blurTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const isStarterPlan = (masterProfile?.subscription_tier ?? 'starter') === 'starter';
-
-  const onControlChange = useCallback(() => {
-    if (!PREMIUM_MODES.has(mode) || !isStarterPlan) return;
-    if (blurTimerRef.current) clearTimeout(blurTimerRef.current);
-    setBlurActive(false);
-    blurTimerRef.current = setTimeout(() => setBlurActive(true), 3_000);
-  }, [mode, isStarterPlan]);
-
-  const handleCustomPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (file.size > 10 * 1024 * 1024) {
-      showToast({ type: 'error', title: 'Фото занадто велике', message: 'Макс. 10MB' });
-      return;
-    }
-    const reader = new FileReader();
-    reader.onloadend = () => { setCustomBgPhoto(reader.result as string); setSelectedBgPhotoId(null); onControlChange(); };
-    reader.readAsDataURL(file);
-  };
-
-  useEffect(() => {
-    if (blurTimerRef.current) clearTimeout(blurTimerRef.current);
-    if (PREMIUM_MODES.has(mode) && isStarterPlan) {
-      setBlurActive(false);
-      blurTimerRef.current = setTimeout(() => setBlurActive(true), 10_000);
-    } else {
-      setBlurActive(false);
-    }
-    return () => { if (blurTimerRef.current) clearTimeout(blurTimerRef.current); };
-  }, [mode, isStarterPlan]);
-
-  const [avatarBlob, setAvatarBlob] = useState<string | null>(null);
-  const avatarUrl = profile?.avatar_url ?? null;
-  useEffect(() => {
-    if (!avatarUrl) { setAvatarBlob(null); return; }
-    let cancelled = false;
-    fetch(avatarUrl)
-      .then(r => r.blob())
-      .then(b => new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(b);
-      }))
-      .then(dataUrl => { if (!cancelled) setAvatarBlob(dataUrl); })
-      .catch(() => {});
-    return () => { cancelled = true; };
-  }, [avatarUrl]);
-
-  const masterId = masterProfile?.id ?? profile?.id ?? null;
-  const displayName = masterName || masterProfile?.business_name || profile?.full_name || "Ваше ім'я";
-  const slug = masterSlug || masterProfile?.slug || 'bookit';
-
-  const services = useServices(masterId);
-  const selectedSvc = services.find(s => s.id === selectedSvcId) ?? null;
-  const flashWinSvc = services.find(s => s.id === flashWinSvcId) ?? null;
-
-  const _now = getNow();
-  const todayStr = `${_now.getFullYear()}-${String(_now.getMonth() + 1).padStart(2, '0')}-${String(_now.getDate()).padStart(2, '0')}`;
-  const _future = new Date(_now.getTime() + 30 * 24 * 60 * 60 * 1000);
-  const futureStr = `${_future.getFullYear()}-${String(_future.getMonth() + 1).padStart(2, '0')}-${String(_future.getDate()).padStart(2, '0')}`;
-  const { data: scheduleStore, isLoading: scheduleLoading } = useWizardSchedule(masterId, todayStr, futureStr);
-
-  const wh = (masterProfile?.working_hours as Partial<WorkingHoursConfig> | null) ?? {};
-  const bufferMin = wh.buffer_time_minutes ?? 0;
-
-  const slots = useSlotsFromStore(mode === 'free_slots' ? slotsDate : null, selectedSvc?.duration_minutes ?? 60, bufferMin, wh, scheduleStore);
-  const slotsLoading = scheduleLoading;
-  const flashWinSlots = useSlotsFromStore(mode === 'flash_window' ? flashWinDate : null, flashWinSvc?.duration_minutes ?? 60, bufferMin, wh, scheduleStore);
-  const flashWinSlotsLoading = scheduleLoading;
-
-  const flashDeals = useActiveFlashDeals(masterId);
-  const starReviews = useStarReviews(masterId);
-  const pal = PALETTES[palIdx];
-  const selectedDeal = flashDeals[dealIdx] ?? null;
-  const selectedReview = starReviews.find(r => r.id === selectedReviewId) ?? null;
-
-  useEffect(() => {
-    if (services.length > 0 && !selectedSvcId) setSelectedSvcId(services[0].id);
-    if (services.length > 0 && !flashWinSvcId) setFlashWinSvcId(services[0].id);
-  }, [services, selectedSvcId, flashWinSvcId]);
-  useEffect(() => { if (starReviews.length > 0 && !selectedReviewId) setSelectedReviewId(starReviews[0].id); }, [starReviews, selectedReviewId]);
-  useEffect(() => { setFlashWinTime(null); }, [flashWinDate, flashWinSvcId]);
-
   const handleDownload = useCallback(async () => {
     if (!canvasRef.current || exporting) return;
-    if (isPhotoLoading) {
+    if (editor.isPhotoLoading) {
       showToast({ type: 'warning', title: 'Завантаження...', message: 'Чекаємо, поки фото підготується' });
       return;
     }
@@ -228,7 +91,7 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
     const node = canvasRef.current;
     await new Promise(r => setTimeout(r, 1500));
     try {
-      const filename = `bookit-story-${mode}-${Date.now()}.jpg`;
+      const filename = `bookit-story-${state.mode}-${Date.now()}.jpg`;
       const dataUrl = await exportCanvasPng(node, filename, isTMA);
       if (isTMA) {
         showToast({ type: 'info', title: 'Генеруємо', message: 'Майже готово, надсилаємо файл боту' });
@@ -236,7 +99,7 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
         const res = await fetch('/api/marketing/send-story', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token || ''}` },
-          body: JSON.stringify({ dataUrl, filename, caption: `Ваша сторіс "${MODES.find(m => m.id === mode)?.label}" готова!` }),
+          body: JSON.stringify({ dataUrl, filename, caption: `Ваша сторіс "${MODES.find(m => m.id === state.mode)?.label}" готова!` }),
         });
         if (!res.ok) {
           const errData = await res.json().catch(() => ({}));
@@ -254,218 +117,29 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
     } finally {
       setExporting(false);
     }
-  }, [exporting, mode, showToast, isPhotoLoading, isTMA]);
+  }, [exporting, editor.isPhotoLoading, isTMA, state.mode, showToast]);
 
   const handleDownloadOrUpgrade = useCallback(async () => {
-    if (PREMIUM_MODES.has(mode) && isStarterPlan) { setShowUpgradeModal(true); return; }
+    if (isPremiumLocked) { setShowUpgradeModal(true); return; }
     await handleDownload();
-  }, [mode, isStarterPlan, handleDownload]);
+  }, [isPremiumLocked, setShowUpgradeModal, handleDownload]);
 
-  const isPremiumLocked = PREMIUM_MODES.has(mode) && isStarterPlan;
-  const upgradeCopy = MODE_UPGRADE_COPY[mode] ?? null;
+  const handleCustomPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      showToast({ type: 'error', title: 'Фото занадто велике', message: 'Макс. 10MB' });
+      return;
+    }
+    const reader = new FileReader();
+    reader.onloadend = () => set.pickCustom(reader.result as string);
+    reader.readAsDataURL(file);
+  };
 
-  const canvasSharedProps = useMemo(() => ({
-    pal, mode, showAvatar, avatarBlob, displayName, slug,
-    annoText, slotsDate, slots, slotsLoading,
-    selectedServiceName: selectedSvc?.name ?? null,
-    vacStart, vacEnd, selectedDeal,
-    reviewText: selectedReview?.comment ?? null,
-    reviewClientName: selectedReview?.client_name ?? null,
-    flashWinSvcName: flashWinSvc?.name ?? null,
-    flashWinDate, flashWinTime, flashWinDiscount,
-    bgPhotoUrl,
-    portfolioTitle: customBgPhoto ? 'Ваше фото' : (portfolioItems.find(i => i.id === selectedBgPhotoId)?.title ?? null),
-    portfolioDesc: customBgPhoto ? null : (portfolioItems.find(i => i.id === selectedBgPhotoId)?.description ?? null),
-    platePos, textAlign, transparency,
-    showSticker, ctaText,
-  }), [
-    pal, mode, showAvatar, avatarBlob, displayName, slug,
-    annoText, slotsDate, slots, slotsLoading,
-    selectedSvc, vacStart, vacEnd, selectedDeal,
-    selectedReview, flashWinSvc, flashWinDate, flashWinTime, flashWinDiscount,
-    bgPhotoUrl, customBgPhoto, portfolioItems, selectedBgPhotoId,
-    platePos, textAlign, transparency, showSticker, ctaText,
-  ]);
+  const handleNext = useCallback(() => { dirRef.current = 1; goNext(); }, [goNext]);
+  const handleBack = useCallback(() => { dirRef.current = -1; goBack(); }, [goBack]);
+  const handleJump = useCallback((id: StepId) => { dirRef.current = STEP_INDEX[id] >= currentIndex ? 1 : -1; goToStep(id); }, [goToStep, currentIndex]);
 
-  const isBlurLocked = isPremiumLocked && blurActive;
-
-  // Mode-specific controls (shared between mobile and desktop)
-  const controls = (
-    <div className="space-y-3">
-      {mode === 'announcement' && (
-        <div>
-          <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Текст публікації</label>
-          <textarea value={annoText} onChange={e => { setAnnoText(e.target.value); onControlChange(); }}
-            rows={3} maxLength={200} placeholder="Ваш текст..."
-            className="resize-none outline-none text-sm transition-colors duration-150" style={{ ...INPUT_STYLE, height: 'auto' }} />
-          <div className="flex justify-end mt-1">
-            <span className="text-[10px] text-muted-foreground/60">{annoText.length}/200</span>
-          </div>
-        </div>
-      )}
-      {mode === 'free_slots' && (
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Послуга</label>
-            {services.length === 0 ? (
-              <div className="px-3 py-2.5 rounded-2xl text-xs text-muted-foreground/60 bg-secondary/60 border border-border">
-                Немає послуг
-              </div>
-            ) : (
-              <select value={selectedSvcId ?? ''} onChange={e => { setSelectedSvcId(e.target.value || null); onControlChange(); }} className="outline-none text-sm cursor-pointer" style={INPUT_STYLE}>
-                {services.map(s => <option key={s.id} value={s.id}>{s.emoji ? `${s.emoji} ` : ''}{s.name} ({s.duration_minutes} хв)</option>)}
-              </select>
-            )}
-          </div>
-          <div>
-            <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Дата</label>
-            <input type="date" value={slotsDate ?? ''} min={todayStr} onChange={e => { setSlotsDate(e.target.value || null); onControlChange(); }} aria-label="Дата слоту для сторіс" className="outline-none text-sm" style={INPUT_STYLE} />
-            {slotsDate && !slotsLoading && (
-              <p className={`text-[11px] mt-1 font-medium ${slots.length > 0 ? 'text-success' : 'text-muted-foreground/60'}`}>
-                {slots.length > 0 ? `${slots.length} вільних вікон` : 'Немає вікон'}
-              </p>
-            )}
-          </div>
-        </div>
-      )}
-      {mode === 'vacation' && (
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">З якого числа</label>
-            <input type="date" value={vacStart ?? ''} onChange={e => { setVacStart(e.target.value || null); onControlChange(); }} aria-label="Початок відпустки" className="outline-none text-sm" style={INPUT_STYLE} />
-          </div>
-          <div>
-            <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">По яке число</label>
-            <input type="date" value={vacEnd ?? ''} min={vacStart ?? ''} onChange={e => { setVacEnd(e.target.value || null); onControlChange(); }} aria-label="Кінець відпустки" className="outline-none text-sm" style={INPUT_STYLE} />
-          </div>
-        </div>
-      )}
-      {mode === 'promo' && (
-        <div>
-          <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Активна Flash Deal</label>
-          {flashDeals.length === 0 ? (
-            <div className="px-3 py-2.5 rounded-2xl text-xs text-muted-foreground/60 bg-secondary/60 border border-border">
-              Немає акцій. Створіть у <span className="font-semibold text-primary">Дохід → Flash Deals</span>.
-            </div>
-          ) : (
-            <select value={dealIdx} onChange={e => { setDealIdx(Number(e.target.value)); onControlChange(); }} className="outline-none text-sm cursor-pointer" style={INPUT_STYLE}>
-              {flashDeals.map((d, i) => <option key={d.id} value={i}>{d.service_name} · {Math.round(d.original_price / 100 * (1 - d.discount_pct / 100))}₴ (−{d.discount_pct}%)</option>)}
-            </select>
-          )}
-        </div>
-      )}
-      {mode === 'review_spotlight' && (
-        <div>
-          <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">5★ відгук клієнта</label>
-          {starReviews.length === 0 ? (
-            <div className="px-3 py-2.5 rounded-2xl text-xs text-muted-foreground/60 bg-secondary/60 border border-border">
-              Немає опублікованих 5★ відгуків
-            </div>
-          ) : (
-            <select value={selectedReviewId ?? ''} onChange={e => { setSelectedReviewId(e.target.value || null); onControlChange(); }} className="outline-none text-sm cursor-pointer" style={INPUT_STYLE}>
-              {starReviews.map(r => <option key={r.id} value={r.id}>{r.client_name} — {(r.comment ?? '').slice(0, 40)}{(r.comment ?? '').length > 40 ? '...' : ''}</option>)}
-            </select>
-          )}
-          {selectedReview?.comment && (
-            <p className="text-[11px] text-muted-foreground mt-1.5 leading-relaxed px-1 line-clamp-2">«{selectedReview.comment}»</p>
-          )}
-        </div>
-      )}
-      {mode === 'flash_window' && (
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-3">
-            <div>
-              <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Послуга</label>
-              {services.length === 0 ? (
-                <div className="px-3 py-2.5 rounded-2xl text-xs text-muted-foreground/60 bg-secondary/60 border border-border">Немає послуг</div>
-              ) : (
-                <select value={flashWinSvcId ?? ''} onChange={e => { setFlashWinSvcId(e.target.value || null); onControlChange(); }} className="outline-none text-sm cursor-pointer" style={INPUT_STYLE}>
-                  {services.map(s => <option key={s.id} value={s.id}>{s.emoji ? `${s.emoji} ` : ''}{s.name} ({s.duration_minutes} хв)</option>)}
-                </select>
-              )}
-            </div>
-            <div>
-              <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Дата</label>
-              <input type="date" value={flashWinDate ?? ''} min={todayStr} onChange={e => { setFlashWinDate(e.target.value || null); onControlChange(); }} aria-label="Дата флеш-пропозиції" className="outline-none text-sm" style={INPUT_STYLE} />
-            </div>
-          </div>
-          <div className="space-y-3">
-            {flashWinDate && (
-              <div>
-                <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Час слоту</label>
-                {flashWinSlotsLoading ? (
-                  <p className="text-[11px] text-muted-foreground/60">Завантаження...</p>
-                ) : flashWinSlots.length === 0 ? (
-                  <p className="text-[11px] text-muted-foreground/60">Немає вільних вікон</p>
-                ) : (
-                  <div className="flex flex-wrap gap-1.5">
-                    {flashWinSlots.map(s => (
-                      <button key={s} type="button" onClick={() => { setFlashWinTime(s); onControlChange(); }}
-                        className={cn("px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-colors duration-150 cursor-pointer active:scale-[0.88]",
-                          flashWinTime === s ? "bg-[var(--btn-primary-bg)] text-[var(--accent-on)]" : "bg-secondary/70 text-text-secondary border border-border")}>
-                        {s}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-            <div>
-              <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Знижка: <span className="text-destructive font-bold">−{flashWinDiscount}%</span></label>
-              <input type="range" min={5} max={70} step={5} value={flashWinDiscount}
-                onChange={e => { setFlashWinDiscount(Number(e.target.value)); onControlChange(); }}
-                aria-label="Відсоток знижки" className="w-full cursor-pointer" style={{ accentColor: 'var(--accent)' }} />
-              <div className="flex justify-between text-[10px] text-muted-foreground/60 mt-0.5"><span>5%</span><span>70%</span></div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-
-  const previewCanvas = (scale: number, radius: number) => (
-    <div style={{
-      width: 360 * scale, height: 640 * scale,
-      overflow: 'hidden', borderRadius: radius,
-      filter: isBlurLocked ? 'blur(10px)' : 'none',
-      transition: 'filter 0.6s ease',
-      boxShadow: '0 20px 60px color-mix(in srgb, var(--accent) 18%, transparent), 0 0 0 1px color-mix(in srgb, var(--border) 50%, transparent)',
-    }}>
-      <div style={{ transform: `scale(${scale})`, transformOrigin: 'top left', pointerEvents: 'none' }}>
-        <StoryCanvas {...canvasSharedProps} />
-      </div>
-    </div>
-  );
-
-  const previewOverlay = (scale: number) => (
-    <>
-      <AnimatePresence>
-        {isBlurLocked && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 22 }}
-            className="absolute inset-0 flex items-center justify-center"
-            style={{ borderRadius: 20 * scale, background: 'color-mix(in srgb, var(--text-primary) 8%, transparent)' }}>
-            <div className="flex flex-col items-center gap-2 px-4 py-3 rounded-2xl text-center"
-              style={{ background: 'color-mix(in srgb, var(--text-primary) 90%, transparent)', backdropFilter: 'blur(4px)', maxWidth: 180 }}>
-              <Lock size={16} strokeWidth={2.5} style={{ color: 'var(--accent-on)' }} />
-              <span className="text-[11px] font-bold tracking-wide leading-tight" style={{ color: 'var(--accent-on)' }}>{upgradeCopy?.overlayTitle ?? 'Доступно в PRO'}</span>
-              <span className="text-[10px] leading-snug" style={{ color: 'color-mix(in srgb, var(--accent-on) 55%, transparent)' }}>{upgradeCopy?.overlayHint ?? '700 грн/міс'}</span>
-              <span className="text-[10px] font-bold px-3 py-1 rounded-full mt-0.5"
-                style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}>Перейти на PRO</span>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-      {isPremiumLocked && !blurActive && (
-        <div className="absolute bottom-2 left-0 right-0 flex justify-center">
-          <span className="text-[9px] text-muted-foreground/60 bg-background/80 rounded-full px-2 py-0.5">Перегляд · 10 сек</span>
-        </div>
-      )}
-    </>
-  );
-
-  // Shared download button JSX
   const downloadBtn = (
     <>
       <motion.button whileTap={{ scale: 0.95 }} type="button" onClick={handleDownloadOrUpgrade} disabled={exporting}
@@ -503,333 +177,115 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
     </>
   );
 
-  // Shared settings rows (position/text grid-2 + glass full-width + pill switches + cta)
-  const settingsRows = (
-    <>
-      <div className="pt-3 border-t border-border space-y-3">
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="text-[10px] text-muted-foreground block mb-1.5 font-semibold uppercase tracking-wide">Позиція</label>
-            <div className="flex bg-secondary/40 rounded-xl p-0.5 border border-border">
-              {(['top', 'center', 'bottom'] as const).map(pos => (
-                <button key={pos} type="button" onClick={() => { setPlatePos(pos); onControlChange(); }}
-                  className={`flex-1 py-1.5 text-[10px] font-bold rounded-lg transition-colors duration-150 active:scale-[0.88] cursor-pointer ${platePos === pos ? 'bg-surface shadow-sm text-foreground' : 'text-muted-foreground/60 hover:text-muted-foreground'}`}>
-                  {pos === 'top' ? 'Вгору' : pos === 'center' ? 'Центр' : 'Низ'}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div>
-            <label className="text-[10px] text-muted-foreground block mb-1.5 font-semibold uppercase tracking-wide">Текст</label>
-            <div className="flex bg-secondary/40 rounded-xl p-0.5 border border-border">
-              {(['left', 'center', 'right'] as const).map(a => (
-                <button key={a} type="button" onClick={() => { setTextAlign(a); onControlChange(); }}
-                  className={`flex-1 py-1.5 text-[10px] font-bold rounded-lg transition-colors duration-150 active:scale-[0.88] cursor-pointer ${textAlign === a ? 'bg-surface shadow-sm text-foreground' : 'text-muted-foreground/60 hover:text-muted-foreground'}`}>
-                  {a === 'left' ? 'Ліво' : a === 'center' ? 'Центр' : 'Право'}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-        <div>
-          <div className="flex justify-between items-center mb-1.5">
-            <label className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wide">Скло</label>
-            <span className="text-[10px] font-bold text-primary">{transparency}%</span>
-          </div>
-          <input type="range" min={0} max={100} step={1} value={transparency}
-            onChange={e => { setTransparency(Number(e.target.value)); onControlChange(); }}
-            aria-label="Прозорість скла" className="w-full cursor-pointer h-1.5 bg-secondary/50 rounded-lg appearance-none" style={{ accentColor: 'var(--accent)' }} />
-        </div>
-      </div>
+  function renderStep() {
+    switch (currentStep) {
+      case 'type':
+        return <StepType mode={state.mode} onSelect={set.setMode} />;
+      case 'content':
+        return (
+          <StepContent
+            state={state} set={set}
+            services={services} flashDeals={flashDeals} starReviews={starReviews}
+            slots={slots} slotsLoading={slotsLoading}
+            flashWinSlots={flashWinSlots} flashWinSlotsLoading={flashWinSlotsLoading}
+            todayStr={todayStr} selectedReview={selectedReview}
+          />
+        );
+      case 'look':
+        return (
+          <StepLook
+            palIdx={state.palIdx} onPalette={set.setPalIdx}
+            selectedBgPhotoId={state.selectedBgPhotoId} customBgPhoto={state.customBgPhoto}
+            selectedGradientId={state.selectedGradientId} selectedStockId={state.selectedStockId}
+            portfolioItems={portfolioItems}
+            onPickPortfolio={set.pickPortfolio} onPickGradient={set.pickGradient} onPickStock={set.pickStock}
+            onClearBg={set.clearBackground} onUploadClick={() => fileInputRef.current?.click()}
+          />
+        );
+      case 'style':
+        return <StepStyle state={state} set={set} />;
+      case 'export':
+        return <StepExport isPremiumLocked={isPremiumLocked}>{downloadBtn}</StepExport>;
+    }
+  }
 
-      <div className="grid grid-cols-2 gap-3">
-        <button type="button" role="switch" aria-checked={showAvatar}
-          onClick={() => setShowAvatar(v => !v)}
-          className="flex items-center justify-between px-3 py-2.5 rounded-xl bg-secondary/70 border border-border cursor-pointer active:scale-[0.97] transition-colors duration-150">
-          <div className="min-w-0 text-left">
-            <p className="text-xs font-semibold text-foreground">Показувати фото</p>
-            <p className="text-[10px] text-muted-foreground/60">Аватар та ім&apos;я</p>
+  const premiumTeaser = (
+    <AnimatePresence mode="popLayout">
+      {isPremiumLocked && upgradeCopy && (
+        <motion.button type="button"
+          initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.2 }}
+          className="w-full rounded-2xl px-4 py-3 flex items-center gap-3 text-left cursor-pointer"
+          style={{ background: 'var(--accent-soft)', border: '1px solid color-mix(in srgb, var(--accent) 20%, transparent)' }}
+          onClick={() => setShowUpgradeModal(true)}>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-bold text-foreground">{upgradeCopy.teaserTitle}</p>
+            <p className="text-[11px] text-muted-foreground leading-snug truncate">{upgradeCopy.teaserDesc}</p>
           </div>
-          <span className={`relative ml-2 w-11 h-6 rounded-full shrink-0 transition-colors duration-200 ${showAvatar ? 'bg-accent' : 'bg-muted-foreground/25'}`}>
-            <motion.div
-              animate={{ x: showAvatar ? 26 : 2 }}
-              transition={{ type: 'spring', stiffness: 500, damping: 30 } as const}
-              className="absolute top-1 size-4 rounded-full bg-white shadow-sm"
-            />
-          </span>
-        </button>
-        <button type="button" role="switch" aria-checked={showSticker}
-          onClick={() => setShowSticker(v => !v)}
-          className="flex items-center justify-between px-3 py-2.5 rounded-xl bg-secondary/70 border border-border cursor-pointer active:scale-[0.97] transition-colors duration-150">
-          <div className="min-w-0 text-left">
-            <p className="text-xs font-semibold text-foreground">Кнопка запису</p>
-            <p className="text-[10px] text-muted-foreground/60">Стікер внизу сторіс</p>
-          </div>
-          <span className={`relative ml-2 w-11 h-6 rounded-full shrink-0 transition-colors duration-200 ${showSticker ? 'bg-accent' : 'bg-muted-foreground/25'}`}>
-            <motion.div
-              animate={{ x: showSticker ? 26 : 2 }}
-              transition={{ type: 'spring', stiffness: 500, damping: 30 } as const}
-              className="absolute top-1 size-4 rounded-full bg-white shadow-sm"
-            />
-          </span>
-        </button>
-      </div>
-
-      {showSticker && (
-        <div>
-          <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Текст кнопки</label>
-          <div className="flex gap-2 items-center">
-            <input
-              value={ctaText}
-              onChange={e => { setCtaText(e.target.value.slice(0, 28)); onControlChange(); }}
-              maxLength={28}
-              placeholder="Записатися онлайн"
-              className="flex-1 outline-none text-sm"
-              style={INPUT_STYLE}
-            />
-            <span className="text-[10px] text-muted-foreground/60 shrink-0">{ctaText.length}/28</span>
-          </div>
-        </div>
+          <span className="shrink-0 text-[10px] font-bold px-2 py-1 rounded-xl" style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}>PRO</span>
+        </motion.button>
       )}
-    </>
+    </AnimatePresence>
+  );
+
+  const stepPanel = (
+    <div className="space-y-4">
+      <AnimatePresence mode="wait" custom={dirRef.current} initial={false}>
+        <motion.div
+          key={currentStep}
+          custom={dirRef.current}
+          variants={reduce ? fadeVariants : slideVariants}
+          initial="enter" animate="center" exit="exit"
+          transition={SLIDE}
+        >
+          {renderStep()}
+        </motion.div>
+      </AnimatePresence>
+      {currentStep !== 'export' && premiumTeaser}
+      <StepNav
+        currentStep={currentStep}
+        completion={stepCompletion}
+        onBack={handleBack}
+        onNext={handleNext}
+        onJump={handleJump}
+        isFirst={isFirst}
+        isLast={isLast}
+        lastStepAction={downloadBtn}
+      />
+    </div>
+  );
+
+  const previewBlock = (panelRef: React.RefObject<HTMLDivElement | null>, scale: number) => (
+    <div ref={panelRef} className="flex justify-center items-center"
+      style={{ background: 'color-mix(in srgb, var(--secondary) 18%, transparent)' }}>
+      <StoryPreview
+        canvasProps={canvasSharedProps}
+        scale={scale}
+        radius={Math.round(20 * scale)}
+        isBlurLocked={isBlurLocked}
+        isPremiumLocked={isPremiumLocked}
+        blurActive={blurActive}
+        upgradeCopy={upgradeCopy}
+      />
+    </div>
   );
 
   const contentBody = (
     <div>
-
-      {/* ─── MOBILE LAYOUT (< lg) ─── */}
+      {/* MOBILE */}
       <div className="lg:hidden flex flex-col">
-
-        {/* Mode tabs — flex-wrap, no horizontal overflow */}
-        <div className="flex flex-wrap gap-1.5 px-4 pt-4 pb-3">
-          {MODES.map(m => {
-            const active = m.id === mode;
-            const Icon = m.Icon;
-            return (
-              <button key={m.id} type="button" aria-pressed={active}
-                onClick={() => { setMode(m.id); onControlChange(); }}
-                className={cn(
-                  "flex items-center gap-1 px-3 py-2 rounded-2xl text-[11px] font-semibold transition-colors duration-150 cursor-pointer active:scale-[0.88]",
-                  active
-                    ? "bg-[var(--btn-primary-bg)] text-[var(--accent-on)] shadow-[0_4px_12px_color-mix(in_srgb,var(--accent)_25%,transparent)]"
-                    : "bg-secondary/70 text-text-secondary border border-border"
-                )}>
-                <Icon size={12} strokeWidth={2.5} />
-                {m.label}
-                {m.premium && (
-                  <span className={cn("text-[9px] font-bold px-1 py-0.5 rounded-md",
-                    active ? "bg-accent-on/25 text-accent-on" : "bg-warning/15 text-warning")}>PRO</span>
-                )}
-              </button>
-            );
-          })}
+        <div className="sticky top-0 z-10 py-4 px-4" style={{ background: 'color-mix(in srgb, var(--background) 92%, transparent)', backdropFilter: 'blur(8px)' }}>
+          {previewBlock(mobilePreviewPanelRef, mobileScale)}
         </div>
-
-        {/* Preview — at top, ResizeObserver-scaled */}
-        <div
-          ref={mobilePreviewPanelRef}
-          className="flex justify-center items-center py-5 px-4"
-          style={{ background: 'color-mix(in srgb, var(--secondary) 18%, transparent)' }}
-        >
-          <div style={{ position: 'relative', width: 360 * mobileScale, height: 640 * mobileScale }}>
-            {previewCanvas(mobileScale, Math.round(20 * mobileScale))}
-            {previewOverlay(mobileScale)}
-          </div>
-        </div>
-
-        {/* Controls area */}
-        <div className="px-4 py-4 space-y-4">
-
-          {/* Photo picker — grid 4-col */}
-          <div>
-            <div className="flex justify-between items-center mb-2">
-              <p className="text-xs font-semibold text-muted-foreground">Фон (Фото)</p>
-            </div>
-            <div className="grid grid-cols-4 gap-2">
-              <button type="button"
-                onClick={() => { setSelectedBgPhotoId(null); setCustomBgPhoto(null); }}
-                aria-label="Без фону"
-                className={`aspect-square rounded-xl flex items-center justify-center border-2 transition-colors duration-150 cursor-pointer active:scale-[0.88] ${(!selectedBgPhotoId && !customBgPhoto) ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-secondary/40 text-text-secondary'}`}>
-                <X size={18} />
-              </button>
-              <button type="button" onClick={() => fileInputRef.current?.click()}
-                className="aspect-square rounded-xl flex flex-col items-center justify-center gap-0.5 border-2 border-dashed border-border bg-secondary/40 text-muted-foreground/60 hover:border-primary hover:text-primary transition-colors duration-150 cursor-pointer active:scale-[0.88]">
-                <Plus size={14} />
-                <span className="text-[8px] font-semibold">Фото</span>
-              </button>
-              {customBgPhoto && (
-                <button type="button" onClick={() => { setSelectedBgPhotoId(null); onControlChange(); }}
-                  className={`relative aspect-square rounded-xl overflow-hidden border-2 transition-colors duration-150 cursor-pointer active:scale-[0.88] ${(!selectedBgPhotoId && customBgPhoto) ? 'border-primary ring-2 ring-primary/20' : 'border-transparent'}`}>
-                  <img src={customBgPhoto} className="w-full h-full object-cover" alt="" />
-                  {(!selectedBgPhotoId && customBgPhoto) && (
-                    <div className="absolute inset-0 bg-black/20 flex items-center justify-center"><Check size={12} className="text-white" strokeWidth={3} /></div>
-                  )}
-                </button>
-              )}
-              {portfolioItems.map(item => (
-                <button key={item.id} type="button"
-                  onClick={() => { setSelectedBgPhotoId(item.id); onControlChange(); }}
-                  aria-label={item.title ?? 'Фото з портфоліо'}
-                  className={`relative aspect-square rounded-xl overflow-hidden border-2 transition-colors duration-150 cursor-pointer active:scale-[0.88] ${selectedBgPhotoId === item.id ? 'border-primary ring-2 ring-primary/20' : 'border-transparent'}`}>
-                  <img src={item.photos[0]?.url} className="w-full h-full object-cover" alt="" />
-                  {selectedBgPhotoId === item.id && (
-                    <div className="absolute inset-0 bg-black/20 flex items-center justify-center"><Check size={12} className="text-white" strokeWidth={3} /></div>
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Palette */}
-          <div>
-            <p className="text-xs font-semibold text-muted-foreground mb-2">Палітра</p>
-            <div className="flex gap-2 flex-wrap">
-              {PALETTES.map((p, i) => (
-                <button key={p.id} type="button" aria-label={p.label} aria-pressed={i === palIdx}
-                  onClick={() => { setPalIdx(i); onControlChange(); }}
-                  className="relative size-7 rounded-full transition-colors duration-150 cursor-pointer"
-                  style={{
-                    background: p.bg,
-                    border: i === palIdx ? '2.5px solid var(--accent)' : `2px solid ${p.muted}`,
-                    boxShadow: i === palIdx ? '0 0 0 2px color-mix(in srgb, var(--accent) 28%, transparent)' : undefined,
-                  }}>
-                  {i === palIdx && <span className="absolute inset-0 flex items-center justify-center"><Check size={10} style={{ color: p.text }} strokeWidth={3} /></span>}
-                </button>
-              ))}
-            </div>
-            <p className="text-[10px] text-muted-foreground/60 mt-1.5">{PALETTES[palIdx].label}</p>
-          </div>
-
-          {/* Mode controls */}
-          {controls}
-
-          {/* Premium teaser */}
-          <AnimatePresence mode="popLayout">
-            {isPremiumLocked && upgradeCopy && (
-              <motion.button type="button"
-                initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.2 }}
-                className="w-full rounded-2xl px-4 py-3 flex items-center gap-3 text-left"
-                style={{ background: 'var(--accent-soft)', border: '1px solid color-mix(in srgb, var(--accent) 20%, transparent)' }}
-                onClick={() => setShowUpgradeModal(true)}>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-bold text-foreground">{upgradeCopy.teaserTitle}</p>
-                  <p className="text-[11px] text-muted-foreground leading-snug truncate">{upgradeCopy.teaserDesc}</p>
-                </div>
-                <span className="shrink-0 text-[10px] font-bold px-2 py-1 rounded-xl" style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}>PRO</span>
-              </motion.button>
-            )}
-          </AnimatePresence>
-
-          {settingsRows}
-          {downloadBtn}
-
+        <div className="px-4 py-4">
+          {stepPanel}
         </div>
       </div>
 
-      {/* ─── DESKTOP LAYOUT (≥ lg) — T14 unchanged ─── */}
+      {/* DESKTOP */}
       <div className="hidden lg:flex lg:flex-row lg:items-start">
-
-        {/* Controls panel */}
-        <div className="flex-1 min-w-0 px-6 py-5 space-y-4">
-
-          {/* Mode tabs */}
-          <div className="flex gap-2 overflow-x-auto lg:overflow-x-visible lg:flex-wrap pb-0.5" style={{ scrollbarWidth: 'none' }}>
-            {MODES.map(m => {
-              const active = m.id === mode;
-              const Icon = m.Icon;
-              return (
-                <button key={m.id} type="button" aria-pressed={active} onClick={() => { setMode(m.id); onControlChange(); }}
-                  className={cn("relative flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-xs font-semibold whitespace-nowrap transition-colors duration-150 cursor-pointer shrink-0 active:scale-[0.88]",
-                    active
-                      ? "bg-[var(--btn-primary-bg)] text-[var(--accent-on)] shadow-[0_4px_12px_color-mix(in_srgb,var(--accent)_25%,transparent)]"
-                      : "bg-secondary/70 text-text-secondary border border-border")}>
-                  <Icon size={13} strokeWidth={2.5} />
-                  {m.label}
-                  {m.premium && (
-                    <span className={cn("ml-0.5 text-[10px] font-bold px-1 py-0.5 rounded-md", active ? "bg-accent-on/25 text-accent-on" : "bg-warning/15 text-warning")}>PRO</span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Photo picker + Palette side by side */}
-          <div className="grid grid-cols-[1fr_152px] gap-4 items-start">
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <p className="text-xs font-semibold text-muted-foreground">Фон (Фото)</p>
-                <button type="button" onClick={() => fileInputRef.current?.click()} className="text-[10px] font-bold text-primary hover:underline flex items-center gap-1">
-                  <Plus size={11} /> Завантажити
-                </button>
-              </div>
-              <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-0.5 lg:overflow-x-visible lg:flex-wrap">
-                <button type="button" onClick={() => { setSelectedBgPhotoId(null); setCustomBgPhoto(null); }} aria-label="Без фону"
-                  className={`relative size-11 rounded-xl flex items-center justify-center border-2 transition-colors duration-150 shrink-0 active:scale-[0.88] cursor-pointer ${(!selectedBgPhotoId && !customBgPhoto) ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-secondary/40 text-text-secondary'}`}>
-                  <X size={16} />
-                </button>
-                {customBgPhoto && (
-                  <button type="button" onClick={() => { setSelectedBgPhotoId(null); onControlChange(); }}
-                    className={`relative size-11 rounded-xl overflow-hidden border-2 transition-colors duration-150 shrink-0 active:scale-[0.88] cursor-pointer ${(!selectedBgPhotoId && customBgPhoto) ? 'border-primary shadow-md scale-95 ring-2 ring-primary/20' : 'border-transparent'}`}>
-                    <img src={customBgPhoto} className="w-full h-full object-cover" alt="" />
-                    {(!selectedBgPhotoId && customBgPhoto) && (
-                      <div className="absolute inset-0 bg-black/20 flex items-center justify-center"><Check size={12} className="text-white" strokeWidth={3} /></div>
-                    )}
-                  </button>
-                )}
-                {portfolioItems.map(item => (
-                  <button key={item.id} type="button" onClick={() => { setSelectedBgPhotoId(item.id); onControlChange(); }}
-                    aria-label={item.title ?? 'Фото з портфоліо'}
-                    className={`relative size-11 rounded-xl overflow-hidden border-2 transition-colors duration-150 shrink-0 active:scale-[0.88] cursor-pointer ${selectedBgPhotoId === item.id ? 'border-primary shadow-md scale-95' : 'border-transparent'}`}>
-                    <img src={item.photos[0]?.url} className="w-full h-full object-cover" alt="" />
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-muted-foreground mb-2">Палітра</p>
-              <div className="flex gap-2 flex-wrap">
-                {PALETTES.map((p, i) => (
-                  <button key={p.id} type="button" aria-label={p.label} aria-pressed={i === palIdx} onClick={() => { setPalIdx(i); onControlChange(); }}
-                    className="relative size-7 rounded-full transition-colors duration-150 cursor-pointer"
-                    style={{
-                      background: p.bg,
-                      border: i === palIdx ? '2.5px solid var(--accent)' : `2px solid ${p.muted}`,
-                      boxShadow: i === palIdx ? '0 0 0 2px color-mix(in srgb, var(--accent) 28%, transparent)' : undefined,
-                    }}>
-                    {i === palIdx && <span className="absolute inset-0 flex items-center justify-center"><Check size={10} style={{ color: p.text }} strokeWidth={3} /></span>}
-                  </button>
-                ))}
-              </div>
-              <p className="text-[10px] text-muted-foreground/60 mt-1.5">{PALETTES[palIdx].label}</p>
-            </div>
-          </div>
-
-          {/* Mode controls */}
-          {controls}
-
-          {/* Premium teaser */}
-          <AnimatePresence mode="popLayout">
-            {isPremiumLocked && upgradeCopy && (
-              <motion.button type="button"
-                initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.2 }}
-                className="w-full rounded-2xl px-4 py-3 flex items-center gap-3 text-left"
-                style={{ background: 'var(--accent-soft)', border: '1px solid color-mix(in srgb, var(--accent) 20%, transparent)' }}
-                onClick={() => setShowUpgradeModal(true)}>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-bold text-foreground">{upgradeCopy.teaserTitle}</p>
-                  <p className="text-[11px] text-muted-foreground leading-snug truncate">{upgradeCopy.teaserDesc}</p>
-                </div>
-                <span className="shrink-0 text-[10px] font-bold px-2 py-1 rounded-xl" style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}>PRO</span>
-              </motion.button>
-            )}
-          </AnimatePresence>
-
-          {settingsRows}
-          {downloadBtn}
-
+        <div className="flex-1 min-w-0 px-6 py-5">
+          {stepPanel}
         </div>
-
-        {/* Sticky preview panel */}
         <div
           ref={desktopPreviewPanelRef}
           className="flex shrink-0 w-[280px] xl:w-[360px] flex-col items-center justify-center self-start sticky top-24 h-[calc(100vh-6rem)] border-l border-border"
@@ -837,13 +293,17 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
         >
           <div className="flex flex-col items-center gap-4">
             <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">Попередній перегляд</p>
-            <div style={{ position: 'relative', width: 360 * desktopScale, height: 640 * desktopScale }}>
-              {previewCanvas(desktopScale, Math.round(20 * desktopScale))}
-              {previewOverlay(desktopScale)}
-            </div>
+            <StoryPreview
+              canvasProps={canvasSharedProps}
+              scale={desktopScale}
+              radius={Math.round(20 * desktopScale)}
+              isBlurLocked={isBlurLocked}
+              isPremiumLocked={isPremiumLocked}
+              blurActive={blurActive}
+              upgradeCopy={upgradeCopy}
+            />
           </div>
         </div>
-
       </div>
     </div>
   );
@@ -852,7 +312,6 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
     <>
       <UpgradePromptModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} source="marketing" feature={upgradeCopy?.modalTitle} description={upgradeCopy?.modalDesc} />
 
-      {/* Hidden file input — single instance, works for both mobile + desktop triggers */}
       <input type="file" ref={fileInputRef} onChange={handleCustomPhotoUpload} accept="image/*" className="hidden" aria-hidden="true" tabIndex={-1} />
 
       <AnimatePresence>
@@ -862,7 +321,7 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
             <div className="flex flex-col items-center gap-6 text-center px-8">
               <div className="relative">
                 <motion.div animate={{ rotate: 360, scale: [1, 1.1, 1] }}
-                  transition={{ rotate: { duration: 8, repeat: Infinity, ease: "linear" }, scale: { duration: 2, repeat: Infinity, ease: "easeInOut" } }}
+                  transition={{ rotate: { duration: 8, repeat: Infinity, ease: 'linear' }, scale: { duration: 2, repeat: Infinity, ease: 'easeInOut' } }}
                   className="size-24 rounded-full border-2 border-dashed border-primary/30" />
                 <motion.div initial={{ x: -20, y: 20, opacity: 0 }} animate={{ x: 0, y: 0, opacity: 1 }}
                   className="absolute inset-0 flex items-center justify-center">
@@ -876,7 +335,7 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
                 </p>
               </div>
               <div className="w-48 h-1.5 bg-background/40 rounded-full overflow-hidden border border-border">
-                <motion.div initial={{ x: "-100%" }} animate={{ x: "100%" }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                <motion.div initial={{ x: '-100%' }} animate={{ x: '100%' }} transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
                   className="w-1/2 h-full bg-gradient-to-r from-transparent via-primary to-transparent" />
               </div>
             </div>
@@ -898,9 +357,9 @@ export function StoryGenerator({ isOpen, onClose, items: externalItems, masterNa
           {isOpen && (
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}
               className="fixed inset-0 z-[100] flex flex-col bg-background overflow-y-auto pb-20">
-              <div className="sticky top-0 z-10 flex items-center justify-between p-4 bg-background/80 backdrop-blur-md border-b border-border">
+              <div className="sticky top-0 z-20 flex items-center justify-between p-4 bg-background/80 backdrop-blur-md border-b border-border">
                 <h2 className="font-display text-lg font-bold">Генератор Сторіс</h2>
-                <button type="button" onClick={() => typeof onClose === 'function' && onClose()} aria-label="Закрити" className="p-2 hover:bg-secondary rounded-full transition-colors">
+                <button type="button" onClick={() => typeof onClose === 'function' && onClose()} aria-label="Закрити" className="p-2 hover:bg-secondary rounded-full transition-colors cursor-pointer">
                   <X size={20} />
                 </button>
               </div>
