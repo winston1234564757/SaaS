@@ -133,6 +133,9 @@ export interface CanvasProps {
   mutedColor: string;
   plateBg: string;
   textShadow: string;
+  accent: string;
+  pillBg: string;
+  pillText: string;
   // frame elements
   showLinkZone: boolean;
   isExporting?: boolean;

@@ -239,6 +239,7 @@ export function useStoryEditor(props: StoryGeneratorProps): UseStoryEditor {
     // auto theme
     textColor: textTheme.textColor, mutedColor: textTheme.mutedColor,
     plateBg: textTheme.plateBg, textShadow: textTheme.shadow,
+    accent: textTheme.accent, pillBg: textTheme.pillBg, pillText: textTheme.pillText,
     // frame
     showLinkZone,
   }), [

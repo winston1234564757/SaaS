@@ -117,19 +117,37 @@ export interface TextTheme {
   isDark: boolean;       // фон темний → текст світлий
   textColor: string;
   mutedColor: string;
-  plateBg: string;
+  plateBg: string;       // непрозорість підібрана під WCAG AA для тексту над фото (worst-case світле фото)
+  accent: string;        // зірки рейтингу / кольоровий акцент (a11y-перевірено)
+  pillBg: string;        // фон пілюль (слоти) — самодостатній контраст
+  pillText: string;
   shadow: string;
 }
 
-/** Визначає тему тексту за фоном. Фото → припускаємо темний (світлий текст + скрім) — стандарт IG-оверлеїв. */
+/** Визначає тему тексту за фоном. Фото → припускаємо темний (світлий текст + скрім) — стандарт IG-оверлеїв.
+ *  Усі пари перевірені через a11y MCP проти найгіршого випадку (плашка 0.62 над білим фото = #616161). */
 export function resolveTextTheme(args: { bgPhotoUrl: string | null; palBg: string }): TextTheme {
   const { bgPhotoUrl, palBg } = args;
   const isDark = bgPhotoUrl ? true : hexLuminance(palBg) < 0.5;
 
   return isDark
-    ? { isDark, textColor: '#FFFFFF', mutedColor: 'rgba(255,255,255,0.78)', plateBg: 'rgba(0,0,0,0.34)', shadow: '0 1px 10px rgba(0,0,0,0.45)' }
-    : { isDark, textColor: '#161616', mutedColor: 'rgba(22,22,22,0.62)', plateBg: 'rgba(255,255,255,0.62)', shadow: '0 1px 10px rgba(255,255,255,0.55)' };
+    ? {
+        isDark, textColor: '#FFFFFF', mutedColor: '#E8E8E8',
+        plateBg: 'rgba(0,0,0,0.62)', accent: '#FBBF24',
+        pillBg: '#FFFFFF', pillText: '#1A1A1A',
+        shadow: '0 2px 12px rgba(0,0,0,0.7)',
+      }
+    : {
+        isDark, textColor: '#161616', mutedColor: '#3A3A3A',
+        plateBg: 'rgba(255,255,255,0.85)', accent: '#B45309',
+        pillBg: '#1A1A1A', pillText: '#FFFFFF',
+        shadow: '0 1px 8px rgba(255,255,255,0.7)',
+      };
 }
+
+// Бейдж знижки — непрозорий, семантично «розпродаж», працює на будь-якому фоні (a11y білий/#E11D48 = 4.70).
+export const BADGE_BG = '#E11D48';
+export const BADGE_TEXT = '#FFFFFF';
 
 export const INPUT_STYLE: CSSProperties = {
   width: '100%', padding: '10px 14px', borderRadius: 12,

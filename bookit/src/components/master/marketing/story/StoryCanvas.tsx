@@ -3,7 +3,7 @@
 import React from 'react';
 import { Calendar, Zap, Star } from 'lucide-react';
 import type { CanvasProps } from './storyTypes';
-import { formatUA } from './storyConstants';
+import { formatUA, BADGE_BG, BADGE_TEXT } from './storyConstants';
 
 interface ModeContentProps extends CanvasProps {
   plateStyle: React.CSSProperties;
@@ -12,9 +12,9 @@ interface ModeContentProps extends CanvasProps {
 }
 
 function ModeContent({
-  mode, pal, plateStyle, alignStyle, s,
+  mode, plateStyle, alignStyle, s,
   headingFont, bodyFont, headingWeight, uppercase, letterSpacing,
-  textColor, mutedColor, textShadow,
+  textColor, mutedColor, accent, pillBg, pillText,
   annoText, slotsDate, slots, slotsLoading, selectedServiceName,
   vacStart, vacEnd, selectedDeal,
   reviewText, reviewClientName,
@@ -51,7 +51,7 @@ function ModeContent({
         ) : (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
             {visibleSlots.map(slot => (
-              <span key={slot} style={{ background: pal.pill, color: pal.pillText, borderRadius: 10, padding: '6px 14px', fontFamily: bodyFont, fontSize: 15 * s, fontWeight: 700 }}>{slot}</span>
+              <span key={slot} style={{ background: pillBg, color: pillText, borderRadius: 10, padding: '6px 14px', fontFamily: bodyFont, fontSize: 15 * s, fontWeight: 700 }}>{slot}</span>
             ))}
           </div>
         )}
@@ -85,15 +85,15 @@ function ModeContent({
     return (
       <div style={{ ...plateStyle, borderRadius: 20, padding: '20px 18px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Zap size={18} strokeWidth={1.5} color={pal.dot} />
-          <p style={{ fontFamily: bodyFont, fontSize: 13 * s, fontWeight: 700, color: pal.dot, margin: 0, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Flash Deal</p>
+          <Zap size={18} strokeWidth={1.5} color={accent} />
+          <p style={{ fontFamily: bodyFont, fontSize: 13 * s, fontWeight: 700, color: textColor, margin: 0, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Flash Deal</p>
         </div>
         <p style={{ ...headingCss, fontSize: 22 * s }}>{svcName}</p>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
-          <span style={{ fontFamily: bodyFont, fontSize: 28 * s, fontWeight: 800, color: pal.dot }}>{discPrice} грн</span>
+          <span style={{ fontFamily: bodyFont, fontSize: 28 * s, fontWeight: 800, color: textColor }}>{discPrice} грн</span>
           <span style={{ fontFamily: bodyFont, fontSize: 15 * s, color: mutedColor, textDecoration: 'line-through' }}>{origPrice} грн</span>
         </div>
-        <div style={{ background: pal.dot, color: '#fff', borderRadius: 8, padding: '4px 12px', alignSelf: 'flex-start', fontFamily: bodyFont, fontSize: 13 * s, fontWeight: 700 }}>-{discountPct}%</div>
+        <div style={{ background: BADGE_BG, color: BADGE_TEXT, borderRadius: 8, padding: '4px 12px', alignSelf: 'flex-start', fontFamily: bodyFont, fontSize: 13 * s, fontWeight: 700 }}>-{discountPct}%</div>
       </div>
     );
   }
@@ -102,7 +102,7 @@ function ModeContent({
     return (
       <div style={{ ...plateStyle, borderRadius: 20, padding: '20px 18px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <div style={{ display: 'flex', gap: 3 }}>
-          {[1, 2, 3, 4, 5].map(i => <Star key={i} size={16} strokeWidth={0} fill={pal.dot} color={pal.dot} />)}
+          {[1, 2, 3, 4, 5].map(i => <Star key={i} size={16} strokeWidth={0} fill={accent} color={accent} />)}
         </div>
         <p style={{ ...headingCss, fontSize: 19 * s, fontWeight: 600, lineHeight: 1.4, fontStyle: 'italic' }}>
           {reviewText || 'Чудовий майстер! Буду повертатися знову.'}
@@ -117,7 +117,7 @@ function ModeContent({
     return (
       <div style={{ ...plateStyle, borderRadius: 20, padding: '20px 18px', display: 'flex', flexDirection: 'column', gap: 10 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ background: pal.dot, color: '#fff', borderRadius: 6, padding: '2px 8px', fontFamily: bodyFont, fontSize: 11 * s, fontWeight: 700, textTransform: 'uppercase' }}>
+          <span style={{ background: BADGE_BG, color: BADGE_TEXT, borderRadius: 6, padding: '2px 8px', fontFamily: bodyFont, fontSize: 11 * s, fontWeight: 700, textTransform: 'uppercase' }}>
             {discStr ? `Знижка${discStr}` : 'Гаряче вікно'}
           </span>
         </div>
