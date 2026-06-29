@@ -36,14 +36,14 @@ export function BroadcastsTab({ broadcastsUsed, isStarter }: Props) {
             type="button"
             onClick={() => router.push('/dashboard/marketing/new')}
             data-testid="new-broadcast-btn"
-            className="flex items-center gap-1.5 px-4 py-2 rounded-2xl text-sm font-semibold text-white transition-opacity active:opacity-80"
-            style={{ background: 'var(--accent)' }}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-2xl text-sm font-semibold transition-opacity active:opacity-80"
+            style={{ background: 'var(--accent)', color: 'var(--accent-on)' }}
           >
             <Plus size={15} />
             Нова
           </button>
         </div>
-        <p className="text-xs text-muted-foreground/60">
+        <p className="text-xs text-text-secondary">
           Push / Telegram / SMS по тегах клієнтів
         </p>
       </div>
@@ -52,8 +52,8 @@ export function BroadcastsTab({ broadcastsUsed, isStarter }: Props) {
       {isStarter && (
         <div className="mx-4 mb-4 px-4 py-3 rounded-2xl flex items-start gap-3"
           style={{
-            background: 'rgba(99,102,241,0.07)',
-            border: '1px solid rgba(99,102,241,0.18)',
+            background: 'var(--accent-light)',
+            border: '1px solid color-mix(in srgb, var(--accent) 16%, transparent)',
           }}
         >
           <Zap size={16} className="text-warning shrink-0 mt-0.5" />
@@ -63,7 +63,7 @@ export function BroadcastsTab({ broadcastsUsed, isStarter }: Props) {
                 ? `${3 - broadcastsUsed} безкоштовні розсилки залишилось`
                 : 'Безкоштовний ліміт вичерпано'}
             </p>
-            <p className="text-xs text-muted-foreground mt-0.5">
+            <p className="text-xs text-text-secondary mt-0.5">
               Pro: необмежені розсилки, детальна аналітика, smart-шаблони по тегах.
             </p>
           </div>

@@ -1,33 +1,33 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Send, Clock, Users, MousePointerClick, CalendarCheck,
-  Percent, ChevronRight, Trash2, Loader2, BarChart3, ListChecks,
+  Send, MousePointerClick, CalendarCheck,
+  ChevronRight, Trash2, Loader2, BarChart3, ListChecks,
 } from 'lucide-react';
 import { formatDate } from '@/lib/utils/dates';
 import { useBroadcasts, useBroadcastAnalytics, useBroadcastMutations } from '@/lib/supabase/hooks/useBroadcasts';
 import type { Broadcast } from '@/types/database';
+import { BroadcastDetailSheet } from './BroadcastDetailSheet';
 
-const STATUS_MAP: Record<string, { label: string; color: string; bg: string }> = {
-  draft:   { label: 'Чернетка', color: '#A8928D', bg: '#A8928D15' },
-  sending: { label: 'Відправка', color: '#D4935A', bg: '#D4935A15' },
-  sent:    { label: 'Відправлено', color: '#5C9E7A', bg: '#5C9E7A15' },
-  failed:  { label: 'Помилка', color: '#C05B5B', bg: '#C05B5B15' },
+const STATUS_MAP: Record<string, { label: string; color: string }> = {
+  draft:   { label: 'Чернетка',    color: 'var(--text-secondary)' },
+  sending: { label: 'Відправка',   color: 'var(--warning)' },
+  sent:    { label: 'Відправлено', color: 'var(--success)' },
+  failed:  { label: 'Помилка',     color: 'var(--error)' },
 };
 
 export function BroadcastHistory() {
-  const router = useRouter();
   const { data: broadcasts, isLoading } = useBroadcasts();
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [detail, setDetail] = useState<{ id: string; title: string } | null>(null);
 
   if (isLoading) {
     return (
       <div className="flex flex-col gap-3 px-4">
         {[1, 2, 3].map(i => (
-          <div key={i} className="h-20 rounded-2xl animate-pulse" style={{ background: 'rgba(255,255,255,0.5)' }} />
+          <div key={i} className="h-[72px] rounded-2xl animate-pulse" style={{ background: 'var(--surface)' }} />
         ))}
       </div>
     );
@@ -37,12 +37,12 @@ export function BroadcastHistory() {
     return (
       <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
         <div className="size-14 rounded-2xl flex items-center justify-center mb-4"
-          style={{ background: 'rgba(120,154,153,0.12)' }}
+          style={{ background: 'var(--accent-light)' }}
         >
-          <BarChart3 size={24} className="text-primary" />
+          <BarChart3 size={24} className="text-foreground" />
         </div>
         <p className="text-sm font-medium text-foreground">Розсилок ще немає</p>
-        <p className="text-xs text-muted-foreground/60 mt-1">Створіть першу розсилку — і тут з&apos;явиться аналітика</p>
+        <p className="text-xs text-text-secondary mt-1">Створіть першу розсилку — і тут зʼявиться аналітика</p>
       </div>
     );
   }
@@ -56,11 +56,18 @@ export function BroadcastHistory() {
             broadcast={b as Broadcast}
             expanded={expanded === b.id}
             onToggle={() => setExpanded(prev => prev === b.id ? null : b.id)}
-            onDetail={() => router.push(`/dashboard/marketing/${b.id}`)}
+            onDetail={() => setDetail({ id: b.id, title: b.title })}
           />
         ))}
       </div>
 
+      {detail && (
+        <BroadcastDetailSheet
+          broadcastId={detail.id}
+          broadcastTitle={detail.title}
+          onClose={() => setDetail(null)}
+        />
+      )}
     </>
   );
 }
@@ -77,30 +84,33 @@ function BroadcastCard({
   return (
     <motion.div
       layout
-      className="rounded-2xl overflow-hidden"
-      style={{ background: 'rgba(255,255,255,0.68)', border: '1px solid rgba(255,255,255,0.4)' }}
+      className="rounded-2xl overflow-hidden border border-white/40"
+      style={{ background: 'var(--surface)' }}
     >
       {/* Header row */}
       <button type="button"
         onClick={onToggle}
-        className="w-full px-4 py-3.5 flex items-center gap-3 text-left active:scale-95 transition-all"
+        aria-expanded={expanded}
+        className="w-full px-4 py-3.5 flex items-center gap-3 text-left transition-colors hover:bg-surface-hover"
       >
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-0.5">
+          <div className="flex items-center gap-2 mb-1">
             <span
               className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-              style={{ color: status.color, background: status.bg }}
+              style={{ color: status.color, background: `color-mix(in srgb, ${status.color} 14%, transparent)` }}
             >
               {status.label}
             </span>
             {b.discount_percent && (
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full text-primary bg-[#789A9915]">
-                -{b.discount_percent}%
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full text-foreground"
+                style={{ background: 'var(--accent-light)' }}
+              >
+                −{b.discount_percent}%
               </span>
             )}
           </div>
           <p className="text-sm font-semibold text-foreground truncate">{b.title}</p>
-          <p className="text-[11px] text-muted-foreground/60 mt-0.5">
+          <p className="text-[11px] text-text-secondary mt-0.5">
             {b.status === 'sent' && b.sent_at
               ? `${formatDate(new Date(b.sent_at))} · ${b.recipients_count} клієнтів`
               : formatDate(new Date(b.created_at))}
@@ -108,59 +118,76 @@ function BroadcastCard({
         </div>
         <ChevronRight
           size={16}
-          className="text-muted-foreground/60 shrink-0 transition-transform"
+          className="text-text-secondary shrink-0 transition-transform"
           style={{ transform: expanded ? 'rotate(90deg)' : 'rotate(0deg)' }}
         />
       </button>
 
       {/* Expanded analytics */}
-      <AnimatePresence>
+      <AnimatePresence initial={false}>
         {expanded && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden border-t border-secondary"
+            transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+            className="overflow-hidden"
+            style={{ borderTop: '1px solid color-mix(in srgb, var(--accent) 10%, transparent)' }}
           >
             <div className="px-4 py-4 space-y-4">
               {/* Message preview */}
               <div>
-                <p className="text-[10px] text-muted-foreground/60 mb-1">Повідомлення</p>
-                <p className="text-xs text-foreground leading-relaxed bg-secondary/60 rounded-xl px-3 py-2">
+                <p className="text-[10px] uppercase tracking-wide text-text-secondary mb-1.5">Повідомлення</p>
+                <p className="text-xs text-foreground leading-relaxed rounded-xl px-3 py-2.5"
+                  style={{ background: 'color-mix(in srgb, var(--accent) 5%, transparent)' }}
+                >
                   {b.message_template}
                 </p>
               </div>
 
-              {/* Analytics grid */}
+              {/* Analytics — de-nested: two outcomes + quiet secondary row */}
               {b.status === 'sent' && (
-                <div>
-                  <p className="text-[10px] text-muted-foreground/60 mb-2">Аналітика</p>
-                  {analytics ? (
-                    <div className="grid grid-cols-2 gap-2">
-                      <StatCard icon={<Send size={13} />} label="Відправлено" value={analytics.sent} />
-                      <StatCard icon={<MousePointerClick size={13} />} label="Клікнуло" value={analytics.clicked} />
-                      <StatCard icon={<CalendarCheck size={13} />} label="Записалось" value={analytics.booked} highlight />
-                      <StatCard icon={<Percent size={13} />} label="Конверсія" value={`${analytics.conversion_pct}%`} highlight />
-                      <StatCard icon={<Clock size={13} />} label="Push" value={analytics.push_sent} />
-                      <StatCard icon={<Users size={13} />} label="Telegram" value={analytics.telegram_sent} />
+                analytics ? (
+                  <div className="space-y-3">
+                    {/* Hero outcomes */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <Outcome
+                        icon={<CalendarCheck size={14} />}
+                        label="Записалось"
+                        value={analytics.booked}
+                      />
+                      <Outcome
+                        icon={<MousePointerClick size={14} />}
+                        label="Конверсія"
+                        value={`${analytics.conversion_pct}%`}
+                      />
+                    </div>
+                    {/* Secondary metrics — divided row, no boxes */}
+                    <div className="flex items-stretch rounded-xl overflow-hidden"
+                      style={{ background: 'color-mix(in srgb, var(--accent) 4%, transparent)' }}
+                    >
+                      <Metric label="Відправлено" value={analytics.sent} />
+                      <Metric label="Клікнуло" value={analytics.clicked} />
+                      <Metric label="Push" value={analytics.push_sent} />
+                      <Metric label="Telegram" value={analytics.telegram_sent} />
                       {analytics.discount_used > 0 && (
-                        <StatCard icon={<Percent size={13} />} label="Знижку використано" value={analytics.discount_used} />
+                        <Metric label="Знижку взято" value={analytics.discount_used} />
                       )}
                     </div>
-                  ) : (
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground/60">
-                      <Loader2 size={13} className="animate-spin" />
-                      Завантаження аналітики...
-                    </div>
-                  )}
-                </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 text-xs text-text-secondary">
+                    <Loader2 size={13} className="animate-spin" />
+                    Завантаження аналітики…
+                  </div>
+                )
               )}
 
-              {/* Per-client results */}
+              {/* Per-client results → inline Sheet */}
               {b.status === 'sent' && (
                 <button type="button"
                   onClick={onDetail}
-                  className="flex items-center gap-1.5 text-xs text-primary font-medium hover:opacity-70 transition-opacity active:scale-95 transition-all"
+                  className="flex items-center gap-1.5 text-xs text-foreground font-semibold transition-opacity hover:opacity-70 active:scale-95"
                 >
                   <ListChecks size={13} />
                   Деталі по клієнтах
@@ -172,7 +199,7 @@ function BroadcastCard({
                 <button type="button"
                   onClick={() => remove.mutate(b.id)}
                   disabled={remove.isPending}
-                  className="flex items-center gap-1.5 text-xs text-destructive hover:opacity-70 transition-opacity"
+                  className="flex items-center gap-1.5 text-xs text-destructive transition-opacity hover:opacity-70"
                 >
                   {remove.isPending
                     ? <Loader2 size={13} className="animate-spin" />
@@ -188,24 +215,31 @@ function BroadcastCard({
   );
 }
 
-// ── Stat card ─────────────────────────────────────────────────────────────────
+// ── Outcome (hero stat) ─────────────────────────────────────────────────────────
 
-function StatCard({
-  icon, label, value, highlight,
-}: { icon: React.ReactNode; label: string; value: number | string; highlight?: boolean }) {
+function Outcome({ icon, label, value }: { icon: React.ReactNode; label: string; value: number | string }) {
   return (
-    <div
-      className="rounded-xl px-3 py-2.5 flex items-center gap-2"
-      style={{
-        background: highlight ? 'rgba(92,158,122,0.08)' : 'rgba(255,232,220,0.6)',
-        border: highlight ? '1px solid rgba(92,158,122,0.2)' : '1px solid rgba(255,255,255,0.3)',
-      }}
+    <div className="rounded-xl px-3.5 py-3"
+      style={{ background: 'var(--accent-light)' }}
     >
-      <span style={{ color: highlight ? '#5C9E7A' : '#A8928D' }}>{icon}</span>
-      <div>
-        <p className="text-[10px]" style={{ color: highlight ? '#5C9E7A' : '#A8928D' }}>{label}</p>
-        <p className="text-sm font-bold" style={{ color: highlight ? '#5C9E7A' : '#2C1A14' }}>{value}</p>
+      <div className="flex items-center gap-1.5 text-text-secondary mb-1">
+        <span className="text-foreground">{icon}</span>
+        <span className="text-[10px] font-medium">{label}</span>
       </div>
+      <p className="text-xl font-bold text-foreground tabular-nums leading-none">{value}</p>
+    </div>
+  );
+}
+
+// ── Metric (quiet secondary) ────────────────────────────────────────────────────
+
+function Metric({ label, value }: { label: string; value: number | string }) {
+  return (
+    <div className="flex-1 px-2 py-2.5 text-center border-r last:border-r-0"
+      style={{ borderColor: 'color-mix(in srgb, var(--accent) 8%, transparent)' }}
+    >
+      <p className="text-sm font-bold text-foreground tabular-nums leading-none">{value}</p>
+      <p className="text-[9px] text-text-secondary mt-1 leading-tight">{label}</p>
     </div>
   );
 }
