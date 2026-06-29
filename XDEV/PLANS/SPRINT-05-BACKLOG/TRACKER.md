@@ -104,8 +104,8 @@
 | `M-REV-06` | Revenue: distill інфо-блоку "ціноутворення" (весь PricingHero → тиха виноска) | P2 | ✅ | `impeccable (distill)` + `humanizer` + `mcp__a11y` | **Sonnet→Opus** | `3d7a11ef` |
 | `M-GROW-01` | Ріст: лояльність преміальний редизайн + стата | P1 | ✅ | `senior-backend` + `design-taste-frontend` + `create-migration` | **Sonnet→Opus** | `3cf3deea` |
 | `M-GROW-02` | Ріст: об'єднати реферали + партнери (HARD) | P1 | ✅ | `senior-backend` + `create-migration` + `security-review` (improve-codebase-architecture недоступний) | **Opus** | `31557c87` |
-| `M-MKT-01` | Маркетинг: сторіс у рівний грід | P1 | ⬜ | `impeccable (layout)` + `design-taste-frontend` | **Sonnet** | — |
-| `M-MKT-02` | Маркетинг: зменшити превью сторіс на 30% | P2 | ⬜ | `design-taste-frontend` | **Haiku** | — |
+| `M-MKT-01` | Маркетинг: сторіс у рівний грід ↩️ поглинуто M-MKT-04 (редизайн story-едітора — старе превʼю-розкладка більше не існує) | P1 | ↩️ | — | — | `e8837dba` |
+| `M-MKT-02` | Маркетинг: зменшити превью сторіс на 30% ↩️ поглинуто M-MKT-04 (превʼю тепер єдиний live-canvas) | P2 | ↩️ | — | — | `e8837dba` |
 | `M-MKT-03` | Маркетинг: додати кольорів до палітри | P2 | ✅ | `impeccable (colorize)` | **Sonnet** | `05e03119` |
 | `M-MKT-04` | Маркетинг: проф-едітор сторіс покроковий 🔄 (+ітерації founder: образи-пресети, авто-a11y, no-gradients) | P1 | ✅ | `spec-driven-workflow` → `senior-frontend` + `emilkowalski-motion` + `brainstorming` + `humanizer` + `a11y MCP` | **Opus** | `e8837dba` |
 | `M-MKT-05` | Маркетинг: розсилки — статистика inline | P1 | ⬜ | `senior-frontend` + `senior-backend` | **Sonnet** | — |
