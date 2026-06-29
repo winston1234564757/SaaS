@@ -271,13 +271,14 @@ export function StoryGenerator(props: StoryGeneratorProps = {}) {
 
   const contentBody = (
     <div>
-      {/* MOBILE */}
+      {/* MOBILE — controls on top, preview below */}
       <div className="lg:hidden flex flex-col">
-        <div className="sticky top-0 z-10 py-4 px-4" style={{ background: 'color-mix(in srgb, var(--background) 92%, transparent)', backdropFilter: 'blur(8px)' }}>
-          {previewBlock(mobilePreviewPanelRef, mobileScale)}
-        </div>
-        <div className="px-4 py-4">
+        <div className="px-4 pt-4 pb-2">
           {stepPanel}
+        </div>
+        <div className="px-4 pt-2 pb-8">
+          <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider mb-3 text-center">Попередній перегляд</p>
+          {previewBlock(mobilePreviewPanelRef, mobileScale)}
         </div>
       </div>
 

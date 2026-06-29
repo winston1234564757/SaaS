@@ -1,6 +1,9 @@
 'use client';
 
+import { useState } from 'react';
+import { BookOpen, ChevronRight, Check } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
+import { Sheet } from '@/components/ui/Sheet';
 import { INPUT_STYLE, TEXT_TEMPLATES } from '../storyConstants';
 import type { StoryEditorState, StorySetters, ServiceSlim, FlashDealRow, StarReview } from '../storyTypes';
 
@@ -25,29 +28,31 @@ export function StepContent({
   const { mode } = state;
   const textTemplates = mode === 'announcement' ? (TEXT_TEMPLATES.announcement ?? []) : [];
 
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [draftTemplate, setDraftTemplate] = useState<string | null>(null);
+
+  function applyTemplate() {
+    if (draftTemplate) set.setAnnoText(draftTemplate);
+    setSheetOpen(false);
+  }
+
   return (
     <div className="space-y-3">
       {mode === 'announcement' && (
         <>
           {textTemplates.length > 0 && (
-            <div>
-              <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Готові формулювання</label>
-              <div className="flex flex-col gap-1.5">
-                {textTemplates.map((t) => (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() => set.setAnnoText(t)}
-                    className="text-left text-xs leading-snug text-text-secondary bg-secondary/60 border border-border rounded-xl px-3 py-2.5 transition-colors duration-150 cursor-pointer active:scale-[0.99] hover:text-foreground line-clamp-2"
-                  >
-                    {t}
-                  </button>
-                ))}
-              </div>
-            </div>
+            <button
+              type="button"
+              onClick={() => { setDraftTemplate(state.annoText || null); setSheetOpen(true); }}
+              className="w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl bg-secondary/70 border border-border cursor-pointer active:scale-[0.99] transition-colors duration-150 text-left"
+            >
+              <BookOpen size={18} className="text-primary shrink-0" />
+              <span className="flex-1 text-sm font-semibold text-foreground">Обрати з готових варіантів</span>
+              <ChevronRight size={16} className="text-muted-foreground/60 shrink-0" />
+            </button>
           )}
           <div>
-            <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Текст публікації</label>
+            <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Введіть свій текст</label>
             <textarea value={state.annoText} onChange={e => set.setAnnoText(e.target.value)}
               rows={3} maxLength={200} placeholder="Ваш текст..."
               className="resize-none outline-none text-sm transition-colors duration-150" style={{ ...INPUT_STYLE, height: 'auto' }} />
@@ -55,6 +60,38 @@ export function StepContent({
               <span className="text-[10px] text-muted-foreground/60">{state.annoText.length}/200</span>
             </div>
           </div>
+
+          <Sheet open={sheetOpen} onOpenChange={setSheetOpen} title="Обрати варіант" variant="adaptive">
+            <div className="flex flex-col gap-2 pb-2">
+              {textTemplates.map((t) => {
+                const selected = draftTemplate === t;
+                return (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setDraftTemplate(t)}
+                    aria-pressed={selected}
+                    className={cn(
+                      'w-full text-left text-sm leading-snug rounded-2xl px-4 py-3.5 border transition-colors duration-150 cursor-pointer flex items-center gap-2',
+                      selected ? 'bg-accent-soft border-accent text-foreground' : 'bg-surface/60 border-border text-text-secondary hover:text-foreground',
+                    )}
+                  >
+                    <span className="flex-1">{t}</span>
+                    {selected && <Check size={16} strokeWidth={3} className="text-accent shrink-0" />}
+                  </button>
+                );
+              })}
+            </div>
+            <button
+              type="button"
+              onClick={applyTemplate}
+              disabled={!draftTemplate}
+              className="w-full mt-3 py-3.5 rounded-2xl font-semibold text-sm transition-[background-color,box-shadow] duration-200 disabled:opacity-50 cursor-pointer"
+              style={{ background: 'var(--btn-primary-bg)', color: 'var(--accent-on)' }}
+            >
+              Обрати
+            </button>
+          </Sheet>
         </>
       )}
 

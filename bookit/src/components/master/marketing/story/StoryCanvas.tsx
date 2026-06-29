@@ -3,25 +3,34 @@
 import React from 'react';
 import { Calendar, Zap, Star } from 'lucide-react';
 import type { CanvasProps } from './storyTypes';
-import { SANS, SERIF, formatUA } from './storyConstants';
+import { formatUA } from './storyConstants';
 
 interface ModeContentProps extends CanvasProps {
   plateStyle: React.CSSProperties;
   alignStyle: React.CSSProperties;
+  s: number; // textScale
 }
 
 function ModeContent({
-  mode, pal, plateStyle, alignStyle,
+  mode, pal, plateStyle, alignStyle, s,
+  headingFont, bodyFont, headingWeight, uppercase, letterSpacing,
+  textColor, mutedColor, textShadow,
   annoText, slotsDate, slots, slotsLoading, selectedServiceName,
   vacStart, vacEnd, selectedDeal,
   reviewText, reviewClientName,
   flashWinSvcName, flashWinDate, flashWinTime, flashWinDiscount,
   portfolioTitle, portfolioDesc,
 }: ModeContentProps) {
+  const headingCss: React.CSSProperties = {
+    fontFamily: headingFont, fontWeight: headingWeight, color: textColor,
+    letterSpacing, textTransform: uppercase ? 'uppercase' : 'none', margin: 0,
+  };
+  const bodyCss: React.CSSProperties = { fontFamily: bodyFont, color: mutedColor, margin: 0 };
+
   if (mode === 'announcement') {
     return (
       <div style={{ ...plateStyle, borderRadius: 20, padding: '20px 18px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <p style={{ fontFamily: SERIF, fontSize: 26, fontWeight: 700, lineHeight: 1.25, color: pal.text, margin: 0, whiteSpace: 'pre-wrap', ...alignStyle }}>
+        <p style={{ ...headingCss, fontSize: 26 * s, lineHeight: 1.25, whiteSpace: 'pre-wrap', ...alignStyle }}>
           {annoText || 'Ваш анонс тут'}
         </p>
       </div>
@@ -32,22 +41,22 @@ function ModeContent({
     const visibleSlots = slots.slice(0, 9);
     return (
       <div style={{ ...plateStyle, borderRadius: 20, padding: '18px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <p style={{ fontFamily: SANS, fontSize: 13, fontWeight: 600, color: pal.muted, margin: 0, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+        <p style={{ ...bodyCss, fontSize: 13 * s, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
           {slotsDate ? formatUA(slotsDate) : 'Вільні вікна'}
         </p>
         {slotsLoading ? (
-          <p style={{ fontFamily: SANS, fontSize: 15, color: pal.muted, margin: 0 }}>Завантаження...</p>
+          <p style={{ ...bodyCss, fontSize: 15 * s }}>Завантаження...</p>
         ) : visibleSlots.length === 0 ? (
-          <p style={{ fontFamily: SANS, fontSize: 15, color: pal.muted, margin: 0 }}>Немає вільних слотів</p>
+          <p style={{ ...bodyCss, fontSize: 15 * s }}>Немає вільних слотів</p>
         ) : (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-            {visibleSlots.map(s => (
-              <span key={s} style={{ background: pal.pill, color: pal.pillText, borderRadius: 10, padding: '6px 14px', fontFamily: SANS, fontSize: 15, fontWeight: 700 }}>{s}</span>
+            {visibleSlots.map(slot => (
+              <span key={slot} style={{ background: pal.pill, color: pal.pillText, borderRadius: 10, padding: '6px 14px', fontFamily: bodyFont, fontSize: 15 * s, fontWeight: 700 }}>{slot}</span>
             ))}
           </div>
         )}
         {selectedServiceName && (
-          <p style={{ fontFamily: SANS, fontSize: 12, color: pal.muted, margin: 0 }}>{selectedServiceName}</p>
+          <p style={{ ...bodyCss, fontSize: 12 * s }}>{selectedServiceName}</p>
         )}
       </div>
     );
@@ -57,17 +66,13 @@ function ModeContent({
     return (
       <div style={{ ...plateStyle, borderRadius: 20, padding: '20px 18px', display: 'flex', flexDirection: 'column', gap: 10 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Calendar size={20} strokeWidth={1.5} color={pal.muted} />
-          <p style={{ fontFamily: SANS, fontSize: 13, fontWeight: 600, color: pal.muted, margin: 0, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Відпустка</p>
+          <Calendar size={20} strokeWidth={1.5} color={mutedColor} />
+          <p style={{ ...bodyCss, fontSize: 13 * s, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Відпустка</p>
         </div>
-        {vacStart && vacEnd ? (
-          <p style={{ fontFamily: SERIF, fontSize: 22, fontWeight: 700, color: pal.text, margin: 0 }}>
-            {formatUA(vacStart)} — {formatUA(vacEnd)}
-          </p>
-        ) : (
-          <p style={{ fontFamily: SERIF, fontSize: 22, fontWeight: 700, color: pal.text, margin: 0 }}>Оберіть дати</p>
-        )}
-        <p style={{ fontFamily: SANS, fontSize: 13, color: pal.muted, margin: 0 }}>Запис відновлюється після повернення</p>
+        <p style={{ ...headingCss, fontSize: 22 * s }}>
+          {vacStart && vacEnd ? `${formatUA(vacStart)} — ${formatUA(vacEnd)}` : 'Оберіть дати'}
+        </p>
+        <p style={{ ...bodyCss, fontSize: 13 * s }}>Запис відновлюється після повернення</p>
       </div>
     );
   }
@@ -81,14 +86,14 @@ function ModeContent({
       <div style={{ ...plateStyle, borderRadius: 20, padding: '20px 18px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <Zap size={18} strokeWidth={1.5} color={pal.dot} />
-          <p style={{ fontFamily: SANS, fontSize: 13, fontWeight: 700, color: pal.dot, margin: 0, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Flash Deal</p>
+          <p style={{ fontFamily: bodyFont, fontSize: 13 * s, fontWeight: 700, color: pal.dot, margin: 0, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Flash Deal</p>
         </div>
-        <p style={{ fontFamily: SERIF, fontSize: 22, fontWeight: 700, color: pal.text, margin: 0 }}>{svcName}</p>
+        <p style={{ ...headingCss, fontSize: 22 * s }}>{svcName}</p>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
-          <span style={{ fontFamily: SANS, fontSize: 28, fontWeight: 800, color: pal.dot }}>{discPrice} грн</span>
-          <span style={{ fontFamily: SANS, fontSize: 15, color: pal.muted, textDecoration: 'line-through' }}>{origPrice} грн</span>
+          <span style={{ fontFamily: bodyFont, fontSize: 28 * s, fontWeight: 800, color: pal.dot }}>{discPrice} грн</span>
+          <span style={{ fontFamily: bodyFont, fontSize: 15 * s, color: mutedColor, textDecoration: 'line-through' }}>{origPrice} грн</span>
         </div>
-        <div style={{ background: pal.dot, color: '#fff', borderRadius: 8, padding: '4px 12px', alignSelf: 'flex-start', fontFamily: SANS, fontSize: 13, fontWeight: 700 }}>-{discountPct}%</div>
+        <div style={{ background: pal.dot, color: '#fff', borderRadius: 8, padding: '4px 12px', alignSelf: 'flex-start', fontFamily: bodyFont, fontSize: 13 * s, fontWeight: 700 }}>-{discountPct}%</div>
       </div>
     );
   }
@@ -97,12 +102,12 @@ function ModeContent({
     return (
       <div style={{ ...plateStyle, borderRadius: 20, padding: '20px 18px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <div style={{ display: 'flex', gap: 3 }}>
-          {[1,2,3,4,5].map(i => <Star key={i} size={16} strokeWidth={0} fill={pal.dot} color={pal.dot} />)}
+          {[1, 2, 3, 4, 5].map(i => <Star key={i} size={16} strokeWidth={0} fill={pal.dot} color={pal.dot} />)}
         </div>
-        <p style={{ fontFamily: SERIF, fontSize: 19, fontWeight: 600, lineHeight: 1.4, color: pal.text, margin: 0, fontStyle: 'italic' }}>
+        <p style={{ ...headingCss, fontSize: 19 * s, fontWeight: 600, lineHeight: 1.4, fontStyle: 'italic' }}>
           {reviewText || 'Чудовий майстер! Буду повертатися знову.'}
         </p>
-        <p style={{ fontFamily: SANS, fontSize: 13, color: pal.muted, margin: 0 }}>— {reviewClientName || 'Клієнт'}</p>
+        <p style={{ ...bodyCss, fontSize: 13 * s }}>— {reviewClientName || 'Клієнт'}</p>
       </div>
     );
   }
@@ -112,13 +117,13 @@ function ModeContent({
     return (
       <div style={{ ...plateStyle, borderRadius: 20, padding: '20px 18px', display: 'flex', flexDirection: 'column', gap: 10 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ background: pal.dot, color: '#fff', borderRadius: 6, padding: '2px 8px', fontFamily: SANS, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' }}>
+          <span style={{ background: pal.dot, color: '#fff', borderRadius: 6, padding: '2px 8px', fontFamily: bodyFont, fontSize: 11 * s, fontWeight: 700, textTransform: 'uppercase' }}>
             {discStr ? `Знижка${discStr}` : 'Гаряче вікно'}
           </span>
         </div>
-        <p style={{ fontFamily: SERIF, fontSize: 22, fontWeight: 700, color: pal.text, margin: 0 }}>{flashWinSvcName || 'Послуга'}</p>
+        <p style={{ ...headingCss, fontSize: 22 * s }}>{flashWinSvcName || 'Послуга'}</p>
         {flashWinDate && flashWinTime && (
-          <p style={{ fontFamily: SANS, fontSize: 15, fontWeight: 600, color: pal.muted, margin: 0 }}>
+          <p style={{ ...bodyCss, fontSize: 15 * s, fontWeight: 600 }}>
             {formatUA(flashWinDate)} о {flashWinTime}
           </p>
         )}
@@ -129,12 +134,8 @@ function ModeContent({
   if (mode === 'portfolio_item') {
     return (
       <div style={{ ...plateStyle, borderRadius: 20, padding: '20px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {portfolioTitle && (
-          <p style={{ fontFamily: SERIF, fontSize: 22, fontWeight: 700, color: pal.text, margin: 0 }}>{portfolioTitle}</p>
-        )}
-        {portfolioDesc && (
-          <p style={{ fontFamily: SANS, fontSize: 14, color: pal.muted, margin: 0, lineHeight: 1.5 }}>{portfolioDesc}</p>
-        )}
+        {portfolioTitle && <p style={{ ...headingCss, fontSize: 22 * s }}>{portfolioTitle}</p>}
+        {portfolioDesc && <p style={{ ...bodyCss, fontSize: 14 * s, lineHeight: 1.5 }}>{portfolioDesc}</p>}
       </div>
     );
   }
@@ -144,20 +145,22 @@ function ModeContent({
 
 function StoryCanvasInner(props: CanvasProps) {
   const {
-    pal, mode, showAvatar, avatarBlob, displayName, slug,
-    platePos, textAlign, transparency,
-    bgPhotoUrl, bgGradientCss, isExporting,
-    showSticker = true,
-    ctaText = 'Записатися онлайн',
+    pal, showAvatar, avatarBlob, displayName, slug,
+    platePos, align, treatment, textScale,
+    headingFont, textColor, mutedColor, plateBg, textShadow,
+    bgPhotoUrl, bgGradientCss, showLinkZone, isExporting,
   } = props;
 
-  const plateAlpha = Math.round((1 - transparency / 100) * 255).toString(16).padStart(2, '0');
-  const plateStyle: React.CSSProperties = {
-    background: `${pal.pill}${plateAlpha}`,
-    backdropFilter: transparency > 0 ? `blur(${Math.round(transparency / 5)}px)` : undefined,
-  };
+  const s = textScale;
 
-  const alignStyle: React.CSSProperties = { textAlign };
+  const plateStyle: React.CSSProperties =
+    treatment === 'plain'
+      ? { background: 'transparent', textShadow }
+      : treatment === 'glass'
+        ? { background: plateBg, backdropFilter: 'blur(8px)' }
+        : { background: plateBg };
+
+  const alignStyle: React.CSSProperties = { textAlign: align };
 
   const plateJustify =
     platePos === 'top' ? 'flex-start' :
@@ -189,33 +192,41 @@ function StoryCanvasInner(props: CanvasProps) {
       )}
 
       <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: plateJustify, padding: '28px 20px', gap: 16 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          {showAvatar && avatarBlob && (
-            <img
-              src={avatarBlob}
-              alt=""
-              style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
-              crossOrigin="anonymous"
-            />
+        {showAvatar && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            {avatarBlob && (
+              <img
+                src={avatarBlob}
+                alt=""
+                style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+                crossOrigin="anonymous"
+              />
+            )}
+            <div style={{ textShadow }}>
+              <p style={{ fontFamily: headingFont, fontSize: 14, fontWeight: 700, color: textColor, margin: 0 }}>{displayName}</p>
+              <p style={{ fontFamily: 'var(--font-geist-sans, system-ui, sans-serif)', fontSize: 11, color: mutedColor, margin: 0 }}>bookit.com.ua/{slug}</p>
+            </div>
+          </div>
+        )}
+
+        <ModeContent {...props} plateStyle={plateStyle} alignStyle={alignStyle} s={s} />
+      </div>
+
+      <div style={{ position: 'absolute', bottom: 14, right: 18, display: 'flex', alignItems: 'center', gap: 4, textShadow }}>
+        <span style={{ fontFamily: 'var(--font-geist-sans, system-ui, sans-serif)', fontSize: 10, fontWeight: 700, color: mutedColor, letterSpacing: '0.06em', textTransform: 'uppercase' }}>bookit.com.ua</span>
+      </div>
+
+      {showLinkZone && (
+        <div style={{
+          position: 'absolute', bottom: 64, left: 28, right: 28, height: 54,
+          border: `1.5px dashed ${textColor}`, borderRadius: 14, opacity: 0.4,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          {!isExporting && (
+            <span style={{ fontFamily: 'var(--font-geist-sans, system-ui, sans-serif)', fontSize: 11, fontWeight: 600, color: textColor }}>
+              Місце для кнопки
+            </span>
           )}
-          <div>
-            <p style={{ fontFamily: SANS, fontSize: 14, fontWeight: 700, color: pal.text, margin: 0 }}>{displayName}</p>
-            <p style={{ fontFamily: SANS, fontSize: 11, color: pal.muted, margin: 0 }}>bookit.com.ua/{slug}</p>
-          </div>
-        </div>
-
-        <ModeContent {...props} plateStyle={plateStyle} alignStyle={alignStyle} />
-      </div>
-
-      <div style={{ position: 'absolute', bottom: 14, right: 18, display: 'flex', alignItems: 'center', gap: 4 }}>
-        <span style={{ fontFamily: SANS, fontSize: 10, fontWeight: 700, color: pal.muted, letterSpacing: '0.06em', textTransform: 'uppercase' }}>bookit.com.ua</span>
-      </div>
-
-      {showSticker && (
-        <div style={{ position: 'absolute', bottom: 14, left: 18 }}>
-          <div style={{ background: pal.sticker, color: pal.stickerText, borderRadius: 10, padding: '5px 12px', fontFamily: SANS, fontSize: 11, fontWeight: 700 }}>
-            {ctaText || 'Записатися онлайн'}
-          </div>
         </div>
       )}
     </div>

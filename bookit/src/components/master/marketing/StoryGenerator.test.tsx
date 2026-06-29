@@ -28,6 +28,11 @@ beforeEach(() => {
   (globalThis as { ResizeObserver?: unknown }).ResizeObserver = class {
     observe() {} disconnect() {} unobserve() {}
   };
+  window.matchMedia = window.matchMedia || ((q: string) => ({
+    matches: false, media: q, onchange: null,
+    addListener: vi.fn(), removeListener: vi.fn(),
+    addEventListener: vi.fn(), removeEventListener: vi.fn(), dispatchEvent: vi.fn(),
+  } as unknown as MediaQueryList));
 });
 
 it('стартує на кроці Тип і йде далі до Контенту', () => {

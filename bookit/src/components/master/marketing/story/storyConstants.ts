@@ -1,6 +1,6 @@
 import type { CSSProperties, ComponentType } from 'react';
 import { Megaphone, Clock, Calendar, Zap, Star, Flame } from 'lucide-react';
-import type { Mode, Palette, UpgradeCopy, GridCfg } from './storyTypes';
+import type { Mode, Palette, UpgradeCopy, GridCfg, StylePreset, StyleId, TextSize } from './storyTypes';
 
 export const PALETTES: Palette[] = [
   { id: 'nude', label: 'Nude', bg: '#F7F2EE', text: '#2E2925', muted: '#B09A8A', pill: '#EDE5DC', pillText: '#2E2925', sticker: '#FFFFFF', stickerText: '#2E2925', brand: '#C9B5A5', dot: '#8A6E5A' },
@@ -85,6 +85,61 @@ export const DOW_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as con
 
 export const SANS = "var(--font-geist-sans, 'DM Sans'), system-ui, sans-serif";
 export const SERIF = "var(--font-cormorant, 'Cormorant Garamond'), Georgia, serif";
+export const SCRIPT = "var(--font-great-vibes, 'Great Vibes'), cursive";
+
+// ── Стиль-образи (M-MKT-04 rework) ──────────────────────────────────────────
+// Кожен образ = скоординований бандл типографіки + композиції + обробки тексту.
+export const STYLE_PRESETS: StylePreset[] = [
+  { id: 'minimal', label: 'Мінімал',    headingFont: SANS,   bodyFont: SANS, treatment: 'plain', headingWeight: 700, align: 'left',   platePos: 'top',    uppercase: false, letterSpacing: '-0.01em' },
+  { id: 'elegant', label: 'Елегант',    headingFont: SERIF,  bodyFont: SANS, treatment: 'plate', headingWeight: 500, align: 'center', platePos: 'center', uppercase: false, letterSpacing: '0' },
+  { id: 'bold',    label: 'Сміливий',   headingFont: SANS,   bodyFont: SANS, treatment: 'plate', headingWeight: 800, align: 'center', platePos: 'bottom', uppercase: true,  letterSpacing: '0.02em' },
+  { id: 'gloss',   label: 'Глянець',    headingFont: SERIF,  bodyFont: SANS, treatment: 'glass', headingWeight: 600, align: 'center', platePos: 'center', uppercase: false, letterSpacing: '0' },
+  { id: 'script',  label: 'Рукописний', headingFont: SCRIPT, bodyFont: SANS, treatment: 'plain', headingWeight: 400, align: 'center', platePos: 'center', uppercase: false, letterSpacing: '0' },
+];
+
+export function presetById(id: StyleId): StylePreset {
+  return STYLE_PRESETS.find(p => p.id === id) ?? STYLE_PRESETS[0];
+}
+
+export const TEXT_SCALES: Record<TextSize, number> = { S: 0.85, M: 1, L: 1.18 };
+
+// ── Авто-тема тексту: світлий на темному фоні, темний на світлому ────────────
+function hexLuminance(hex: string): number {
+  const m = hex.replace('#', '');
+  const full = m.length === 3 ? m.split('').map(c => c + c).join('') : m;
+  const r = parseInt(full.slice(0, 2), 16) / 255;
+  const g = parseInt(full.slice(2, 4), 16) / 255;
+  const b = parseInt(full.slice(4, 6), 16) / 255;
+  const lin = (c: number) => (c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
+  return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+}
+
+function gradientAvgLuminance(css: string): number {
+  const hexes = css.match(/#[0-9A-Fa-f]{3,6}/g) ?? [];
+  if (hexes.length === 0) return 1;
+  return hexes.reduce((sum, h) => sum + hexLuminance(h), 0) / hexes.length;
+}
+
+export interface TextTheme {
+  isDark: boolean;       // фон темний → текст світлий
+  textColor: string;
+  mutedColor: string;
+  plateBg: string;
+  shadow: string;
+}
+
+/** Визначає тему тексту за фоном. Фото → припускаємо темний (світлий текст + тінь) — стандарт IG-оверлеїв. */
+export function resolveTextTheme(args: { bgPhotoUrl: string | null; bgGradientCss: string | null; palBg: string }): TextTheme {
+  const { bgPhotoUrl, bgGradientCss, palBg } = args;
+  let isDark: boolean;
+  if (bgPhotoUrl) isDark = true;
+  else if (bgGradientCss) isDark = gradientAvgLuminance(bgGradientCss) < 0.5;
+  else isDark = hexLuminance(palBg) < 0.5;
+
+  return isDark
+    ? { isDark, textColor: '#FFFFFF', mutedColor: 'rgba(255,255,255,0.78)', plateBg: 'rgba(0,0,0,0.34)', shadow: '0 1px 10px rgba(0,0,0,0.45)' }
+    : { isDark, textColor: '#161616', mutedColor: 'rgba(22,22,22,0.62)', plateBg: 'rgba(255,255,255,0.62)', shadow: '0 1px 10px rgba(255,255,255,0.55)' };
+}
 
 export const INPUT_STYLE: CSSProperties = {
   width: '100%', padding: '10px 14px', borderRadius: 12,

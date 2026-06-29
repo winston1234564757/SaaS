@@ -11,6 +11,22 @@ export type Mode =
 
 export type StepId = 'type' | 'content' | 'look' | 'style' | 'export';
 
+export type StyleId = 'minimal' | 'elegant' | 'bold' | 'gloss' | 'script';
+export type TextSize = 'S' | 'M' | 'L';
+
+export interface StylePreset {
+  id: StyleId;
+  label: string;
+  headingFont: string;
+  bodyFont: string;
+  treatment: 'plain' | 'plate' | 'glass';
+  headingWeight: number;
+  align: 'left' | 'center' | 'right';
+  platePos: 'top' | 'center' | 'bottom';
+  uppercase: boolean;
+  letterSpacing: string;
+}
+
 export interface StepCompletion {
   mode: Mode;
   annoText: string;
@@ -103,11 +119,23 @@ export interface CanvasProps {
   bgGradientCss?: string | null;
   portfolioTitle: string | null;
   portfolioDesc: string | null;
+  // style preset (resolved)
+  headingFont: string;
+  bodyFont: string;
+  treatment: 'plain' | 'plate' | 'glass';
+  headingWeight: number;
+  align: 'left' | 'center' | 'right';
   platePos: 'top' | 'center' | 'bottom';
-  textAlign: 'left' | 'center' | 'right';
-  transparency: number;
-  showSticker?: boolean;
-  ctaText?: string;
+  uppercase: boolean;
+  letterSpacing: string;
+  textScale: number;
+  // auto text theme (resolved from background)
+  textColor: string;
+  mutedColor: string;
+  plateBg: string;
+  textShadow: string;
+  // frame elements
+  showLinkZone: boolean;
   isExporting?: boolean;
 }
 
@@ -115,8 +143,7 @@ export interface StoryEditorState {
   palIdx: number;
   mode: Mode;
   showAvatar: boolean;
-  showSticker: boolean;
-  ctaText: string;
+  showLinkZone: boolean;
   annoText: string;
   slotsDate: string | null;
   selectedSvcId: string | null;
@@ -128,9 +155,8 @@ export interface StoryEditorState {
   flashWinDate: string | null;
   flashWinTime: string | null;
   flashWinDiscount: number;
-  platePos: 'top' | 'center' | 'bottom';
-  textAlign: 'left' | 'center' | 'right';
-  transparency: number;
+  styleId: StyleId;
+  textSize: TextSize;
   customBgPhoto: string | null;
   selectedBgPhotoId: string | null;
   selectedGradientId: string | null;
@@ -141,8 +167,9 @@ export interface StorySetters {
   setPalIdx(v: number): void;
   setMode(v: Mode): void;
   setShowAvatar(updater: boolean | ((p: boolean) => boolean)): void;
-  setShowSticker(updater: boolean | ((p: boolean) => boolean)): void;
-  setCtaText(v: string): void;
+  setShowLinkZone(updater: boolean | ((p: boolean) => boolean)): void;
+  setStyleId(v: StyleId): void;
+  setTextSize(v: TextSize): void;
   setAnnoText(v: string): void;
   setSlotsDate(v: string | null): void;
   setSelectedSvcId(v: string | null): void;
@@ -154,9 +181,6 @@ export interface StorySetters {
   setFlashWinDate(v: string | null): void;
   setFlashWinTime(v: string | null): void;
   setFlashWinDiscount(v: number): void;
-  setPlatePos(v: 'top' | 'center' | 'bottom'): void;
-  setTextAlign(v: 'left' | 'center' | 'right'): void;
-  setTransparency(v: number): void;
   setCustomBgPhoto(v: string | null): void;
   setSelectedBgPhotoId(v: string | null): void;
   /** Вибір фону взаємовиключний — кожен із цих сеттерів чистить інші джерела фону */

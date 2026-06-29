@@ -1,8 +1,10 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { INPUT_STYLE } from '../storyConstants';
-import type { StoryEditorState, StorySetters } from '../storyTypes';
+import { Check } from 'lucide-react';
+import { cn } from '@/lib/utils/cn';
+import { STYLE_PRESETS } from '../storyConstants';
+import type { StoryEditorState, StorySetters, TextSize } from '../storyTypes';
 
 interface StepStyleProps {
   state: StoryEditorState;
@@ -10,82 +12,105 @@ interface StepStyleProps {
 }
 
 const TOGGLE_SPRING = { type: 'spring', stiffness: 500, damping: 30 } as const;
+const SIZES: { id: TextSize; label: string }[] = [
+  { id: 'S', label: 'Малий' },
+  { id: 'M', label: 'Середній' },
+  { id: 'L', label: 'Великий' },
+];
 
 export function StepStyle({ state, set }: StepStyleProps) {
-  const { platePos, textAlign, transparency, showAvatar, showSticker, ctaText } = state;
+  const { styleId, textSize, showAvatar, showLinkZone } = state;
 
   return (
-    <div className="space-y-3">
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className="text-[10px] text-muted-foreground block mb-1.5 font-semibold uppercase tracking-wide">Позиція</label>
-          <div className="flex bg-secondary/40 rounded-xl p-0.5 border border-border">
-            {(['top', 'center', 'bottom'] as const).map(pos => (
-              <button key={pos} type="button" aria-pressed={platePos === pos} onClick={() => set.setPlatePos(pos)}
-                className={`flex-1 py-1.5 text-[10px] font-bold rounded-lg transition-colors duration-150 active:scale-[0.88] cursor-pointer ${platePos === pos ? 'bg-surface shadow-sm text-foreground' : 'text-muted-foreground/60 hover:text-muted-foreground'}`}>
-                {pos === 'top' ? 'Вгору' : pos === 'center' ? 'Центр' : 'Низ'}
-              </button>
-            ))}
-          </div>
-        </div>
-        <div>
-          <label className="text-[10px] text-muted-foreground block mb-1.5 font-semibold uppercase tracking-wide">Текст</label>
-          <div className="flex bg-secondary/40 rounded-xl p-0.5 border border-border">
-            {(['left', 'center', 'right'] as const).map(a => (
-              <button key={a} type="button" aria-pressed={textAlign === a} onClick={() => set.setTextAlign(a)}
-                className={`flex-1 py-1.5 text-[10px] font-bold rounded-lg transition-colors duration-150 active:scale-[0.88] cursor-pointer ${textAlign === a ? 'bg-surface shadow-sm text-foreground' : 'text-muted-foreground/60 hover:text-muted-foreground'}`}>
-                {a === 'left' ? 'Ліво' : a === 'center' ? 'Центр' : 'Право'}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
+    <div className="space-y-5">
+      {/* Образи */}
       <div>
-        <div className="flex justify-between items-center mb-1.5">
-          <label className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wide">Скло</label>
-          <span className="text-[10px] font-bold text-primary">{transparency}%</span>
+        <p className="text-xs font-semibold text-muted-foreground mb-2">Образ</p>
+        <div className="grid grid-cols-2 gap-2.5">
+          {STYLE_PRESETS.map(p => {
+            const active = p.id === styleId;
+            return (
+              <button
+                key={p.id}
+                type="button"
+                aria-pressed={active}
+                onClick={() => set.setStyleId(p.id)}
+                className={cn(
+                  'relative flex flex-col items-start justify-between h-20 px-3.5 py-3 rounded-2xl text-left transition-colors duration-150 cursor-pointer active:scale-[0.97] overflow-hidden',
+                  active
+                    ? 'bg-[var(--btn-primary-bg)] shadow-[0_4px_12px_color-mix(in_srgb,var(--accent)_25%,transparent)]'
+                    : 'bg-secondary/70 border border-border',
+                )}
+              >
+                <span
+                  className="text-lg leading-tight"
+                  style={{
+                    fontFamily: p.headingFont,
+                    fontWeight: p.headingWeight,
+                    letterSpacing: p.letterSpacing,
+                    textTransform: p.uppercase ? 'uppercase' : 'none',
+                    color: active ? 'var(--accent-on)' : 'var(--text-primary)',
+                  }}
+                >
+                  Аа
+                </span>
+                <span className={cn('text-xs font-semibold', active ? 'text-accent-on' : 'text-text-secondary')}>
+                  {p.label}
+                </span>
+                {active && (
+                  <span className="absolute top-2 right-2">
+                    <Check size={14} strokeWidth={3} style={{ color: 'var(--accent-on)' }} />
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
-        <input type="range" min={0} max={100} step={1} value={transparency}
-          onChange={e => set.setTransparency(Number(e.target.value))}
-          aria-label="Прозорість скла" className="w-full cursor-pointer h-1.5 bg-secondary/50 rounded-lg appearance-none" style={{ accentColor: 'var(--accent)' }} />
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <button type="button" role="switch" aria-checked={showAvatar}
-          onClick={() => set.setShowAvatar(v => !v)}
-          className="flex items-center justify-between px-3 py-2.5 rounded-xl bg-secondary/70 border border-border cursor-pointer active:scale-[0.97] transition-colors duration-150">
-          <div className="min-w-0 text-left">
-            <p className="text-xs font-semibold text-foreground">Показувати фото</p>
-            <p className="text-[10px] text-muted-foreground/60">Аватар та ім&apos;я</p>
-          </div>
-          <span className={`relative ml-2 w-11 h-6 rounded-full shrink-0 transition-colors duration-200 ${showAvatar ? 'bg-accent' : 'bg-muted-foreground/25'}`}>
-            <motion.div animate={{ x: showAvatar ? 26 : 2 }} transition={TOGGLE_SPRING} className="absolute top-1 size-4 rounded-full bg-white shadow-sm" />
-          </span>
-        </button>
-        <button type="button" role="switch" aria-checked={showSticker}
-          onClick={() => set.setShowSticker(v => !v)}
-          className="flex items-center justify-between px-3 py-2.5 rounded-xl bg-secondary/70 border border-border cursor-pointer active:scale-[0.97] transition-colors duration-150">
-          <div className="min-w-0 text-left">
-            <p className="text-xs font-semibold text-foreground">Кнопка запису</p>
-            <p className="text-[10px] text-muted-foreground/60">Стікер внизу сторіс</p>
-          </div>
-          <span className={`relative ml-2 w-11 h-6 rounded-full shrink-0 transition-colors duration-200 ${showSticker ? 'bg-accent' : 'bg-muted-foreground/25'}`}>
-            <motion.div animate={{ x: showSticker ? 26 : 2 }} transition={TOGGLE_SPRING} className="absolute top-1 size-4 rounded-full bg-white shadow-sm" />
-          </span>
-        </button>
+      {/* Розмір тексту */}
+      <div>
+        <p className="text-xs font-semibold text-muted-foreground mb-2">Розмір тексту</p>
+        <div className="flex bg-secondary/40 rounded-xl p-0.5 border border-border">
+          {SIZES.map(sz => (
+            <button key={sz.id} type="button" aria-pressed={textSize === sz.id} onClick={() => set.setTextSize(sz.id)}
+              className={cn('flex-1 py-2 text-xs font-bold rounded-lg transition-colors duration-150 active:scale-[0.95] cursor-pointer',
+                textSize === sz.id ? 'bg-surface shadow-sm text-foreground' : 'text-muted-foreground/60 hover:text-muted-foreground')}>
+              {sz.label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {showSticker && (
-        <div>
-          <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Текст кнопки</label>
-          <div className="flex gap-2 items-center">
-            <input value={ctaText} onChange={e => set.setCtaText(e.target.value.slice(0, 28))} maxLength={28}
-              placeholder="Записатися онлайн" className="flex-1 outline-none text-sm" style={INPUT_STYLE} />
-            <span className="text-[10px] text-muted-foreground/60 shrink-0">{ctaText.length}/28</span>
-          </div>
+      {/* Елементи кадру */}
+      <div>
+        <p className="text-xs font-semibold text-muted-foreground mb-2">Елементи кадру</p>
+        <div className="space-y-2.5">
+          <button type="button" role="switch" aria-checked={showAvatar}
+            onClick={() => set.setShowAvatar(v => !v)}
+            className="w-full flex items-center justify-between px-3.5 py-3 rounded-xl bg-secondary/70 border border-border cursor-pointer active:scale-[0.99] transition-colors duration-150">
+            <div className="min-w-0 text-left">
+              <p className="text-sm font-semibold text-foreground">Аватар та ім&apos;я</p>
+              <p className="text-[11px] text-muted-foreground/60">Фото й назва зверху сторіс</p>
+            </div>
+            <span className={`relative ml-2 w-11 h-6 rounded-full shrink-0 transition-colors duration-200 ${showAvatar ? 'bg-accent' : 'bg-muted-foreground/25'}`}>
+              <motion.div animate={{ x: showAvatar ? 26 : 2 }} transition={TOGGLE_SPRING} className="absolute top-1 size-4 rounded-full bg-white shadow-sm" />
+            </span>
+          </button>
+
+          <button type="button" role="switch" aria-checked={showLinkZone}
+            onClick={() => set.setShowLinkZone(v => !v)}
+            className="w-full flex items-center justify-between px-3.5 py-3 rounded-xl bg-secondary/70 border border-border cursor-pointer active:scale-[0.99] transition-colors duration-150">
+            <div className="min-w-0 text-left">
+              <p className="text-sm font-semibold text-foreground">Місце для посилання</p>
+              <p className="text-[11px] text-muted-foreground/60">Постав туди кнопку запису просто в Instagram</p>
+            </div>
+            <span className={`relative ml-2 w-11 h-6 rounded-full shrink-0 transition-colors duration-200 ${showLinkZone ? 'bg-accent' : 'bg-muted-foreground/25'}`}>
+              <motion.div animate={{ x: showLinkZone ? 26 : 2 }} transition={TOGGLE_SPRING} className="absolute top-1 size-4 rounded-full bg-white shadow-sm" />
+            </span>
+          </button>
         </div>
-      )}
+      </div>
     </div>
   );
 }

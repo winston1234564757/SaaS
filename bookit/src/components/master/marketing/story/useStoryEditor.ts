@@ -10,10 +10,11 @@ import type { WorkingHoursConfig, PortfolioItemFull } from '@/types/database';
 import { useServices, useActiveFlashDeals, useStarReviews } from './useStoryData';
 import {
   PALETTES, PREMIUM_MODES, MODE_UPGRADE_COPY, VALID_MODES, STOCK_PHOTOS, gradientById,
+  presetById, TEXT_SCALES, resolveTextTheme,
 } from './storyConstants';
 import { STEPS, STEP_INDEX, isStepComplete } from './storySteps';
 import type {
-  Mode, StepId, StepCompletion, CanvasProps, StoryEditorState, StorySetters,
+  Mode, StepId, StyleId, TextSize, StepCompletion, CanvasProps, StoryEditorState, StorySetters,
   StoryGeneratorProps, UpgradeCopy, ServiceSlim, FlashDealRow, StarReview,
 } from './storyTypes';
 
@@ -64,8 +65,9 @@ export function useStoryEditor(props: StoryGeneratorProps): UseStoryEditor {
   const [palIdx, setPalIdx] = useState(0);
   const [mode, setMode] = useState<Mode>(startMode);
   const [showAvatar, setShowAvatar] = useState(true);
-  const [showSticker, setShowSticker] = useState(true);
-  const [ctaText, setCtaText] = useState('Записатися онлайн');
+  const [showLinkZone, setShowLinkZone] = useState(true);
+  const [styleId, setStyleId] = useState<StyleId>('elegant');
+  const [textSize, setTextSize] = useState<TextSize>('M');
 
   const [annoText, setAnnoText] = useState('Тепер до мене можна записатися онлайн 24/7.');
   const [slotsDate, setSlotsDate] = useState<string | null>(null);
@@ -78,10 +80,6 @@ export function useStoryEditor(props: StoryGeneratorProps): UseStoryEditor {
   const [flashWinDate, setFlashWinDate] = useState<string | null>(null);
   const [flashWinTime, setFlashWinTime] = useState<string | null>(null);
   const [flashWinDiscount, setFlashWinDiscount] = useState(20);
-
-  const [platePos, setPlatePos] = useState<'top' | 'center' | 'bottom'>('center');
-  const [textAlign, setTextAlign] = useState<'left' | 'center' | 'right'>('center');
-  const [transparency, setTransparency] = useState(38);
 
   const [customBgPhoto, setCustomBgPhoto] = useState<string | null>(null);
   const [selectedGradientId, setSelectedGradientId] = useState<string | null>(null);
@@ -221,6 +219,11 @@ export function useStoryEditor(props: StoryGeneratorProps): UseStoryEditor {
   const activeReviewId = selectedReviewId ?? starReviews[0]?.id ?? null;
   const selectedReview = starReviews.find(r => r.id === activeReviewId) ?? null;
 
+  // ── style preset + auto text theme ──
+  const preset = presetById(styleId);
+  const textTheme = resolveTextTheme({ bgPhotoUrl, bgGradientCss, palBg: pal.bg });
+  const textScale = TEXT_SCALES[textSize];
+
   // ── canvas props ──
   const canvasSharedProps = useMemo<CanvasProps>(() => ({
     pal, mode, showAvatar, avatarBlob, displayName, slug,
@@ -234,15 +237,22 @@ export function useStoryEditor(props: StoryGeneratorProps): UseStoryEditor {
     bgPhotoUrl, bgGradientCss,
     portfolioTitle: customBgPhoto ? 'Ваше фото' : (portfolioItems.find(i => i.id === selectedBgPhotoId)?.title ?? null),
     portfolioDesc: customBgPhoto ? null : (portfolioItems.find(i => i.id === selectedBgPhotoId)?.description ?? null),
-    platePos, textAlign, transparency,
-    showSticker, ctaText,
+    // preset
+    headingFont: preset.headingFont, bodyFont: preset.bodyFont, treatment: preset.treatment,
+    headingWeight: preset.headingWeight, align: preset.align, platePos: preset.platePos,
+    uppercase: preset.uppercase, letterSpacing: preset.letterSpacing, textScale,
+    // auto theme
+    textColor: textTheme.textColor, mutedColor: textTheme.mutedColor,
+    plateBg: textTheme.plateBg, textShadow: textTheme.shadow,
+    // frame
+    showLinkZone,
   }), [
     pal, mode, showAvatar, avatarBlob, displayName, slug,
     annoText, slotsDate, slots, slotsLoading,
     selectedSvc, vacStart, vacEnd, selectedDeal,
     selectedReview, flashWinSvc, flashWinDate, flashWinTime, flashWinDiscount,
     bgPhotoUrl, bgGradientCss, customBgPhoto, portfolioItems, selectedBgPhotoId,
-    platePos, textAlign, transparency, showSticker, ctaText,
+    preset, textTheme, textScale, showLinkZone,
   ]);
 
   // ── step completeness (advisory) ──
@@ -256,18 +266,18 @@ export function useStoryEditor(props: StoryGeneratorProps): UseStoryEditor {
 
   // ── state snapshot ──
   const state = useMemo<StoryEditorState>(() => ({
-    palIdx, mode, showAvatar, showSticker, ctaText, annoText, slotsDate,
+    palIdx, mode, showAvatar, showLinkZone, annoText, slotsDate,
     selectedSvcId: activeSvcId,
     vacStart, vacEnd, dealIdx,
     selectedReviewId: activeReviewId,
     flashWinSvcId: activeFlashWinSvcId,
     flashWinDate, flashWinTime,
-    flashWinDiscount, platePos, textAlign, transparency, customBgPhoto, selectedBgPhotoId,
+    flashWinDiscount, styleId, textSize, customBgPhoto, selectedBgPhotoId,
     selectedGradientId, selectedStockId,
   }), [
-    palIdx, mode, showAvatar, showSticker, ctaText, annoText, slotsDate, activeSvcId,
+    palIdx, mode, showAvatar, showLinkZone, annoText, slotsDate, activeSvcId,
     vacStart, vacEnd, dealIdx, activeReviewId, activeFlashWinSvcId, flashWinDate, flashWinTime,
-    flashWinDiscount, platePos, textAlign, transparency, customBgPhoto, selectedBgPhotoId,
+    flashWinDiscount, styleId, textSize, customBgPhoto, selectedBgPhotoId,
     selectedGradientId, selectedStockId,
   ]);
 
@@ -278,8 +288,9 @@ export function useStoryEditor(props: StoryGeneratorProps): UseStoryEditor {
       setPalIdx: tap(setPalIdx),
       setMode: tap(setMode),
       setShowAvatar,           // toggle — no blur reset (parity with original)
-      setShowSticker,          // toggle — no blur reset
-      setCtaText: tap(setCtaText),
+      setShowLinkZone,         // toggle — no blur reset
+      setStyleId: tap(setStyleId),
+      setTextSize: tap(setTextSize),
       setAnnoText: tap(setAnnoText),
       setSlotsDate: tap(setSlotsDate),
       setSelectedSvcId: tap(setSelectedSvcId),
@@ -291,9 +302,6 @@ export function useStoryEditor(props: StoryGeneratorProps): UseStoryEditor {
       setFlashWinDate: (v) => { setFlashWinDate(v); setFlashWinTime(null); onControlChange(); },
       setFlashWinTime: tap(setFlashWinTime),
       setFlashWinDiscount: tap(setFlashWinDiscount),
-      setPlatePos: tap(setPlatePos),
-      setTextAlign: tap(setTextAlign),
-      setTransparency: tap(setTransparency),
       setCustomBgPhoto: tap(setCustomBgPhoto),
       setSelectedBgPhotoId: tap(setSelectedBgPhotoId),
       pickGradient: (id) => { setSelectedGradientId(id); setCustomBgPhoto(null); setSelectedStockId(null); setSelectedBgPhotoId(null); onControlChange(); },
