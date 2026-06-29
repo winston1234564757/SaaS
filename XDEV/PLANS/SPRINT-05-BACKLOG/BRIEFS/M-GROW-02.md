@@ -169,5 +169,5 @@ GRANT ALL ON master_connections TO service_role;
 **ВІДОМИЙ дрібний edge (не фіксимо — 4-й порядок):** якщо реферал-пара→partner→removePartner, обидва partner-рядки видаляються (alliance в master_connections зникає; master_referrals lineage лишається). Майже неможливий сценарій.
 
 **Commit:** `31557c87` (код) + `eb7a6f2a` (фікс симетрії accept)
-**Деплой:** тримаємо до візуального QA founder. DB-міграція на cloud (additive).
+**Деплой:** ✅ ЗАДЕПЛОЄНО на прод 2026-06-29 (`dpl_2JosLfqYJRzeG2tb964gvDAEq9Pm`, bookit.com.ua). Build 2m READY. Очікує візуального QA founder.
 **Що винесено в mempalace:** drawer про master_connections merge + латентний RLS-баг публічної сторінки.

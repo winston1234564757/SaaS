@@ -58,7 +58,7 @@ Sprint-05 переріс із "тільки клієнтська зона" у **
 
 **KEY:** (1) Розвідка ДО брифа на HARD-задачі обовʼязкова — «об'єднати X+Y» було неоднозначне, виявилось 3 сутності з різною семантикою + білінг-coupling. (2) Bilateral-модель уніфікує: directional alliance → 2 рядки з role, читання тривіальне (`WHERE master_id=me`), напрям збережено. (3) Supabase RLS пастка: вузька політика «лише сторони» вбиває публічне читання анонами — публічні фічі потребують явної anon-політики на opt-in-полях. (4) Additive міграція (нова таблиця, старі лишаються) = безпечний прод-мердж з тривіальним rollback. (5) `text-primary` Frost (#789A99) провалює малий текст — `#3F5C5B`+.
 
-**⏳ Борг:** drop `master_partners`+`master_alliances` після ~тижня verify. **Очікує візуального QA founder (не задеплоєно).**
+**⏳ Борг:** drop `master_partners`+`master_alliances` після ~тижня verify. **✅ ЗАДЕПЛОЄНО на прод 2026-06-29 (`dpl_2JosLfqYJRzeG2tb964gvDAEq9Pm`, bookit.com.ua). Очікує візуального QA founder.**
 
 ---
 
@@ -90,7 +90,7 @@ Sprint-05 переріс із "тільки клієнтська зона" у **
 
 **KEY:** (1) DATA-розвідка ДО дизайну зловила що знижка лояльності ніде не персистилась → impact неможливий без міграції; redemption-tracking forward-only + чесний empty (як M-REV-03). (2) self-grill зловив guest-діру total_visits ДО коду. (3) Supabase REVOKE public НЕ знімає anon EXECUTE — завжди `REVOKE FROM anon` явно на auth.uid-RPC. (4) `text-success` Frost (#16803C) провалює малий текст на periwinkle (3.45) — для дрібних success-лінків бери #0D6B2F+.
 
-**Очікує візуального QA founder (не задеплоєно — тримаємо до QA; DB-міграції вже на cloud, колонки nullable+default тож код-деплой не ламає runtime).**
+**✅ ЗАДЕПЛОЄНО на прод 2026-06-29 (разом з M-GROW-02, `dpl_2JosLfqYJRzeG2tb964gvDAEq9Pm`, bookit.com.ua). Очікує візуального QA founder.**
 
 ---
 
