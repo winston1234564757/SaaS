@@ -12,7 +12,6 @@ export const PALETTES: Palette[] = [
   { id: 'terracotta', label: 'Terracotta', bg: '#FBF1EC', text: '#3A2A22', muted: '#C08763', pill: '#F3E2D7', pillText: '#3A2A22', sticker: '#FFFFFF', stickerText: '#3A2A22', brand: '#D9A782', dot: '#B5663B' },
   { id: 'lavender',   label: 'Lavender',   bg: '#F4F1FA', text: '#2E2740', muted: '#9B8AC0', pill: '#E7E0F5', pillText: '#2E2740', sticker: '#FFFFFF', stickerText: '#2E2740', brand: '#B9A8DC', dot: '#6E54B0' },
   { id: 'forest',     label: 'Forest',     bg: '#EEF3EF', text: '#1E2D24', muted: '#6F8F79', pill: '#DCE8DF', pillText: '#1E2D24', sticker: '#1E2D24', stickerText: '#FFFFFF', brand: '#9CBCA6', dot: '#2C5E3F' },
-  { id: 'champagne',  label: 'Champagne',  bg: '#FBF7EE', text: '#34301F', muted: '#B9A05E', pill: '#F1E9D4', pillText: '#34301F', sticker: '#FFFFFF', stickerText: '#34301F', brand: '#D9C68C', dot: '#A88934' },
 ];
 
 export const PREMIUM_MODES = new Set<Mode>(['free_slots', 'vacation', 'promo', 'review_spotlight', 'flash_window', 'portfolio_item']);
@@ -114,12 +113,6 @@ function hexLuminance(hex: string): number {
   return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
 }
 
-function gradientAvgLuminance(css: string): number {
-  const hexes = css.match(/#[0-9A-Fa-f]{3,6}/g) ?? [];
-  if (hexes.length === 0) return 1;
-  return hexes.reduce((sum, h) => sum + hexLuminance(h), 0) / hexes.length;
-}
-
 export interface TextTheme {
   isDark: boolean;       // фон темний → текст світлий
   textColor: string;
@@ -128,13 +121,10 @@ export interface TextTheme {
   shadow: string;
 }
 
-/** Визначає тему тексту за фоном. Фото → припускаємо темний (світлий текст + тінь) — стандарт IG-оверлеїв. */
-export function resolveTextTheme(args: { bgPhotoUrl: string | null; bgGradientCss: string | null; palBg: string }): TextTheme {
-  const { bgPhotoUrl, bgGradientCss, palBg } = args;
-  let isDark: boolean;
-  if (bgPhotoUrl) isDark = true;
-  else if (bgGradientCss) isDark = gradientAvgLuminance(bgGradientCss) < 0.5;
-  else isDark = hexLuminance(palBg) < 0.5;
+/** Визначає тему тексту за фоном. Фото → припускаємо темний (світлий текст + скрім) — стандарт IG-оверлеїв. */
+export function resolveTextTheme(args: { bgPhotoUrl: string | null; palBg: string }): TextTheme {
+  const { bgPhotoUrl, palBg } = args;
+  const isDark = bgPhotoUrl ? true : hexLuminance(palBg) < 0.5;
 
   return isDark
     ? { isDark, textColor: '#FFFFFF', mutedColor: 'rgba(255,255,255,0.78)', plateBg: 'rgba(0,0,0,0.34)', shadow: '0 1px 10px rgba(0,0,0,0.45)' }
@@ -158,17 +148,6 @@ export function getGridConfig(count: number): GridCfg {
   return { cols: 3, gap: 6, pillH: 36, fontSize: 12, fontWeight: 600, radius: 10 };
 }
 
-// ── Фон-шаблони (M-MKT-04) ──────────────────────────────────────────────────
-// Градієнти генеруються в коді — без файлів-ассетів, готові одразу.
-export const BG_GRADIENTS: { id: string; label: string; css: string }[] = [
-  { id: 'sunset',   label: 'Захід',   css: 'linear-gradient(160deg,#FBE7D2 0%,#F3B9A3 55%,#D98B7E 100%)' },
-  { id: 'rose',     label: 'Троянда', css: 'linear-gradient(160deg,#FDEAF0 0%,#F6C9D8 55%,#E59BB6 100%)' },
-  { id: 'mint',     label: 'Мʼята',   css: 'linear-gradient(160deg,#E6F4EE 0%,#BFE3D2 55%,#8FC9B0 100%)' },
-  { id: 'lilac',    label: 'Бузок',   css: 'linear-gradient(160deg,#EEEAF8 0%,#D5C9EE 55%,#B3A0DE 100%)' },
-  { id: 'gold',     label: 'Золото',  css: 'linear-gradient(160deg,#FBF3DC 0%,#EAD5A0 55%,#CDAE68 100%)' },
-  { id: 'graphite', label: 'Графіт',  css: 'linear-gradient(160deg,#3A3A3F 0%,#26262B 55%,#161619 100%)' },
-];
-
 // Стокові фото: файли в public/story-bg/ (same-origin → CORS-safe для export).
 // Реальні зображення надає користувач; до того масив порожній, секція ховається.
 export const STOCK_PHOTOS: { id: string; label: string; url: string }[] = [];
@@ -184,7 +163,3 @@ export const TEXT_TEMPLATES: Partial<Record<Mode, string[]>> = {
   promo: ['Спеціальна ціна діє лише кілька днів. Не пропусти!'],
 };
 
-export function gradientById(id: string | null): string | null {
-  if (!id) return null;
-  return BG_GRADIENTS.find(g => g.id === id)?.css ?? null;
-}

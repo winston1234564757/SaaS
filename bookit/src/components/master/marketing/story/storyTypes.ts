@@ -116,7 +116,6 @@ export interface CanvasProps {
   flashWinTime: string | null;
   flashWinDiscount: number;
   bgPhotoUrl: string | null;
-  bgGradientCss?: string | null;
   portfolioTitle: string | null;
   portfolioDesc: string | null;
   // style preset (resolved)
@@ -159,7 +158,6 @@ export interface StoryEditorState {
   textSize: TextSize;
   customBgPhoto: string | null;
   selectedBgPhotoId: string | null;
-  selectedGradientId: string | null;
   selectedStockId: string | null;
 }
 
@@ -184,7 +182,6 @@ export interface StorySetters {
   setCustomBgPhoto(v: string | null): void;
   setSelectedBgPhotoId(v: string | null): void;
   /** Вибір фону взаємовиключний — кожен із цих сеттерів чистить інші джерела фону */
-  pickGradient(id: string | null): void;
   pickStock(id: string | null): void;
   pickPortfolio(id: string | null): void;
   pickCustom(dataUrl: string | null): void;

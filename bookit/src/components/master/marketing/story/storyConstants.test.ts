@@ -6,12 +6,13 @@ const KEYS: (keyof Palette)[] = ['id','label','bg','text','muted','pill','pillTe
 const HEX = /^#[0-9A-Fa-f]{6}$/;
 
 describe('PALETTES', () => {
-  it('має рівно 10 палітр', () => {
-    expect(PALETTES).toHaveLength(10);
+  it('має рівно 9 палітр (Champagne прибрано)', () => {
+    expect(PALETTES).toHaveLength(9);
   });
   it('містить нові M-MKT-03 теми', () => {
     const ids = PALETTES.map(p => p.id);
-    expect(ids).toEqual(expect.arrayContaining(['terracotta','lavender','forest','champagne']));
+    expect(ids).toEqual(expect.arrayContaining(['terracotta','lavender','forest']));
+    expect(ids).not.toContain('champagne');
   });
   it('id унікальні', () => {
     const ids = PALETTES.map(p => p.id);

@@ -1,7 +1,7 @@
 'use client';
 
 import { X, Plus, Check } from 'lucide-react';
-import { PALETTES, BG_GRADIENTS, STOCK_PHOTOS } from '../storyConstants';
+import { PALETTES, STOCK_PHOTOS } from '../storyConstants';
 import type { PortfolioItemFull } from '@/types/database';
 
 interface StepLookProps {
@@ -9,21 +9,19 @@ interface StepLookProps {
   onPalette(i: number): void;
   selectedBgPhotoId: string | null;
   customBgPhoto: string | null;
-  selectedGradientId: string | null;
   selectedStockId: string | null;
   portfolioItems: PortfolioItemFull[];
   onPickPortfolio(id: string): void;
-  onPickGradient(id: string): void;
   onPickStock(id: string): void;
   onClearBg(): void;
   onUploadClick(): void;
 }
 
 export function StepLook({
-  palIdx, onPalette, selectedBgPhotoId, customBgPhoto, selectedGradientId, selectedStockId,
-  portfolioItems, onPickPortfolio, onPickGradient, onPickStock, onClearBg, onUploadClick,
+  palIdx, onPalette, selectedBgPhotoId, customBgPhoto, selectedStockId,
+  portfolioItems, onPickPortfolio, onPickStock, onClearBg, onUploadClick,
 }: StepLookProps) {
-  const noBg = !selectedBgPhotoId && !customBgPhoto && !selectedStockId && !selectedGradientId;
+  const noBg = !selectedBgPhotoId && !customBgPhoto && !selectedStockId;
 
   return (
     <div className="space-y-5">
@@ -45,28 +43,6 @@ export function StepLook({
           ))}
         </div>
         <p className="text-[10px] text-muted-foreground/60 mt-1.5">{PALETTES[palIdx].label}</p>
-      </div>
-
-      {/* Градієнти */}
-      <div>
-        <p className="text-xs font-semibold text-muted-foreground mb-2">Градієнти</p>
-        <div className="flex gap-2 flex-wrap">
-          {BG_GRADIENTS.map(g => {
-            const active = selectedGradientId === g.id;
-            return (
-              <button key={g.id} type="button" aria-label={g.label} aria-pressed={active}
-                onClick={() => onPickGradient(g.id)}
-                className="relative size-11 rounded-xl transition-colors duration-150 cursor-pointer active:scale-[0.92]"
-                style={{
-                  background: g.css,
-                  outline: active ? '2.5px solid var(--accent)' : '1px solid var(--border)',
-                  outlineOffset: active ? 1 : 0,
-                }}>
-                {active && <span className="absolute inset-0 flex items-center justify-center"><Check size={14} className="text-white drop-shadow" strokeWidth={3} /></span>}
-              </button>
-            );
-          })}
-        </div>
       </div>
 
       {/* Стокові фото — лише якщо є ассети */}

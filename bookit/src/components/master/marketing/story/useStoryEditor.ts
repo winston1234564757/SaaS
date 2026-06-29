@@ -9,7 +9,7 @@ import { getNow } from '@/lib/utils/now';
 import type { WorkingHoursConfig, PortfolioItemFull } from '@/types/database';
 import { useServices, useActiveFlashDeals, useStarReviews } from './useStoryData';
 import {
-  PALETTES, PREMIUM_MODES, MODE_UPGRADE_COPY, VALID_MODES, STOCK_PHOTOS, gradientById,
+  PALETTES, PREMIUM_MODES, MODE_UPGRADE_COPY, VALID_MODES, STOCK_PHOTOS,
   presetById, TEXT_SCALES, resolveTextTheme,
 } from './storyConstants';
 import { STEPS, STEP_INDEX, isStepComplete } from './storySteps';
@@ -82,7 +82,6 @@ export function useStoryEditor(props: StoryGeneratorProps): UseStoryEditor {
   const [flashWinDiscount, setFlashWinDiscount] = useState(20);
 
   const [customBgPhoto, setCustomBgPhoto] = useState<string | null>(null);
-  const [selectedGradientId, setSelectedGradientId] = useState<string | null>(null);
   const [selectedStockId, setSelectedStockId] = useState<string | null>(null);
 
   const { data: portfolioItems = [] } = usePortfolioItems(externalItems);
@@ -104,14 +103,12 @@ export function useStoryEditor(props: StoryGeneratorProps): UseStoryEditor {
   const [isTMA, setIsTMA] = useState(false);
   useEffect(() => { setIsTMA(!!window.Telegram?.WebApp?.initData); }, []);
 
-  // ── background source (mutually exclusive) ──
+  // ── background source (mutually exclusive: custom / stock / portfolio) ──
   const bgPhotoUrlRaw = useMemo(() => {
     if (selectedBgPhotoId) return portfolioItems.find(i => i.id === selectedBgPhotoId)?.photos[0]?.url ?? null;
     if (selectedStockId) return STOCK_PHOTOS.find(s => s.id === selectedStockId)?.url ?? null;
     return customBgPhoto;
   }, [selectedBgPhotoId, selectedStockId, customBgPhoto, portfolioItems]);
-
-  const bgGradientCss = gradientById(selectedGradientId);
 
   // ── bg photo blob conversion (CORS-safe for export) ──
   const [bgPhotoBlob, setBgPhotoBlob] = useState<string | null>(null);
@@ -221,7 +218,7 @@ export function useStoryEditor(props: StoryGeneratorProps): UseStoryEditor {
 
   // ── style preset + auto text theme ──
   const preset = presetById(styleId);
-  const textTheme = resolveTextTheme({ bgPhotoUrl, bgGradientCss, palBg: pal.bg });
+  const textTheme = resolveTextTheme({ bgPhotoUrl, palBg: pal.bg });
   const textScale = TEXT_SCALES[textSize];
 
   // ── canvas props ──
@@ -234,7 +231,7 @@ export function useStoryEditor(props: StoryGeneratorProps): UseStoryEditor {
     reviewClientName: selectedReview?.client_name ?? null,
     flashWinSvcName: flashWinSvc?.name ?? null,
     flashWinDate, flashWinTime, flashWinDiscount,
-    bgPhotoUrl, bgGradientCss,
+    bgPhotoUrl,
     portfolioTitle: customBgPhoto ? 'Ваше фото' : (portfolioItems.find(i => i.id === selectedBgPhotoId)?.title ?? null),
     portfolioDesc: customBgPhoto ? null : (portfolioItems.find(i => i.id === selectedBgPhotoId)?.description ?? null),
     // preset
@@ -251,7 +248,7 @@ export function useStoryEditor(props: StoryGeneratorProps): UseStoryEditor {
     annoText, slotsDate, slots, slotsLoading,
     selectedSvc, vacStart, vacEnd, selectedDeal,
     selectedReview, flashWinSvc, flashWinDate, flashWinTime, flashWinDiscount,
-    bgPhotoUrl, bgGradientCss, customBgPhoto, portfolioItems, selectedBgPhotoId,
+    bgPhotoUrl, customBgPhoto, portfolioItems, selectedBgPhotoId,
     preset, textTheme, textScale, showLinkZone,
   ]);
 
@@ -273,12 +270,12 @@ export function useStoryEditor(props: StoryGeneratorProps): UseStoryEditor {
     flashWinSvcId: activeFlashWinSvcId,
     flashWinDate, flashWinTime,
     flashWinDiscount, styleId, textSize, customBgPhoto, selectedBgPhotoId,
-    selectedGradientId, selectedStockId,
+    selectedStockId,
   }), [
     palIdx, mode, showAvatar, showLinkZone, annoText, slotsDate, activeSvcId,
     vacStart, vacEnd, dealIdx, activeReviewId, activeFlashWinSvcId, flashWinDate, flashWinTime,
     flashWinDiscount, styleId, textSize, customBgPhoto, selectedBgPhotoId,
-    selectedGradientId, selectedStockId,
+    selectedStockId,
   ]);
 
   // ── setters (wrapped to reset blur timer where the original did) ──
@@ -304,11 +301,10 @@ export function useStoryEditor(props: StoryGeneratorProps): UseStoryEditor {
       setFlashWinDiscount: tap(setFlashWinDiscount),
       setCustomBgPhoto: tap(setCustomBgPhoto),
       setSelectedBgPhotoId: tap(setSelectedBgPhotoId),
-      pickGradient: (id) => { setSelectedGradientId(id); setCustomBgPhoto(null); setSelectedStockId(null); setSelectedBgPhotoId(null); onControlChange(); },
-      pickStock: (id) => { setSelectedStockId(id); setSelectedGradientId(null); setCustomBgPhoto(null); setSelectedBgPhotoId(null); onControlChange(); },
-      pickPortfolio: (id) => { setSelectedBgPhotoId(id); setSelectedGradientId(null); setCustomBgPhoto(null); setSelectedStockId(null); onControlChange(); },
-      pickCustom: (dataUrl) => { setCustomBgPhoto(dataUrl); setSelectedBgPhotoId(null); setSelectedGradientId(null); setSelectedStockId(null); onControlChange(); },
-      clearBackground: () => { setSelectedBgPhotoId(null); setCustomBgPhoto(null); setSelectedGradientId(null); setSelectedStockId(null); },
+      pickStock: (id) => { setSelectedStockId(id); setCustomBgPhoto(null); setSelectedBgPhotoId(null); onControlChange(); },
+      pickPortfolio: (id) => { setSelectedBgPhotoId(id); setCustomBgPhoto(null); setSelectedStockId(null); onControlChange(); },
+      pickCustom: (dataUrl) => { setCustomBgPhoto(dataUrl); setSelectedBgPhotoId(null); setSelectedStockId(null); onControlChange(); },
+      clearBackground: () => { setSelectedBgPhotoId(null); setCustomBgPhoto(null); setSelectedStockId(null); },
     };
   }, [onControlChange]);
 

@@ -61,13 +61,12 @@ describe('useStoryEditor — canvasSharedProps + фон-взаємовиключ
     expect(result.current.canvasSharedProps.mode).toBe('announcement');
     expect(result.current.canvasSharedProps.annoText).toBe('Вітаю');
   });
-  it('вибір градієнта чистить фото-джерела і навпаки', () => {
+  it('вибір фото-джерел взаємовиключний', () => {
     const { result } = renderHook(() => useStoryEditor({}));
-    act(() => result.current.set.pickGradient('sunset'));
-    expect(result.current.state.selectedGradientId).toBe('sunset');
-    expect(result.current.canvasSharedProps.bgGradientCss).toContain('gradient(');
+    act(() => result.current.set.pickStock('st1'));
+    expect(result.current.state.selectedStockId).toBe('st1');
     act(() => result.current.set.pickPortfolio('pf1'));
-    expect(result.current.state.selectedGradientId).toBeNull();
+    expect(result.current.state.selectedStockId).toBeNull();
     expect(result.current.state.selectedBgPhotoId).toBe('pf1');
   });
 });

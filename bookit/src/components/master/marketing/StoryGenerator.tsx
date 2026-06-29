@@ -196,9 +196,9 @@ export function StoryGenerator(props: StoryGeneratorProps = {}) {
           <StepLook
             palIdx={state.palIdx} onPalette={set.setPalIdx}
             selectedBgPhotoId={state.selectedBgPhotoId} customBgPhoto={state.customBgPhoto}
-            selectedGradientId={state.selectedGradientId} selectedStockId={state.selectedStockId}
+            selectedStockId={state.selectedStockId}
             portfolioItems={portfolioItems}
-            onPickPortfolio={set.pickPortfolio} onPickGradient={set.pickGradient} onPickStock={set.pickStock}
+            onPickPortfolio={set.pickPortfolio} onPickStock={set.pickStock}
             onClearBg={set.clearBackground} onUploadClick={() => fileInputRef.current?.click()}
           />
         );
@@ -249,7 +249,6 @@ export function StoryGenerator(props: StoryGeneratorProps = {}) {
         onJump={handleJump}
         isFirst={isFirst}
         isLast={isLast}
-        lastStepAction={downloadBtn}
       />
     </div>
   );

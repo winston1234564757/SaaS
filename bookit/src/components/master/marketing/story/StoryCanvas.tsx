@@ -148,7 +148,7 @@ function StoryCanvasInner(props: CanvasProps) {
     pal, showAvatar, avatarBlob, displayName, slug,
     platePos, align, treatment, textScale,
     headingFont, textColor, mutedColor, plateBg, textShadow,
-    bgPhotoUrl, bgGradientCss, showLinkZone, isExporting,
+    bgPhotoUrl, showLinkZone, isExporting,
   } = props;
 
   const s = textScale;
@@ -178,10 +178,6 @@ function StoryCanvasInner(props: CanvasProps) {
         flexShrink: 0,
       }}
     >
-      {bgGradientCss && !bgPhotoUrl && (
-        <div style={{ position: 'absolute', inset: 0, background: bgGradientCss }} />
-      )}
-
       {bgPhotoUrl && (
         <img
           src={bgPhotoUrl}
@@ -191,7 +187,15 @@ function StoryCanvasInner(props: CanvasProps) {
         />
       )}
 
-      <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: plateJustify, padding: '28px 20px', gap: 16 }}>
+      {/* Авто-скрім читабельності на фото: затемнення зверху+знизу за текстом */}
+      {bgPhotoUrl && (
+        <div style={{
+          position: 'absolute', inset: 0, pointerEvents: 'none',
+          background: 'linear-gradient(to bottom, rgba(0,0,0,0.46) 0%, rgba(0,0,0,0.12) 26%, rgba(0,0,0,0.12) 58%, rgba(0,0,0,0.55) 100%)',
+        }} />
+      )}
+
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: plateJustify, paddingTop: 28, paddingLeft: 20, paddingRight: 20, paddingBottom: showLinkZone ? 132 : 28, gap: 16 }}>
         {showAvatar && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             {avatarBlob && (
