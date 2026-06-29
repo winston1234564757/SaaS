@@ -9,6 +9,10 @@ export const PALETTES: Palette[] = [
   { id: 'blush', label: 'Blush', bg: '#FDF6F5', text: '#3D2829', muted: '#C4888E', pill: '#F7E5E5', pillText: '#3D2829', sticker: '#FFFFFF', stickerText: '#3D2829', brand: '#D4AAAC', dot: '#B06070' },
   { id: 'sky', label: 'Sky', bg: '#F0F4F8', text: '#1E3448', muted: '#6898C0', pill: '#DDE9F5', pillText: '#1E3448', sticker: '#FFFFFF', stickerText: '#1E3448', brand: '#8AB8D8', dot: '#2E6898' },
   { id: 'dark', label: 'Dark', bg: '#141414', text: '#EEEEEE', muted: '#666666', pill: '#242424', pillText: '#EEEEEE', sticker: '#EEEEEE', stickerText: '#141414', brand: '#444444', dot: '#888888' },
+  { id: 'terracotta', label: 'Terracotta', bg: '#FBF1EC', text: '#3A2A22', muted: '#C08763', pill: '#F3E2D7', pillText: '#3A2A22', sticker: '#FFFFFF', stickerText: '#3A2A22', brand: '#D9A782', dot: '#B5663B' },
+  { id: 'lavender',   label: 'Lavender',   bg: '#F4F1FA', text: '#2E2740', muted: '#9B8AC0', pill: '#E7E0F5', pillText: '#2E2740', sticker: '#FFFFFF', stickerText: '#2E2740', brand: '#B9A8DC', dot: '#6E54B0' },
+  { id: 'forest',     label: 'Forest',     bg: '#EEF3EF', text: '#1E2D24', muted: '#6F8F79', pill: '#DCE8DF', pillText: '#1E2D24', sticker: '#1E2D24', stickerText: '#FFFFFF', brand: '#9CBCA6', dot: '#2C5E3F' },
+  { id: 'champagne',  label: 'Champagne',  bg: '#FBF7EE', text: '#34301F', muted: '#B9A05E', pill: '#F1E9D4', pillText: '#34301F', sticker: '#FFFFFF', stickerText: '#34301F', brand: '#D9C68C', dot: '#A88934' },
 ];
 
 export const PREMIUM_MODES = new Set<Mode>(['free_slots', 'vacation', 'promo', 'review_spotlight', 'flash_window', 'portfolio_item']);
