@@ -4,9 +4,11 @@
 
 **Спринт:** Sprint-05 — Загальний беклог (77 задач: Зона Майстра + Клієнтська Зона + Глобальне; +3 ad-hoc M-DASH-10/11/12)
 **Розпочато:** 2026-06-22
-**Прогрес:** 43/78 ✅ · 1 ↩️ скасовано (`M-DASH-11`, founder) — **Фаза 3: Revenue 6/17 done; Growth 2/2 done (M-GROW-01, M-GROW-02).**
-**Наступна задача:** **`M-MKT-01` — Маркетинг: сторіс у рівний грід** (REDESIGN · `impeccable (layout)` + `design-taste-frontend` · Sonnet · P1). Story Generator на `/dashboard/marketing` (`StoryGenerator.tsx`). Превʼю сторіс зараз нерівні → вирівняти в грід. Перед кодом: скріншот поточного + пре-код ритуал REDESIGN (brainstorming→craft→grill). Суміжні M-MKT-02 (превʼю −30%) + M-MKT-03 (кольори) можуть піти разом якщо логічно.
-**Оновлено:** 2026-06-28
+**Прогрес:** 45/78 ✅ · 1 ↩️ скасовано (`M-DASH-11`, founder) — **Фаза 3: Revenue 6/17 done; Growth 2/2 done; Marketing 2/6 (M-MKT-03, M-MKT-04).**
+**Наступна задача:** **`M-MKT-01` — Маркетинг: сторіс у рівний грід** (REDESIGN · `impeccable (layout)` + `design-taste-frontend` · Sonnet · P1). Превʼю сторіс на публічній сторінці майстра нерівні → вирівняти в грід. Перед кодом: скріншот поточного + пре-код ритуал REDESIGN (brainstorming→craft→grill). Суміжне M-MKT-02 (превʼю −30%) може піти разом. **M-MKT-03 (кольори) вже закрито в межах M-MKT-04.**
+**Оновлено:** 2026-06-29
+
+> ✅ **M-MKT-04 + M-MKT-03 done (commit `7b2e72d8`, 2026-06-29, очікує візуального QA founder, НЕ задеплоєно):** StoryGenerator → покроковий проф-едітор (5 кроків: Тип→Контент→Вигляд→Стиль→Готово) із завжди-pinned live-прев'ю. Рішення founder «повний рерайт» звужено до ШЕЛЛА (reuse StoryCanvas/storyExport/useStoryData — фіделіті експорту 1080×1920). Мозок `story/useStoryEditor.ts` (стейт+blur-gating+навігація+взаємовиключні фон-джерела), модель `story/storySteps.ts`, панелі `story/steps/*`. Шаблони: TEXT_TEMPLATES (текст-пресети по-режимах) + BG_GRADIENTS (6 градієнтів) + STOCK_PHOTOS (🔴 БЛОКЕР: порожній слот, потребує файлів у `public/story-bg/`, секція схована). M-MKT-03: 10 палітр. 32 unit-тести, tsc 0, build clean. Експорт/TMA/преміум-гейтинг 1:1. Деталі — у TRANSITION_PROMPT нотатці 2026-06-29.
 **⏳ Технічний борг M-GROW-02:** drop `master_partners` + `master_alliances` окремою міграцією після ~тижня verify на проді (rollback safety). Дані вже в `master_connections`, старі таблиці інертні (не пишуться/не читаються).
 
 > ✅ **Закрите питання founder (ревізія `676c191b`, 2026-06-25):** бари WeeklyChart відкочено з мультиколору до монохрому `var(--accent)`, рампа поглиблена на ОБОХ віджетах (WeeklyChart + PeakHours) до сіро-чорної ~34→100% за щільністю. «Насичені» на монохромі = глибший флор opacity, не повернення hue. Узгоджено через AskUserQuestion.

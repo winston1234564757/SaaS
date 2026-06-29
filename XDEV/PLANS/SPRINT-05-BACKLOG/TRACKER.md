@@ -106,8 +106,8 @@
 | `M-GROW-02` | Ріст: об'єднати реферали + партнери (HARD) | P1 | ✅ | `senior-backend` + `create-migration` + `security-review` (improve-codebase-architecture недоступний) | **Opus** | `31557c87` |
 | `M-MKT-01` | Маркетинг: сторіс у рівний грід | P1 | ⬜ | `impeccable (layout)` + `design-taste-frontend` | **Sonnet** | — |
 | `M-MKT-02` | Маркетинг: зменшити превью сторіс на 30% | P2 | ⬜ | `design-taste-frontend` | **Haiku** | — |
-| `M-MKT-03` | Маркетинг: додати кольорів до палітри | P2 | ⬜ | `impeccable (colorize)` | **Sonnet** | — |
-| `M-MKT-04` | Маркетинг: проф-едітор сторіс покроковий 🔄 | P1 | ⬜ | `spec-driven-workflow` → `senior-frontend` + `emilkowalski-motion` | **Opus** | — |
+| `M-MKT-03` | Маркетинг: додати кольорів до палітри | P2 | ✅ | `impeccable (colorize)` | **Sonnet** | `05e03119` |
+| `M-MKT-04` | Маркетинг: проф-едітор сторіс покроковий 🔄 | P1 | ✅ | `spec-driven-workflow` → `senior-frontend` + `emilkowalski-motion` | **Opus** | `7b2e72d8` |
 | `M-MKT-05` | Маркетинг: розсилки — статистика inline | P1 | ⬜ | `senior-frontend` + `senior-backend` | **Sonnet** | — |
 | `M-MKT-06` | Маркетинг: преміальні картки розсилок | P1 | ⬜ | `design-taste-frontend` + `impeccable` | **Sonnet** | — |
 | `M-REVW-01` | Відгуки: редизайн + фільтрація/сортування | P1 | ⬜ | `senior-frontend` + `design-taste-frontend` | **Sonnet** | — |
