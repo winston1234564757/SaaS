@@ -107,7 +107,7 @@
 | `M-MKT-01` | Маркетинг: сторіс у рівний грід | P1 | ⬜ | `impeccable (layout)` + `design-taste-frontend` | **Sonnet** | — |
 | `M-MKT-02` | Маркетинг: зменшити превью сторіс на 30% | P2 | ⬜ | `design-taste-frontend` | **Haiku** | — |
 | `M-MKT-03` | Маркетинг: додати кольорів до палітри | P2 | ✅ | `impeccable (colorize)` | **Sonnet** | `05e03119` |
-| `M-MKT-04` | Маркетинг: проф-едітор сторіс покроковий 🔄 | P1 | ✅ | `spec-driven-workflow` → `senior-frontend` + `emilkowalski-motion` | **Opus** | `7b2e72d8` |
+| `M-MKT-04` | Маркетинг: проф-едітор сторіс покроковий 🔄 (+ітерації founder: образи-пресети, авто-a11y, no-gradients) | P1 | ✅ | `spec-driven-workflow` → `senior-frontend` + `emilkowalski-motion` + `brainstorming` + `humanizer` + `a11y MCP` | **Opus** | `e8837dba` |
 | `M-MKT-05` | Маркетинг: розсилки — статистика inline | P1 | ⬜ | `senior-frontend` + `senior-backend` | **Sonnet** | — |
 | `M-MKT-06` | Маркетинг: преміальні картки розсилок | P1 | ⬜ | `design-taste-frontend` + `impeccable` | **Sonnet** | — |
 | `M-REVW-01` | Відгуки: редизайн + фільтрація/сортування | P1 | ⬜ | `senior-frontend` + `design-taste-frontend` | **Sonnet** | — |
