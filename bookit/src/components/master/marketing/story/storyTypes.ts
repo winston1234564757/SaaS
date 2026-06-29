@@ -86,6 +86,7 @@ export interface CanvasProps {
   flashWinTime: string | null;
   flashWinDiscount: number;
   bgPhotoUrl: string | null;
+  bgGradientCss?: string | null;
   portfolioTitle: string | null;
   portfolioDesc: string | null;
   platePos: 'top' | 'center' | 'bottom';

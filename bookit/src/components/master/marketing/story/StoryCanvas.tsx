@@ -146,7 +146,7 @@ function StoryCanvasInner(props: CanvasProps) {
   const {
     pal, mode, showAvatar, avatarBlob, displayName, slug,
     platePos, textAlign, transparency,
-    bgPhotoUrl, isExporting,
+    bgPhotoUrl, bgGradientCss, isExporting,
     showSticker = true,
     ctaText = 'Записатися онлайн',
   } = props;
@@ -175,6 +175,10 @@ function StoryCanvasInner(props: CanvasProps) {
         flexShrink: 0,
       }}
     >
+      {bgGradientCss && !bgPhotoUrl && (
+        <div style={{ position: 'absolute', inset: 0, background: bgGradientCss }} />
+      )}
+
       {bgPhotoUrl && (
         <img
           src={bgPhotoUrl}

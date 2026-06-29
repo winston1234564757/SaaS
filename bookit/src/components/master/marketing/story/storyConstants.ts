@@ -102,3 +102,34 @@ export function getGridConfig(count: number): GridCfg {
   if (count <= 8) return { cols: 2, gap: 8, pillH: 44, fontSize: 15, fontWeight: 600, radius: 12 };
   return { cols: 3, gap: 6, pillH: 36, fontSize: 12, fontWeight: 600, radius: 10 };
 }
+
+// ── Фон-шаблони (M-MKT-04) ──────────────────────────────────────────────────
+// Градієнти генеруються в коді — без файлів-ассетів, готові одразу.
+export const BG_GRADIENTS: { id: string; label: string; css: string }[] = [
+  { id: 'sunset',   label: 'Захід',   css: 'linear-gradient(160deg,#FBE7D2 0%,#F3B9A3 55%,#D98B7E 100%)' },
+  { id: 'rose',     label: 'Троянда', css: 'linear-gradient(160deg,#FDEAF0 0%,#F6C9D8 55%,#E59BB6 100%)' },
+  { id: 'mint',     label: 'Мʼята',   css: 'linear-gradient(160deg,#E6F4EE 0%,#BFE3D2 55%,#8FC9B0 100%)' },
+  { id: 'lilac',    label: 'Бузок',   css: 'linear-gradient(160deg,#EEEAF8 0%,#D5C9EE 55%,#B3A0DE 100%)' },
+  { id: 'gold',     label: 'Золото',  css: 'linear-gradient(160deg,#FBF3DC 0%,#EAD5A0 55%,#CDAE68 100%)' },
+  { id: 'graphite', label: 'Графіт',  css: 'linear-gradient(160deg,#3A3A3F 0%,#26262B 55%,#161619 100%)' },
+];
+
+// Стокові фото: файли в public/story-bg/ (same-origin → CORS-safe для export).
+// Реальні зображення надає користувач; до того масив порожній, секція ховається.
+export const STOCK_PHOTOS: { id: string; label: string; url: string }[] = [];
+
+// Текст-шаблони по-режимах (M-MKT-04): тап підставляє у поле тексту.
+export const TEXT_TEMPLATES: Partial<Record<Mode, string[]>> = {
+  announcement: [
+    'Тепер до мене можна записатися онлайн. Обирай зручний час будь-коли.',
+    'Зʼявились вільні місця цього тижня. Лови момент!',
+    'Маю гарну новину для тебе. Записуйся, поки є вільні місця.',
+  ],
+  vacation: ['Беру невелику паузу. Скоро повернусь і чекатиму на тебе.'],
+  promo: ['Спеціальна ціна діє лише кілька днів. Не пропусти!'],
+};
+
+export function gradientById(id: string | null): string | null {
+  if (!id) return null;
+  return BG_GRADIENTS.find(g => g.id === id)?.css ?? null;
+}
