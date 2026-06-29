@@ -147,7 +147,7 @@ function StoryCanvasInner(props: CanvasProps) {
   const {
     pal, showAvatar, avatarBlob, displayName, slug,
     platePos, align, treatment, textScale,
-    headingFont, textColor, mutedColor, plateBg, textShadow,
+    textColor, mutedColor, plateBg, textShadow,
     bgPhotoUrl, showLinkZone, isExporting,
   } = props;
 
@@ -197,7 +197,12 @@ function StoryCanvasInner(props: CanvasProps) {
 
       <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: plateJustify, paddingTop: 28, paddingLeft: 20, paddingRight: 20, paddingBottom: showLinkZone ? 132 : 28, gap: 16 }}>
         {showAvatar && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: 10, alignSelf: 'flex-start',
+            background: bgPhotoUrl ? plateBg : 'transparent',
+            borderRadius: 999,
+            padding: bgPhotoUrl ? '5px 16px 5px 5px' : 0,
+          }}>
             {avatarBlob && (
               <img
                 src={avatarBlob}
@@ -206,8 +211,8 @@ function StoryCanvasInner(props: CanvasProps) {
                 crossOrigin="anonymous"
               />
             )}
-            <div style={{ textShadow }}>
-              <p style={{ fontFamily: headingFont, fontSize: 14, fontWeight: 700, color: textColor, margin: 0 }}>{displayName}</p>
+            <div style={{ textShadow: bgPhotoUrl ? undefined : textShadow }}>
+              <p style={{ fontFamily: 'var(--font-geist-sans, system-ui, sans-serif)', fontSize: 14, fontWeight: 700, color: textColor, margin: 0 }}>{displayName}</p>
               <p style={{ fontFamily: 'var(--font-geist-sans, system-ui, sans-serif)', fontSize: 11, color: mutedColor, margin: 0 }}>bookit.com.ua/{slug}</p>
             </div>
           </div>
