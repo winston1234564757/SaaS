@@ -4,8 +4,8 @@
 
 **Спринт:** Sprint-05 — Загальний беклог (77 задач: Зона Майстра + Клієнтська Зона + Глобальне; +3 ad-hoc M-DASH-10/11/12)
 **Розпочато:** 2026-06-22
-**Прогрес:** 45/78 ✅ · 3 ↩️ скасовано (`M-DASH-11` + `M-MKT-01`/`M-MKT-02` поглинуто редизайном M-MKT-04, founder) — **Фаза 3: Revenue 6/17 done; Growth 2/2 done; Marketing 2/6 done + 2 ↩️ (лишились M-MKT-05/06 — розсилки).**
-**Наступна задача:** **`M-MKT-05` — Маркетинг: розсилки — статистика inline** (`senior-frontend` + `senior-backend` · Sonnet · P1). Окрема фіча РОЗСИЛКИ (`BroadcastsTab`/`BroadcastHistory`), НЕ story-едітор. Суміжне M-MKT-06 (преміальні картки розсилок) може піти разом. **M-MKT-01/02 закрито як ↩️ (поглинуто редизайном story-едітора M-MKT-04); M-MKT-03/04 ✅.**
+**Прогрес:** 47/78 ✅ · 3 ↩️ скасовано (`M-DASH-11` + `M-MKT-01`/`M-MKT-02` поглинуто редизайном M-MKT-04, founder) — **Фаза 3: Revenue 6/17 done; Growth 2/2 done; Marketing 4/6 done + 2 ↩️ (секція Marketing закрита).**
+**Наступна задача:** **`M-REVW-01` — Відгуки: редизайн + фільтрація/сортування** (`senior-frontend` + `design-taste-frontend` · Sonnet · P1). Сторінка відгуків майстра `/dashboard/reviews`. Суміжне M-REVW-02 (клікабельні картки → деталі) може піти разом. **Уся секція Marketing (M-MKT-01…07) закрита.**
 **Оновлено:** 2026-06-29
 
 > ✅ **M-MKT-04 + M-MKT-03 DONE + founder approved «ахуєнно» (фінал commit `e8837dba`, 2026-06-29, прогнано на проді bookit-five-psi, передеплой з main для останніх фіксів):** StoryGenerator → покроковий проф-едітор (5 кроків: Тип→Контент→Вигляд→Стиль→Готово), live-прев'ю mobile знизу / desktop справа. Reuse-шелл (storyExport/useStoryData fideliti 1080×1920). Мозок `story/useStoryEditor.ts`, модель `story/storySteps.ts`, панелі `story/steps/*`. **Стиль = образи-пресети** (5: minimal/elegant/bold/gloss/script) + розмір S/M/L + елементи кадру (тогл аватар, тогл Місце-для-посилання=пунктирна зона під IG-стікер). **Контент:** заготовки в Sheet-модалці. **Фон:** палітра(9, Champagne видалено) / портфоліо / своє фото (градієнти+стокові ВИДАЛЕНО). **A11Y-аудит story-canvas через a11y MCP:** авто-тема textColor/mutedColor/accent/pillBg/badge у ВСІХ режимах, плашка 0.62 (worst-case над білим фото verified), фото-скрім, аватар+ім'я sans+чіп. Деталі+кольори — mempalace drawer `drawer_bookit_architecture_ea1bb49cc6d541472cbd7608` + TRANSITION нотатка. 32 unit-тести, tsc 0, build clean. **M-MKT-07 (адмін-аплоадер) скасовано** founder.
@@ -29,6 +29,29 @@ Sprint-05 переріс із "тільки клієнтська зона" у **
 - `/my/profile`: `instagram_url` + `telegram_handle` міграція ✅, avatar upload ✅
 - `/my/bookings`: `submitReview` ✅, `cancelBooking` ✅
 - `/explore`: фото `h-[134px]` ✅, tags strip ✅
+
+---
+
+## ✅ DONE: `M-MKT-05` + `M-MKT-06` — Розсилки: inline-деталі (Sheet) + преміальний Frost-редизайн (P1) · commit `8bd25847`
+
+**Тип:** NEW-FEATURE (inline) + REDESIGN (premium) — гібрид · **Тір:** 2 · **Скіли:** `impeccable` (critique/audit/colorize/polish) + `design-taste-frontend` + `senior-frontend` + `mcp__a11y` · **Модель:** Opus · **Бриф:** `BRIEFS/M-MKT-05.md`
+
+**Розвідка (3 AskUserQuestion) + контртеза:** назва M-MKT-05 «статистика inline» вводила в оману — статистика вже була inline (accordion-грід у `BroadcastHistory`). Єдина функціональна діра = кнопка «Деталі по клієнтах» робила `router.push('/dashboard/marketing/[id]')` (повноекранний редірект). Founder: Sheet-оверлей (reuse) · M-MKT-05+06 разом · видалити старий роут.
+
+**M-MKT-05 (функціонал):**
+- «Деталі по клієнтах» → `BroadcastDetailSheet` (vaul-оверлей) замість редіректу. Підключено **раніше мертвий** `BroadcastDetailSheet` (повністю написаний, ніколи не імпортований — дзеркало M-REV-03 `FlashDealDetailSheet`): 3 рядки локального стану `detail{id,title}`.
+- **Видалено** осиротілий роут `app/(master)/dashboard/marketing/[id]/page.tsx` + `BroadcastDetailPage.tsx` (єдиний споживач — рядок 59, прибрано). Grep підтвердив відсутність інших посилань.
+
+**M-MKT-06 (редизайн+колоризація):**
+- Усі легасі-peach-хекси (`#A8928D`/`#D4935A`/`#5C9E7A`/`#C05B5B`/`#789A99`/`#4A9BE0`/`#2C1A14`/`#F5E8E3`/`rgba(255,...)`/`rgba(99,102,241,...)`) → Frost-токени в `BroadcastHistory`/`BroadcastDetailSheet`/`BroadcastsTab`.
+- **De-nest аналітики (impeccable win):** було nested cards (7 однакових `StatCard` усередині картки) = подвійний бан (nested cards + identical grid). Стало: 2 hero-outcome (`Записалось`/`Конверсія`, accent-tint) + тиха роздільна стрічка вторинних метрик (`Відправлено`/`Клікнуло`/`Push`/`Telegram`/`Знижку взято`) без коробок.
+- **Канальна палітра Frost:** App=slate(`--accent`) / Push=success / Telegram=`#2563EB` (впізнаваний бренд-синій, лишено навмисно) / SMS=warning. a11y MCP: іконки 4.01/3.89/3.90 на periwinkle #DAE2FF (графічний поріг 3:1 ✓), сенс дублюється формою `CheckCircle`/`XCircle` — колір не одноосібний носій.
+
+**Перевірка:** tsc 0 (post-build; `.next/types` валідатор тимчасово ламав tsc на видалений роут → `build` регенерує) · build clean (роут `/marketing/[id]` зник зі списку) · a11y MCP ✓ · encoding clean · impeccable-хук clean на всіх 3 файлах. Founder QA пройдено («все перевірив, все чудово»).
+
+**Файли:** `BroadcastHistory.tsx` · `BroadcastDetailSheet.tsx` · `BroadcastsTab.tsx` · (видалено) `BroadcastDetailPage.tsx` + `marketing/[id]/page.tsx`.
+
+**KEY:** (1) Назва задачі ≠ скоуп — звіряй живий компонент перед оцінкою (статистика вже inline). (2) «Inline без редіректу» = підключити готовий мертвий Sheet, не писати новий. (3) De-nest nested cards → outcome+роздільна стрічка = impeccable-win при колоризації. (4) Канальна палітра: колір на іконці + форма check/x = сенс не одноосібно на кольорі (3:1 достатньо). (5) Видалення роуту: tsc падає на стале `.next/types` → build регенерує, перевіряй tsc ПІСЛЯ build.
 
 ---
 
