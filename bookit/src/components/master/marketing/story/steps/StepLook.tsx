@@ -1,7 +1,7 @@
 'use client';
 
-import { X, Plus, Check } from 'lucide-react';
-import { PALETTES, STOCK_PHOTOS } from '../storyConstants';
+import { X, Plus, Check, Sparkles } from 'lucide-react';
+import { PALETTES } from '../storyConstants';
 import type { PortfolioItemFull } from '@/types/database';
 
 interface StepLookProps {
@@ -9,19 +9,17 @@ interface StepLookProps {
   onPalette(i: number): void;
   selectedBgPhotoId: string | null;
   customBgPhoto: string | null;
-  selectedStockId: string | null;
   portfolioItems: PortfolioItemFull[];
   onPickPortfolio(id: string): void;
-  onPickStock(id: string): void;
   onClearBg(): void;
   onUploadClick(): void;
 }
 
 export function StepLook({
-  palIdx, onPalette, selectedBgPhotoId, customBgPhoto, selectedStockId,
-  portfolioItems, onPickPortfolio, onPickStock, onClearBg, onUploadClick,
+  palIdx, onPalette, selectedBgPhotoId, customBgPhoto,
+  portfolioItems, onPickPortfolio, onClearBg, onUploadClick,
 }: StepLookProps) {
-  const noBg = !selectedBgPhotoId && !customBgPhoto && !selectedStockId;
+  const noBg = !selectedBgPhotoId && !customBgPhoto;
 
   return (
     <div className="space-y-5">
@@ -44,26 +42,6 @@ export function StepLook({
         </div>
         <p className="text-[10px] text-muted-foreground/60 mt-1.5">{PALETTES[palIdx].label}</p>
       </div>
-
-      {/* Стокові фото — лише якщо є ассети */}
-      {STOCK_PHOTOS.length > 0 && (
-        <div>
-          <p className="text-xs font-semibold text-muted-foreground mb-2">Стокові фото</p>
-          <div className="flex gap-2 flex-wrap">
-            {STOCK_PHOTOS.map(s => {
-              const active = selectedStockId === s.id;
-              return (
-                <button key={s.id} type="button" aria-label={s.label} aria-pressed={active}
-                  onClick={() => onPickStock(s.id)}
-                  className={`relative size-11 rounded-xl overflow-hidden border-2 transition-colors duration-150 cursor-pointer active:scale-[0.92] ${active ? 'border-primary ring-2 ring-primary/20' : 'border-transparent'}`}>
-                  <img src={s.url} className="w-full h-full object-cover" alt="" />
-                  {active && <div className="absolute inset-0 bg-black/20 flex items-center justify-center"><Check size={12} className="text-white" strokeWidth={3} /></div>}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
 
       {/* Фон (фото) */}
       <div>
@@ -92,6 +70,15 @@ export function StepLook({
               {selectedBgPhotoId === item.id && <div className="absolute inset-0 bg-black/20 flex items-center justify-center"><Check size={12} className="text-white" strokeWidth={3} /></div>}
             </button>
           ))}
+        </div>
+
+        {/* Нудж: власні фото робіт */}
+        <div className="mt-3 flex items-start gap-2.5 rounded-2xl px-3.5 py-3"
+          style={{ background: 'var(--accent-soft)', border: '1px solid color-mix(in srgb, var(--accent) 18%, transparent)' }}>
+          <Sparkles size={15} className="text-primary shrink-0 mt-0.5" />
+          <p className="text-[11px] leading-snug text-foreground/80">
+            Додайте свої найкращі роботи. Саме ваші фото роблять сторіс унікальною.
+          </p>
         </div>
       </div>
     </div>

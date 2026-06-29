@@ -196,9 +196,8 @@ export function StoryGenerator(props: StoryGeneratorProps = {}) {
           <StepLook
             palIdx={state.palIdx} onPalette={set.setPalIdx}
             selectedBgPhotoId={state.selectedBgPhotoId} customBgPhoto={state.customBgPhoto}
-            selectedStockId={state.selectedStockId}
             portfolioItems={portfolioItems}
-            onPickPortfolio={set.pickPortfolio} onPickStock={set.pickStock}
+            onPickPortfolio={set.pickPortfolio}
             onClearBg={set.clearBackground} onUploadClick={() => fileInputRef.current?.click()}
           />
         );

@@ -63,10 +63,10 @@ describe('useStoryEditor — canvasSharedProps + фон-взаємовиключ
   });
   it('вибір фото-джерел взаємовиключний', () => {
     const { result } = renderHook(() => useStoryEditor({}));
-    act(() => result.current.set.pickStock('st1'));
-    expect(result.current.state.selectedStockId).toBe('st1');
+    act(() => result.current.set.pickCustom('data:image/png;base64,xx'));
+    expect(result.current.state.customBgPhoto).toBe('data:image/png;base64,xx');
     act(() => result.current.set.pickPortfolio('pf1'));
-    expect(result.current.state.selectedStockId).toBeNull();
+    expect(result.current.state.customBgPhoto).toBeNull();
     expect(result.current.state.selectedBgPhotoId).toBe('pf1');
   });
 });

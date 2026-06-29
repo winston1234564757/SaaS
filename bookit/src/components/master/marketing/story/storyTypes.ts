@@ -158,7 +158,6 @@ export interface StoryEditorState {
   textSize: TextSize;
   customBgPhoto: string | null;
   selectedBgPhotoId: string | null;
-  selectedStockId: string | null;
 }
 
 export interface StorySetters {
@@ -182,7 +181,6 @@ export interface StorySetters {
   setCustomBgPhoto(v: string | null): void;
   setSelectedBgPhotoId(v: string | null): void;
   /** Вибір фону взаємовиключний — кожен із цих сеттерів чистить інші джерела фону */
-  pickStock(id: string | null): void;
   pickPortfolio(id: string | null): void;
   pickCustom(dataUrl: string | null): void;
   clearBackground(): void;

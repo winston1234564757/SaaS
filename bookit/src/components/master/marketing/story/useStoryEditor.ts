@@ -9,7 +9,7 @@ import { getNow } from '@/lib/utils/now';
 import type { WorkingHoursConfig, PortfolioItemFull } from '@/types/database';
 import { useServices, useActiveFlashDeals, useStarReviews } from './useStoryData';
 import {
-  PALETTES, PREMIUM_MODES, MODE_UPGRADE_COPY, VALID_MODES, STOCK_PHOTOS,
+  PALETTES, PREMIUM_MODES, MODE_UPGRADE_COPY, VALID_MODES,
   presetById, TEXT_SCALES, resolveTextTheme,
 } from './storyConstants';
 import { STEPS, STEP_INDEX, isStepComplete } from './storySteps';
@@ -82,7 +82,6 @@ export function useStoryEditor(props: StoryGeneratorProps): UseStoryEditor {
   const [flashWinDiscount, setFlashWinDiscount] = useState(20);
 
   const [customBgPhoto, setCustomBgPhoto] = useState<string | null>(null);
-  const [selectedStockId, setSelectedStockId] = useState<string | null>(null);
 
   const { data: portfolioItems = [] } = usePortfolioItems(externalItems);
   const firstWithPhoto = externalItems?.find(i => i.photos.length > 0);
@@ -103,12 +102,11 @@ export function useStoryEditor(props: StoryGeneratorProps): UseStoryEditor {
   const [isTMA, setIsTMA] = useState(false);
   useEffect(() => { setIsTMA(!!window.Telegram?.WebApp?.initData); }, []);
 
-  // ── background source (mutually exclusive: custom / stock / portfolio) ──
+  // ── background source (mutually exclusive: portfolio / custom) ──
   const bgPhotoUrlRaw = useMemo(() => {
     if (selectedBgPhotoId) return portfolioItems.find(i => i.id === selectedBgPhotoId)?.photos[0]?.url ?? null;
-    if (selectedStockId) return STOCK_PHOTOS.find(s => s.id === selectedStockId)?.url ?? null;
     return customBgPhoto;
-  }, [selectedBgPhotoId, selectedStockId, customBgPhoto, portfolioItems]);
+  }, [selectedBgPhotoId, customBgPhoto, portfolioItems]);
 
   // ── bg photo blob conversion (CORS-safe for export) ──
   const [bgPhotoBlob, setBgPhotoBlob] = useState<string | null>(null);
@@ -270,12 +268,10 @@ export function useStoryEditor(props: StoryGeneratorProps): UseStoryEditor {
     flashWinSvcId: activeFlashWinSvcId,
     flashWinDate, flashWinTime,
     flashWinDiscount, styleId, textSize, customBgPhoto, selectedBgPhotoId,
-    selectedStockId,
   }), [
     palIdx, mode, showAvatar, showLinkZone, annoText, slotsDate, activeSvcId,
     vacStart, vacEnd, dealIdx, activeReviewId, activeFlashWinSvcId, flashWinDate, flashWinTime,
     flashWinDiscount, styleId, textSize, customBgPhoto, selectedBgPhotoId,
-    selectedStockId,
   ]);
 
   // ── setters (wrapped to reset blur timer where the original did) ──
@@ -301,10 +297,9 @@ export function useStoryEditor(props: StoryGeneratorProps): UseStoryEditor {
       setFlashWinDiscount: tap(setFlashWinDiscount),
       setCustomBgPhoto: tap(setCustomBgPhoto),
       setSelectedBgPhotoId: tap(setSelectedBgPhotoId),
-      pickStock: (id) => { setSelectedStockId(id); setCustomBgPhoto(null); setSelectedBgPhotoId(null); onControlChange(); },
-      pickPortfolio: (id) => { setSelectedBgPhotoId(id); setCustomBgPhoto(null); setSelectedStockId(null); onControlChange(); },
-      pickCustom: (dataUrl) => { setCustomBgPhoto(dataUrl); setSelectedBgPhotoId(null); setSelectedStockId(null); onControlChange(); },
-      clearBackground: () => { setSelectedBgPhotoId(null); setCustomBgPhoto(null); setSelectedStockId(null); },
+      pickPortfolio: (id) => { setSelectedBgPhotoId(id); setCustomBgPhoto(null); onControlChange(); },
+      pickCustom: (dataUrl) => { setCustomBgPhoto(dataUrl); setSelectedBgPhotoId(null); onControlChange(); },
+      clearBackground: () => { setSelectedBgPhotoId(null); setCustomBgPhoto(null); },
     };
   }, [onControlChange]);
 

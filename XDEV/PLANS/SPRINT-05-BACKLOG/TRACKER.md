@@ -110,7 +110,6 @@
 | `M-MKT-04` | Маркетинг: проф-едітор сторіс покроковий 🔄 | P1 | ✅ | `spec-driven-workflow` → `senior-frontend` + `emilkowalski-motion` | **Opus** | `7b2e72d8` |
 | `M-MKT-05` | Маркетинг: розсилки — статистика inline | P1 | ⬜ | `senior-frontend` + `senior-backend` | **Sonnet** | — |
 | `M-MKT-06` | Маркетинг: преміальні картки розсилок | P1 | ⬜ | `design-taste-frontend` + `impeccable` | **Sonnet** | — |
-| `M-MKT-07` | Маркетинг: адмін-аплоадер стокових фонів сторіс (Supabase bucket `story-bg` + RLS + admin CRUD UI + `STOCK_PHOTOS` з БД). Тимчасово фони реєструються вручну з `public/story-bg/` | P2 | ⬜ | `brainstorming` → `create-migration` + `senior-backend` + `senior-frontend` | **Opus** | — |
 | `M-REVW-01` | Відгуки: редизайн + фільтрація/сортування | P1 | ⬜ | `senior-frontend` + `design-taste-frontend` | **Sonnet** | — |
 | `M-REVW-02` | Відгуки: клікабельні картки → деталі | P2 | ⬜ | `senior-frontend` + `impeccable` | **Sonnet** | — |
 | `M-ANL-01` | Аналітика: повний фундаментальний редизайн 🔄 | P1 | ⬜ | `spec-driven-workflow` → `design-taste-frontend` + `impeccable-design-polish` | **Opus** | — |

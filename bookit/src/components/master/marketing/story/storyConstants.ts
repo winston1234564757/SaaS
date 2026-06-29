@@ -148,10 +148,6 @@ export function getGridConfig(count: number): GridCfg {
   return { cols: 3, gap: 6, pillH: 36, fontSize: 12, fontWeight: 600, radius: 10 };
 }
 
-// Стокові фото: файли в public/story-bg/ (same-origin → CORS-safe для export).
-// Реальні зображення надає користувач; до того масив порожній, секція ховається.
-export const STOCK_PHOTOS: { id: string; label: string; url: string }[] = [];
-
 // Текст-шаблони по-режимах (M-MKT-04): тап підставляє у поле тексту.
 export const TEXT_TEMPLATES: Partial<Record<Mode, string[]>> = {
   announcement: [

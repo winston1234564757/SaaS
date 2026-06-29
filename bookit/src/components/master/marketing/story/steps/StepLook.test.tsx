@@ -5,8 +5,8 @@ import { StepLook } from './StepLook';
 
 const base = {
   palIdx: 0, onPalette: vi.fn(),
-  selectedBgPhotoId: null, customBgPhoto: null, selectedStockId: null,
-  portfolioItems: [], onPickPortfolio: vi.fn(), onPickStock: vi.fn(),
+  selectedBgPhotoId: null, customBgPhoto: null,
+  portfolioItems: [], onPickPortfolio: vi.fn(),
   onClearBg: vi.fn(), onUploadClick: vi.fn(),
 };
 
@@ -21,7 +21,7 @@ it('клік по палітрі викликає onPalette з індексом'
   fireEvent.click(screen.getByRole('button', { name: 'Forest' }));
   expect(onPalette).toHaveBeenCalledWith(8);
 });
-it('секція стокових фото схована коли STOCK_PHOTOS порожній', () => {
+it('показує нудж про власні фото робіт', () => {
   render(<StepLook {...base} />);
-  expect(screen.queryByText('Стокові фото')).toBeNull();
+  expect(screen.getByText(/ваші фото роблять сторіс унікальною/)).toBeInTheDocument();
 });
