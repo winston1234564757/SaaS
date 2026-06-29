@@ -4,8 +4,8 @@
 
 **Спринт:** Sprint-05 — Загальний беклог (77 задач: Зона Майстра + Клієнтська Зона + Глобальне; +3 ad-hoc M-DASH-10/11/12)
 **Розпочато:** 2026-06-22
-**Прогрес:** 47/78 ✅ · 3 ↩️ скасовано (`M-DASH-11` + `M-MKT-01`/`M-MKT-02` поглинуто редизайном M-MKT-04, founder) — **Фаза 3: Revenue 6/17 done; Growth 2/2 done; Marketing 4/6 done + 2 ↩️ (секція Marketing закрита).**
-**Наступна задача:** **`M-REVW-01` — Відгуки: редизайн + фільтрація/сортування** (`senior-frontend` + `design-taste-frontend` · Sonnet · P1). Сторінка відгуків майстра `/dashboard/reviews`. Суміжне M-REVW-02 (клікабельні картки → деталі) може піти разом. **Уся секція Marketing (M-MKT-01…07) закрита.**
+**Прогрес:** 49/78 ✅ · 3 ↩️ скасовано (`M-DASH-11` + `M-MKT-01`/`M-MKT-02` поглинуто редизайном M-MKT-04, founder) — **Фаза 3: Revenue 6/17 done; Growth 2/2 done; Marketing 4/6 done + 2 ↩️; Reviews 2/2 done (секція закрита).**
+**Наступна задача:** **`M-ANL-01` — Аналітика: повний фундаментальний редизайн 🔄** (`spec-driven-workflow` → `design-taste-frontend` + `impeccable-design-polish` · Opus · P1). Великий редизайн (Тір 2) — пре-код ритуал + spec обов'язкові. **Секції Marketing + Reviews закриті.**
 **Оновлено:** 2026-06-29
 
 > ✅ **M-MKT-04 + M-MKT-03 DONE + founder approved «ахуєнно» (фінал commit `e8837dba`, 2026-06-29, прогнано на проді bookit-five-psi, передеплой з main для останніх фіксів):** StoryGenerator → покроковий проф-едітор (5 кроків: Тип→Контент→Вигляд→Стиль→Готово), live-прев'ю mobile знизу / desktop справа. Reuse-шелл (storyExport/useStoryData fideliti 1080×1920). Мозок `story/useStoryEditor.ts`, модель `story/storySteps.ts`, панелі `story/steps/*`. **Стиль = образи-пресети** (5: minimal/elegant/bold/gloss/script) + розмір S/M/L + елементи кадру (тогл аватар, тогл Місце-для-посилання=пунктирна зона під IG-стікер). **Контент:** заготовки в Sheet-модалці. **Фон:** палітра(9, Champagne видалено) / портфоліо / своє фото (градієнти+стокові ВИДАЛЕНО). **A11Y-аудит story-canvas через a11y MCP:** авто-тема textColor/mutedColor/accent/pillBg/badge у ВСІХ режимах, плашка 0.62 (worst-case над білим фото verified), фото-скрім, аватар+ім'я sans+чіп. Деталі+кольори — mempalace drawer `drawer_bookit_architecture_ea1bb49cc6d541472cbd7608` + TRANSITION нотатка. 32 unit-тести, tsc 0, build clean. **M-MKT-07 (адмін-аплоадер) скасовано** founder.
@@ -29,6 +29,34 @@ Sprint-05 переріс із "тільки клієнтська зона" у **
 - `/my/profile`: `instagram_url` + `telegram_handle` міграція ✅, avatar upload ✅
 - `/my/bookings`: `submitReview` ✅, `cancelBooking` ✅
 - `/explore`: фото `h-[134px]` ✅, tags strip ✅
+
+---
+
+## ✅ DONE: `M-REVW-01` + `M-REVW-02` — Відгуки: преміум-редизайн + фільтр/сорт + клікабельні картки (P1) · commit `206fee3f`
+
+**Тип:** REDESIGN (full premium) + NEW-FEATURE (контроли + деталь-Sheet) · **Тір:** 1→2 · **Скіли:** `design-taste-frontend` + `impeccable` + `humanizer` + `mcp__a11y` · **Модель:** Opus · **Бриф:** `BRIEFS/M-REVW-01.md` · **Deploy:** `dpl_D2mLionYHEtGYwAJaw855VRM7TxQ` READY
+
+**QA перед кодом (1 батч AskUserQuestion, 4 рішення):** сорт = дата+рейтинг+коментар · фільтр = зірковий + «з коментарем» · бандл M-REVW-02 = так · глибина = повний преміум. Гістограма-як-фільтр (замість окремого ряду зіркових чіпів) — головне дизайн-рішення, founder підтвердив.
+
+**Before:** `ReviewsPage.tsx` (256 рядків) — 3 однакові stat-картки (templated), лише 3 пігулки фільтра публікації, нуль сортування в UI (хардкод `created_at desc` у хуку), легасі-peach-хекси (#789A99/#5C9E7A/#A8928D/#D4935A), картки не клікабельні.
+
+**After:**
+- **Hero-зріз** (`bento-card`): середній рейтинг великим serif (`avgAll.toFixed(1)`) + ряд зірок (round) + «N відгуків» (pluralUk). Тиха стрічка `Публічні N · Приховані N` без коробок (патерн M-MKT-06 de-template).
+- **Гістограма-як-фільтр:** `distribution` 5★→1★ (`useMemo` над усіма відгуками = справжній розподіл), кожен рядок = `<button aria-pressed>` зі смугою-часткою (`count/maxBar`), тап → toggle у `ratingFilter: Set<number>` (multi-select), `disabled` на count=0. Один елемент несе і розподіл, і фільтр.
+- **Контролі:** пігулки публікації (all/published/hidden) + тогл «Лише з коментарем» (`commentOnly`) + сорт-`select` (newest/oldest/highest/lowest, native `<select>` + ChevronDown) + «Скинути фільтри» (умовний). Усі фільтри + сорт в одному `visible` useMemo (AND-комбінація, tie-break за датою для рейтинг-сортів).
+- **M-REVW-02 — клікабельні картки:** full-card underlay `<button absolute inset-0 z-0>` → `setDetail(r)`; контент `relative z-10 pointer-events-none`; publish-тогл — виняток `pointer-events-auto relative z-10` (a11y: окрема дія, не вкладена кнопка в кнопку). Коментар у картці `line-clamp-3`.
+- **`ReviewDetailSheet.tsx` (новий):** адаптивний `Sheet` (reuse — Dialog desktop / vaul mobile), аватар+ім'я, дата, зірки+бал, повний коментар `whitespace-pre-line` без обрізки (або стан «лише оцінка»), full-width дія публікації/приховання.
+- **Empty-стани:** 0 відгуків узагалі (наявний) + окремий «Нічого не знайдено» при порожньому фільтрі з кнопкою скидання.
+
+**A11y (mcp__a11y) — зловлена діра:** Frost `muted-foreground` = `--text-tertiary` rgba(15,23,42,0.45) ≈ #8187A0 на periwinkle #DAE2FF = **2.76:1** (провал малого тексту). Перевів увесь дрібний інформаційний/інтерактивний текст на семантичний `text-text-sub` (= `--text-secondary` #475569 = **5.88:1** ✓, 130 наявних ужитків у проді). Зірки + смуги-частки лишив `text-warning`/`bg-warning` amber #B45309 = 3.90 (графічний поріг 3:1 ✓). У Frost `text-primary`=`--accent`=#0F172A (темний слейт) — лінк «Скинути» безпечний (не #789A99, як у старіших темах).
+
+**Збережено:** тур `useTour('reviews')` + `AnchoredTooltip` anchor на header-картці; Pro-нудж для Starter. Хук `useReviews` не чіпано (дані достатні, сорт/фільтр на клієнті). Grep підтвердив: `useReviews` — єдиний споживач `ReviewsPage`.
+
+**Файли:** `ReviewsPage.tsx` (повний редизайн) + `ReviewDetailSheet.tsx` (новий).
+
+**KEY:** (1) Гістограма-як-фільтр = два завдання (показати розподіл + фільтрувати за балом) в одному елементі — елегантніше за окремий ряд зіркових чіпів. (2) Full-card underlay-кнопка + `pointer-events-none` контент + sibling-виняток на вторинну дію = клікабельна картка без вкладеної кнопки-в-кнопці (патерн M-SHOP-02/M-SVC-03). (3) Frost `muted-foreground` (2.76) провалює дрібний текст на periwinkle — для контентного дрібного тексту бери `text-text-sub` (#475569), не muted. (4) Назва задачі обіцяла «фільтрацію/сортування» — наявна сторінка вже мала фільтр публікації, бракувало сорту + зіркового фільтра; звіряй живий компонент перед оцінкою скоупу.
+
+**Очікує візуального QA founder.**
 
 ---
 
