@@ -93,7 +93,7 @@ export const STYLE_PRESETS: StylePreset[] = [
   { id: 'elegant', label: 'Елегант',    headingFont: SERIF,  bodyFont: SANS, treatment: 'plate', headingWeight: 500, align: 'center', platePos: 'center', uppercase: false, letterSpacing: '0' },
   { id: 'bold',    label: 'Сміливий',   headingFont: SANS,   bodyFont: SANS, treatment: 'plate', headingWeight: 800, align: 'center', platePos: 'bottom', uppercase: true,  letterSpacing: '0.02em' },
   { id: 'gloss',   label: 'Глянець',    headingFont: SERIF,  bodyFont: SANS, treatment: 'glass', headingWeight: 600, align: 'center', platePos: 'center', uppercase: false, letterSpacing: '0' },
-  { id: 'script',  label: 'Рукописний', headingFont: SCRIPT, bodyFont: SANS, treatment: 'plain', headingWeight: 400, align: 'center', platePos: 'center', uppercase: false, letterSpacing: '0' },
+  { id: 'script',  label: 'Рукописний', headingFont: SCRIPT, bodyFont: SANS, treatment: 'plate', headingWeight: 400, align: 'center', platePos: 'center', uppercase: false, letterSpacing: '0' },
 ];
 
 export function presetById(id: StyleId): StylePreset {
