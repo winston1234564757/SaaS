@@ -4,8 +4,8 @@
 
 **Спринт:** Sprint-05 — Загальний беклог (77 задач: Зона Майстра + Клієнтська Зона + Глобальне; +3 ad-hoc M-DASH-10/11/12)
 **Розпочато:** 2026-06-22
-**Прогрес:** 53/84 ✅ · 3 ↩️ скасовано (`M-DASH-11` + `M-MKT-01`/`M-MKT-02` поглинуто редизайном M-MKT-04, founder) — **Фаза 3: Revenue 6/17 done; Growth 2/2 done; Marketing 4/6 done + 2 ↩️; Reviews 2/2 done; Analytics 4/7 done (Огляд + Джерела + Відгуки + Склад).**
-**Наступна задача:** **`M-ANL-05` — Аналітика: таб «Фінанси» (`finances`) editorial-redesign + фікс dummy-чисел** (`design-taste-frontend` + `impeccable` · Opus · P1). Бриф: `ANALYTICS_TABS_REDESIGN.md` §5 + §0. **ТЕМНИЙ герой — alternating** (Склад світлий → Фінанси темний). 🔴 Фікс: FinancesTab dummy-числа під блюром → skeleton без чисел (як зроблено в StockTab M-ANL-04). Аналітика = 7 табів-задач (один таб = одна сесія). **Секції Marketing + Reviews закриті.**
+**Прогрес:** 54/84 ✅ · 3 ↩️ скасовано (`M-DASH-11` + `M-MKT-01`/`M-MKT-02` поглинуто редизайном M-MKT-04, founder) — **Фаза 3: Revenue 6/17 done; Growth 2/2 done; Marketing 4/6 done + 2 ↩️; Reviews 2/2 done; Analytics 5/7 done (Огляд + Джерела + Відгуки + Склад + Фінанси).**
+**Наступна задача:** **`M-ANL-06` — Аналітика: таб «Поведінка» (`behavior`) editorial-redesign + фікс VacationTab фейку** (`design-taste-frontend` + `impeccable` · Opus · P1). Бриф: `ANALYTICS_TABS_REDESIGN.md` §2 + §0. **СВІТЛИЙ герой — alternating** (Фінанси темний → Поведінка світлий). 🔴 Фікс: VacationTab фейк-кнопка «Оптимізувати розклад» (лише тост) + вигадка `lost*0.4` → чесний аналіз втрати + реальний лінк на налаштування вихідних. Найбільший таб (HeatmapGrid + LeadTime + NoShow + Vacation під-таби). Аналітика = 7 табів-задач (один таб = одна сесія). **Секції Marketing + Reviews закриті.**
 **Оновлено:** 2026-06-30
 
 > ✅ **M-MKT-04 + M-MKT-03 DONE + founder approved «ахуєнно» (фінал commit `e8837dba`, 2026-06-29, прогнано на проді bookit-five-psi, передеплой з main для останніх фіксів):** StoryGenerator → покроковий проф-едітор (5 кроків: Тип→Контент→Вигляд→Стиль→Готово), live-прев'ю mobile знизу / desktop справа. Reuse-шелл (storyExport/useStoryData fideliti 1080×1920). Мозок `story/useStoryEditor.ts`, модель `story/storySteps.ts`, панелі `story/steps/*`. **Стиль = образи-пресети** (5: minimal/elegant/bold/gloss/script) + розмір S/M/L + елементи кадру (тогл аватар, тогл Місце-для-посилання=пунктирна зона під IG-стікер). **Контент:** заготовки в Sheet-модалці. **Фон:** палітра(9, Champagne видалено) / портфоліо / своє фото (градієнти+стокові ВИДАЛЕНО). **A11Y-аудит story-canvas через a11y MCP:** авто-тема textColor/mutedColor/accent/pillBg/badge у ВСІХ режимах, плашка 0.62 (worst-case над білим фото verified), фото-скрім, аватар+ім'я sans+чіп. Деталі+кольори — mempalace drawer `drawer_bookit_architecture_ea1bb49cc6d541472cbd7608` + TRANSITION нотатка. 32 unit-тести, tsc 0, build clean. **M-MKT-07 (адмін-аплоадер) скасовано** founder.
@@ -32,25 +32,43 @@ Sprint-05 переріс із "тільки клієнтська зона" у **
 
 ---
 
-## ▶ NEXT: `M-ANL-05` — Аналітика: таб «Фінанси» (`finances`) редизайн + фікс dummy-чисел (P1)
+## ▶ NEXT: `M-ANL-06` — Аналітика: таб «Поведінка» (`behavior`) редизайн + фікс VacationTab фейку (P1)
 
-**Тип:** REDESIGN + FIX · **Тір:** 2 · **Скіли:** `design-taste-frontend` + `impeccable` · **Модель:** Opus · **Бриф:** `ANALYTICS_TABS_REDESIGN.md` §5 («Фінанси») + §0 (Спільна основа — читати ПЕРШИМ).
+**Тип:** REDESIGN + FIX · **Тір:** 2 · **Скіли:** `design-taste-frontend` + `impeccable` · **Модель:** Opus · **Бриф:** `ANALYTICS_TABS_REDESIGN.md` §2 («Поведінка») + §0 (Спільна основа — читати ПЕРШИМ).
 
-**🎨 Alternating герой:** …·світлий(Джерела)·темний(Відгуки)·світлий(Склад) → **Фінанси = ТЕМНИЙ герой** (обкладинка, як OverviewBriefing/ReviewsTab). Темна обкладинка `--hero-card-bg #0F172A` + serif-домінанта + Δ + by-numbers.
+**🎨 Alternating герой:** …·світлий(Склад)·темний(Фінанси) → **Поведінка = СВІТЛИЙ герой** (концепт «ритм бізнесу»: теплова карта завантаження як головний візуал, велика, не втиснута). Зразок світлого героя — SourceTab/StockTab/FeaturedServices.
 
-**🔴 ФІКС фейку (обов'язково):** `FinancesTab` при відсутності даних / під Pro-блюром рендерить **захардкоджені dummy-числа**. → Замінити на **skeleton-силует без конкретних чисел** (нуль фейк-даних) — точно як зроблено в `StockTab` M-ANL-04 (skeleton-силует + teaser, БЕЗ цифр). Зразок: StockTabView empty-state + `AnalyticsActivation`.
+**🔴 ФІКС фейку (обов'язково):** `VacationTab` «Рятувальник відпустки»: (1) кнопка «Оптимізувати розклад» лише показує тост, нічого не робить → прибрати або зробити реальну дію (лінк на налаштування вихідних `/dashboard/settings` графік); (2) «Врятуйте ₴X» = `lost*0.4` вигадка → лишити чесний аналіз втрати (сер.день × днів відпустки з `useVacationImpact`), без множника 0.4.
+
+**Структура табу:** найбільший — `HeatmapGrid` (`extras.occupancy_heatmap` год×день) + 3 під-таби: `LeadTimeTab` (`useLeadTimeDistribution` 5 бакетів+середній), `NoShowTab` (`useNoShowMetrics` неявки/скасування %+журнал), `VacationTab` (`useVacationImpact`). Редизайн: теплова карта = герой; LeadTime/NoShow%/Vacation = диференційовані врізки (не рівні картки); No-Show журнал = герой(найбільша втрата/частий неявник)+список.
 
 **Закон редизайну (Принцип темного блоку):** з концепту з нуля (НЕ ретрофіт), асиметрія герой+решток у КОЖНІЙ секції, маркер провалу = рівномірність, **рендер локально власними очима ДО founder**.
 
-**Воркфлоу верифікації (відпрацьовано M-ANL-02/03/04):** прев'ю-роут БЕЗ `_`-папки (Next виключає `_folder` → 404). Клади в `src/app/devpreview/<tab>/page.tsx`, розділяй компонент `<Tab>` (fetch) + `<Tab>View` (презентація) → прев'ю рендерить View з мок-даними. Скрипт-скріншот: тимчасовий `.mjs` у `bookit/` (ESM не бачить node_modules ззовні), `npx playwright`. **Видаляй прев'ю-роут + скрипт ПЕРЕД commit.**
+**Воркфлоу верифікації (відпрацьовано M-ANL-02/03/04/05):** прев'ю-роут БЕЗ `_`-папки (Next виключає `_folder` → 404). Клади в `src/app/devpreview/<tab>/page.tsx`, розділяй компонент `<Tab>` (fetch) + `<Tab>View` (презентація) → прев'ю рендерить View з мок-даними. Скрипт-скріншот: тимчасовий `.mjs` у `bookit/` (ESM не бачить node_modules ззовні), `npx playwright`. **Видаляй прев'ю-роут + скрипт ПЕРЕД commit.** 🔴 Анімовані ширини смуг — СТАТИЧНІ inline `style width`, НЕ framer `animate width` (зникає в headless; урок M-ANL-05 WaterfallChart).
 
-**Переюз:** `SectionHeading`, `OverviewDetailSheet`, патерн обкладинки `OverviewBriefing`/`ReviewsTab` (темний герой), `BentoCell`. Дані: перевір хук FinancesTab.
+**Переюз:** `SectionHeading`, `OverviewDetailSheet` (метрика→пояснення формули в `.note`; інцидент→профіль клієнта), `BentoCell`. Клік: метрика → пояснення; неявник → профіль.
 
-**Дизайн-мова:** Frost-токени; числа `metric-value` tabular (🔴 НЕ `heading-serif` для метрик — Cormorant oldstyle рендерить "18"→"I8", урок M-ANL-04); заголовки `heading-serif`; текст `text-foreground`/`text-text-sub` (#475569), **заборонено** `text-muted-foreground/60` на світлому (2.76 провал); a11y графіка 3:1 / текст 4.5:1 через `mcp__a11y`. **🔴 Семантичні кольори Tailwind v4: `text-destructive`/`bg-destructive` (НЕ `text-error` — `--color-error` не існує, мапінг `--color-destructive: var(--error)`). Δ-зелений на світлому: `#0D6B2F` (5.21), НЕ `text-success` #16803C (3.93). Δ на ТЕМНОМУ герої: emerald-300/rose-300 (11.71/9.44). Білі тінти на slate: white/55 (6.09 ✓), НЕ white/40 (3.98 ✗).**
+**Дизайн-мова:** Frost-токени; числа `metric-value` tabular (🔴 НЕ `heading-serif` для дрібних метрик — Cormorant oldstyle рендерить "18"→"I8", урок M-ANL-04); заголовки `heading-serif`; текст `text-foreground`/`text-text-sub` (#475569), **заборонено** `text-muted-foreground/60` на світлому (2.76 провал); a11y графіка 3:1 / текст 4.5:1 через `mcp__a11y`. **🔴 Семантичні кольори Tailwind v4: `text-destructive`/`bg-destructive` (НЕ `text-error` — `--color-error` не існує, мапінг `--color-destructive: var(--error)`). Δ-зелений на світлому: `#0D6B2F` (5.21), НЕ `text-success` #16803C (3.93). Δ на ТЕМНОМУ герої: emerald-300/rose-300 (11.71/9.44). Червоний на світлому: `text-destructive` #B91C1C (5.08). Білі тінти на slate: white/55 (6.09 ✓), НЕ white/40 (3.98 ✗).**
 
-**Порядок решти (один = одна сесія):** ~~Джерела~~✅ ~~Відгуки~~✅ ~~Склад~~✅ → Фінанси (05) → Поведінка (06) → Зростання (07). Чергування героя: темний(Огляд)·світлий(Джерела)·темний(Відгуки)·світлий(Склад)·**темний(Фінанси)**·світлий(Поведінка)·темний(Зростання).
+**Порядок решти (один = одна сесія):** ~~Джерела~~✅ ~~Відгуки~~✅ ~~Склад~~✅ ~~Фінанси~~✅ → Поведінка (06) → Зростання (07). Чергування героя: темний(Огляд)·світлий(Джерела)·темний(Відгуки)·світлий(Склад)·темний(Фінанси)·**світлий(Поведінка)**·темний(Зростання).
 
-**🔴 Фейки до виправлення:** ~~StockTab dummy-числа~~✅ (M-ANL-04); FinancesTab dummy-числа під блюром (M-ANL-05 → skeleton, ЦЯ задача); VacationTab фейк-кнопка «Оптимізувати розклад» + вигадка `lost*0.4` (M-ANL-06 → чесний аналіз/реальна дія).
+**🔴 Фейки до виправлення:** ~~StockTab dummy-числа~~✅ (M-ANL-04); ~~FinancesTab dummy-числа~~✅ + ~~WaterfallChart noShowLoss 5%~~✅ (M-ANL-05, файл видалено); VacationTab фейк-кнопка «Оптимізувати розклад» + вигадка `lost*0.4` (M-ANL-06 → чесний аналіз/реальна дія, ЦЯ задача).
+
+---
+
+## ✅ DONE: `M-ANL-05` — Аналітика: таб «Фінанси» (`finances`) редизайн + фікс dummy-чисел (P1) · commit `bbd45815`
+
+**Концепт «P&L звіт».** 5 рівних KPI-карток + WaterfallChart → асиметрія за Принципом темного блоку.
+
+- **ТЕМНИЙ герой (alternating):** чистий прибуток домінантою (`metric-value` tabular + ₴ окремо; loss-стан → rose-300) + **Δ до минулого періоду** (Pro) + by-numbers виручка/витрати/чиста маржа (білі тінти на slate). Клік → P&L-розбивка через `OverviewDetailSheet`.
+- **Δ-реалізація:** `FinancesTab` викликає `useAnalyticsExtras` ДВІЧІ — поточний період + `previousWindow(start,end)` (локальна копія helper-а, як у useSourceAttribution/useReviewsMetrics). `deltaNet = (curr−prev)/|prev|·100`, guard prev=0/null.
+- **Чесний каскад руху грошей (світла секція col-7):** реальний потік Виручка послуг + Продажі товарів → Загальна виручка (subtotal) → мінус Собівартість/Знижки/Опекс → Чистий прибуток. Hairline-смуги СТАТИЧНОЇ ширини (`style width`, НЕ framer animate — зникає в headless). Нульові рядки відфільтровано (`.filter(kind total/sub || kop>0)`). Кольори смуг: in `#16803C`/55, sub foreground/55, out destructive/55, total primary (графіка 3:1).
+- **Маржинальність послуг (col-5):** герой ризику = найтонша маржа (services sorted by margin asc, [0]); <40% → warning-тон + AlertTriangle «Низька маржа», інакше neutral «Найтонша маржа». Ранг-список решти. Клік → `serviceMarginDetail` (виручка/собівартість/прибуток/записів + note + cta «Перейти до послуги»). Рекомендацію «+10%» прибрано → нейтральний лінк «Переглянути ціну».
+- **🔴 4-й фейк (НЕ був у брифі — знайдено в коді):** `WaterfallChart.tsx` вигадував `noShowLoss = servicesRevenue*0.05` і роздував фейковий «Загальний вал» → каскад починався з брехні. **Файл видалено** (єдиний споживач — цей таб; як мертвий ServiceRow у M-ANL-01).
+- **Фікс dummy:** Pro empty-state (нема даних) → skeleton-силует БЕЗ цифр + teaser (прибрано захардкоджений `displayFin`).
+- **Розділено** `FinancesTab` (fetch+Δ+стани) + `FinancesTabView` (презентація). Дані: `FinanceAnalytics` усе в КОПІЙКАХ (`grn()` = /100).
+- **a11y:** #0D6B2F (5.21), #B91C1C (5.08) на periwinkle; emerald-300/rose-300 на slate (11.71/9.44).
+- Верифіковано власними очима (Playwright headless: profit/healthy/loss/mobile — усі 4 стани). TSC:0 Build:clean humanizer✓. Очікує візуального QA founder.
 
 ---
 
