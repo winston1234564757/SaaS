@@ -4,8 +4,8 @@
 
 **Спринт:** Sprint-05 — Загальний беклог (77 задач: Зона Майстра + Клієнтська Зона + Глобальне; +3 ad-hoc M-DASH-10/11/12)
 **Розпочато:** 2026-06-22
-**Прогрес:** 55/84 ✅ · 3 ↩️ скасовано (`M-DASH-11` + `M-MKT-01`/`M-MKT-02` поглинуто редизайном M-MKT-04, founder) — **Фаза 3: Revenue 6/17 done; Growth 2/2 done; Marketing 4/6 done + 2 ↩️; Reviews 2/2 done; Analytics 6/7 done (Огляд + Джерела + Відгуки + Склад + Фінанси + Поведінка).**
-**Наступна задача:** **`M-ANL-07` — Аналітика: таб «Зростання» (`growth`) editorial-redesign** (`design-taste-frontend` + `impeccable` · Opus · P1). Бриф: `ANALYTICS_TABS_REDESIGN.md` §1 + §0. **ТЕМНИЙ герой — alternating** (Поведінка світлий → Зростання темний). ОСТАННІЙ таб аналітики, найскладніший — багато важелів (smart-pricing uplift, flash, broadcasts, LTV-Парето, winback, пари послуг, когорти). Аналітика = 7 табів-задач (один таб = одна сесія). **Після M-ANL-07 секція Analytics ПОВНІСТЮ закрита.** **Секції Marketing + Reviews закриті.**
+**Прогрес:** 56/84 ✅ · 3 ↩️ скасовано (`M-DASH-11` + `M-MKT-01`/`M-MKT-02` поглинуто редизайном M-MKT-04, founder) — **Фаза 3: Revenue 6/17 done; Growth 2/2 done; Marketing 4/6 done + 2 ↩️; Reviews 2/2 done; Analytics 7/7 done ✅ ПОВНІСТЮ ЗАКРИТА (Огляд + Джерела + Відгуки + Склад + Фінанси + Поведінка + Зростання).**
+**Наступна задача:** **обрати з founder** — секція Analytics (M-ANL-01..07) повністю закрита. Кандидати за `BACKLOG.md`: решта Revenue (11 задач лишилось) або інші секції. **Секції Marketing + Reviews + Analytics закриті.**
 **Оновлено:** 2026-06-30
 
 > ✅ **M-MKT-04 + M-MKT-03 DONE + founder approved «ахуєнно» (фінал commit `e8837dba`, 2026-06-29, прогнано на проді bookit-five-psi, передеплой з main для останніх фіксів):** StoryGenerator → покроковий проф-едітор (5 кроків: Тип→Контент→Вигляд→Стиль→Готово), live-прев'ю mobile знизу / desktop справа. Reuse-шелл (storyExport/useStoryData fideliti 1080×1920). Мозок `story/useStoryEditor.ts`, модель `story/storySteps.ts`, панелі `story/steps/*`. **Стиль = образи-пресети** (5: minimal/elegant/bold/gloss/script) + розмір S/M/L + елементи кадру (тогл аватар, тогл Місце-для-посилання=пунктирна зона під IG-стікер). **Контент:** заготовки в Sheet-модалці. **Фон:** палітра(9, Champagne видалено) / портфоліо / своє фото (градієнти+стокові ВИДАЛЕНО). **A11Y-аудит story-canvas через a11y MCP:** авто-тема textColor/mutedColor/accent/pillBg/badge у ВСІХ режимах, плашка 0.62 (worst-case над білим фото verified), фото-скрім, аватар+ім'я sans+чіп. Деталі+кольори — mempalace drawer `drawer_bookit_architecture_ea1bb49cc6d541472cbd7608` + TRANSITION нотатка. 32 unit-тести, tsc 0, build clean. **M-MKT-07 (адмін-аплоадер) скасовано** founder.
@@ -32,27 +32,41 @@ Sprint-05 переріс із "тільки клієнтська зона" у **
 
 ---
 
-## ▶ NEXT: `M-ANL-07` — Аналітика: таб «Зростання» (`growth`) редизайн (P1) · ОСТАННІЙ таб
+## ▶ NEXT: обрати наступну задачу з founder — Analytics ПОВНІСТЮ закрита
 
-**Тип:** REDESIGN · **Тір:** 2 · **Скіли:** `design-taste-frontend` + `impeccable` · **Модель:** Opus · **Бриф:** `ANALYTICS_TABS_REDESIGN.md` §1 («Зростання») + §0 (Спільна основа — читати ПЕРШИМ). **Найскладніший — багато важелів. Після нього Analytics ПОВНІСТЮ закрита.**
+Секція **Analytics (M-ANL-01..07) закрита 7/7** ✅. Marketing + Reviews + Analytics закриті. Кандидати за `BACKLOG.md`: решта **Revenue** (11 задач, scope Revenue 6/17) або інші зони. Перед стартом — Task Gate (mempalace_search → читати живий код → 3-5 QA → skill → humanizer → ОК).
 
-**🎨 Alternating герой:** …·темний(Фінанси)·світлий(Поведінка) → **Зростання = ТЕМНИЙ герой** (обкладинка, як OverviewBriefing/ReviewsTab/FinancesTab). Концепт «двигуни росту».
+**🔴 Усі 4 задокументовані фейки аналітики виправлено:** ~~StockTab dummy~~✅ (M-ANL-04); ~~FinancesTab dummy~~✅ + ~~WaterfallChart noShowLoss 5%~~✅ (M-ANL-05); ~~VacationTab кнопка + lost*0.4~~✅ (M-ANL-06); ~~Growth loyalty «бали»→чесні візити~~✅ (M-ANL-07); ~~incident note «передоплата/підтвердження»~~✅ (фікс після M-ANL-06, неіснуючі фічі).
 
-**Структура (живий код):** рендериться `BentoSecondary` (smart-pricing uplift, flash-deals, broadcasts, LTV-концентрація Парето, winback-кандидати, пари послуг) + `GrowthLists` (лояльність + реферали) + `CohortHeatmap` (когорти повернення). Дані: `useAnalyticsExtras` scope `all` (`dynamic_pricing_uplift`, `ltv_concentration`, `service_pairing`, `cohort_matrix`) + `useAnalyticsMarketing` (flash/broadcasts/loyalty/referrals). ⚠️ Звірити живий код `AnalyticsPage` рядки ~470-510 (growth-блок) ПЕРЕД дизайном — багато сутностей.
+**📐 Відпрацьований воркфлоу редизайну (7 табів аналітики) — переюзний на будь-який редизайн:**
+- Закон темного блоку: концепт з нуля, асиметрія герой+решток, маркер провалу=рівномірність, alternating темний/світлий герой.
+- Розділення `<Tab>`(fetch+гейти) + `<Tab>View`(презентація) → прев'ю-роут `src/app/devpreview/<x>/page.tsx` (БЕЗ `_`-папки!) рендерить View з мок-даними.
+- Скрипт-скріншот: тимчасовий `__shot.mjs` у `bookit/` + `node __shot.mjs` (Playwright headless), рендер власними очима ДО founder. **Видаляй прев'ю + скрипт ПЕРЕД commit; якщо build падає на `.next/dev/types` → `rm -rf .next/dev/types .next/types` + ребілд.**
+- 🔴 Смуги/прогрес — СТАТИЧНА `style width`, НЕ framer `animate width` (зникає в headless); recharts — `isAnimationActive={false}`.
+- 🔴 Метрики — `metric-value` (tabular), НЕ `heading-serif` (Cormorant oldstyle "18"→"I8").
+- 🔴 Семантика Tailwind v4: `text-destructive` (НЕ `text-error`, бо `--color-error` не існує).
+- a11y periwinkle #DCE3FF: `text-text-sub` #475569 (5.88) для дрібного; #0D6B2F (5.21) зелений; #92400E (5.56) warning; #B91C1C (5.08) red. **Заборонено** `text-muted-foreground/60` (2.76). Темний slate #0F172A: white/55 (6.09) min, Δ emerald-300/rose-300.
+- Δ-тренд: 2-й виклик хука з `previousWindow(start,end)` (useSourceAttribution/useReviewsMetrics/FinancesTab).
+- Переюз: `SectionHeading`, `OverviewDetailSheet` (payload hero/rows/note/cta), `BentoCell`, `CohortHeatmap`.
 
-**UI-редизайн (концепт «двигуни росту»):** **Герой** = найсильніший важіль періоду (напр. «Smart Pricing +N₴» або «Топ-20% = X% доходу») великим serif-блоком темної обкладинки, з дією. Не рівний ряд карток. **Решток:** LTV-Парето як featured-візуалізація + winback-список (герой+ранг) + пари послуг компактно. Когорти — повноширинна теплова стрічка внизу (reuse `CohortHeatmap`). Клік: кожен growth-важіль → `OverviewDetailSheet` (розклад+дія) або профіль клієнта (winback → `/dashboard/clients?clientPhone`).
+---
 
-**Закон редизайну (Принцип темного блоку):** з концепту з нуля (НЕ ретрофіт), асиметрія герой+решток у КОЖНІЙ секції, маркер провалу = рівномірність, **рендер локально власними очима ДО founder**.
+## ✅ DONE: `M-ANL-07` — Аналітика: таб «Зростання» (`growth`) редизайн (P1) · commit `987b3d67` · Analytics ЗАКРИТО 7/7
 
-**Воркфлоу верифікації (відпрацьовано M-ANL-02..06):** прев'ю-роут БЕЗ `_`-папки (Next виключає `_folder` → 404). Клади в `src/app/devpreview/<tab>/page.tsx`, розділяй компонент `<Tab>` (fetch) + `<Tab>View` (презентація) → прев'ю рендерить View з мок-даними. Скрипт-скріншот: тимчасовий `.mjs` у `bookit/` (ESM не бачить node_modules ззовні), `npx playwright`. **Видаляй прев'ю-роут + скрипт ПЕРЕД commit.** 🔴 Якщо видаляєш прев'ю-роут і build падає на `.next/dev/types/validator.ts` (стале посилання на видалену сторінку) — `rm -rf .next/dev/types .next/types` і ребілд (урок M-ANL-06, як M-MKT-05). 🔴 Анімовані ширини смуг — СТАТИЧНІ inline `style width`, НЕ framer `animate width` (зникає в headless). recharts — `isAnimationActive={false}`.
+**Концепт «двигуни росту».** 8 рівних карток (BentoSecondary 6 + GrowthLists + cohort) → асиметрія.
 
-**Переюз:** `SectionHeading`, `OverviewDetailSheet`, патерн темної обкладинки `OverviewBriefing`/`FinancesTab`, `BentoCell`, `CohortHeatmap` (уже є). Можна консолідувати growth-блок в один `GrowthTab`(fetch)+`GrowthTabView` (як зроблено для Behavior).
-
-**Дизайн-мова:** Frost-токени; числа `metric-value` tabular (🔴 НЕ `heading-serif` для метрик — Cormorant oldstyle рендерить "18"→"I8", урок M-ANL-04); заголовки `heading-serif`; текст `text-foreground`/`text-text-sub` (#475569), **заборонено** `text-muted-foreground/60` на світлому (2.76 провал); a11y графіка 3:1 / текст 4.5:1 через `mcp__a11y`. **🔴 Семантичні кольори Tailwind v4: `text-destructive`/`bg-destructive` (НЕ `text-error` — `--color-error` не існує, мапінг `--color-destructive: var(--error)`). Δ-зелений на світлому: `#0D6B2F` (5.21), НЕ `text-success` #16803C (3.93). Дрібний warning на світлому: `#92400E` (5.56). Δ на ТЕМНОМУ герої: emerald-300/rose-300 (11.71/9.44). Червоний на світлому: `text-destructive` #B91C1C (5.08). Білі тінти на slate: white/55 (6.09 ✓), НЕ white/40 (3.98 ✗).**
-
-**Порядок (один = одна сесія):** ~~Джерела~~✅ ~~Відгуки~~✅ ~~Склад~~✅ ~~Фінанси~~✅ ~~Поведінка~~✅ → **Зростання (07, ОСТАННІЙ)**. Чергування героя: темний(Огляд)·світлий(Джерела)·темний(Відгуки)·світлий(Склад)·темний(Фінанси)·світлий(Поведінка)·**темний(Зростання)**.
-
-**🔴 Фейки до виправлення:** ~~StockTab dummy-числа~~✅ (M-ANL-04); ~~FinancesTab dummy-числа~~✅ + ~~WaterfallChart noShowLoss 5%~~✅ (M-ANL-05); ~~VacationTab фейк-кнопка + lost*0.4~~✅ (M-ANL-06). **Усі 4 задокументовані фейки виправлено.** ⚠️ Звірити growth-блок на нові фейки під час M-ANL-07.
+- **ТЕМНИЙ герой (alternating):** додатковий дохід від розумних цін `+₴N` домінанта (`metric-value`) + врятовані слоти + by-numbers (топ-20% частка / флеш заброньовано / розсилки→записи). Клік → `upliftDetail` (розбивка правил + cta «Налаштувати ціни»). **Fallback при uplift=0:** домінанта → LTV-концентрація `X%` + нудж «Увімкнути розумні ціни»→`/dashboard/revenue`.
+- **LTV Парето featured (col-7):** концентрація% serif + гістограма LTV СТАТИЧНИХ смуг + winback герой+ранг (top-4) клік→`onOpenClient`(профіль).
+- **Канали залучення (col-5):** флеш/розсилки/реферали/постійні клієнти — диференційовані рядки (іконка+назва+метрика+sub), не N рівних карток.
+- **Спрацювання розумних цін (col-5):** rule breakdown (peak/quiet/early_bird/last_minute) смугами; empty-нудж.
+- **Що бронюють разом (col-7):** топ-5 пар послуг смугами; empty-меседж.
+- **Когорти повернення (col-12):** reuse `CohortHeatmap` (його grid headless-safe, лише тултіп на framer).
+- **🔴 Чесні лейбли лояльності:** «Постійні клієнти» + «N візитів сумарно» замість «Клуб лояльності / нараховано балів» — хук рахує `total_visits` (loyaltyStats.totalPoints), не справжні бали. (5-й фейк-лейбл, виправлено.)
+- **🔴 Static bars:** `LtvHistogram` + `ServicePairingMatrix` мали framer `animate width` (зникли б у headless) → переписано власними static-смугами в GrowthTabView.
+- **Консолідація:** `GrowthTab`(Pro-gate+loading+empty, приймає дані пропсами з AnalyticsPage)+`GrowthTabView`(презентація). **Видалено 8 мертвих файлів:** BentoSecondary, GrowthLists, DynamicPricingUplift, FlashDealsCard, BroadcastEngagement, LtvConcentration, ServicePairing, LtvHistogram. GoalProgress прибрано зі Зростання (founder; компонент лишено — є тести); `ServicePairingMatrix` лишено (тип `ServicePair`).
+- **Дані:** growth-дані з page-level `extras` (useAnalyticsExtras scope all) + `useAnalyticsMarketing` — передаються пропсами (НЕ re-fetch). `hasData = summary.bookings > 0`, `isLoading = isExtrasLoading`.
+- Pro-gate value-екран. a11y: #92400E (5.56), text-text-sub, emerald/rose на slate.
+- Верифіковано власними очима (Playwright headless: full/noUplift/mobile). TSC:0 Build:clean humanizer✓. Очікує візуального QA founder.
 
 ---
 
