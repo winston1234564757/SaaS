@@ -1,76 +1,80 @@
 'use client';
 
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Zap, Check, AlertCircle } from 'lucide-react';
-import { useToast } from '@/lib/toast/context';
+import React, { useMemo } from 'react';
+import { Zap, ArrowRight } from 'lucide-react';
+import Link from 'next/link';
+import { pluralUk } from '@/lib/utils/pluralUk';
 
 interface SmartPricingOptimizerProps {
   occupancyHeatmap?: { dow: number; hour: number; occupancy_pct: number }[];
 }
 
+const DAYS = ['Неділя', 'Понеділок', 'Вівторок', 'Середа', 'Четвер', "П'ятниця", 'Субота'];
+const DAYS_GENITIVE = ['неділю', 'понеділок', 'вівторок', 'середу', 'четвер', "п'ятницю", 'суботу'];
+
+/**
+ * Чесний нудж розумних цін на основі РЕАЛЬНОЇ теплової карти завантаження.
+ * Без вигаданих сум/відсотків і без фейкової «активації» — веде на справжню
+ * сторінку налаштування динамічних цін. Не рендериться без вираженого піку.
+ * (M-ANL-01: прибрано захардкоджені «+₴3,200/міс / 95% / +15% / one-click toast».)
+ */
 export function SmartPricingOptimizer({ occupancyHeatmap }: SmartPricingOptimizerProps) {
-  const [activated, setActivated] = useState(false);
-  const { showToast } = useToast();
+  const peak = useMemo(() => {
+    if (!occupancyHeatmap || occupancyHeatmap.length === 0) return null;
+    // Найвища завантаженість по днях тижня (реальні дані)
+    const byDay = new Map<number, { max: number; hotHours: number }>();
+    for (const slot of occupancyHeatmap) {
+      const cur = byDay.get(slot.dow) ?? { max: 0, hotHours: 0 };
+      byDay.set(slot.dow, {
+        max: Math.max(cur.max, slot.occupancy_pct),
+        hotHours: cur.hotHours + (slot.occupancy_pct >= 80 ? 1 : 0),
+      });
+    }
+    let best: { dow: number; max: number; hotHours: number } | null = null;
+    for (const [dow, v] of byDay) {
+      if (!best || v.max > best.max) best = { dow, ...v };
+    }
+    // Поріг показу: пік має бути реально високим
+    if (!best || best.max < 75) return null;
+    return best;
+  }, [occupancyHeatmap]);
 
-  // Шукаємо, чи є дні з завантаженістю > 80% (пікові години)
-  const peakSlots = occupancyHeatmap?.filter(h => h.occupancy_pct >= 80) ?? [];
-  
-  // Для симулятора: якщо є хоч одна пікова година, показуємо рекомендацію для цього дня тижня
-  const daysOfWeek = ['Понеділок', 'Вівторок', 'Середа', 'Четвер', 'П\'ятниця', 'Субота', 'Неділя'];
-  const peakDayIndex = peakSlots.length > 0 ? peakSlots[0].dow - 1 : 5; // Дефолт: субота
-  const peakDayName = daysOfWeek[peakDayIndex] || 'Субота';
+  if (!peak) return null;
 
-  const handleActivate = () => {
-    setActivated(true);
-    showToast({
-      type: 'success',
-      title: 'Динамічну націнку активовано!',
-      message: `Націнку +15% додано до послуг у ${peakDayName.toLowerCase()} з підвищеним попитом.`,
-    });
-  };
+  const dayName = DAYS[peak.dow] ?? '';
+  const dayGen = DAYS_GENITIVE[peak.dow] ?? dayName.toLowerCase();
 
   return (
-    <div className="bento-card p-5 bg-primary/5 border border-primary/15 flex flex-col gap-4 relative overflow-hidden">
-      <div className="absolute top-0 right-0 p-3 opacity-10">
-        <Zap className="size-16 text-primary" />
+    <div className="bento-card h-full p-5 flex flex-col gap-3 relative overflow-hidden">
+      <div aria-hidden className="absolute -top-6 -right-6 opacity-[0.07]">
+        <Zap className="size-24 text-primary" />
       </div>
 
-      <div className="flex items-center gap-2 text-primary">
-        <Zap className="size-4 animate-pulse" />
-        <h3 className="text-xs font-bold uppercase tracking-wider">Розумний оптимізатор цін</h3>
+      <div className="flex items-center gap-2 relative z-10">
+        <span className="inline-flex size-7 items-center justify-center rounded-lg bg-primary/10 text-primary border border-primary/15">
+          <Zap className="size-3.5" />
+        </span>
+        <h3 className="text-sm font-semibold text-foreground">Розумні ціни</h3>
       </div>
 
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex-1">
-          <p className="text-sm font-semibold text-foreground">
-            {activated 
-              ? `Оптимальні ціни для ${peakDayName.toLowerCase()} активовані` 
-              : `Отримайте додатково +₴3,200/міс у ${peakDayName.toLowerCase()}`
-            }
-          </p>
-          <p className="text-xs text-muted-foreground/70 mt-1 leading-normal">
-            {activated
-              ? `Ціни автоматично збільшуватимуться на +15% при завантаженості слотів понад 85%.`
-              : `Ваша завантаженість у ${peakDayName.toLowerCase()} становить 95%+. Клієнти готові платити більше за гарячий час.`
-            }
-          </p>
-        </div>
-
-        <button
-          type="button"
-          onClick={handleActivate}
-          disabled={activated}
-          className={`flex items-center justify-center gap-2 px-5 py-3 rounded-full text-xs font-bold transition-all active:scale-[0.95] ${
-            activated 
-              ? 'bg-success/10 text-success border border-success/20 cursor-default' 
-              : 'bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer'
-          }`}
-        >
-          {activated ? <Check size={13} /> : <Zap size={13} />}
-          {activated ? 'Активовано' : 'Активувати в один клік'}
-        </button>
+      <div className="relative z-10 flex-1">
+        <p className="text-[15px] font-semibold text-foreground leading-snug">
+          {dayName} — твій пік: завантаженість сягає <span className="text-primary tabular-nums">{Math.round(peak.max)}%</span>
+        </p>
+        <p className="text-[13px] text-text-sub mt-1.5 leading-relaxed">
+          {peak.hotHours > 0
+            ? `${peak.hotHours} ${pluralUk(peak.hotHours, 'гаряча година', 'гарячі години', 'гарячих годин')} у ${dayGen}. Клієнти готові платити більше за зручний час. Додай націнку, щоб не віддавати її задешево.`
+            : `Висока завантаженість у ${dayGen}. Клієнти готові платити більше за зручний час, тож додай націнку.`}
+        </p>
       </div>
+
+      <Link
+        href="/dashboard/revenue?tab=pricing"
+        className="relative z-10 group inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-[var(--btn-primary-bg)] text-[var(--accent-on)] text-[13px] font-semibold cursor-pointer active:scale-[0.97] transition-transform self-start"
+      >
+        Налаштувати націнку
+        <ArrowRight size={14} className="transition-transform group-hover:translate-x-0.5" />
+      </Link>
     </div>
   );
 }

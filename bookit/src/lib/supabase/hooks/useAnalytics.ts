@@ -75,6 +75,9 @@ export interface BentoData {
   topClients:        TopClient[];
   bestDayOfWeek:     { dayIdx: number; day: string; pct: number; data: number[]; bookings: number[] };
   avgCheck:          { current: number; prev: number | null; delta: number | null };
+  // Δ період-проти-періоду (booking-based, джерело prevRes — для editorial-обкладинки M-ANL-01)
+  revenue:           { current: number; prev: number | null; delta: number | null };
+  bookings:          { current: number; prev: number | null; delta: number | null };
   hoursBooked:       number;
   sourceBreakdown:   { online: number; manual: number; shop: number; total: number };
 }
@@ -329,11 +332,17 @@ export function useAnalytics(
 
         const currentAvg = bookingCompleted.length > 0 ? bookingRevenue / bookingCompleted.length : 0;
         let prevAvg: number | null = null;
+        let prevRevenue: number | null = null;
+        let prevBookingsCount: number | null = null;
         if (prevRes.data) {
           const prevCompleted = (prevRes.data as PrevBookingRow[]).filter(b => b.status === 'completed');
           const prevRev       = prevCompleted.reduce((s, b) => s + Number(b.total_price), 0);
+          prevRevenue        = prevRev;
+          prevBookingsCount  = prevCompleted.length;
           prevAvg = prevCompleted.length > 0 ? prevRev / prevCompleted.length : null;
         }
+        const pctDelta = (cur: number, prev: number | null): number | null =>
+          prev !== null && prev > 0 ? Math.round(((cur - prev) / prev) * 100) : null;
 
         let totalMins = 0;
         rows.filter(b => b.status !== 'cancelled').forEach(b => b.booking_services.forEach((s: any) => totalMins += Number(s.duration_minutes || 0)));
@@ -346,6 +355,16 @@ export function useAnalytics(
             current: Math.round(currentAvg),
             prev:    prevAvg !== null ? Math.round(prevAvg) : null,
             delta:   prevAvg !== null && currentAvg > 0 ? Math.round(((currentAvg - prevAvg) / prevAvg) * 100) : null,
+          },
+          revenue: {
+            current: Math.round(bookingRevenue),
+            prev:    prevRevenue !== null ? Math.round(prevRevenue) : null,
+            delta:   pctDelta(bookingRevenue, prevRevenue),
+          },
+          bookings: {
+            current: bookingCompleted.length,
+            prev:    prevBookingsCount,
+            delta:   pctDelta(bookingCompleted.length, prevBookingsCount),
           },
           hoursBooked: Math.round(totalMins / 60 * 10) / 10,
           sourceBreakdown: {

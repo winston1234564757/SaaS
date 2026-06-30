@@ -7,34 +7,33 @@ import { cn } from '@/lib/utils/cn';
 import { motion, AnimatePresence, type PanInfo } from 'framer-motion';
 import { useQueryState, parseAsString } from 'nuqs';
 import {
-  BarChart2, Download, Loader2, RefreshCw,
-  Crown, Star, Users, TrendingUp,
-  AlertTriangle, Clock, ShoppingBag, ShieldAlert,
-  ChevronDown, ChevronLeft, ChevronRight
+  RefreshCw, Crown,
+  Users, TrendingUp, AlertTriangle,
+  ChevronLeft, ChevronRight,
 } from 'lucide-react';
 import Link from 'next/link';
 
-import { createClient } from '@/lib/supabase/client';
 import { useMasterContext } from '@/lib/supabase/context';
 import { formatPrice } from '@/lib/utils/currency';
 import { pluralUk } from '@/lib/utils/pluralUk';
 import { useDateRange } from '@/lib/supabase/hooks/useDateRange';
 import { useAnalytics, exportAnalyticsCsv, linearRegression } from '@/lib/supabase/hooks/useAnalytics';
 import { useAnalyticsExtras } from '@/lib/supabase/hooks/useAnalyticsExtras';
-import { useQuery, keepPreviousData } from '@tanstack/react-query';
+import { useAnalyticsMarketing } from '@/lib/supabase/hooks/useAnalyticsMarketing';
 
-// Компоненти-сегменти Bento
+// Сегменти
 import { PeriodControls } from './sections/PeriodControls';
-import { KpiTicker } from './sections/KpiTicker';
-import { HeroStory, type StoryItem } from './sections/HeroStory';
+import { OverviewBriefing, type BriefingMetric } from './sections/OverviewBriefing';
+import { OverviewDetailSheet, type OverviewDetail } from './sections/OverviewDetailSheet';
+import { type StoryItem } from './sections/HeroStory';
 import { BentoSecondary } from './sections/BentoSecondary';
 import { GrowthLists } from './sections/GrowthLists';
 import { BusinessHealthScoreWidget } from './sections/BusinessHealthScoreWidget';
 import { MorningBriefing } from './sections/MorningBriefing';
-import { SmartPricingOptimizer } from './sections/SmartPricingOptimizer';
+import { OverviewTab, SectionHeading } from './sections/OverviewTab';
+import { AnalyticsActivation } from './sections/AnalyticsActivation';
 
 // Графіки
-import { RevenueLineChart } from './charts/RevenueLineChart';
 import { CohortHeatmap } from './charts/CohortHeatmap';
 import { HeatmapGrid } from './charts/HeatmapGrid';
 
@@ -50,13 +49,11 @@ import { StockTab } from './sections/tabs/StockTab';
 // Примітиви
 import { BentoCell } from './primitives/BentoCell';
 import { SkeletonCell } from './primitives/SkeletonCell';
-import { EmptyCell } from './primitives/EmptyCell';
 import { ErrorCell } from './primitives/ErrorCell';
 import { ProUpgradeCard } from './primitives/ProUpgradeCard';
 
 // Деталі клієнта
-import { ClientDetailSheet } from '@/components/master/clients/ClientDetailSheet';
-import type { ClientRow } from '@/components/master/clients/ClientsPage';
+import { ClientSheetById } from './ClientSheetById';
 
 // ── Props ─────────────────────────────────────────────────────────────────────
 
@@ -76,169 +73,6 @@ const TABS = [
   { key: 'stock', label: 'Склад' },
 ] as const;
 
-// ── Types for ClientSheetById ─────────────────────────────────────────────────
-
-interface BookingForSheet {
-  client_phone: string | null;
-  date: string | null;
-  total_price: number;
-  status: string;
-  client_name: string | null;
-}
-
-interface RelationForSheet {
-  id: string;
-  is_vip: boolean;
-  health_notes: string | null;
-  medical_notes: string | null;
-}
-
-// ── ClientSheetById ───────────────────────────────────────────────────────────
-
-function ClientSheetById({
-  clientPhone,
-  clientId,
-  masterId,
-  clientName,
-  onClose,
-}: {
-  clientPhone?: string | null;
-  clientId?: string | null;
-  masterId: string;
-  clientName: string;
-  onClose: () => void;
-}) {
-  const sb = createClient();
-
-  const { data: row, isLoading } = useQuery<ClientRow | null>({
-    queryKey: ['client-sheet-detail', masterId, clientId ?? clientPhone],
-    enabled: !!masterId && (!!clientId || !!clientPhone),
-    staleTime: 2 * 60_000,
-    placeholderData: keepPreviousData,
-    queryFn: async (): Promise<ClientRow | null> => {
-      let resolvedClientId: string | null = clientId ?? null;
-      const resolvedPhone: string | null = clientPhone ?? null;
-
-      // Пошук ID клієнта за номером телефону, якщо ID не передано
-      if (!resolvedClientId && resolvedPhone) {
-        const { data: profile } = await sb
-          .from('profiles')
-          .select('id')
-          .eq('phone', resolvedPhone)
-          .maybeSingle();
-        if (profile) {
-          resolvedClientId = (profile as { id: string }).id;
-        }
-      }
-
-      const finalId = resolvedClientId || resolvedPhone || 'unknown';
-
-      // Будуємо OR-умову тільки з наявними ідентифікаторами
-      const orParts: string[] = [];
-      if (resolvedPhone) orParts.push(`client_phone.eq.${resolvedPhone}`);
-      if (resolvedClientId) orParts.push(`client_id.eq.${resolvedClientId}`);
-      if (orParts.length === 0) return null;
-
-      const [bRes, rRes] = await Promise.all([
-        sb.from('bookings')
-          .select('client_phone, date, total_price, status, client_name')
-          .eq('master_id', masterId)
-          .or(orParts.join(','))
-          .order('date', { ascending: false }),
-        sb.from('client_master_relations')
-          .select('id, is_vip, health_notes, medical_notes')
-          .eq('master_id', masterId)
-          .or(resolvedClientId ? `client_id.eq.${resolvedClientId}` : `client_id.eq.00000000-0000-0000-0000-000000000000`)
-          .maybeSingle(),
-      ]);
-
-      const bs = (bRes.data ?? []) as BookingForSheet[];
-      const rel = rRes.data as RelationForSheet | null;
-      const nonCancelled = bs.filter((b) => b.status !== 'cancelled');
-      const completed = bs.filter((b) => b.status === 'completed');
-      const spent = completed.reduce((s, b) => s + Number(b.total_price), 0);
-
-      return {
-        id: bs[0]?.client_phone ?? finalId,
-        client_id: resolvedClientId || null,
-        client_name: bs[0]?.client_name ?? clientName,
-        client_phone: bs[0]?.client_phone ?? resolvedPhone ?? '',
-        total_visits: nonCancelled.length,
-        total_spent: spent,
-        average_check: completed.length > 0 ? Math.round(spent / completed.length) : 0,
-        last_visit_at: bs[0]?.date ?? null,
-        last_service_name: null,
-        is_vip: rel?.is_vip ?? false,
-        relation_id: rel?.id ?? null,
-        retention_status: 'active' as const,
-        health_notes: rel?.health_notes ?? null,
-        medical_notes: rel?.medical_notes ?? null,
-      };
-    },
-  });
-
-  if (isLoading) {
-    return (
-      <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
-        <Loader2 className="animate-spin text-primary size-8" />
-      </div>
-    );
-  }
-
-  return (
-    <ClientDetailSheet
-      client={row ?? null}
-      onClose={onClose}
-    />
-  );
-}
-
-// ── ServiceRow ────────────────────────────────────────────────────────────────
-
-function ServiceRow({ svc, maxRev }: { svc: any; maxRev: number }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div>
-      <button
-        type="button"
-        onClick={() => setOpen(o => !o)}
-        className="w-full text-left cursor-pointer transition-colors duration-150 active:scale-[0.98] hover:bg-secondary/40 rounded-xl p-2 -mx-2"
-      >
-        <div className="flex justify-between items-center mb-1.5">
-          <span className="text-sm font-semibold text-foreground truncate pr-2">{svc.name}</span>
-          <span className="text-sm font-bold text-success flex-shrink-0">{formatPrice(Math.round(svc.revenue))}</span>
-        </div>
-        <div className="h-2 rounded-full bg-secondary overflow-hidden">
-          <div
-            className="h-full rounded-full bg-primary transition-[width] duration-700"
-            style={{ width: `${Math.round((svc.revenue / maxRev) * 100)}%` }}
-          />
-        </div>
-        <div className="flex items-center justify-between mt-1">
-          <span className="text-[11px] text-muted-foreground/60">{pluralUk(svc.count, 'запис', 'записи', 'записів')}</span>
-          <ChevronDown size={12} className={`text-muted-foreground/60 transition-transform ${open ? 'rotate-180' : ''}`} />
-        </div>
-      </button>
-      <div style={{ display: 'grid', gridTemplateRows: open ? '1fr' : '0fr', transition: 'grid-template-rows 0.25s ease' }}>
-        <div style={{ overflow: 'hidden', minHeight: 0 }}>
-          <div className="mt-2 p-3 rounded-2xl bg-primary/[0.06] border border-primary/15 grid grid-cols-3 gap-2">
-            {[
-              { label: 'Cross-sell', value: `${svc.crossSellRate}%`, className: 'text-primary' },
-              { label: 'З товарами', value: `${Math.round(svc.count * svc.crossSellRate / 100)}/${svc.count}`, className: 'text-foreground' },
-              { label: 'Серед. чек', value: svc.count > 0 ? formatPrice(Math.round(svc.revenue / svc.count)) : '—', className: 'text-foreground' },
-            ].map(item => (
-              <div key={item.label}>
-                <p className="text-[10px] text-muted-foreground/60 mb-0.5">{item.label}</p>
-                <p className={`text-sm font-bold ${item.className}`}>{item.value}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // ── Tour Steps ────────────────────────────────────────────────────────────────
 
 // humanized
@@ -249,8 +83,8 @@ const ANALYTICS_STEPS: TourStep[] = [
     tourKey: 'anl-header',
   },
   {
-    title: 'KPI в реальному часі',
-    text: 'Ключові показники оновлюються щоразу як з\'являється новий запис.',
+    title: 'Зведення за період',
+    text: 'Головне число й підказка з дією — одразу зверху, без скролу.',
     tourKey: 'anl-kpi',
   },
   {
@@ -275,6 +109,7 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
   const [exporting, setExporting] = useState(false);
   const [direction, setDirection] = useState(0);
   const [selectedClient, setSelectedClient] = useState<{ clientId?: string | null; clientName: string; clientPhone?: string | null } | null>(null);
+  const [detail, setDetail] = useState<OverviewDetail | null>(null);
 
   // nuqs таб-контроль
   const [activeTab, setActiveTab] = useQueryState('tab', parseAsString.withDefault('overview'));
@@ -299,109 +134,18 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
     enabled: isPro && !!data?.summary?.bookings,
   });
 
-  // 3. Додаткові маркетингові хуки для BentoSecondary
-  const { data: flashDealsStats } = useQuery({
-    queryKey: ['analytics-flash-deals', masterId, range.startDate, range.endDate],
+  // 3. Маркетингові/growth статистики для вкладки «Зростання»
+  const { flashDealsStats, broadcastsStats, loyaltyStats, referralStats } = useAnalyticsMarketing({
+    masterId,
+    startDate: range.startDate,
+    endDate: range.endDate,
     enabled: !!masterId && isPro && !!data?.summary?.bookings,
-    queryFn: async () => {
-      const supabase = createClient();
-      const { data: fd, error } = await supabase
-        .from('flash_deals')
-        .select('status')
-        .eq('master_id', masterId!)
-        .gte('slot_date', range.startDate)
-        .lte('slot_date', range.endDate);
-      if (error) throw error;
-      const total = fd?.length ?? 0;
-      const claimed = fd?.filter((d: any) => d.status === 'booked').length ?? 0;
-      return { total, claimed };
-    },
-    staleTime: 5 * 60_000,
-  });
-
-  const { data: broadcastsStats } = useQuery({
-    queryKey: ['analytics-broadcasts', masterId, range.startDate, range.endDate],
-    enabled: !!masterId && isPro && !!data?.summary?.bookings,
-    queryFn: async () => {
-      const supabase = createClient();
-      const { data: b, error } = await supabase
-        .from('broadcasts')
-        .select('id')
-        .eq('master_id', masterId!)
-        .gte('created_at', range.startDate)
-        .lte('created_at', range.endDate);
-      if (error) throw error;
-
-      if (!b || b.length === 0) {
-        return { sent: 0, opened: 0, converted: 0 };
-      }
-
-      const ids = b.map((item: any) => item.id);
-      const { data: recipients, error: rError } = await supabase
-        .from('broadcast_recipients')
-        .select('push_sent, telegram_sent, sms_sent, clicked_at, booked_at')
-        .in('broadcast_id', ids);
-      if (rError) throw rError;
-
-      let sent = 0;
-      let opened = 0;
-      let converted = 0;
-
-      recipients?.forEach((r: any) => {
-        if (r.push_sent || r.telegram_sent || r.sms_sent) sent++;
-        if (r.clicked_at) opened++;
-        if (r.booked_at) converted++;
-      });
-
-      return { sent, opened, converted };
-    },
-    staleTime: 5 * 60_000,
-  });
-
-  const { data: loyaltyStats } = useQuery({
-    queryKey: ['analytics-loyalty-stats', masterId],
-    enabled: !!masterId && isPro && !!data?.summary?.bookings,
-    queryFn: async () => {
-      const supabase = createClient();
-      const { data: cmr, error } = await supabase
-        .from('client_master_relations')
-        .select('total_visits')
-        .eq('master_id', masterId!);
-      if (error) throw error;
-
-      const activeMembers = cmr?.filter((c: any) => c.total_visits > 0).length ?? 0;
-      const totalPoints = cmr?.reduce((sum: number, c: any) => sum + (c.total_visits || 0), 0) ?? 0;
-
-      return { activeMembers, totalPoints };
-    },
-    staleTime: 5 * 60_000,
-  });
-
-  const { data: referralStats } = useQuery({
-    queryKey: ['analytics-referrals', masterId],
-    enabled: !!masterId && isPro && !!data?.summary?.bookings,
-    queryFn: async () => {
-      const supabase = createClient();
-      const { data: sent, error: e1 } = await supabase
-        .from('referrals')
-        .select('status')
-        .eq('master_id', masterId!);
-      if (e1) throw e1;
-
-      const totalSent = sent?.length ?? 0;
-      const signedUp = sent?.filter((r: any) => r.status === 'signed_up' || r.status === 'activated').length ?? 0;
-      const activated = sent?.filter((r: any) => r.status === 'activated').length ?? 0;
-
-      return { totalSent, signedUp, activated };
-    },
-    staleTime: 5 * 60_000,
   });
 
   const summary = data?.summary ?? { bookings: 0, orders: 0, revenue: 0, activeClients: 0, newClients: null };
   const monthStats = data?.monthStats ?? [];
   const topServices = data?.topServices ?? [];
   const topProducts = data?.topProducts ?? [];
-  const retention = data?.retention ?? null;
   const bento = data?.bento ?? null;
 
   const maxSvcRev = Math.max(...topServices.map(s => s.revenue), 1);
@@ -412,10 +156,6 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
     ? linearRegression(monthStats.map(m => m.revenue))
     : null;
 
-  const lastMonthRev = monthStats[monthStats.length - 1]?.revenue ?? 0;
-  const forecastDelta = forecast ? forecast.forecast - lastMonthRev : 0;
-  const forecastPct = lastMonthRev > 0 ? Math.round((forecastDelta / lastMonthRev) * 100) : null;
-
   const nextMonthName = useMemo(() => {
     const d = new Date();
     d.setMonth(d.getMonth() + 1);
@@ -423,67 +163,91 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
     return months[d.getMonth()] ?? 'Наст. місяць';
   }, []);
 
-  // Генерація Insight Stories
+  // Чи показувати нудж розумних цін (реальний пік ≥75%) — синхронно з SmartPricingOptimizer
+  const showPricingNudge = isPro && (extras?.occupancy_heatmap?.some(h => h.occupancy_pct >= 75) ?? false);
+
+  // Генерація actionable insight-історій (виручка-рекап НЕ включаємо — вона вже герой обкладинки)
   const storiesList = useMemo(() => {
     const list: StoryItem[] = [];
-    if (!data) return list;
+    if (!data || !isPro) return list;
 
-    // 1. Огляд виручки
-    if (summary.bookings > 0) {
-      list.push({
-        id: 'story-rev',
-        type: 'general',
-        title: `Виручка за період: ${formatPrice(Math.round(summary.revenue))}`,
-        description: `Завершено ${summary.bookings} ${pluralUk(summary.bookings, 'запис', 'записи', 'записів')}. Середній чек становить ${bento?.avgCheck?.current ? formatPrice(bento.avgCheck.current) : '—'}.`,
-        icon: <Star size={14} className="text-primary" />
-      });
-    }
-
-    // 2. Дохід від Smart Pricing
+    // 1. Дохід від Smart Pricing
     const pricingUplift = extras?.dynamic_pricing_uplift?.uplift_kopecks ?? 0;
     if (pricingUplift > 0) {
       list.push({
         id: 'story-pricing',
         type: 'pricing',
         title: `Розумне ціноутворення принесло +${formatPrice(Math.round(pricingUplift / 100))}`,
-        description: `Автоматичні націнки в години пік та знижки в гарячі години підвищили ROI.`,
+        description: 'Автоматичні націнки в години пік та знижки в гарячі години підвищили дохід.',
         ctaLabel: 'Налаштувати ціни',
         ctaHref: '/dashboard/revenue?tab=pricing',
-        icon: <TrendingUp size={14} className="text-success" />
+        icon: <TrendingUp size={14} />,
       });
     }
 
-    // 3. Аномалія завантаженості (наступний тиждень)
+    // 2. Аномалія завантаженості (наступний тиждень)
     const anomalies = extras?.anomaly_alerts ?? [];
-    if (isPro && anomalies.length > 0) {
+    if (anomalies.length > 0) {
       const alert = anomalies[0];
       const alertDate = new Date(alert.date).toLocaleDateString('uk-UA', { day: 'numeric', month: 'long' });
       list.push({
         id: 'story-anomaly',
         type: 'anomaly',
         title: `Прогнозується спад завантаження на ${alertDate}`,
-        description: `Кількість записів суттєво нижча за середню. Створіть флеш-акцію, щоб заповнити вільні вікна.`,
+        description: 'Кількість записів суттєво нижча за середню. Створіть флеш-акцію, щоб заповнити вільні вікна.',
         ctaLabel: 'Створити акцію',
         ctaHref: '/dashboard/revenue?tab=flash',
-        icon: <AlertTriangle size={14} className="text-warning" />
+        icon: <AlertTriangle size={14} />,
       });
     }
 
-    // 4. LTV Концентрація (Парето)
+    // 3. LTV Концентрація (Парето)
     const concentration = extras?.ltv_concentration?.concentration_pct ?? 0;
-    if (isPro && concentration > 0) {
+    if (concentration > 0) {
       list.push({
         id: 'story-ltv',
         type: 'growth',
-        title: `Топ-20% клієнтів приносять ${concentration}% вашого доходу`,
-        description: `Зосередьтеся на утриманні VIP-клієнтів та реактивуйте кандидатів на повернення.`,
-        icon: <Users size={14} className="text-primary" />
+        title: `Топ-20% клієнтів приносять ${concentration}% доходу`,
+        description: 'Зосередьтеся на утриманні VIP-клієнтів та реактивуйте кандидатів на повернення.',
+        icon: <Users size={14} />,
       });
     }
 
     return list;
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data, extras, isPro, summary, bento]);
+  }, [data, extras, isPro]);
+
+  // Розбивка виручки по категоріях (клік по виручці-герою) — реальні дані bento
+  const revenueDetail: OverviewDetail | undefined = useMemo(() => {
+    if (!bento?.revenueByCategory) return undefined;
+    const c = bento.revenueByCategory;
+    return {
+      title: 'Виручка за період',
+      hero: { value: formatPrice(Math.round(summary.revenue)) },
+      rows: [
+        { label: 'Послуги', value: formatPrice(Math.round(c.services)), tone: 'primary' },
+        { label: 'Товари при записах', value: formatPrice(Math.round(c.bookingProducts)) },
+        { label: 'Магазин', value: formatPrice(Math.round(c.shopProducts)) },
+      ],
+      note: 'Сума завершених записів та замовлень за період. Розбивка показує, що саме приносить дохід.',
+    };
+  }, [bento, summary.revenue]);
+
+  // By the numbers — вторинні метрики обкладинки (Δ лише там, де реальні дані) + пояснення по кліку
+  const secondaryMetrics: BriefingMetric[] = useMemo(() => [
+    {
+      label: pluralUk(summary.bookings, 'запис', 'записи', 'записів'), value: String(summary.bookings), delta: bento?.bookings?.delta ?? null,
+      detail: { title: 'Записи', hero: { value: String(summary.bookings) }, note: 'Завершені записи за обраний період. Скасовані та неявки не враховані.' },
+    },
+    {
+      label: pluralUk(summary.orders, 'замовлення', 'замовлення', 'замовлень'), value: String(summary.orders),
+      detail: { title: 'Замовлення', hero: { value: String(summary.orders) }, note: 'Продажі товарів — окремо в магазині та як розхідники в записах.' },
+    },
+    {
+      label: pluralUk(summary.activeClients, 'клієнт', 'клієнти', 'клієнтів'), value: String(summary.activeClients),
+      detail: { title: 'Активні клієнти', hero: { value: String(summary.activeClients) }, note: 'Унікальні клієнти із записом чи замовленням за період.', cta: { label: 'Усі клієнти', href: '/dashboard/clients' } },
+    },
+  ], [summary.bookings, summary.orders, summary.activeClients, bento]);
 
   async function handleExport() {
     if (!masterId) return;
@@ -529,19 +293,19 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
   return (
     <div className="flex flex-col gap-4 pb-8 w-full max-w-full overflow-x-hidden">
 
-      {/* ── Вступний заголовок та контроль періодів ── */}
-      <div className="bento-card p-5" data-tour-key="anl-header">
-        <div className="flex items-start justify-between mb-4">
-          <div>
-            <h1 className="heading-serif text-xl text-foreground mb-0.5">Аналітика</h1>
-            <p className="text-sm text-muted-foreground/60">Статистика та звіти</p>
+      {/* ── Editorial masthead + контроль періодів ── */}
+      <div className="flex flex-col gap-3.5 px-0.5" data-tour-key="anl-header">
+        <div className="flex items-center justify-between gap-3 pb-3 border-b border-border-strong/60">
+          <div className="flex items-baseline gap-3 min-w-0">
+            <h1 className="heading-serif text-2xl md:text-[26px] text-foreground leading-none">Аналітика</h1>
+            <span className="text-xs text-text-sub truncate hidden sm:inline">Статистика та звіти</span>
           </div>
           <button
             type="button"
             onClick={handleRefreshAll}
             disabled={isFetching}
             aria-label="Оновити дані"
-            className="size-11 flex items-center justify-center rounded-full bg-secondary text-muted-foreground hover:bg-primary/10 hover:text-primary active:scale-[0.90] cursor-pointer transition-colors duration-150 disabled:opacity-40"
+            className="size-9 flex-shrink-0 flex items-center justify-center rounded-full bg-secondary/70 border border-border text-text-sub hover:bg-primary/10 hover:text-primary active:scale-[0.90] cursor-pointer transition-colors duration-150 disabled:opacity-40"
           >
             <RefreshCw size={14} className={isFetching ? 'animate-spin' : ''} />
           </button>
@@ -557,7 +321,7 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
         {isLockedDateRange && (
           <div data-testid="locked-date-range" className="mt-3 flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl bg-primary/10 border border-primary/20">
             <Crown size={13} className="text-primary flex-shrink-0" />
-            <p className="text-[12px] text-muted-foreground flex-1">Цей діапазон доступний у Pro</p>
+            <p className="text-[12px] text-foreground flex-1">Цей діапазон доступний у Pro</p>
             <Link href="/dashboard/billing" className="text-[11px] font-bold text-primary whitespace-nowrap">
               Оновити
             </Link>
@@ -575,8 +339,7 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
       {/* ── Loading State ── */}
       {isLoading && (
         <div data-testid="stats-loading" className="flex flex-col gap-4">
-          <SkeletonCell variant="ticker" />
-          <SkeletonCell variant="flat" className="h-[240px]" />
+          <SkeletonCell variant="flat" className="h-[300px]" />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <SkeletonCell variant="square" />
             <SkeletonCell variant="square" />
@@ -584,47 +347,37 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
         </div>
       )}
 
-      {/* ── Empty State (No Bookings) ── */}
+      {/* ── Empty State (No Bookings) → Activation ── */}
       {!isLoading && !isLockedDateRange && summary.bookings === 0 && (
-        <BentoCell className="p-6">
-          <EmptyCell
-            title="Даних ще немає"
-            description="Аналітика з'явиться після перших записів. Поширте вашу сторінку або додайте запис вручну."
-            icon={<BarChart2 size={24} />}
-            actionLabel="Поділитися посиланням"
-            onActionClick={() => window.open(`/${masterProfile?.slug || ''}`, '_blank')}
-          />
-        </BentoCell>
-      )}
-
-      {/* ── Paywall Upgrade Card for Starter Tier ── */}
-      {!isLockedDateRange && !isPro && summary.bookings > 0 && (
-        <ProUpgradeCard />
+        <AnalyticsActivation slug={masterProfile?.slug || ''} />
       )}
 
       {/* ── Main Pro / Ready Dashboard Content ── */}
       {!isLoading && !isError && summary.bookings > 0 && (!isLockedDateRange || isPro) && (
         <div data-testid="stats-ready" className="flex flex-col gap-4">
 
+          {/* Editorial-обкладинка зведення (виручка + інсайт + by the numbers) */}
+          <div data-tour-key="anl-kpi">
+            <OverviewBriefing
+              periodLabel={range.label}
+              revenue={summary.revenue}
+              revenueDelta={bento?.revenue?.delta ?? null}
+              secondary={secondaryMetrics}
+              stories={storiesList}
+              isPro={isPro}
+              onOpenDetail={setDetail}
+              revenueDetail={revenueDetail}
+            />
+          </div>
+
+          {/* Paywall для Starter */}
+          {!isPro && <ProUpgradeCard />}
+
           {isPro && extras?.business_health && (
             <BusinessHealthScoreWidget health={extras.business_health} />
           )}
 
           <MorningBriefing onOpenClient={(name, phone) => setSelectedClient({ clientName: name, clientPhone: phone })} />
-
-          {/* KPI Ticker & stories (Pro-only insights) */}
-          <div data-tour-key="anl-kpi">
-            <KpiTicker
-              bookings={summary.bookings}
-              orders={summary.orders}
-              revenue={summary.revenue}
-              activeClients={summary.activeClients}
-            />
-          </div>
-
-          {isPro && storiesList.length > 0 && (
-            <HeroStory stories={storiesList} />
-          )}
 
           {/* ── Tabs Strip ── */}
           <div className="flex items-center gap-0 border-b border-border/40">
@@ -633,7 +386,7 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
               aria-label="Попередня вкладка"
               onClick={() => { const ci = TAB_KEYS.indexOf(activeTab); if (ci > 0) handleTabChange(TAB_KEYS[ci - 1]); }}
               disabled={TAB_KEYS.indexOf(activeTab) === 0}
-              className="size-8 flex-shrink-0 flex items-center justify-center rounded-full text-muted-foreground/60 hover:text-foreground hover:bg-secondary/60 active:scale-[0.90] transition-all duration-100 disabled:opacity-20 cursor-pointer"
+              className="size-8 flex-shrink-0 flex items-center justify-center rounded-full text-text-sub hover:text-foreground hover:bg-secondary/60 active:scale-[0.90] transition-all duration-100 disabled:opacity-20 cursor-pointer"
             >
               <ChevronLeft size={14} />
             </button>
@@ -653,7 +406,7 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
                       isLocked && 'opacity-40 cursor-not-allowed'
                     )}
                   >
-                    <span className={cn(isActive ? 'text-foreground' : 'text-muted-foreground/60 hover:text-muted-foreground')}>
+                    <span className={cn(isActive ? 'text-foreground' : 'text-text-sub hover:text-foreground')}>
                       {t.label}
                     </span>
                     {isLocked && <Crown size={10} className="text-primary flex-shrink-0" />}
@@ -674,7 +427,7 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
               aria-label="Наступна вкладка"
               onClick={() => { const ci = TAB_KEYS.indexOf(activeTab); if (ci < TABS.length - 1) handleTabChange(TAB_KEYS[ci + 1]); }}
               disabled={TAB_KEYS.indexOf(activeTab) === TABS.length - 1}
-              className="size-8 flex-shrink-0 flex items-center justify-center rounded-full text-muted-foreground/60 hover:text-foreground hover:bg-secondary/60 active:scale-[0.90] transition-all duration-100 disabled:opacity-20 cursor-pointer"
+              className="size-8 flex-shrink-0 flex items-center justify-center rounded-full text-text-sub hover:text-foreground hover:bg-secondary/60 active:scale-[0.90] transition-all duration-100 disabled:opacity-20 cursor-pointer"
             >
               <ChevronRight size={14} />
             </button>
@@ -699,161 +452,29 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
 
               {/* Tab 1: OVERVIEW */}
               {activeTab === 'overview' && (
-                <div className="flex flex-col gap-4">
-                  {/* Revenue Line Chart */}
-                  <div data-tour-key="anl-chart">
-                    <BentoCell className="p-5">
-                      <div className="flex justify-between items-start mb-4">
-                        <div>
-                          <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">Графік виручки</p>
-                          <p className="text-[11px] text-muted-foreground/50 mt-0.5">Динаміка за період з прогнозом</p>
-                        </div>
-                      </div>
-                      <RevenueLineChart
-                        data={monthStats}
-                        forecastRevenue={forecast?.forecast}
-                        forecastMonthName={nextMonthName}
-                        isPro={isPro}
-                      />
-                    </BentoCell>
-                  </div>
-
-                  {isPro && (
-                    <SmartPricingOptimizer occupancyHeatmap={extras?.occupancy_heatmap} />
-                  )}
-
-                  {/* Asymmetric grid: Top Services & Products */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Top Services */}
-                    <BentoCell className="p-5">
-                      <div className="flex justify-between items-start mb-4">
-                        <div>
-                          <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">Найпопулярніші послуги</p>
-                          <p className="text-[11px] text-muted-foreground/50 mt-0.5">Рейтинг за кількістю та доходом</p>
-                        </div>
-                      </div>
-                      {topServices.length === 0 ? (
-                        <p className="text-sm text-muted-foreground/60 text-center py-8">Послуги ще не надавалися</p>
-                      ) : (
-                        <div className="flex flex-col gap-4">
-                          {topServices.map(svc => (
-                            <ServiceRow key={svc.name} svc={svc} maxRev={maxSvcRev} />
-                          ))}
-                        </div>
-                      )}
-                    </BentoCell>
-
-                    {/* Top Products */}
-                    <BentoCell className="p-5">
-                      <div className="flex justify-between items-start mb-4">
-                        <div>
-                          <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">Продажі товарів</p>
-                          <p className="text-[11px] text-muted-foreground/50 mt-0.5">Рейтинг продажів товарів</p>
-                        </div>
-                      </div>
-                      {topProducts.length === 0 ? (
-                        <p className="text-sm text-muted-foreground/60 text-center py-8">Товари ще не продавалися</p>
-                      ) : (
-                        <div className="flex flex-col gap-4">
-                          {topProducts.map((prod, i) => (
-                            <div key={i} className="flex items-center gap-3">
-                              <span className="text-xs font-bold text-muted-foreground/60 w-4 flex-shrink-0">{i + 1}</span>
-                              <div className="flex-1 min-w-0">
-                                <div className="flex justify-between mb-1">
-                                  <span className="text-sm font-semibold text-foreground truncate pr-2">{prod.name}</span>
-                                  <span className="text-sm font-bold text-success flex-shrink-0">{formatPrice(Math.round(prod.revenue))}</span>
-                                </div>
-                                <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
-                                  <div
-                                    className="h-full bg-warning/80 transition-[width] duration-700"
-                                    style={{ width: `${Math.round((prod.revenue / maxProdRev) * 100)}%` }}
-                                  />
-                                </div>
-                                <span className="text-[10px] text-muted-foreground/60 mt-1 block leading-none">Продано: {prod.qty} шт.</span>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </BentoCell>
-                  </div>
-
-                  {/* Top Clients */}
-                  {bento?.topClients && bento.topClients.length > 0 && (
-                    <BentoCell className="p-5">
-                      <div className="flex justify-between items-start mb-4">
-                        <div>
-                          <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">Найактивніші клієнти</p>
-                          <p className="text-[11px] text-muted-foreground/50 mt-0.5">Рейтинг за витратами та візитами</p>
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                        {bento.topClients.map((c, i) => (
-                          <button
-                            type="button"
-                            key={i}
-                            onClick={() => c.clientId ? setSelectedClient({ clientId: c.clientId, clientName: c.clientName }) : undefined}
-                            disabled={!c.clientId}
-                            className="flex items-center gap-3 p-3 rounded-2xl bg-secondary/40 hover:bg-secondary/70 border border-border/5 text-left w-full cursor-pointer transition-colors duration-150 active:scale-[0.98]"
-                          >
-                            <div className={cn(
-                              'size-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 select-none',
-                              i === 0 && 'bg-warning/20 text-warning',
-                              i === 1 && 'bg-primary/20 text-primary',
-                              i > 1 && 'bg-secondary text-muted-foreground/60'
-                            )}>
-                              {i + 1}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-xs font-semibold text-foreground truncate">{c.clientName}</p>
-                              <p className="text-[10px] text-muted-foreground/60">{c.visits} {pluralUk(c.visits, 'відвідування', 'відвідування', 'відвідувань')}</p>
-                            </div>
-                            <p className="text-xs font-bold text-success flex-shrink-0 select-none">
-                              {formatPrice(Math.round(c.revenue))}
-                            </p>
-                          </button>
-                        ))}
-                      </div>
-                    </BentoCell>
-                  )}
-
-                  {/* CSV Export Card */}
-                  <BentoCell className="p-5">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                      <div>
-                        <p className="text-sm font-semibold text-foreground">Експорт фінансового звіту</p>
-                        <p className="text-[11px] text-muted-foreground/60 mt-0.5">Завантажте CSV-файл з детальною історією транзакцій за {range.label}</p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={handleExport}
-                        disabled={exporting}
-                        className="group relative overflow-hidden flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-[var(--btn-primary-bg)] text-[var(--accent-on)] text-xs font-semibold cursor-pointer active:scale-[0.95] transition-colors duration-150 disabled:opacity-50"
-                      >
-                        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none" style={{ background: 'color-mix(in srgb, var(--accent-on) 12%, transparent)' }} />
-                        <span className="relative z-10 flex items-center gap-2">
-                          {exporting ? (
-                            <>
-                              <Loader2 size={13} className="animate-spin" />
-                              Генеруємо...
-                            </>
-                          ) : (
-                            <>
-                              <Download size={13} />
-                              Експорт в CSV
-                            </>
-                          )}
-                        </span>
-                      </button>
-                    </div>
-                  </BentoCell>
-                </div>
+                <OverviewTab
+                  monthStats={monthStats}
+                  forecast={forecast?.forecast ?? null}
+                  nextMonthName={nextMonthName}
+                  isPro={isPro}
+                  showPricingNudge={showPricingNudge}
+                  occupancyHeatmap={extras?.occupancy_heatmap}
+                  topServices={topServices}
+                  maxSvcRev={maxSvcRev}
+                  topProducts={topProducts}
+                  maxProdRev={maxProdRev}
+                  topClients={bento?.topClients ?? []}
+                  onOpenClient={(clientId, clientName) => setSelectedClient({ clientId, clientName })}
+                  onOpenDetail={setDetail}
+                  rangeLabel={range.label}
+                  exporting={exporting}
+                  onExport={handleExport}
+                />
               )}
 
               {/* Tab 2: GROWTH */}
               {activeTab === 'growth' && isPro && (
                 <div className="flex flex-col gap-4 lg:grid lg:grid-cols-2 lg:gap-6 lg:items-start">
-                  {/* BentoSecondary Section (Smart Pricing, Goals, LTV Concentration, Pairs) */}
                   <BentoSecondary
                     isPro={isPro}
                     currentRevenue={summary.revenue}
@@ -872,7 +493,6 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
                     onOpenClient={(name, phone) => setSelectedClient({ clientName: name, clientPhone: phone })}
                   />
 
-                  {/* GrowthLists Section (Loyalty & Referrals) */}
                   <GrowthLists
                     loyaltyMembersCount={loyaltyStats?.activeMembers ?? 0}
                     loyaltyPointsEarned={loyaltyStats?.totalPoints ?? 0}
@@ -881,15 +501,9 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
                     referralsActivated={referralStats?.activated ?? 0}
                   />
 
-                  {/* Cohort Heatmap Card */}
                   {extras?.cohort_matrix && extras.cohort_matrix.length > 0 && (
                     <BentoCell className="p-5 lg:col-span-2">
-                      <div className="flex justify-between items-start mb-4">
-                        <div>
-                          <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">Когортний аналіз повернення</p>
-                          <p className="text-[11px] text-muted-foreground/50 mt-0.5">Відсоток повторних візитів нових клієнтів по місяцях</p>
-                        </div>
-                      </div>
+                      <SectionHeading title="Когортний аналіз повернення" subtitle="Відсоток повторних візитів нових клієнтів по місяцях" />
                       <CohortHeatmap data={extras.cohort_matrix} />
                     </BentoCell>
                   )}
@@ -899,26 +513,15 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
               {/* Tab 3: BEHAVIOR */}
               {activeTab === 'behavior' && isPro && (
                 <div className="flex flex-col gap-5">
-                  {/* Occupancy Heatmap */}
                   {extras?.occupancy_heatmap && extras.occupancy_heatmap.length > 0 && (
                     <BentoCell className="p-5">
-                      <div className="flex justify-between items-start mb-4">
-                        <div>
-                          <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">Теплова карта завантаження</p>
-                          <p className="text-[11px] text-muted-foreground/50 mt-0.5">Рівень зайнятості по годинах та днях тижня</p>
-                        </div>
-                      </div>
+                      <SectionHeading title="Теплова карта завантаження" subtitle="Рівень зайнятості по годинах та днях тижня" />
                       <HeatmapGrid data={extras.occupancy_heatmap} />
                     </BentoCell>
                   )}
 
-                  {/* Drill-down: Lead Time Tab */}
                   <LeadTimeTab start={range.startDate} end={range.endDate} />
-
-                  {/* Drill-down: No-Show Tab */}
                   <NoShowTab start={range.startDate} end={range.endDate} />
-
-                  {/* Drill-down: Vacation Impact */}
                   <VacationTab start={range.startDate} end={range.endDate} />
                 </div>
               )}
@@ -981,6 +584,9 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
           onClose={() => setSelectedClient(null)}
         />
       )}
+
+      {/* ── Overview detail Sheet (клік по елементах Огляду) ── */}
+      <OverviewDetailSheet detail={detail} onClose={() => setDetail(null)} />
 
       <TourBanner steps={dynamicSteps} currentStep={currentStep} onNext={nextStep} onClose={closeTour} />
     </div>

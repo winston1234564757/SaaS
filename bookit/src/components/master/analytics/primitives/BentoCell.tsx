@@ -38,10 +38,10 @@ export function BentoCell({
     <div
       className={cn(
         'bento-card p-5 relative overflow-hidden flex flex-col',
-        variant === 'tall' && 'row-span-2 md:col-span-4 lg:col-span-4 min-h-[360px]',
-        variant === 'wide' && 'md:col-span-6 lg:col-span-8 min-h-[220px]',
-        variant === 'square' && 'md:col-span-6 lg:col-span-6 min-h-[220px]',
-        variant === 'flat' && 'md:col-span-12 lg:col-span-12 min-h-[140px]',
+        variant === 'tall' && 'row-span-2 md:col-span-4 lg:col-span-4',
+        variant === 'wide' && 'md:col-span-6 lg:col-span-8',
+        variant === 'square' && 'md:col-span-6 lg:col-span-6',
+        variant === 'flat' && 'md:col-span-12 lg:col-span-12',
         className
       )}
       {...props}
