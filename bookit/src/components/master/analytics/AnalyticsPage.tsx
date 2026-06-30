@@ -35,13 +35,10 @@ import { AnalyticsActivation } from './sections/AnalyticsActivation';
 
 // Графіки
 import { CohortHeatmap } from './charts/CohortHeatmap';
-import { HeatmapGrid } from './charts/HeatmapGrid';
 
 // Вкладки drill-down
 import { ReviewsTab } from './sections/tabs/ReviewsTab';
-import { NoShowTab } from './sections/tabs/NoShowTab';
-import { LeadTimeTab } from './sections/tabs/LeadTimeTab';
-import { VacationTab } from './sections/tabs/VacationTab';
+import { BehaviorTab } from './sections/tabs/BehaviorTab';
 import { SourceTab } from './sections/tabs/SourceTab';
 import { FinancesTab } from './sections/tabs/FinancesTab';
 import { StockTab } from './sections/tabs/StockTab';
@@ -511,19 +508,14 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
               )}
 
               {/* Tab 3: BEHAVIOR */}
-              {activeTab === 'behavior' && isPro && (
-                <div className="flex flex-col gap-5">
-                  {extras?.occupancy_heatmap && extras.occupancy_heatmap.length > 0 && (
-                    <BentoCell className="p-5">
-                      <SectionHeading title="Теплова карта завантаження" subtitle="Рівень зайнятості по годинах та днях тижня" />
-                      <HeatmapGrid data={extras.occupancy_heatmap} />
-                    </BentoCell>
-                  )}
-
-                  <LeadTimeTab start={range.startDate} end={range.endDate} />
-                  <NoShowTab start={range.startDate} end={range.endDate} />
-                  <VacationTab start={range.startDate} end={range.endDate} />
-                </div>
+              {activeTab === 'behavior' && (
+                <BehaviorTab
+                  start={range.startDate}
+                  end={range.endDate}
+                  isPro={isPro}
+                  occupancyHeatmap={extras?.occupancy_heatmap}
+                  onOpenDetail={setDetail}
+                />
               )}
 
               {/* Tab 4: REVIEWS */}
