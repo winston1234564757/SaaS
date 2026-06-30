@@ -4,9 +4,9 @@
 
 **Спринт:** Sprint-05 — Загальний беклог (77 задач: Зона Майстра + Клієнтська Зона + Глобальне; +3 ad-hoc M-DASH-10/11/12)
 **Розпочато:** 2026-06-22
-**Прогрес:** 49/78 ✅ · 3 ↩️ скасовано (`M-DASH-11` + `M-MKT-01`/`M-MKT-02` поглинуто редизайном M-MKT-04, founder) — **Фаза 3: Revenue 6/17 done; Growth 2/2 done; Marketing 4/6 done + 2 ↩️; Reviews 2/2 done (секція закрита).**
-**Наступна задача:** **`M-ANL-01` — Аналітика: повний фундаментальний редизайн 🔄** (`spec-driven-workflow` → `design-taste-frontend` + `impeccable-design-polish` · Opus · P1). Великий редизайн (Тір 2) — пре-код ритуал + spec обов'язкові. **Секції Marketing + Reviews закриті.**
-**Оновлено:** 2026-06-29
+**Прогрес:** 50/84 ✅ · 3 ↩️ скасовано (`M-DASH-11` + `M-MKT-01`/`M-MKT-02` поглинуто редизайном M-MKT-04, founder) — **Фаза 3: Revenue 6/17 done; Growth 2/2 done; Marketing 4/6 done + 2 ↩️; Reviews 2/2 done; Analytics 1/7 done (Огляд).**
+**Наступна задача:** **`M-ANL-02` — Аналітика: таб «Джерела» (`source`) editorial-redesign за Принципом темного блоку** (`design-taste-frontend` + `impeccable` · Opus · P1). Бриф: `ANALYTICS_TABS_REDESIGN.md` §4. Аналітика розбита на 7 табів-задач (M-ANL-01 Огляд ✅ → M-ANL-02..07 решта, один таб = одна сесія). **Секції Marketing + Reviews закриті.**
+**Оновлено:** 2026-06-30
 
 > ✅ **M-MKT-04 + M-MKT-03 DONE + founder approved «ахуєнно» (фінал commit `e8837dba`, 2026-06-29, прогнано на проді bookit-five-psi, передеплой з main для останніх фіксів):** StoryGenerator → покроковий проф-едітор (5 кроків: Тип→Контент→Вигляд→Стиль→Готово), live-прев'ю mobile знизу / desktop справа. Reuse-шелл (storyExport/useStoryData fideliti 1080×1920). Мозок `story/useStoryEditor.ts`, модель `story/storySteps.ts`, панелі `story/steps/*`. **Стиль = образи-пресети** (5: minimal/elegant/bold/gloss/script) + розмір S/M/L + елементи кадру (тогл аватар, тогл Місце-для-посилання=пунктирна зона під IG-стікер). **Контент:** заготовки в Sheet-модалці. **Фон:** палітра(9, Champagne видалено) / портфоліо / своє фото (градієнти+стокові ВИДАЛЕНО). **A11Y-аудит story-canvas через a11y MCP:** авто-тема textColor/mutedColor/accent/pillBg/badge у ВСІХ режимах, плашка 0.62 (worst-case над білим фото verified), фото-скрім, аватар+ім'я sans+чіп. Деталі+кольори — mempalace drawer `drawer_bookit_architecture_ea1bb49cc6d541472cbd7608` + TRANSITION нотатка. 32 unit-тести, tsc 0, build clean. **M-MKT-07 (адмін-аплоадер) скасовано** founder.
 **⏳ Технічний борг M-GROW-02:** drop `master_partners` + `master_alliances` окремою міграцією після ~тижня verify на проді (rollback safety). Дані вже в `master_connections`, старі таблиці інертні (не пишуться/не читаються).
@@ -29,6 +29,46 @@ Sprint-05 переріс із "тільки клієнтська зона" у **
 - `/my/profile`: `instagram_url` + `telegram_handle` міграція ✅, avatar upload ✅
 - `/my/bookings`: `submitReview` ✅, `cancelBooking` ✅
 - `/explore`: фото `h-[134px]` ✅, tags strip ✅
+
+---
+
+## ▶ NEXT: `M-ANL-02` — Аналітика: таб «Джерела» (`source`) редизайн (P1)
+
+**Тип:** REDESIGN · **Тір:** 2 · **Скіли:** `design-taste-frontend` + `impeccable` · **Модель:** Opus · **Бриф:** `ANALYTICS_TABS_REDESIGN.md` §4 («Джерела») + §0 (Спільна основа — читати ПЕРШИМ).
+
+**Закон редизайну (Принцип темного блоку):** проектуй з концепту з нуля (НЕ ретрофіт), асиметрична ієрархія герой+решток у КОЖНІЙ секції, маркер провалу = рівномірність, **рендер локально власними очима (Playwright headless + мок-прев'ю-роут поза auth) ДО показу founder**.
+
+**Переюз з Огляду (вже існує):** `SectionHeading` (з OverviewTab), `OverviewDetailSheet` (адаптивний Sheet деталей), патерн `Featured*` (герой+ранг-список), `RevenueLineChart` (зразок recharts, `isAnimationActive={false}`), `BentoCell`.
+
+**Дизайн-мова:** Frost-токени; числа `metric-value` tabular + slate; заголовки `heading-serif`; текст `text-foreground`/`text-text-sub` (#475569), **заборонено** `text-muted-foreground/60` на світлому (2.76 провал); hero `--hero-card-bg` #0F172A; a11y графіка 3:1 / текст 4.5:1 через `mcp__a11y`.
+
+**Порядок решти табів (один = одна сесія):** Джерела (M-ANL-02) → Відгуки (03) → Склад (04) → Фінанси (05) → Поведінка (06) → Зростання (07).
+
+**🔴 Фейки до виправлення в наступних табах:** FinancesTab/StockTab dummy-числа під блюром (M-ANL-04/05 → skeleton без чисел); VacationTab фейк-кнопка «Оптимізувати розклад» + вигадка `lost*0.4` (M-ANL-06 → чесний аналіз або реальна дія).
+
+---
+
+## ✅ DONE: `M-ANL-01` — Аналітика: таб «Огляд» editorial-redesign (P1) · commit `2c48474f` · ЗАДЕПЛОЄНО
+
+**Тип:** REDESIGN (фундаментальний) · **Тір:** 2 · **Скіли:** `spec-driven-workflow` → `design-taste-frontend` + `impeccable-design-polish` · **Модель:** Opus.
+
+**⭐ Народжено Закон темного блоку:** founder відкинув косметику світлих карток («дитсадок»); корінь = МИСЛЕННЯ, не колір. Проектувати з концепту з нуля + асиметрична ієрархія (герой + диференційований решток) у КОЖНІЙ секції, НЕ ретрофіт легасі-віджетів. Маркер провалу = рівномірність (N однакових карток/барів). Воркфлоу: рендерити локально власними очима (Playwright headless + мок-прев'ю-роут поза auth) ДО показу founder. «Сміливо» ≠ «темно». Деталі: `WORKFLOW.md` §Принцип темного блоку + memory `feedback_dark_block_principle.md`.
+
+**After (Огляд = editorial-дашборд):**
+- `sections/OverviewBriefing.tsx` — темна editorial-обкладинка: виручка-герой serif + Δ Pro + інсайт-колонка + by-numbers стрічка (замінила рівні stat-картки).
+- `sections/OverviewTab.tsx` (+спільний `SectionHeading`: serif h3 + hairline + action-слот).
+- `sections/FeaturedServices/Products/Clients.tsx` — патерн «герой + ранг-список» (slate-ранг-чіп, не кольорові кружечки).
+- `sections/OverviewDetailSheet.tsx` — адаптивний Sheet деталей (vaul mobile / dialog desktop), payload `hero/rows/note/cta`. Кожен клікабельний елемент → сюди.
+- `sections/AnalyticsActivation.tsx` — empty-state новачка (цінність-обіцянка, не порожнеча).
+- `ClientSheetById.tsx` + `lib/supabase/hooks/useAnalyticsMarketing.ts` — декомпозиція 988-рядкового оркестратора `useAnalytics`.
+- `charts/RevenueLineChart.tsx` — **переписано на recharts** (ComposedChart + градієнт + пунктир прогнозу + кастомний Frost-тултіп). Виправлено «сплюснутість» саморобного SVG. 🔴 `isAnimationActive={false}` на Area ОБОВ'ЯЗКОВО — інакше зникає в headless/фон-табі.
+- `useAnalytics.ts` — адитивна добавка `bento.revenue`/`bento.bookings` Δ (дзеркало avgCheck, нуль нових запитів).
+- Клікабельність через реальні дані (нуль фейку): виручка→категорії, by-numbers→пояснення, послуга/товар→огляд, клієнт→ClientDetailSheet.
+- Видалено мертвий `sections/ServiceRow.tsx` (замінено FeaturedServices).
+
+**Гейти:** TSC 0 · Build clean · a11y (slate-контраст 6.09–11.71) · humanizer. Прев'ю-роут видалено перед комітом.
+
+**KEY:** (1) Закон темного блоку = редизайн з концепту, не косметика; асиметрія в кожній секції. (2) recharts Area в headless вимагає `isAnimationActive={false}`, інакше графік порожній. (3) Великий оркестратор (988 рядків) → декомпозиція на тематичні хуки покращує переюз для решти табів. (4) Аналітика розбита на 7 табів-задач — Огляд = еталон для M-ANL-02..07.
 
 ---
 
