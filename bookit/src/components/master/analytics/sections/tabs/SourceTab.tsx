@@ -53,7 +53,7 @@ function DeltaChip({ delta }: { delta: number }) {
   const Icon = up ? ArrowUpRight : ArrowDownRight;
   return (
     // up: #0D6B2F (5.21:1) замість text-success #16803C (3.93 провал малого тексту на periwinkle)
-    <span className={cn('inline-flex items-center gap-0.5 text-xs font-semibold leading-none tabular-nums', up ? 'text-[#0D6B2F]' : 'text-error')}>
+    <span className={cn('inline-flex items-center gap-0.5 text-xs font-semibold leading-none tabular-nums', up ? 'text-[#0D6B2F]' : 'text-destructive')}>
       <Icon size={13} strokeWidth={2.5} />
       {up ? '+' : ''}{delta}%
     </span>

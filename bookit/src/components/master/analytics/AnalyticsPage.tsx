@@ -543,7 +543,7 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
 
               {/* Tab 7: STOCK */}
               {activeTab === 'stock' && (
-                <StockTab start={range.startDate} end={range.endDate} isPro={isPro} />
+                <StockTab start={range.startDate} end={range.endDate} isPro={isPro} onOpenDetail={setDetail} />
               )}
 
             </motion.div>
