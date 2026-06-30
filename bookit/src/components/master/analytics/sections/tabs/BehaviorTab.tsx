@@ -80,7 +80,7 @@ function incidentDetail(r: NoShowBookingRow): OverviewDetail {
       { label: 'Телефон', value: r.client_phone },
       ...(r.cancellation_reason ? [{ label: 'Причина', value: r.cancellation_reason }] : []),
     ],
-    note: 'Часті неявки одного клієнта — привід попросити передоплату або підтвердження напередодні.',
+    note: 'Якщо клієнт пропускає записи регулярно, це видно в його профілі. Врахуйте це під час наступного запису.',
     cta: { label: 'Профіль клієнта', href: `/dashboard/clients?clientPhone=${encodeURIComponent(r.client_phone)}` },
   };
 }
