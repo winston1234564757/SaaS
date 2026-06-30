@@ -15,13 +15,16 @@
 4. Відповісти: "STARTUP OK: Palace [N] drawers | Next: [ID] — [назва]"
 
 ═══ ПОТОЧНИЙ СТАН ═══
-Прогрес: 52/84 ✅ · 3 ↩️ (M-DASH-11, M-MKT-01, M-MKT-02 скасовано) | Sprint-05 IN PROGRESS · ФАЗА 3 (REVENUE 6/17 · GROWTH 2/2 · MARKETING 4/6 · REVIEWS 2/2 · ANALYTICS 3/7 — Огляд ✅ ЗАДЕПЛОЄНО + Джерела ✅ 100b94b2 + Відгуки ✅ ccebf398). Аналітика = 7 табів-задач: Огляд ✅ · Джерела ✅ · Відгуки ✅ → M-ANL-04..07 решта.
+Прогрес: 53/84 ✅ · 3 ↩️ (M-DASH-11, M-MKT-01, M-MKT-02 скасовано) | Sprint-05 IN PROGRESS · ФАЗА 3 (REVENUE 6/17 · GROWTH 2/2 · MARKETING 4/6 · REVIEWS 2/2 · ANALYTICS 4/7 — Огляд ✅ ЗАДЕПЛОЄНО + Джерела ✅ 100b94b2 + Відгуки ✅ ccebf398 + Склад ✅ 924105d6). Аналітика = 7 табів-задач: Огляд ✅ · Джерела ✅ · Відгуки ✅ · Склад ✅ → M-ANL-05..07 решта.
 
-▶ НАСТУПНА ДІЯ: M-ANL-04 — таб «Склад» (`stock`) editorial-redesign + ФІКС dummy-чисел під блюром → skeleton без чисел.
-  Бриф: **XDEV/PLANS/SPRINT-05-BACKLOG/ANALYTICS_TABS_REDESIGN.md** §6 (Склад) + §0 (Спільна основа — читати ПЕРШИМ).
-  🎨 СВІТЛИЙ герой (alternating: Огляд темний · Джерела світлий · Відгуки темний · Склад світлий). Зразок світлого героя — SourceTab/FeaturedServices.
-  Порядок решти (один = одна сесія): ~~Джерела~~✅ ~~Відгуки~~✅ → Склад (04) → Фінанси (05) → Поведінка (06) → Зростання (07).
+▶ НАСТУПНА ДІЯ: M-ANL-05 — таб «Фінанси» (`finances`) editorial-redesign + ФІКС dummy-чисел під блюром → skeleton без чисел (як StockTab M-ANL-04).
+  Бриф: **XDEV/PLANS/SPRINT-05-BACKLOG/ANALYTICS_TABS_REDESIGN.md** §5 (Фінанси) + §0 (Спільна основа — читати ПЕРШИМ).
+  🎨 ТЕМНИЙ герой (alternating: …Джерела світлий · Відгуки темний · Склад світлий · Фінанси темний). Зразок темної обкладинки — OverviewBriefing/ReviewsTab.
+  🔴 Урок M-ANL-04: метрики через `metric-value` (tabular), НЕ `heading-serif` — Cormorant oldstyle рендерить "18"→"I8". Семантика Tailwind v4: `text-destructive` (НЕ `text-error`).
+  Порядок решти (один = одна сесія): ~~Джерела~~✅ ~~Відгуки~~✅ ~~Склад~~✅ → Фінанси (05) → Поведінка (06) → Зростання (07).
   Деталі + переюз + воркфлоу верифікації + a11y-довідник + фейки до фіксу: HANDOFF.md ▶ NEXT.
+
+Нотатки 2026-06-30 (M-ANL-04, commit 924105d6, очікує візуального QA founder): таб «Склад» (`stock`) editorial-redesign — концепт «склад під контролем». СВІТЛИЙ герой (alternating) = найтерміновіший розхідник (`sorted[0]`), днів до закінчення великим числом. 🔴 УРОК: число через `metric-value` (tabular sans), а НЕ `heading-serif` — Cormorant рендерив "18" як "I8" (oldstyle-цифри), зловлено на власному рендері. Світлофор-tone `severityOf`: critical ≤3 / warning ≤7 / normal; `TONE[sev]`={dot,eyebrow,daysBig,label}. by-numbers: запас/витрата-30д/прогноз; клік→OverviewDetailSheet (запас/витрата/потрібно на 14д/собівартість + cta «Поповнити запас»→/dashboard/products). Col-5 світлофор Критичні/Увага/У нормі + СПИСОК ПОКУПОК (count до закупівлі + Сформувати/Копіювати з copy-to-clipboard; empty «Усе в нормі, закуповувати поки нічого»). Col-12 усі розхідники ранг-списком за терміновістю + status-dot + кольоровий days-лейбл. 🔴 ФІКС ФЕЙКУ: Pro empty-state → skeleton-силует (сірі смуги БЕЗ цифр) + teaser; прибрано захардкоджені dummy-products під блюром. Розділено StockTab(fetch)+StockTabView(презентація). 🔴 ЛАТЕНТНИЙ БАГ M-ANL-02 виправлено в цьому коміті: SourceTab DeltaChip-down `text-error`→`text-destructive` (`--color-error` не існує в Tailwind v4, мапінг `--color-destructive: var(--error)`; раніше рендерилось темним замість червоного). a11y: critical #B91C1C, warning eyebrow #92400E (5.56), normal eyebrow #0D6B2F (5.21) на periwinkle #DCE3FF. Верифіковано власними очима (Playwright headless crit/ok/mobile). TSC:0 Build:clean humanizer✓.
 
 ═══ M-ANL-01 «Огляд» — ЗРОБЛЕНО (commit 2c48474f, ЗАДЕПЛОЄНО, чекає візуального QA founder) ═══
 **⭐ НАРОДЖЕНО ЗАКОН: Принцип темного блоку** (WORKFLOW.md §, memory feedback_dark_block_principle.md, MemPalace). Founder відкинув косметику світлих карток («дитсадок»); корінь = МИСЛЕННЯ: проектувати з концепту з нуля + асиметрична ієрархія (герой+решток) в КОЖНІЙ секції, не ретрофіт. Маркер провалу = рівномірність. Воркфлоу: рендер локально власними очима (Playwright headless + мок-прев'ю-роут поза auth) ДО показу founder.
