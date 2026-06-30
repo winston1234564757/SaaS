@@ -260,12 +260,12 @@ export function FinancesTabView({
       </section>
 
       {/* ── Каскад + Маржа ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
         {/* Чесний каскад руху грошей */}
         <div className="lg:col-span-7 min-w-0">
           <BentoCell className="h-full p-5">
             <SectionHeading title="Рух грошей" subtitle="Куди йде кожна гривня виручки" />
-            <div className="flex flex-col gap-3.5">
+            <div className="flex flex-col gap-3.5 flex-1 justify-between">
               {flow.map((f) => {
                 const widthPct = Math.max(2, Math.round((f.kop / maxKop) * 100));
                 const isOut = f.kind === 'out';

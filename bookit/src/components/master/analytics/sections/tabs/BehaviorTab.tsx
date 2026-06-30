@@ -101,7 +101,7 @@ export function BehaviorTabView({
   vacation: VacationImpact | null;
   onOpenDetail: (d: OverviewDetail) => void;
 }) {
-  // ── Пік завантаження (герой) ──
+  // ── Пік завантаження ──
   const peak = heatmap.reduce<HeatmapPoint | null>((best, c) => (c.occupancy_pct > (best?.occupancy_pct ?? -1) ? c : best), null);
   const activeCells = heatmap.filter((c) => c.occupancy_pct > 0);
   const avgOcc = activeCells.length > 0 ? Math.round(activeCells.reduce((s, c) => s + c.occupancy_pct, 0) / activeCells.length) : 0;
@@ -150,64 +150,19 @@ export function BehaviorTabView({
   const incidents = noShow?.history ?? [];
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
-      {/* ── Герой: теплова карта + пік ── */}
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
+      {/* ── Ряд 1: теплова карта (герой) + неявки — два високі блоки рівної висоти ── */}
       {heatmap.length > 0 && (
-        <>
-          <div className="lg:col-span-7 min-w-0">
-            <BentoCell className="h-full p-5">
-              <SectionHeading title="Теплова карта завантаження" subtitle="Рівень зайнятості по годинах та днях тижня" />
-              <HeatmapGrid data={heatmap} />
-            </BentoCell>
-          </div>
-
-          <div className="lg:col-span-5 min-w-0">
-            <BentoCell className="h-full p-5">
-              <button
-                type="button"
-                onClick={() => peakDetail && onOpenDetail(peakDetail)}
-                disabled={!peakDetail}
-                className="text-left w-full cursor-pointer group disabled:cursor-default"
-              >
-                <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-primary mb-3">
-                  <Flame size={13} />
-                  Ваш пік
-                </span>
-                {peak ? (
-                  <>
-                    <h4 className="heading-serif text-[26px] leading-tight text-foreground group-hover:text-primary transition-colors">
-                      {DOW_FULL[peak.dow - 1]}
-                    </h4>
-                    <div className="flex items-baseline gap-2.5 mt-2">
-                      <span className="metric-value font-semibold leading-[0.9] text-[clamp(2.5rem,6vw,3.5rem)] tracking-tight text-foreground">
-                        {peak.occupancy_pct}%
-                      </span>
-                      <span className="text-sm font-medium text-text-sub mb-1.5">о {peak.hour}:00 · завантаження</span>
-                    </div>
-                  </>
-                ) : (
-                  <p className="text-sm text-text-sub py-4">Завантаженість порахується, коли зʼявляться записи.</p>
-                )}
-
-                <div className="mt-5 grid grid-cols-2 divide-x divide-border-strong/40 rounded-2xl bg-primary/[0.05] border border-primary/10">
-                  <div className="pr-3 pl-3.5 py-2.5">
-                    <p className="text-[10px] text-text-sub mb-0.5">Середня завантаженість</p>
-                    <p className="metric-value text-[15px] font-semibold text-foreground">{avgOcc}%</p>
-                  </div>
-                  <div className="px-3 py-2.5">
-                    <p className="text-[10px] text-text-sub mb-0.5">Активних слотів</p>
-                    <p className="metric-value text-[15px] font-semibold text-foreground">{activeCells.length}</p>
-                  </div>
-                </div>
-              </button>
-            </BentoCell>
-          </div>
-        </>
+        <div className="lg:col-span-7 min-w-0">
+          <BentoCell className="h-full p-5">
+            <SectionHeading title="Теплова карта завантаження" subtitle="Рівень зайнятості по годинах та днях тижня" />
+            <HeatmapGrid data={heatmap} />
+          </BentoCell>
+        </div>
       )}
 
-      {/* ── No-Show: герой секції (рейти + журнал) ── */}
       {noShow && noShow.totalBookings > 0 && (
-        <div className="lg:col-span-7 min-w-0">
+        <div className="lg:col-span-5 min-w-0">
           <BentoCell className="h-full p-5">
             <SectionHeading title="Неявки та скасування" subtitle={`Від загальних ${noShow.totalBookings} ${pluralUk(noShow.totalBookings, 'запис', 'записи', 'записів')}`} />
 
@@ -262,10 +217,54 @@ export function BehaviorTabView({
         </div>
       )}
 
-      {/* ── Lead time: врізка ── */}
-      {lead && lead.totalBookings > 0 && (
-        <div className="lg:col-span-5 min-w-0">
+      {/* ── Ряд 2: пік + час планування — два компактні блоки рівної висоти ── */}
+      {heatmap.length > 0 && (
+        <div className="lg:col-span-6 min-w-0">
           <BentoCell className="h-full p-5">
+            <button
+              type="button"
+              onClick={() => peakDetail && onOpenDetail(peakDetail)}
+              disabled={!peakDetail}
+              className="text-left w-full h-full flex flex-col cursor-pointer group disabled:cursor-default"
+            >
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-primary mb-3">
+                <Flame size={13} />
+                Ваш пік
+              </span>
+              {peak ? (
+                <>
+                  <h4 className="heading-serif text-[26px] leading-tight text-foreground group-hover:text-primary transition-colors">
+                    {DOW_FULL[peak.dow - 1]}
+                  </h4>
+                  <div className="flex items-baseline gap-2.5 mt-2">
+                    <span className="metric-value font-semibold leading-[0.9] text-[clamp(2.5rem,6vw,3.5rem)] tracking-tight text-foreground">
+                      {peak.occupancy_pct}%
+                    </span>
+                    <span className="text-sm font-medium text-text-sub mb-1.5">о {peak.hour}:00 · завантаження</span>
+                  </div>
+                </>
+              ) : (
+                <p className="text-sm text-text-sub py-4">Завантаженість порахується, коли зʼявляться записи.</p>
+              )}
+
+              <div className="mt-auto pt-5 grid grid-cols-2 divide-x divide-border-strong/40 rounded-2xl bg-primary/[0.05] border border-primary/10">
+                <div className="pr-3 pl-3.5 py-2.5">
+                  <p className="text-[10px] text-text-sub mb-0.5">Середня завантаженість</p>
+                  <p className="metric-value text-[15px] font-semibold text-foreground">{avgOcc}%</p>
+                </div>
+                <div className="px-3 py-2.5">
+                  <p className="text-[10px] text-text-sub mb-0.5">Активних слотів</p>
+                  <p className="metric-value text-[15px] font-semibold text-foreground">{activeCells.length}</p>
+                </div>
+              </div>
+            </button>
+          </BentoCell>
+        </div>
+      )}
+
+      {lead && lead.totalBookings > 0 && (
+        <div className="lg:col-span-6 min-w-0">
+          <BentoCell className="h-full p-5 flex flex-col">
             <button
               type="button"
               onClick={() => leadDetail && onOpenDetail(leadDetail)}
@@ -285,7 +284,7 @@ export function BehaviorTabView({
               </div>
             </button>
 
-            <div className="flex flex-col gap-3 pt-4 border-t border-border-strong/45">
+            <div className="flex flex-col gap-3 pt-4 border-t border-border-strong/45 flex-1 justify-center">
               {leadBuckets.map((b) => (
                 <div key={b.label} className="flex flex-col gap-1.5">
                   <div className="flex justify-between items-baseline text-xs">

@@ -140,7 +140,7 @@ export function StockTabView({
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
       {/* ── Світлий герой: найтерміновіший дефіцит ── */}
       <div className="lg:col-span-7 min-w-0">
         <BentoCell className="h-full p-5">
