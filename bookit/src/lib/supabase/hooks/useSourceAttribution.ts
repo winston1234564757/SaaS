@@ -7,57 +7,110 @@ import { useMasterContext } from '../context';
 export interface SourceAttributionPoint {
   source: string;
   count: number;
-  revenue: number; // в копійках
+  /** Записів, що дійшли до завершеного візиту */
+  completedCount: number;
+  /** Виручка у гривнях (лише completed) */
+  revenue: number;
+  /** Частка від усіх записів періоду (%) */
   pct: number;
+  /** Δ кількості записів проти попереднього періоду (%), null якщо без бази порівняння */
+  deltaPct: number | null;
 }
 
-export function useSourceAttribution({ start, end }: { start: string; end: string }) {
+type Row = { source: string | null; total_price: number; status: string };
+
+function normalizeSource(raw: string | null): string {
+  const s = raw || 'public_page';
+  if (s === 'instagram_link' || s === 'instagram') return 'Instagram';
+  if (s === 'telegram_bot' || s === 'tg') return 'Telegram';
+  if (s === 'manual' || s === 'direct') return 'Вручну';
+  if (s === 'explore') return 'Каталог';
+  return 'Сайт-візитка';
+}
+
+/** Зсуває [start,end] на один рівний період назад (для Δ-тренду) */
+function previousWindow(start: string, end: string): { prevStart: string; prevEnd: string } {
+  const s = new Date(start + 'T00:00:00Z');
+  const e = new Date(end + 'T00:00:00Z');
+  const lenDays = Math.round((e.getTime() - s.getTime()) / 86_400_000) + 1;
+  const prevEnd = new Date(s.getTime() - 86_400_000);
+  const prevStart = new Date(prevEnd.getTime() - (lenDays - 1) * 86_400_000);
+  const iso = (d: Date) => d.toISOString().slice(0, 10);
+  return { prevStart: iso(prevStart), prevEnd: iso(prevEnd) };
+}
+
+export function useSourceAttribution({
+  start,
+  end,
+  compareTrend = false,
+}: {
+  start: string;
+  end: string;
+  /** Тягнути попередній період для per-канал Δ (Pro) */
+  compareTrend?: boolean;
+}) {
   const { masterProfile } = useMasterContext();
   const masterId = masterProfile?.id;
 
   return useQuery({
-    queryKey: ['analytics-tab-source', masterId, start, end],
+    queryKey: ['analytics-tab-source', masterId, start, end, compareTrend],
     enabled: !!masterId,
-    staleTime: 5 * 60_000, // 5 min
+    staleTime: 5 * 60_000,
     queryFn: async (): Promise<SourceAttributionPoint[]> => {
       const supabase = createClient();
-      const { data, error } = await supabase
-        .from('bookings')
-        .select('source, total_price, status')
-        .eq('master_id', masterId!)
-        .gte('date', start)
-        .lte('date', end);
 
-      if (error) throw error;
+      const fetchRows = async (from: string, to: string): Promise<Row[]> => {
+        const { data, error } = await supabase
+          .from('bookings')
+          .select('source, total_price, status')
+          .eq('master_id', masterId!)
+          .gte('date', from)
+          .lte('date', to);
+        if (error) throw error;
+        return (data ?? []) as Row[];
+      };
 
-      const rows = (data ?? []) as { source: string | null; total_price: number; status: string }[];
+      const rows = await fetchRows(start, end);
+
+      // Попередній період — лише для Pro (Δ-тренд)
+      let prevCounts = new Map<string, number>();
+      if (compareTrend) {
+        const { prevStart, prevEnd } = previousWindow(start, end);
+        const prevRows = await fetchRows(prevStart, prevEnd);
+        prevRows.forEach((r) => {
+          const key = normalizeSource(r.source);
+          prevCounts.set(key, (prevCounts.get(key) ?? 0) + 1);
+        });
+      }
+
       const totalCount = rows.length;
-
-      const sourceMap = new Map<string, { count: number; revenue: number }>();
+      const agg = new Map<string, { count: number; completedCount: number; revenue: number }>();
 
       rows.forEach((r) => {
-        // Стандартизуємо назву джерела
-        let rawSource = r.source || 'public_page';
-        if (rawSource === 'instagram_link' || rawSource === 'instagram') rawSource = 'Instagram';
-        else if (rawSource === 'telegram_bot' || rawSource === 'tg') rawSource = 'Telegram';
-        else if (rawSource === 'manual' || rawSource === 'direct') rawSource = 'Вручну';
-        else if (rawSource === 'explore') rawSource = 'Каталог';
-        else rawSource = 'Сайт-візитка';
-
-        const cur = sourceMap.get(rawSource) ?? { count: 0, revenue: 0 };
-        sourceMap.set(rawSource, {
+        const key = normalizeSource(r.source);
+        const cur = agg.get(key) ?? { count: 0, completedCount: 0, revenue: 0 };
+        const completed = r.status === 'completed';
+        agg.set(key, {
           count: cur.count + 1,
-          revenue: cur.revenue + (r.status === 'completed' ? Math.round(Number(r.total_price) * 100) : 0),
+          completedCount: cur.completedCount + (completed ? 1 : 0),
+          revenue: cur.revenue + (completed ? Number(r.total_price) : 0),
         });
       });
 
       const result: SourceAttributionPoint[] = [];
-      sourceMap.forEach((val, key) => {
+      agg.forEach((val, key) => {
+        const prev = prevCounts.get(key);
+        const deltaPct =
+          compareTrend && prev !== undefined && prev > 0
+            ? Math.round(((val.count - prev) / prev) * 100)
+            : null;
         result.push({
           source: key,
           count: val.count,
+          completedCount: val.completedCount,
           revenue: val.revenue,
           pct: totalCount > 0 ? Math.round((val.count / totalCount) * 100) : 0,
+          deltaPct,
         });
       });
 

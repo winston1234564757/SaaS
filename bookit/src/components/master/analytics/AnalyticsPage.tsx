@@ -533,7 +533,7 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
 
               {/* Tab 5: SOURCE */}
               {activeTab === 'source' && (
-                <SourceTab start={range.startDate} end={range.endDate} />
+                <SourceTab start={range.startDate} end={range.endDate} isPro={isPro} onOpenDetail={setDetail} />
               )}
 
               {/* Tab 6: FINANCES */}
