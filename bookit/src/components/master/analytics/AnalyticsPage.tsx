@@ -9,7 +9,7 @@ import { useQueryState, parseAsString } from 'nuqs';
 import {
   RefreshCw, Crown,
   Users, TrendingUp, AlertTriangle,
-  ChevronLeft, ChevronRight,
+  LayoutDashboard, Activity, Star, Compass, Wallet, Package,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -57,13 +57,13 @@ interface AnalyticsPageProps {
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const TABS = [
-  { key: 'overview', label: 'Огляд' },
-  { key: 'growth', label: 'Зростання' },
-  { key: 'behavior', label: 'Поведінка' },
-  { key: 'reviews', label: 'Відгуки' },
-  { key: 'source', label: 'Джерела' },
-  { key: 'finances', label: 'Фінанси' },
-  { key: 'stock', label: 'Склад' },
+  { key: 'overview', label: 'Огляд', icon: LayoutDashboard, desc: 'Головне за період' },
+  { key: 'growth', label: 'Зростання', icon: TrendingUp, desc: 'Що рухає виручку' },
+  { key: 'behavior', label: 'Поведінка', icon: Activity, desc: 'Ритм і завантаження' },
+  { key: 'reviews', label: 'Відгуки', icon: Star, desc: 'Рейтинг і NPS' },
+  { key: 'source', label: 'Джерела', icon: Compass, desc: 'Звідки записи' },
+  { key: 'finances', label: 'Фінанси', icon: Wallet, desc: 'Прибуток і маржа' },
+  { key: 'stock', label: 'Склад', icon: Package, desc: 'Запас матеріалів' },
 ] as const;
 
 // ── Tour Steps ────────────────────────────────────────────────────────────────
@@ -372,58 +372,47 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
 
           <MorningBriefing onOpenClient={(name, phone) => setSelectedClient({ clientName: name, clientPhone: phone })} />
 
-          {/* ── Tabs Strip ── */}
-          <div className="flex items-center gap-0 border-b border-border/40">
-            <button
-              type="button"
-              aria-label="Попередня вкладка"
-              onClick={() => { const ci = TAB_KEYS.indexOf(activeTab); if (ci > 0) handleTabChange(TAB_KEYS[ci - 1]); }}
-              disabled={TAB_KEYS.indexOf(activeTab) === 0}
-              className="size-8 flex-shrink-0 flex items-center justify-center rounded-full text-text-sub hover:text-foreground hover:bg-secondary/60 active:scale-[0.90] transition-all duration-100 disabled:opacity-20 cursor-pointer"
-            >
-              <ChevronLeft size={14} />
-            </button>
-
-            <div className="flex flex-1 overflow-x-auto scrollbar-hide">
-              {TABS.map((t) => {
-                const isLocked = !isPro && t.key !== 'overview';
-                const isActive = activeTab === t.key;
-                return (
-                  <button
-                    type="button"
-                    key={t.key}
-                    aria-pressed={isActive}
-                    onClick={() => !isLocked && handleTabChange(t.key)}
-                    className={cn(
-                      'relative flex-shrink-0 px-4 py-3 text-xs font-semibold select-none cursor-pointer flex items-center gap-1.5 active:scale-[0.95] transition-colors duration-150 whitespace-nowrap',
-                      isLocked && 'opacity-40 cursor-not-allowed'
-                    )}
-                  >
-                    <span className={cn(isActive ? 'text-foreground' : 'text-text-sub hover:text-foreground')}>
+          {/* ── Tabs: повноширинний ряд bento-карток з описом ── */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 lg:flex lg:gap-3">
+            {TABS.map((t) => {
+              const isLocked = !isPro && t.key !== 'overview';
+              const isActive = activeTab === t.key;
+              const Icon = t.icon;
+              return (
+                <button
+                  type="button"
+                  key={t.key}
+                  aria-pressed={isActive}
+                  aria-label={`${t.label} — ${t.desc}`}
+                  disabled={isLocked}
+                  onClick={() => !isLocked && handleTabChange(t.key)}
+                  className={cn(
+                    'group relative text-left rounded-2xl p-3.5 border transition-all duration-200 cursor-pointer active:scale-[0.97] lg:flex-1 lg:min-w-0',
+                    isActive
+                      ? 'text-[var(--accent-on)] border-transparent'
+                      : 'bg-secondary/30 border-border/40 hover:border-primary/30 hover:bg-secondary/50',
+                    isLocked && 'opacity-50 cursor-not-allowed'
+                  )}
+                  style={isActive ? { background: 'var(--hero-card-bg)', boxShadow: 'var(--hero-card-shadow)' } : undefined}
+                >
+                  <span className={cn(
+                    'inline-flex size-8 items-center justify-center rounded-xl mb-2.5',
+                    isActive ? 'bg-white/12 text-white' : 'bg-primary/[0.07] text-primary'
+                  )}>
+                    <Icon size={16} />
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <span className={cn('text-sm font-semibold leading-tight', isActive ? 'text-white' : 'text-foreground')}>
                       {t.label}
                     </span>
-                    {isLocked && <Crown size={10} className="text-primary flex-shrink-0" />}
-                    {isActive && (
-                      <motion.div
-                        layoutId="analytics-tab-underline"
-                        transition={tabSpring}
-                        className="absolute bottom-0 left-0 right-0 h-[2px] bg-primary rounded-full"
-                      />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-
-            <button
-              type="button"
-              aria-label="Наступна вкладка"
-              onClick={() => { const ci = TAB_KEYS.indexOf(activeTab); if (ci < TABS.length - 1) handleTabChange(TAB_KEYS[ci + 1]); }}
-              disabled={TAB_KEYS.indexOf(activeTab) === TABS.length - 1}
-              className="size-8 flex-shrink-0 flex items-center justify-center rounded-full text-text-sub hover:text-foreground hover:bg-secondary/60 active:scale-[0.90] transition-all duration-100 disabled:opacity-20 cursor-pointer"
-            >
-              <ChevronRight size={14} />
-            </button>
+                    {isLocked && <Crown size={11} className="text-primary flex-shrink-0" />}
+                  </div>
+                  <p className={cn('text-[11px] mt-0.5 leading-snug', isActive ? 'text-white/65' : 'text-text-sub')}>
+                    {t.desc}
+                  </p>
+                </button>
+              );
+            })}
           </div>
 
           {/* ── Tabs Render ── */}
