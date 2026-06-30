@@ -152,7 +152,7 @@ export function GrowthTabView({
   const pairMax = Math.max(...servicePairs.map((p) => p.pair_count), 1);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
       {/* ── Темний герой: двигуни росту ── */}
       <div className="lg:col-span-12 min-w-0">
         <section
@@ -209,7 +209,7 @@ export function GrowthTabView({
               {/* by the numbers */}
               <div className="grid grid-cols-3 divide-x divide-white/12 lg:border-l lg:border-white/12 lg:pl-10">
                 {[
-                  { label: 'Топ-20% частка', value: `${concentrationPct}%` },
+                  { label: 'Постійних клієнтів', value: String(loyalty.activeMembers) },
                   { label: 'Флеш заброньовано', value: String(flash.claimed) },
                   { label: 'Розсилки → записи', value: String(broadcast.converted) },
                 ].map((m, i) => (
@@ -224,9 +224,9 @@ export function GrowthTabView({
         </section>
       </div>
 
-      {/* ── LTV Парето: featured ── */}
+      {/* ── LTV Парето: featured (з winback) ── */}
       <div className="lg:col-span-7 min-w-0">
-        <BentoCell className="h-full p-5">
+        <BentoCell className="h-full p-5 flex flex-col">
           <button
             type="button"
             onClick={() => onOpenDetail(ltvDetail)}
@@ -267,11 +267,11 @@ export function GrowthTabView({
 
           {/* Winback */}
           {winbackCandidates.length > 0 && (
-            <div className="mt-5 pt-4 border-t border-border-strong/45">
+            <div className="mt-5 pt-4 border-t border-border-strong/45 flex flex-col flex-1">
               <p className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#92400E] mb-2.5">
                 <TrendingUp size={12} /> Варто повернути
               </p>
-              <div className="flex flex-col">
+              <div className="flex flex-col flex-1 justify-between">
                 {winbackCandidates.slice(0, 4).map((c, i) => (
                   <button
                     type="button"
@@ -296,9 +296,9 @@ export function GrowthTabView({
 
       {/* ── Канали залучення: ранг-список ── */}
       <div className="lg:col-span-5 min-w-0">
-        <BentoCell className="h-full p-5">
+        <BentoCell className="h-full p-5 flex flex-col">
           <SectionHeading title="Канали залучення" subtitle="Звідки приходять записи та клієнти" />
-          <div className="flex flex-col">
+          <div className="flex flex-col flex-1 justify-between">
             {channels.map((ch) => {
               const Icon = ch.icon;
               return (
@@ -321,11 +321,11 @@ export function GrowthTabView({
       </div>
 
       {/* ── Розумні ціни: розбивка правил ── */}
-      <div className="lg:col-span-5 min-w-0">
-        <BentoCell className="h-full p-5">
+      <div className="lg:col-span-6 min-w-0">
+        <BentoCell className="h-full p-5 flex flex-col">
           <SectionHeading title="Спрацювання розумних цін" subtitle="Які правила приносять надбавку" />
           {totalRuleHits > 0 ? (
-            <div className="flex flex-col">
+            <div className="flex flex-col flex-1 justify-center">
               {rulesList.map(([rule, count]) => {
                 const fill = Math.max(2, Math.round((count / Math.max(rulesList[0]?.[1] ?? 1, 1)) * 100));
                 return (
@@ -342,17 +342,17 @@ export function GrowthTabView({
               })}
             </div>
           ) : (
-            <p className="text-sm text-text-sub py-6 text-center">Правила розумних цін ще не спрацьовували за цей період.</p>
+            <p className="text-sm text-text-sub py-6 text-center flex-1 flex items-center justify-center">Правила розумних цін ще не спрацьовували за цей період.</p>
           )}
         </BentoCell>
       </div>
 
       {/* ── Cross-sell: пари послуг ── */}
-      <div className="lg:col-span-7 min-w-0">
-        <BentoCell className="h-full p-5">
+      <div className="lg:col-span-6 min-w-0">
+        <BentoCell className="h-full p-5 flex flex-col">
           <SectionHeading title="Що бронюють разом" subtitle="Пари послуг для апсейлу" />
           {servicePairs.length > 0 ? (
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-3 flex-1 justify-center">
               {servicePairs.slice(0, 5).map((p, i) => {
                 const fill = Math.max(4, Math.round((p.pair_count / pairMax) * 100));
                 return (
@@ -375,7 +375,7 @@ export function GrowthTabView({
               })}
             </div>
           ) : (
-            <div className="flex flex-col items-center text-center py-8 text-text-sub">
+            <div className="flex flex-col items-center text-center py-8 text-text-sub flex-1 justify-center">
               <Layers size={20} className="mb-2 text-text-sub" />
               <p className="text-sm max-w-xs">Поки замало спільних бронювань, щоб виявити пари послуг.</p>
             </div>
