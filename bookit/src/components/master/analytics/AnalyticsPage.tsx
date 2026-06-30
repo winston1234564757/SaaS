@@ -26,19 +26,15 @@ import { PeriodControls } from './sections/PeriodControls';
 import { OverviewBriefing, type BriefingMetric } from './sections/OverviewBriefing';
 import { OverviewDetailSheet, type OverviewDetail } from './sections/OverviewDetailSheet';
 import { type StoryItem } from './sections/HeroStory';
-import { BentoSecondary } from './sections/BentoSecondary';
-import { GrowthLists } from './sections/GrowthLists';
 import { BusinessHealthScoreWidget } from './sections/BusinessHealthScoreWidget';
 import { MorningBriefing } from './sections/MorningBriefing';
-import { OverviewTab, SectionHeading } from './sections/OverviewTab';
+import { OverviewTab } from './sections/OverviewTab';
 import { AnalyticsActivation } from './sections/AnalyticsActivation';
-
-// Графіки
-import { CohortHeatmap } from './charts/CohortHeatmap';
 
 // Вкладки drill-down
 import { ReviewsTab } from './sections/tabs/ReviewsTab';
 import { BehaviorTab } from './sections/tabs/BehaviorTab';
+import { GrowthTab } from './sections/tabs/GrowthTab';
 import { SourceTab } from './sections/tabs/SourceTab';
 import { FinancesTab } from './sections/tabs/FinancesTab';
 import { StockTab } from './sections/tabs/StockTab';
@@ -470,41 +466,27 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
               )}
 
               {/* Tab 2: GROWTH */}
-              {activeTab === 'growth' && isPro && (
-                <div className="flex flex-col gap-4 lg:grid lg:grid-cols-2 lg:gap-6 lg:items-start">
-                  <BentoSecondary
-                    isPro={isPro}
-                    currentRevenue={summary.revenue}
-                    upliftKopecks={extras?.dynamic_pricing_uplift?.uplift_kopecks ?? 0}
-                    ruleCounts={extras?.dynamic_pricing_uplift?.rule_counts ?? {}}
-                    savedSlots={extras?.dynamic_pricing_uplift?.saved_slots ?? 0}
-                    dealsCount={flashDealsStats?.total ?? 0}
-                    claimedDeals={flashDealsStats?.claimed ?? 0}
-                    sentBroadcasts={broadcastsStats?.sent ?? 0}
-                    openedBroadcasts={broadcastsStats?.opened ?? 0}
-                    convertedBroadcasts={broadcastsStats?.converted ?? 0}
-                    concentrationPct={extras?.ltv_concentration?.concentration_pct ?? 0}
-                    ltvDistribution={extras?.ltv_concentration?.ltv_distribution ?? {}}
-                    winbackCandidates={extras?.ltv_concentration?.winback_candidates ?? []}
-                    servicePairs={extras?.service_pairing ?? []}
-                    onOpenClient={(name, phone) => setSelectedClient({ clientName: name, clientPhone: phone })}
-                  />
-
-                  <GrowthLists
-                    loyaltyMembersCount={loyaltyStats?.activeMembers ?? 0}
-                    loyaltyPointsEarned={loyaltyStats?.totalPoints ?? 0}
-                    referralsSent={referralStats?.totalSent ?? 0}
-                    referralsSignedUp={referralStats?.signedUp ?? 0}
-                    referralsActivated={referralStats?.activated ?? 0}
-                  />
-
-                  {extras?.cohort_matrix && extras.cohort_matrix.length > 0 && (
-                    <BentoCell className="p-5 lg:col-span-2">
-                      <SectionHeading title="Когортний аналіз повернення" subtitle="Відсоток повторних візитів нових клієнтів по місяцях" />
-                      <CohortHeatmap data={extras.cohort_matrix} />
-                    </BentoCell>
-                  )}
-                </div>
+              {activeTab === 'growth' && (
+                <GrowthTab
+                  isPro={isPro}
+                  isLoading={isExtrasLoading}
+                  hasData={summary.bookings > 0}
+                  rangeLabel={range.label}
+                  upliftKopecks={extras?.dynamic_pricing_uplift?.uplift_kopecks ?? 0}
+                  ruleCounts={extras?.dynamic_pricing_uplift?.rule_counts ?? {}}
+                  savedSlots={extras?.dynamic_pricing_uplift?.saved_slots ?? 0}
+                  concentrationPct={extras?.ltv_concentration?.concentration_pct ?? 0}
+                  ltvDistribution={extras?.ltv_concentration?.ltv_distribution ?? {}}
+                  winbackCandidates={extras?.ltv_concentration?.winback_candidates ?? []}
+                  servicePairs={extras?.service_pairing ?? []}
+                  cohortMatrix={extras?.cohort_matrix ?? []}
+                  flash={{ total: flashDealsStats?.total ?? 0, claimed: flashDealsStats?.claimed ?? 0 }}
+                  broadcast={{ sent: broadcastsStats?.sent ?? 0, opened: broadcastsStats?.opened ?? 0, converted: broadcastsStats?.converted ?? 0 }}
+                  loyalty={{ activeMembers: loyaltyStats?.activeMembers ?? 0, totalVisits: loyaltyStats?.totalPoints ?? 0 }}
+                  referral={{ totalSent: referralStats?.totalSent ?? 0, signedUp: referralStats?.signedUp ?? 0, activated: referralStats?.activated ?? 0 }}
+                  onOpenClient={(name, phone) => setSelectedClient({ clientName: name, clientPhone: phone })}
+                  onOpenDetail={setDetail}
+                />
               )}
 
               {/* Tab 3: BEHAVIOR */}
