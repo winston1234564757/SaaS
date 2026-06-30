@@ -60,7 +60,7 @@ function serviceMarginDetail(s: FinanceServiceItem): OverviewDetail {
     note: low
       ? 'Висока собівартість розхідників зменшує прибуток із кожного запису. Перегляньте ціну або склад матеріалів.'
       : 'Маржа здорова: ціна та собівартість у балансі.',
-    cta: { label: 'Перейти до послуги', href: `/dashboard/services?edit=${s.service_id}` },
+    cta: { label: 'Перейти до послуги', href: `/dashboard/services/${s.service_id}` },
   };
 }
 

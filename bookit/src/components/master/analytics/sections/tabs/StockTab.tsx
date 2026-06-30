@@ -52,7 +52,7 @@ function itemDetail(item: StockForecastItem): OverviewDetail {
       { label: 'Собівартість', value: cost },
     ],
     note: 'Прогноз рахується за темпом витрати за останні 14 днів записів.',
-    cta: { label: 'Поповнити запас', href: '/dashboard/products' },
+    cta: { label: 'Поповнити запас', href: `/dashboard/products?tab=consumables&restockId=${item.product_id}` },
   };
 }
 

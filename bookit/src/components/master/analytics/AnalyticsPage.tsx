@@ -173,7 +173,7 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
         title: `Розумне ціноутворення принесло +${formatPrice(Math.round(pricingUplift / 100))}`,
         description: 'Автоматичні націнки в години пік та знижки в гарячі години підвищили дохід.',
         ctaLabel: 'Налаштувати ціни',
-        ctaHref: '/dashboard/revenue?tab=pricing',
+        ctaHref: '/dashboard/revenue?tab=dynamic_pricing',
         icon: <TrendingUp size={14} />,
       });
     }
@@ -189,7 +189,7 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
         title: `Прогнозується спад завантаження на ${alertDate}`,
         description: 'Кількість записів суттєво нижча за середню. Створіть флеш-акцію, щоб заповнити вільні вікна.',
         ctaLabel: 'Створити акцію',
-        ctaHref: '/dashboard/revenue?tab=flash',
+        ctaHref: '/dashboard/revenue?tab=flash_deals',
         icon: <AlertTriangle size={14} />,
       });
     }

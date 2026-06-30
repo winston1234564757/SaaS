@@ -69,7 +69,7 @@ export function SmartPricingOptimizer({ occupancyHeatmap }: SmartPricingOptimize
       </div>
 
       <Link
-        href="/dashboard/revenue?tab=pricing"
+        href="/dashboard/revenue?tab=dynamic_pricing"
         className="relative z-10 group inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-[var(--btn-primary-bg)] text-[var(--accent-on)] text-[13px] font-semibold cursor-pointer active:scale-[0.97] transition-transform self-start"
       >
         Налаштувати націнку

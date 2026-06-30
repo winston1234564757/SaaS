@@ -124,7 +124,7 @@ export function GrowthTabView({
       ...(savedSlots > 0 ? [{ label: 'Врятовані слоти', value: String(savedSlots), tone: 'success' as const }] : []),
     ],
     note: 'Надбавка — це різниця між базовою та динамічною ціною на спрацьованих правилах. Гроші, які ви заробили без додаткових дій.',
-    cta: { label: 'Налаштувати ціни', href: '/dashboard/revenue' },
+    cta: { label: 'Налаштувати ціни', href: '/dashboard/revenue?tab=dynamic_pricing' },
   };
 
   const ltvDetail: OverviewDetail = {
@@ -199,7 +199,7 @@ export function GrowthTabView({
                     <span className="metric-value leading-[0.9] text-[clamp(2.5rem,6.5vw,4.25rem)] tracking-tight text-white">{concentrationPct}%</span>
                   </div>
                   <p className="text-xs text-white/55 mt-1.5">виручки приносять топ-20% клієнтів</p>
-                  <a href="/dashboard/revenue" className="group mt-3 inline-flex items-center gap-1.5 text-[13px] font-semibold text-white hover:text-white/90">
+                  <a href="/dashboard/revenue?tab=dynamic_pricing" className="group mt-3 inline-flex items-center gap-1.5 text-[13px] font-semibold text-white hover:text-white/90">
                     Увімкнути розумні ціни
                     <ArrowRight size={14} className="transition-transform group-hover:translate-x-0.5" />
                   </a>
