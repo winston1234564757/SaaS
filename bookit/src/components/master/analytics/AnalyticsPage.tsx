@@ -528,7 +528,7 @@ export function AnalyticsPage({ isPro }: AnalyticsPageProps) {
 
               {/* Tab 4: REVIEWS */}
               {activeTab === 'reviews' && (
-                <ReviewsTab start={range.startDate} end={range.endDate} />
+                <ReviewsTab start={range.startDate} end={range.endDate} onOpenDetail={setDetail} />
               )}
 
               {/* Tab 5: SOURCE */}
