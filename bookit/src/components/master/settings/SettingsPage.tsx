@@ -179,7 +179,7 @@ export default function SettingsPage() {
           </motion.section>
 
           {/* Row 5 col-3 — Categories */}
-          <motion.section className="order-7 lg:order-none lg:col-span-3" {...motionProps(6)}>
+          <motion.section id="categories" className="order-7 lg:order-none lg:col-span-3" {...motionProps(6)}>
             <CategoriesWidget
               selected={state.selectedCategories}
               onChange={actions.setSelectedCategories}

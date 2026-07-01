@@ -3,7 +3,7 @@
 
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, CheckCircle2, AlertCircle, HelpCircle, X } from 'lucide-react';
+import { Sparkles, CheckCircle2, AlertCircle, HelpCircle, X, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 
 interface SmartAdvisorProps {
@@ -23,13 +23,26 @@ interface Tip {
   type: 'success' | 'warning' | 'info';
   title: string;
   description: string;
+  target?: string; // id секції на сторінці налаштувань
 }
 
 const TIP_ICON = {
-  warning: <AlertCircle size={14} className="text-warning shrink-0" />,
-  success: <CheckCircle2 size={14} className="text-success shrink-0" />,
-  info:    <Sparkles size={14} className="text-accent shrink-0" />,
+  warning: <AlertCircle size={15} className="text-warning shrink-0" />,
+  success: <CheckCircle2 size={15} className="text-success shrink-0" />,
+  info:    <Sparkles size={15} className="text-accent shrink-0" />,
 };
+
+// Скрол до розділу, який виправляє пораду + коротка підсвітка
+function jumpToSection(id: string) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  el.classList.remove('advisor-highlight');
+  // reflow, щоб анімація перезапустилась при повторному кліку
+  void el.offsetWidth;
+  el.classList.add('advisor-highlight');
+  window.setTimeout(() => el.classList.remove('advisor-highlight'), 1700);
+}
 
 export function SmartAdvisor({ data }: SmartAdvisorProps) {
   const [showExplanation, setShowExplanation] = useState(false);
@@ -42,7 +55,8 @@ export function SmartAdvisor({ data }: SmartAdvisorProps) {
         id: 'avatar',
         type: 'warning',
         title: 'Додайте фото профілю',
-        description: 'Профілі з фото отримують значно більше записів від нових клієнтів.'
+        description: 'Профілі з фото отримують значно більше записів від нових клієнтів.',
+        target: 'hero',
       });
     }
 
@@ -51,7 +65,8 @@ export function SmartAdvisor({ data }: SmartAdvisorProps) {
         id: 'bio',
         type: 'warning',
         title: 'Короткий опис',
-        description: 'Розкажіть про свій досвід та техніки — клієнти обирають за описом.'
+        description: 'Розкажіть про свій досвід та техніки — клієнти обирають за описом.',
+        target: 'identity',
       });
     }
 
@@ -60,7 +75,8 @@ export function SmartAdvisor({ data }: SmartAdvisorProps) {
         id: 'social',
         type: 'info',
         title: 'Підключіть Instagram',
-        description: 'Майстри з підключеним Instagram отримують більше довіри.'
+        description: 'Майстри з підключеним Instagram отримують більше довіри.',
+        target: 'technical',
       });
     }
 
@@ -69,7 +85,8 @@ export function SmartAdvisor({ data }: SmartAdvisorProps) {
         id: 'cats',
         type: 'warning',
         title: 'Оберіть спеціалізацію',
-        description: 'Допоможе клієнтам знайти вас у каталозі за фільтром.'
+        description: 'Допоможе клієнтам знайти вас у каталозі за фільтром.',
+        target: 'categories',
       });
     }
 
@@ -78,18 +95,24 @@ export function SmartAdvisor({ data }: SmartAdvisorProps) {
         id: 'perfect',
         type: 'success',
         title: 'Профіль повністю заповнений',
-        description: 'Всі рекомендації виконано. Ви готові до нових записів.'
+        description: 'Усі рекомендації виконано. Ви готові до нових записів.',
       });
     }
 
     return t;
   }, [data]);
 
+  const hero = tips[0];
+  const rest = tips.slice(1);
   const issueCount = tips.filter(t => t.type !== 'success').length;
-  const progress = Math.round(((4 - issueCount) / 4) * 100);
+  const doneCount = 4 - issueCount;
+  const progress = Math.round((doneCount / 4) * 100);
+  const allDone = hero.type === 'success';
 
-  const scoreColor = progress === 100 ? 'text-success' : progress >= 50 ? 'text-warning' : 'text-destructive';
-  const scoreBg = progress === 100 ? 'bg-success' : progress >= 50 ? 'bg-warning' : 'bg-destructive';
+  const heroTint =
+    hero.type === 'warning' ? 'bg-warning/[0.11] border-warning/25' :
+    hero.type === 'success' ? 'bg-success/[0.10] border-success/25' :
+    'bg-accent/[0.09] border-accent/20';
 
   return (
     <div className="widget-card p-6 h-full flex flex-col gap-5 relative overflow-hidden">
@@ -108,88 +131,93 @@ export function SmartAdvisor({ data }: SmartAdvisorProps) {
         <button type="button"
           onClick={() => setShowExplanation(true)}
           aria-label="Як це працює?"
-          className="size-9 rounded-2xl bg-secondary border border-border/80 flex items-center justify-center text-text-mute hover:text-accent active:scale-[0.88] cursor-pointer transition-all shadow-sm"
+          className="size-9 rounded-2xl bg-secondary border border-border/80 flex items-center justify-center text-text-sub hover:text-accent active:scale-[0.88] cursor-pointer transition-all shadow-sm"
         >
           <HelpCircle size={18} />
         </button>
       </div>
 
-      {/* Hero Score */}
-      <div className="flex flex-col gap-2 px-1">
-        <div className="flex items-end gap-2">
-          <span className={cn('text-7xl font-bold tabular-nums leading-none tracking-tighter', scoreColor)}>
-            {progress}
+      {/* Progress — honest, demoted (no vanity hero-metric) */}
+      <div className="flex flex-col gap-2 px-0.5">
+        <div className="flex items-baseline justify-between">
+          <span className="text-xs font-bold text-text-sub uppercase tracking-widest">Заповненість профілю</span>
+          <span className="text-sm font-bold text-text-primary">
+            <span className="metric-value">{doneCount}</span>
+            <span className="text-text-sub"> / 4</span>
           </span>
-          <div className="flex flex-col mb-2 gap-0.5">
-            <span className="text-2xl font-bold text-text-mute/40 leading-none">%</span>
-            <span className="text-[10px] font-bold text-text-mute uppercase tracking-widest leading-none">здоров&apos;я</span>
-          </div>
         </div>
         <div
           role="progressbar"
           aria-valuenow={progress}
           aria-valuemin={0}
           aria-valuemax={100}
-          aria-label="Здоров'я профілю"
-          className="w-full h-2 bg-muted/30 rounded-full overflow-hidden"
+          aria-label="Заповненість профілю"
+          className="w-full h-1.5 bg-muted/30 rounded-full overflow-hidden"
         >
           <motion.div
             animate={{ width: `${progress}%` }}
             transition={{ type: 'spring' as const, damping: 20 }}
-            className={cn('h-full rounded-full', scoreBg)}
+            className={cn('h-full rounded-full', progress === 100 ? 'bg-success' : 'bg-accent')}
           />
         </div>
       </div>
 
-      {/* Tips list — fills remaining height */}
-      <div className="flex flex-col gap-2.5 flex-1">
-
-        {/* First tip: prominent */}
-        <AnimatePresence mode="popLayout">
-          <motion.div
-            key={tips[0].id}
-            initial={{ opacity: 0, x: 16 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -16 }}
-            className={cn(
-              'p-4 rounded-2xl border flex flex-col gap-2',
-              tips[0].type === 'warning' ? 'bg-warning/5 border-warning/10' :
-              tips[0].type === 'success' ? 'bg-success/5 border-success/10' :
-              'bg-accent/5 border-accent/10'
-            )}
-          >
-            <div className="flex items-center gap-2">
-              {TIP_ICON[tips[0].type]}
-              <span className="text-sm font-bold text-text-primary">{tips[0].title}</span>
-            </div>
-            <p className="text-xs text-text-mute leading-relaxed">{tips[0].description}</p>
-          </motion.div>
-        </AnimatePresence>
-
-        {/* Remaining tips: compact rows */}
-        {tips.slice(1).map((tip) => (
-          <div
-            key={tip.id}
-            className="flex items-center gap-3 px-4 py-3 rounded-xl bg-secondary border border-border"
-          >
-            {TIP_ICON[tip.type]}
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold text-text-primary truncate">{tip.title}</p>
-              <p className="text-[11px] text-text-mute truncate">{tip.description}</p>
-            </div>
+      {/* HERO — the one next action (or done state) */}
+      {allDone ? (
+        <div className={cn('flex-1 flex flex-col items-center justify-center text-center gap-3 rounded-2xl border p-6', heroTint)}>
+          <CheckCircle2 size={38} strokeWidth={1.4} className="text-success" />
+          <div>
+            <p className="text-sm font-bold text-text-primary">{hero.title}</p>
+            <p className="text-xs text-text-sub leading-relaxed mt-1">{hero.description}</p>
           </div>
-        ))}
+        </div>
+      ) : (
+        <div className="flex flex-col gap-2.5 flex-1">
+          <AnimatePresence mode="popLayout">
+            <motion.button
+              type="button"
+              key={hero.id}
+              onClick={() => hero.target && jumpToSection(hero.target)}
+              initial={{ opacity: 0, x: 16 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -16 }}
+              className={cn(
+                'group text-left w-full p-4 rounded-2xl border flex flex-col gap-2.5 cursor-pointer',
+                'hover:brightness-[0.99] active:scale-[0.99] transition-all',
+                heroTint
+              )}
+            >
+              <div className="flex items-center gap-2">
+                {TIP_ICON[hero.type]}
+                <span className="text-[10px] font-bold text-text-sub uppercase tracking-widest">Наступний крок</span>
+              </div>
+              <span className="text-base font-bold text-text-primary leading-snug">{hero.title}</span>
+              <p className="text-xs text-text-sub leading-relaxed">{hero.description}</p>
+              <span className="flex items-center gap-1 text-xs font-bold text-accent mt-0.5">
+                Перейти до розділу
+                <ChevronRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
+              </span>
+            </motion.button>
+          </AnimatePresence>
 
-        {/* All done state */}
-        {tips.length === 1 && tips[0].type === 'success' && (
-          <div className="flex-1 flex flex-col items-center justify-center gap-3 py-6 opacity-50">
-            <CheckCircle2 size={36} strokeWidth={1.2} className="text-success" />
-            <p className="text-xs font-bold uppercase tracking-widest text-text-mute text-center">
-              Всі рекомендації виконані
-            </p>
-          </div>
-        )}
-      </div>
+          {/* Remaining steps — compact, clickable */}
+          {rest.map((tip) => (
+            <button
+              type="button"
+              key={tip.id}
+              onClick={() => tip.target && jumpToSection(tip.target)}
+              className="group flex items-center gap-3 px-4 py-3 rounded-xl bg-secondary border border-border text-left w-full hover:border-accent/30 active:scale-[0.99] cursor-pointer transition-all"
+            >
+              {TIP_ICON[tip.type]}
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold text-text-primary truncate">{tip.title}</p>
+                <p className="text-[11px] text-text-sub truncate">{tip.description}</p>
+              </div>
+              <ChevronRight size={15} className="text-text-sub shrink-0 group-hover:text-accent group-hover:translate-x-0.5 transition-all" />
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Explanation overlay */}
       <AnimatePresence>
@@ -208,10 +236,10 @@ export function SmartAdvisor({ data }: SmartAdvisorProps) {
                 <X size={16} />
               </button>
             </div>
-            <div className="space-y-4 overflow-y-auto text-xs text-text-mute leading-relaxed flex-1">
-              <p><strong className="text-text-primary">Персональний помічник BookIT</strong> — аналізує ваш профіль та дає поради для росту записів.</p>
-              <p><strong className="text-text-primary">Здоров'я профілю</strong> — розраховується на основі заповненості: фото, опис, соцмережі, спеціалізації.</p>
-              <p><strong className="text-text-primary">Видимість у каталозі</strong> — чим вищий відсоток, тим вища позиція у загальному каталозі майстрів.</p>
+            <div className="space-y-4 overflow-y-auto text-xs text-text-sub leading-relaxed flex-1">
+              <p><strong className="text-text-primary">Персональний помічник BookIT</strong> — аналізує ваш профіль і підказує, що заповнити далі. Тапніть крок — і опинитесь одразу в потрібному розділі.</p>
+              <p><strong className="text-text-primary">Заповненість профілю</strong> — скільки ключового вже готово: фото, опис, соцмережі, спеціалізації.</p>
+              <p><strong className="text-text-primary">Навіщо це</strong> — заповнений профіль викликає більше довіри, тож клієнти частіше доводять запис до кінця. А позиція в каталозі росте від реальних відгуків і записів.</p>
             </div>
             <button type="button"
               onClick={() => setShowExplanation(false)}

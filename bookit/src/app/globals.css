@@ -499,6 +499,20 @@ body::before {
   letter-spacing: -0.02em;
 }
 
+/* BookIT Assistant → section jump highlight */
+@keyframes advisor-pulse {
+  0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 0%, transparent); }
+  22%  { box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 85%, transparent); }
+  100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 0%, transparent); }
+}
+.advisor-highlight {
+  animation: advisor-pulse 1.6s ease-out;
+  border-radius: 28px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .advisor-highlight { animation: none; }
+}
+
 /* ═══════════════════════════════════════════════════════════
    DASHBOARD TOPBAR
    ═══════════════════════════════════════════════════════════ */
