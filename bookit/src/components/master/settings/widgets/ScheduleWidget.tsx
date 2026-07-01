@@ -1,13 +1,16 @@
 'use client';
 // humanized
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Clock, Calendar, ChevronDown, ChevronUp, Plus, Trash2, Info } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
-import { format } from 'date-fns';
+import { getNow } from '@/lib/utils/now';
+import { toMins } from '@/lib/utils/smartSlots';
 import type { Schedule, DayKey } from '../hooks/useSettingsForm';
 import { DAYS_ORDER } from '../hooks/useSettingsForm';
+
+type LiveStatus = 'working' | 'break' | 'before' | 'after' | 'off';
 
 interface DayBusyness {
   date: string;
@@ -84,15 +87,39 @@ export function ScheduleWidget({
     return acc + (eh + em / 60) - (sh + sm / 60);
   }, 0), [schedule]);
 
-  const now = new Date();
+  // Live-tick so the status flips at open/close/break boundaries without a reload
+  const [now, setNow] = useState(() => getNow());
+  useEffect(() => {
+    const id = setInterval(() => setNow(getNow()), 30_000);
+    return () => clearInterval(id);
+  }, []);
+
   const dayIndex = now.getDay();
   const normalizedDayKey = dayIndex === 0 ? 'sun' : DAYS_ORDER[dayIndex - 1];
-  const currentTime = format(now, 'HH:mm');
   const todaySchedule = schedule[normalizedDayKey] || schedule['mon'];
   const isWorkingToday = todaySchedule.is_working;
-  const isWorkingNow = isWorkingToday &&
-    currentTime >= todaySchedule.start_time &&
-    currentTime <= todaySchedule.end_time;
+
+  const liveStatus: LiveStatus = useMemo(() => {
+    if (!isWorkingToday) return 'off';
+    const nowMin = now.getHours() * 60 + now.getMinutes();
+    const startMin = toMins(todaySchedule.start_time);
+    const endMin = toMins(todaySchedule.end_time);
+    if (nowMin < startMin) return 'before';
+    if (nowMin >= endMin) return 'after';
+    const onBreak = (breaks ?? []).some(
+      (b) => b?.start && b?.end && nowMin >= toMins(b.start) && nowMin < toMins(b.end),
+    );
+    return onBreak ? 'break' : 'working';
+  }, [isWorkingToday, now, todaySchedule.start_time, todaySchedule.end_time, breaks]);
+
+  const STATUS_UI: Record<LiveStatus, { label: string; chip: string; text: string }> = {
+    working: { label: 'Зараз працюю', chip: 'bg-success text-[var(--accent-on)]', text: 'text-[#0D6B2F]' },
+    break:   { label: 'Зараз перерва', chip: 'bg-warning text-[var(--accent-on)]', text: 'text-[#92400E]' },
+    before:  { label: `Відкриття о ${todaySchedule.start_time}`, chip: 'bg-secondary border border-border text-text-sub', text: 'text-text-sub' },
+    after:   { label: 'Робочий день завершено', chip: 'bg-secondary border border-border text-text-sub', text: 'text-text-sub' },
+    off:     { label: 'Сьогодні вихідний', chip: 'bg-secondary border border-border text-text-sub', text: 'text-text-sub' },
+  };
+  const statusUi = STATUS_UI[liveStatus];
 
   const toggleDay = (day: DayKey) =>
     onScheduleChange({ ...schedule, [day]: { ...schedule[day], is_working: !schedule[day].is_working } });
@@ -107,7 +134,7 @@ export function ScheduleWidget({
         <div className="flex items-center gap-2.5">
           <div className={cn(
             'size-9 rounded-2xl flex items-center justify-center shadow-md shrink-0',
-            isWorkingNow ? 'bg-success text-[var(--accent-on)]' : 'bg-warning text-[var(--accent-on)]',
+            statusUi.chip,
           )}>
             <Clock size={18} />
           </div>
@@ -115,8 +142,8 @@ export function ScheduleWidget({
             <h3 className="font-bold text-[11px] uppercase tracking-widest text-text-mute leading-none mb-1">
               Графік роботи
             </h3>
-            <p className={cn('text-[10px] font-bold uppercase tracking-tighter', isWorkingNow ? 'text-success' : 'text-warning')}>
-              {isWorkingNow ? 'Зараз працюю' : 'Зараз перерва'}
+            <p className={cn('text-[10px] font-bold uppercase tracking-tighter', statusUi.text)}>
+              {statusUi.label}
             </p>
           </div>
         </div>
