@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Search, Loader2, MapPin } from 'lucide-react';
+import { Search, Loader2, ExternalLink, MapPinOff } from 'lucide-react';
 
 declare global {
   interface Window {
@@ -18,8 +18,42 @@ interface Props {
   value: LatLng | null;
   /** Display value shown in the search input (e.g. "Київ, вул. Хрещатик, 1") */
   address: string;
+  /** Deep-link to open the location in an external maps app (fallback + convenience) */
+  mapsHref?: string | null;
   /** city = parsed locality, streetAddress = route + street_number */
   onChange: (coords: LatLng, city: string, streetAddress: string) => void;
+}
+
+/** Shared premium fallback shown when the map can't render (no key / load error). */
+function MapFallback({ title, hint, mapsHref }: { title: string; hint: string; mapsHref?: string | null }) {
+  return (
+    <div className="relative w-full rounded-2xl overflow-hidden border border-border bg-gradient-to-br from-secondary to-accent/[0.04]" style={{ height: 220 }}>
+      {/* faint map-grid texture */}
+      <div
+        className="absolute inset-0 opacity-[0.5] pointer-events-none"
+        style={{ backgroundImage: 'linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px)', backgroundSize: '28px 28px' }}
+      />
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2.5 text-center px-6">
+        <div className="size-11 rounded-2xl bg-surface/80 border border-border flex items-center justify-center shadow-sm">
+          <MapPinOff size={20} className="text-text-sub" />
+        </div>
+        <div>
+          <p className="text-sm font-bold text-foreground">{title}</p>
+          <p className="text-[11px] text-text-sub mt-0.5 max-w-[240px]">{hint}</p>
+        </div>
+        {mapsHref && (
+          <a
+            href={mapsHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-1 flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-foreground text-background text-[11px] font-bold hover:opacity-90 active:scale-[0.95] transition-all"
+          >
+            <ExternalLink size={12} /> Відкрити в Google Maps
+          </a>
+        )}
+      </div>
+    </div>
+  );
 }
 
 interface GoogleMapMarker {
@@ -69,29 +103,21 @@ function parseAddressComponents(
 }
 
 export function LocationPicker(props: Props) {
-  // --- Graceful degradation: no API key → premium disabled placeholder ---
+  // --- Graceful degradation: no API key → premium placeholder + working deep-link ---
   if (!HAS_MAPS_KEY) {
     return (
-      <div className="space-y-2">
-        <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-secondary/40 border border-border/60 border-dashed">
-          <MapPin size={16} className="text-muted-foreground/60 shrink-0" />
-          <div>
-            <p className="text-xs font-medium text-muted-foreground">
-              {props.address || 'Адреса не вказана'}
-            </p>
-            <p className="text-[11px] text-muted-foreground/60 mt-0.5">
-              Інтеграція з картою очікує активації API
-            </p>
-          </div>
-        </div>
-      </div>
+      <MapFallback
+        title="Карта тимчасово недоступна"
+        hint={props.address ? props.address : 'Заповни адресу — клієнти зможуть побудувати маршрут.'}
+        mapsHref={props.mapsHref}
+      />
     );
   }
 
   return <LocationPickerMap {...props} />;
 }
 
-function LocationPickerMap({ value, address, onChange }: Props) {
+function LocationPickerMap({ value, address, mapsHref, onChange }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const mapRef = useRef<google.maps.Map | null>(null);
@@ -240,46 +266,44 @@ function LocationPickerMap({ value, address, onChange }: Props) {
     }
   }, [value]);
 
+  // Map failed to load (billing/auth/network) → premium fallback + working deep-link
+  if (error) {
+    return <MapFallback title="Карта тимчасово недоступна" hint={address || 'Заповни адресу — клієнти зможуть побудувати маршрут.'} mapsHref={mapsHref} />;
+  }
+
   return (
     <div className="space-y-2">
       {/* Search input */}
       <div className="relative">
-        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none" />
+        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-sub pointer-events-none" />
         <input
           ref={inputRef}
           type="text"
           defaultValue={address}
           placeholder="Пошук адреси..."
           aria-label="Пошук адреси"
-          className="w-full pl-8 pr-3 py-2 rounded-xl text-sm text-foreground placeholder-[#A8928D] bg-secondary/70 border border-border backdrop-blur-sm transition-all duration-200 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+          className="w-full pl-8 pr-3 py-2.5 rounded-xl text-sm text-foreground placeholder:text-text-sub bg-secondary border border-border transition-all duration-200 focus:outline-none focus:border-accent/40 focus:ring-2 focus:ring-primary/20"
         />
       </div>
 
       {/* Map container */}
-      <div className="relative w-full rounded-2xl overflow-hidden border border-border" style={{ height: 220 }}>
+      <div className="relative w-full rounded-2xl overflow-hidden border border-border shadow-inner-sm" style={{ height: 240 }}>
         <div ref={containerRef} className="w-full h-full" />
         {loading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-surface/60 backdrop-blur-sm">
-            <Loader2 size={20} className="animate-spin text-primary" />
-          </div>
-        )}
-        {error && (
-          <div className="absolute inset-0 flex items-center justify-center bg-surface/80 text-xs text-destructive text-center px-4">
-            {error}
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-secondary to-accent/[0.04]">
+            <div className="absolute inset-0 opacity-[0.5]" style={{ backgroundImage: 'linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px)', backgroundSize: '28px 28px' }} />
+            <Loader2 size={18} className="animate-spin text-accent relative" />
+            <span className="text-[11px] font-bold text-text-sub relative">Завантаження карти…</span>
           </div>
         )}
       </div>
 
       {/* Coords hint */}
-      {value ? (
-        <p className="text-[11px] text-muted-foreground/60 text-center">
-          {value.lat.toFixed(6)}, {value.lng.toFixed(6)} · Перетягніть маркер для уточнення
-        </p>
-      ) : (
-        <p className="text-[11px] text-muted-foreground/60 text-center">
-          Знайдіть адресу або натисніть на карті
-        </p>
-      )}
+      <p className="text-[11px] text-text-sub text-center">
+        {value
+          ? `${value.lat.toFixed(5)}, ${value.lng.toFixed(5)} · перетягни маркер для уточнення`
+          : 'Знайди адресу або натисни на карті'}
+      </p>
     </div>
   );
 }
