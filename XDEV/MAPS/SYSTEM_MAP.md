@@ -298,6 +298,7 @@ All numbered sections (Agitation, Process, ClientFlow) and feature rows (Magic) 
 - `src/app/(public)/legal/[slug]/page.tsx` — SSG, читає `src/content/legal/*.md`
 - Компонент: `src/components/shared/LegalFooterLinks.tsx`
 - Константи: `src/lib/constants/legal.ts`
+- **Тарифи-фічі:** `src/lib/constants/tierFeatures.ts` — ЄДИНЕ джерело `STARTER_FEATURES`/`PRO_FEATURES`/`STUDIO_FEATURES` для `BillingPage.tsx` + `LandingPricing.tsx` (M-BILL-02). 🔴 Перелік звірено з enforcement у коді (createBooking/PublicMasterPage/AnalyticsPage/TechnicalIsland/useStoryEditor) — НЕ додавати фічу без реального гейта. Свідомо не заявлені: Нова Пошта (M-SHOP-05), CSV (M-CLI-07).
 
 ---
 
