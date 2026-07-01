@@ -4,8 +4,8 @@
 
 **Спринт:** Sprint-05 — Загальний беклог (77 задач: Зона Майстра + Клієнтська Зона + Глобальне; +3 ad-hoc M-DASH-10/11/12)
 **Розпочато:** 2026-06-22
-**Прогрес:** 58/84 ✅ · 3 ↩️ скасовано (`M-DASH-11` + `M-MKT-01`/`M-MKT-02` поглинуто редизайном M-MKT-04, founder) — **Фаза 3: Analytics 7/7 ✅ ПОВНІСТЮ ЗАКРИТА. Фаза 4: M-SET-01 ✅ + M-SET-02 ✅ + M-SET-03 ✅.**
-**Наступна задача:** **`M-SET-04`** — Налаштування: відпустки + вихідні редизайн 🔄 (тип REDESIGN, Sonnet→Opus). По порядку трекера у Фазі 4.
+**Прогрес:** 59/84 ✅ · 3 ↩️ скасовано (`M-DASH-11` + `M-MKT-01`/`M-MKT-02` поглинуто редизайном M-MKT-04, founder) — **Фаза 3: Analytics 7/7 ✅ ПОВНІСТЮ ЗАКРИТА. Фаза 4: M-SET-01 ✅ + M-SET-02 ✅ + M-SET-03 ✅ + M-SET-05 ✅ (поза чергою).**
+**Наступна задача:** **`M-SET-04`** — Налаштування: відпустки + вихідні редизайн 🔄 (тип REDESIGN, Sonnet→Opus). По порядку трекера у Фазі 4. (M-SET-05 зроблено раніше на репорт founder.)
 **Оновлено:** 2026-07-01
 
 > ✅ **M-MKT-04 + M-MKT-03 DONE + founder approved «ахуєнно» (фінал commit `e8837dba`, 2026-06-29, прогнано на проді bookit-five-psi, передеплой з main для останніх фіксів):** StoryGenerator → покроковий проф-едітор (5 кроків: Тип→Контент→Вигляд→Стиль→Готово), live-прев'ю mobile знизу / desktop справа. Reuse-шелл (storyExport/useStoryData fideliti 1080×1920). Мозок `story/useStoryEditor.ts`, модель `story/storySteps.ts`, панелі `story/steps/*`. **Стиль = образи-пресети** (5: minimal/elegant/bold/gloss/script) + розмір S/M/L + елементи кадру (тогл аватар, тогл Місце-для-посилання=пунктирна зона під IG-стікер). **Контент:** заготовки в Sheet-модалці. **Фон:** палітра(9, Champagne видалено) / портфоліо / своє фото (градієнти+стокові ВИДАЛЕНО). **A11Y-аудит story-canvas через a11y MCP:** авто-тема textColor/mutedColor/accent/pillBg/badge у ВСІХ режимах, плашка 0.62 (worst-case над білим фото verified), фото-скрім, аватар+ім'я sans+чіп. Деталі+кольори — mempalace drawer `drawer_bookit_architecture_ea1bb49cc6d541472cbd7608` + TRANSITION нотатка. 32 unit-тести, tsc 0, build clean. **M-MKT-07 (адмін-аплоадер) скасовано** founder.
@@ -29,6 +29,31 @@ Sprint-05 переріс із "тільки клієнтська зона" у **
 - `/my/profile`: `instagram_url` + `telegram_handle` міграція ✅, avatar upload ✅
 - `/my/bookings`: `submitReview` ✅, `cancelBooking` ✅
 - `/explore`: фото `h-[134px]` ✅, tags strip ✅
+
+---
+
+## ✅ DONE: `M-SET-05` — Налаштування: логіка заповненості по днях + смарт-статус (P1) · commit `c8b4d9ff` · зроблено поза чергою (репорт founder)
+
+**Тип:** BUGFIX · **Тір:** 1 · **Скіл:** `diagnose` (root cause) · **Модель:** Opus. **Триггер:** founder-скрін — о 8:50 (день ще не почався, старт 09:00) статус «ГРАФІК РОБОТИ · ЗАРАЗ ПЕРЕРВА».
+
+**Репродукшн + root cause:** `ScheduleWidget.tsx` рахував `isWorkingNow = isWorkingToday && currentTime >= start && currentTime <= end`, а лейбл був **бінарний** `isWorkingNow ? 'Зараз працюю' : 'Зараз перерва'`. Усе, що не «в робочих годинах», валилось у «Зараз перерва»: до відкриття (8:50 < 09:00), після закриття (>21:00), вихідний. Плюс: (а) реальні `breaks[]` **взагалі не перевірялись** → під час справжньої перерви 13-14 казав би «працюю» (зворотний баг); (б) `now = new Date()` рахувався раз при рендері без тику → скрін о 09:03 показував застряглий обрахунок 8:50 (не оновлювалось до reload).
+
+**Fix (ScheduleWidget.tsx):**
+- **5 станів** `LiveStatus`: `working` (Зараз працюю) / `break` (Зараз перерва) / `before` (`Відкриття о ${start}`) / `after` (Робочий день завершено) / `off` (Сьогодні вихідний). Обчислення в `useMemo` за хвилинами: `off` якщо !isWorkingToday → `before` якщо nowMin<startMin → `after` якщо nowMin>=endMin → інакше `break` якщо в межах якогось `breaks[]`, else `working`.
+- **`breaks[]` тепер читаються** — реальна перерва (13:00-14:00) детектиться.
+- **Хвилинний тик:** `useState(getNow)` + `useEffect setInterval(() => setNow(getNow()), 30_000)` → статус фліпає на межах відкриття/закриття/перерви без reload.
+- Спільні `getNow()` (підтримує E2E cookie `next-public-debug-now`) + `toMins()` (як `useBusyness`). Прибрано `format` з date-fns (unused), прибрано мертвий `isWorkingNow`.
+- **`STATUS_UI` record:** chip (icon-фон) + label + text-колір per стан. working=success chip / #0D6B2F label; break=warning chip / #92400E label; before/after/off=neutral (bg-secondary border) / text-text-sub.
+
+**Заповненість по днях звірено (окремо, на запит founder):** `useBusyness` → `dayOccupancy` рахує **forward** (наступні 30 днів, згруповані по DOW), rate = заброньовані хв / робочі хв. **Коректно** — 0% на скріні = правда (новий майстер без майбутніх записів), не баг. Нюанс: це майбутня заповненість, не історична — якщо треба «типова по історії», окрема зміна (не робив).
+
+**a11y:** лейбли на periwinkle — #0D6B2F (5.16 success), #92400E (5.56 warning), text-text-sub (5.94 neutral); icon-chip кольори графіка 3:1.
+
+**Верифікація власними очима:** devpreview/schedule + Playwright + **time-travel через cookie** `next-public-debug-now` — усі 5 станів (8:50 before / 09:30 working / 13:30 break / 21:30 after / Нд off). Кожен рендерить правильний лейбл+колір. TSC:0 Build:clean.
+
+**KEY:** (1) Бінарний «працюю/перерва» на часовому статусі — класична пастка: не-робочий-час ≠ перерва (є до-відкриття/після-закриття/вихідний). Часовий статус потребує явних станів. (2) Статус на основі `new Date()` при рендері застрягає — потрібен тик (`setInterval`), інакше UI бреше поки не буде re-render. (3) `getNow()` E2E-cookie `next-public-debug-now` = time-travel для верифікації часових станів власними очима (не треба чіпати системний час). (4) Перевіряй, що логіка реально консультує всі джерела (breaks[] ігнорувались — статус був неповний в обидва боки).
+
+**Founder QA пройдено. Очікує деплою за командою.**
 
 ---
 
