@@ -97,7 +97,9 @@ export function VacationManagerView({
     resetForm();
   }
 
-  const inputCls = 'w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-xs text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-colors';
+  const inputBase = 'min-w-0 px-3 py-2.5 rounded-xl bg-secondary border border-border text-xs text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-colors';
+  const inputCls = `w-full ${inputBase}`;
+  const timeCls = `w-[7.5rem] max-w-full ${inputBase}`;
   const labelCls = 'block text-[10px] font-bold text-text-sub uppercase tracking-wider mb-1';
 
   return (
@@ -247,20 +249,24 @@ export function VacationManagerView({
               </div>
             </LayoutGroup>
 
-            <div className={cn('gap-3', type === 'vacation' ? 'grid grid-cols-2' : 'flex flex-col')}>
+            <div className={cn('gap-3', type === 'vacation' ? 'grid grid-cols-1 sm:grid-cols-2' : 'flex flex-col')}>
               {type === 'vacation' ? (
                 <>
-                  <div><label className={labelCls}>Початок</label><input type="date" value={startDate} min={today} onChange={e => setStartDate(e.target.value)} aria-label="Початок відпустки" className={inputCls} /></div>
-                  <div><label className={labelCls}>Кінець</label><input type="date" value={endDate} min={startDate || today} onChange={e => setEndDate(e.target.value)} aria-label="Кінець відпустки" className={inputCls} /></div>
+                  <div className="min-w-0"><label className={labelCls}>Початок</label><input type="date" value={startDate} min={today} onChange={e => setStartDate(e.target.value)} aria-label="Початок відпустки" className={inputCls} /></div>
+                  <div className="min-w-0"><label className={labelCls}>Кінець</label><input type="date" value={endDate} min={startDate || today} onChange={e => setEndDate(e.target.value)} aria-label="Кінець відпустки" className={inputCls} /></div>
                 </>
               ) : type === 'day_off' ? (
-                <div><label className={labelCls}>Дата</label><input type="date" value={startDate} min={today} onChange={e => setStartDate(e.target.value)} aria-label="Дата вихідного" className={inputCls} /></div>
+                <div className="min-w-0"><label className={labelCls}>Дата</label><input type="date" value={startDate} min={today} onChange={e => setStartDate(e.target.value)} aria-label="Дата вихідного" className={inputCls} /></div>
               ) : (
                 <>
-                  <div><label className={labelCls}>Дата</label><input type="date" value={startDate} min={today} onChange={e => setStartDate(e.target.value)} aria-label="Дата скороченого дня" className={inputCls} /></div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div><label className={labelCls}>Від</label><input type="time" value={startTime} onChange={e => setStartTime(e.target.value)} aria-label="Початок" className={inputCls} /></div>
-                    <div><label className={labelCls}>До</label><input type="time" value={endTime} onChange={e => setEndTime(e.target.value)} aria-label="Кінець" className={inputCls} /></div>
+                  <div className="min-w-0"><label className={labelCls}>Дата</label><input type="date" value={startDate} min={today} onChange={e => setStartDate(e.target.value)} aria-label="Дата скороченого дня" className={inputCls} /></div>
+                  <div>
+                    <label className={labelCls}>Години</label>
+                    <div className="flex items-center gap-2">
+                      <input type="time" value={startTime} onChange={e => setStartTime(e.target.value)} aria-label="Початок" className={timeCls} />
+                      <span className="text-text-sub text-xs shrink-0">—</span>
+                      <input type="time" value={endTime} onChange={e => setEndTime(e.target.value)} aria-label="Кінець" className={timeCls} />
+                    </div>
                   </div>
                 </>
               )}

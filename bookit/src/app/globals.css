@@ -513,6 +513,15 @@ body::before {
   .advisor-highlight { animation: none; }
 }
 
+/* Native date/time inputs have a fixed intrinsic width on iOS Safari and won't
+   shrink inside flex/grid cells → they overflow and overlap. Force them to
+   respect their container. Pair with min-w-0 on the input and its cell. */
+input[type="date"],
+input[type="time"] {
+  min-width: 0;
+  max-width: 100%;
+}
+
 /* ═══════════════════════════════════════════════════════════
    DASHBOARD TOPBAR
    ═══════════════════════════════════════════════════════════ */
