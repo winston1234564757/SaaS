@@ -121,9 +121,6 @@ export function ScheduleWidget({
   };
   const statusUi = STATUS_UI[liveStatus];
 
-  const toggleDay = (day: DayKey) =>
-    onScheduleChange({ ...schedule, [day]: { ...schedule[day], is_working: !schedule[day].is_working } });
-
   const setDayTime = (day: DayKey, field: 'start_time' | 'end_time', val: string) =>
     onScheduleChange({ ...schedule, [day]: { ...schedule[day], [field]: val } });
 
@@ -241,7 +238,10 @@ export function ScheduleWidget({
   /* ─── Days editor (right panel on desktop) ─── */
   const daysEditor = (
     <div className="flex flex-col gap-3">
-      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70">Дні та години</p>
+      <div className="flex items-baseline justify-between gap-2">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-text-sub">Години роботи</p>
+        <p className="text-[10px] text-text-sub">вихідні — у «Вихідні та відпустки»</p>
+      </div>
       {DAYS_ORDER.map((day) => (
         <div
           key={day}
@@ -250,26 +250,7 @@ export function ScheduleWidget({
             schedule[day].is_working ? 'bg-secondary border-border shadow-sm' : 'bg-muted/10 border-transparent opacity-50',
           )}
         >
-          <button
-            type="button"
-            role="switch"
-            aria-checked={schedule[day].is_working}
-            onClick={() => toggleDay(day)}
-            aria-label={schedule[day].is_working ? 'Вимкнути' : 'Увімкнути'}
-            className="py-[8px] -my-[8px] flex items-center shrink-0 active:scale-[0.88]"
-          >
-            <span
-              className={cn('relative rounded-full transition-colors', schedule[day].is_working ? 'bg-accent' : 'bg-muted-foreground/25')}
-              style={{ height: '28px', width: '44px' }}
-            >
-              <motion.div
-                animate={{ x: schedule[day].is_working ? 25 : 3 }}
-                transition={{ type: 'spring' as const, stiffness: 500, damping: 35 }}
-                className="absolute top-[3px] left-0 size-4 rounded-full bg-[var(--accent-on)] shadow-sm"
-              />
-            </span>
-          </button>
-          <span className="text-[11px] font-bold w-6 shrink-0">{DAYS_UA_SHORT[day]}</span>
+          <span className={cn('text-[11px] font-bold w-7 shrink-0', !schedule[day].is_working && 'text-text-sub')}>{DAYS_UA_SHORT[day]}</span>
           {schedule[day].is_working ? (
             <div className="flex items-center gap-1.5 flex-1 min-w-0">
               <input type="time" value={schedule[day].start_time}
@@ -285,7 +266,7 @@ export function ScheduleWidget({
               />
             </div>
           ) : (
-            <span className="text-[11px] text-muted-foreground/70 flex-1">Вихідний</span>
+            <span className="text-[11px] text-text-sub flex-1">Вихідний</span>
           )}
         </div>
       ))}

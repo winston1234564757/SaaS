@@ -19,7 +19,7 @@ import { useAnalytics } from '@/lib/supabase/hooks/useAnalytics';
 import { useDashboardStats } from '@/lib/supabase/hooks/useDashboardStats';
 import { useBusyness } from '@/lib/supabase/hooks/useBusyness';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
-import { Loader2, LogOut, User as UserIcon, Camera, ChevronDown, ChevronUp, RefreshCw, CalendarOff } from 'lucide-react';
+import { Loader2, LogOut, User as UserIcon, Camera, ChevronDown, ChevronUp, RefreshCw } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
@@ -251,8 +251,8 @@ export default function SettingsPage() {
             />
           </motion.section>
 
-          {/* Row 6 col-3 — Retention Cycle */}
-          <motion.section id="retention" className="order-10 lg:order-none lg:col-span-3" {...motionProps(9)}>
+          {/* Row 6 col-4 — Retention Cycle */}
+          <motion.section id="retention" className="order-10 lg:order-none lg:col-span-4" {...motionProps(9)}>
             <div className="widget-card p-5 h-full flex flex-col justify-between">
               <div className="flex items-center gap-3">
                 <div className="size-8 rounded-xl bg-accent/10 text-accent flex items-center justify-center shrink-0">
@@ -292,25 +292,17 @@ export default function SettingsPage() {
             </div>
           </motion.section>
 
-          {/* Row 6 col-3 — Vacations */}
-          <motion.section id="vacations" className="order-11 lg:order-none lg:col-span-3" {...motionProps(10)}>
-            <div className="widget-card p-5 h-full flex flex-col">
-              <div className="flex items-center gap-2.5 mb-4">
-                <div className="size-8 rounded-xl bg-accent/10 text-accent flex items-center justify-center shrink-0">
-                  <CalendarOff size={16} />
-                </div>
-                <h3 className="text-sm font-bold text-text-primary">Відпустки</h3>
-              </div>
-              <VacationManager />
-            </div>
-          </motion.section>
-
-          {/* Row 6 col-4 — SegmentConfig */}
-          <motion.section id="segments" className="order-12 lg:order-none lg:col-span-4" {...motionProps(11)}>
+          {/* Row 6 col-6 — SegmentConfig */}
+          <motion.section id="segments" className="order-11 lg:order-none lg:col-span-6" {...motionProps(10)}>
             <SegmentConfigWidget
               segments={state.segmentConfig}
               onChange={actions.setSegmentConfig}
             />
+          </motion.section>
+
+          {/* Row 6.5 full-width — Вихідні та відпустки */}
+          <motion.section id="vacations" className="order-12 lg:order-none lg:col-span-10" {...motionProps(11)}>
+            <VacationManager schedule={state.schedule} onScheduleChange={actions.setSchedule} />
           </motion.section>
 
           {/* Row 7 full-width — TechnicalIsland */}
