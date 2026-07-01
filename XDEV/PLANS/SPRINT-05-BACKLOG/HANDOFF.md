@@ -4,8 +4,8 @@
 
 **Спринт:** Sprint-05 — Загальний беклог (77 задач: Зона Майстра + Клієнтська Зона + Глобальне; +3 ad-hoc M-DASH-10/11/12)
 **Розпочато:** 2026-06-22
-**Прогрес:** 59/84 ✅ · 3 ↩️ скасовано (`M-DASH-11` + `M-MKT-01`/`M-MKT-02` поглинуто редизайном M-MKT-04, founder) — **Фаза 3: Analytics 7/7 ✅ ПОВНІСТЮ ЗАКРИТА. Фаза 4: M-SET-01 ✅ + M-SET-02 ✅ + M-SET-03 ✅ + M-SET-05 ✅ (поза чергою).**
-**Наступна задача:** **`M-SET-04`** — Налаштування: відпустки + вихідні редизайн 🔄 (тип REDESIGN, Sonnet→Opus). По порядку трекера у Фазі 4. (M-SET-05 зроблено раніше на репорт founder.)
+**Прогрес:** 60/84 ✅ · 3 ↩️ скасовано (`M-DASH-11` + `M-MKT-01`/`M-MKT-02` поглинуто редизайном M-MKT-04, founder) — **Фаза 3: Analytics 7/7 ✅ ПОВНІСТЮ ЗАКРИТА. Фаза 4: M-SET-01/02/03/04/05 ✅ (усі Settings-задачі закрито).**
+**Наступна задача:** **`M-BILL-01`** — Тариф: спосіб оплати під бренд Monobank (тип REDESIGN, Sonnet→Opus). По порядку трекера у Фазі 4.
 **Оновлено:** 2026-07-01
 
 **🔧 Ad-hoc фікси 2026-07-01 (репорт founder, поза нумерацією):**
@@ -33,6 +33,35 @@ Sprint-05 переріс із "тільки клієнтська зона" у **
 - `/my/profile`: `instagram_url` + `telegram_handle` міграція ✅, avatar upload ✅
 - `/my/bookings`: `submitReview` ✅, `cancelBooking` ✅
 - `/explore`: фото `h-[134px]` ✅, tags strip ✅
+
+---
+
+## ✅ DONE: `M-SET-04` — Налаштування: відпустки + вихідні редизайн (P1) · commit `207f1955`
+
+**Тип:** REDESIGN · **Тір:** 1-2 · **Скіл:** `impeccable` (craft) · **Модель:** Opus.
+
+**QA перед кодом (AskUserQuestion × 2 раунди):** (1) скоуп = **ще й тижневі робочі дні** (не лише one-off); (2) ширину **можна розширити**; (3) архітектура = **«чистіше»** — керування «які дні» повністю переїхало сюди, тумблер дня прибрано зі ScheduleWidget.
+
+**Концепт «Коли мене немає»** — об'єднана секція доступності, широка (власний ряд col-10):
+- **Тижнева банда-герой (full-width):** Пн–Нд пілюлі, тап перемикає робочий/вихідний → пише спільний `schedule[day].is_working`. «роб.»/«вих.» лейбли. Це рекурентні вихідні.
+- **Hero-summary:** «N / 7 робочих днів» (metric-value, top-right).
+- **Разові відсутності (список col-7 + форма col-5):** відпустка (діапазон) / вихідний (дата) / короткий день (години) — редизайн старого VacationManager. Type-tabs + date + save. Empty-стан з нуджем.
+
+**🔴 Архітектура «чистіше»:** тижневий on/off дня **прибрано зі ScheduleWidget** (там лишились години/буфер/перерви + натяк «вихідні — у Вихідні та відпустки»; off-день у редакторі годин показує «Вихідний» read-only). Обидва блоки йдуть через ОДИН стан `useSettingsForm` → нуль конфлікту даних, просто розділення відповідальності (тут = які дні; там = години).
+
+**Патерн split (як Tab/TabView):** `VacationManager`(контейнер: useTimeOff + приймає schedule/onScheduleChange, будує onToggleDay) + `VacationManagerView`(презентація props, form-стан внутрішній) → рендер власними очима через devpreview з мок-даними без auth.
+
+**Layout-урок:** перша версія = week ліворуч(col-5) + one-off праворуч(col-7) → ЛІВА КОЛОНКА ПОРОЖНЯ (~700px пустоти під короткою смугою). Переробив: week = **повноширинна банда-герой зверху**, one-off (список+форма) двома колонками під нею. Ширина використана, банда стала героєм.
+
+**SettingsPage грід:** Vacations col-3→**col-10 (власний ряд)**; ребаланс Row6: Retention col-3→col-4 + Segments col-4→col-6. Обгортку-хедер «Відпустки» прибрано (View має власний header). CalendarOff імпорт видалено.
+
+**a11y:** `text-muted-foreground/xx` (2.76 і нижче на periwinkle) → `text-text-sub` (5.94) усюди в обох файлах.
+
+**Файли:** `VacationManagerView.tsx` (новий, презентація), `VacationManager.tsx` (рерайт → контейнер), `ScheduleWidget.tsx` (прибрано toggleDay + toggle-кнопку + a11y), `SettingsPage.tsx` (грід + props + −import).
+
+**KEY:** (1) «включити тижневі дні» + «чистіше» = single-source (useSettingsForm) з одним UI для on/off (тут), другий (ScheduleWidget) лише години — розділення відповідальності без дублю-редагування. (2) Full-width hero-банда > вузька колонка з пустотою — коли одна колонка коротка, роби її повноширинним рядом. (3) Split container/view + devpreview = рендер власними очима віджета що вимагає MasterProvider/RPC, без auth.
+
+**Founder QA пройдено. Верифіковано власними очима (VacationManagerView desktop+mobile, повний+empty). Очікує деплою.**
 
 ---
 
@@ -116,10 +145,9 @@ Sprint-05 переріс із "тільки клієнтська зона" у **
 
 ---
 
-## ▶ NEXT: `M-SET-04` — Налаштування: відпустки + вихідні редизайн 🔄 (REDESIGN, Sonnet→Opus)
+## ▶ NEXT: `M-BILL-01` — Тариф: спосіб оплати під бренд Monobank (REDESIGN, Sonnet→Opus)
 
-По порядку трекера у Фазі 4 (Налаштування). Тип REDESIGN → пре-код ритуал (brainstorming → impeccable craft → grill-me) + скріншот/рендер поточного стану + бриф. Ціль: `VacationManager.tsx` (у секції #vacations) + логіка вихідних (`master_time_off` / schedule exceptions). Перед стартом — Task Gate (mempalace_search → читати живий код VacationManager + schedule → 3-5 QA → impeccable craft → humanizer → рендер власними очима → ОК founder).
-**Нагадування:** M-ANL-06 «Поведінка» вже лінкує сюди (`/dashboard/settings#vacations`) — звірити узгодженість.
+По порядку трекера у Фазі 4. Ціль: `BillingPage.tsx` (`/dashboard/billing`) + `billing/actions.ts` (Monobank checkout). Скіли: `payment-gateway-integration` + `design-taste-frontend`. Тип REDESIGN (з платіжним контекстом) → Task Gate + пре-код ритуал + рендер власними очима. **Усі Settings-задачі (M-SET-01..05) закрито.**
 
 ---
 
