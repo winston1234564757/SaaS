@@ -97,8 +97,14 @@ export function VacationManagerView({
     resetForm();
   }
 
-  const inputBase = 'min-w-0 px-3 py-2.5 rounded-xl bg-secondary border border-border text-xs text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-colors';
-  const inputCls = `w-full ${inputBase}`;
+  // Native iOS date/time inputs ignore min-width:0 and stretch to their intrinsic
+  // width, pushing their right edge past the block border. Cap the width so the
+  // input stays a fixed, left-aligned size with room to spare on the right.
+  const inputCls = 'w-full min-w-0 px-3 py-2.5 rounded-xl bg-secondary border border-border text-xs text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-colors';
+  // Native iOS/Chromium date/time inputs ignore their own min/max-width and stretch
+  // to intrinsic width, pushing the right edge past the block border. Cap width on a
+  // plain <div> wrapper (which reliably respects max-width) and let the input fill it.
+  const fieldCap = 'w-full max-w-[13rem]';
   const labelCls = 'block text-[10px] font-bold text-text-sub uppercase tracking-wider mb-1';
 
   return (
@@ -251,17 +257,17 @@ export function VacationManagerView({
             <div className={cn('gap-3', type === 'vacation' ? 'grid grid-cols-1 sm:grid-cols-2' : 'flex flex-col')}>
               {type === 'vacation' ? (
                 <>
-                  <div className="min-w-0"><label className={labelCls}>Початок</label><input type="date" value={startDate} min={today} onChange={e => setStartDate(e.target.value)} aria-label="Початок відпустки" className={inputCls} /></div>
-                  <div className="min-w-0"><label className={labelCls}>Кінець</label><input type="date" value={endDate} min={startDate || today} onChange={e => setEndDate(e.target.value)} aria-label="Кінець відпустки" className={inputCls} /></div>
+                  <div className="min-w-0"><label className={labelCls}>Початок</label><div className={fieldCap}><input type="date" value={startDate} min={today} onChange={e => setStartDate(e.target.value)} aria-label="Початок відпустки" className={inputCls} /></div></div>
+                  <div className="min-w-0"><label className={labelCls}>Кінець</label><div className={fieldCap}><input type="date" value={endDate} min={startDate || today} onChange={e => setEndDate(e.target.value)} aria-label="Кінець відпустки" className={inputCls} /></div></div>
                 </>
               ) : type === 'day_off' ? (
-                <div className="min-w-0"><label className={labelCls}>Дата</label><input type="date" value={startDate} min={today} onChange={e => setStartDate(e.target.value)} aria-label="Дата вихідного" className={inputCls} /></div>
+                <div className="min-w-0"><label className={labelCls}>Дата</label><div className={fieldCap}><input type="date" value={startDate} min={today} onChange={e => setStartDate(e.target.value)} aria-label="Дата вихідного" className={inputCls} /></div></div>
               ) : (
                 <>
-                  <div className="min-w-0"><label className={labelCls}>Дата</label><input type="date" value={startDate} min={today} onChange={e => setStartDate(e.target.value)} aria-label="Дата скороченого дня" className={inputCls} /></div>
+                  <div className="min-w-0"><label className={labelCls}>Дата</label><div className={fieldCap}><input type="date" value={startDate} min={today} onChange={e => setStartDate(e.target.value)} aria-label="Дата скороченого дня" className={inputCls} /></div></div>
                   <div className="min-w-0">
                     <label className={labelCls}>Години</label>
-                    <div className="flex items-center gap-2 w-full px-3 py-2.5 rounded-xl bg-secondary border border-border">
+                    <div className="inline-flex items-center gap-2 max-w-full px-3 py-2.5 rounded-xl bg-secondary border border-border">
                       <input type="time" value={startTime} onChange={e => setStartTime(e.target.value)} aria-label="Початок" className="w-[4.5rem] min-w-0 bg-transparent text-xs text-foreground outline-none" />
                       <span className="text-text-sub text-xs shrink-0">—</span>
                       <input type="time" value={endTime} onChange={e => setEndTime(e.target.value)} aria-label="Кінець" className="w-[4.5rem] min-w-0 bg-transparent text-xs text-foreground outline-none" />
