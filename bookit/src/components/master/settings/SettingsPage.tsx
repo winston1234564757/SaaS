@@ -93,7 +93,6 @@ export default function SettingsPage() {
               masterId={masterProfile.id}
               fullName={state.fullName}
               businessName={state.businessName}
-              bio={state.bio}
               avatarUrl={state.avatarUrl}
               tier={masterProfile.subscription_tier}
               rating={masterProfile.rating}
