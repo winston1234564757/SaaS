@@ -4,8 +4,8 @@
 
 **Спринт:** Sprint-05 — Загальний беклог (77 задач: Зона Майстра + Клієнтська Зона + Глобальне; +3 ad-hoc M-DASH-10/11/12)
 **Розпочато:** 2026-06-22
-**Прогрес:** 57/84 ✅ · 3 ↩️ скасовано (`M-DASH-11` + `M-MKT-01`/`M-MKT-02` поглинуто редизайном M-MKT-04, founder) — **Фаза 3: Analytics 7/7 ✅ ПОВНІСТЮ ЗАКРИТА. Фаза 4 старт: M-SET-01 ✅ + M-SET-02 ✅.**
-**Наступна задача:** **`M-SET-03`** — Налаштування: bookit assistant активний + лінки (тип COPY, Sonnet). По порядку трекера у Фазі 4.
+**Прогрес:** 58/84 ✅ · 3 ↩️ скасовано (`M-DASH-11` + `M-MKT-01`/`M-MKT-02` поглинуто редизайном M-MKT-04, founder) — **Фаза 3: Analytics 7/7 ✅ ПОВНІСТЮ ЗАКРИТА. Фаза 4: M-SET-01 ✅ + M-SET-02 ✅ + M-SET-03 ✅.**
+**Наступна задача:** **`M-SET-04`** — Налаштування: відпустки + вихідні редизайн 🔄 (тип REDESIGN, Sonnet→Opus). По порядку трекера у Фазі 4.
 **Оновлено:** 2026-07-01
 
 > ✅ **M-MKT-04 + M-MKT-03 DONE + founder approved «ахуєнно» (фінал commit `e8837dba`, 2026-06-29, прогнано на проді bookit-five-psi, передеплой з main для останніх фіксів):** StoryGenerator → покроковий проф-едітор (5 кроків: Тип→Контент→Вигляд→Стиль→Готово), live-прев'ю mobile знизу / desktop справа. Reuse-шелл (storyExport/useStoryData fideliti 1080×1920). Мозок `story/useStoryEditor.ts`, модель `story/storySteps.ts`, панелі `story/steps/*`. **Стиль = образи-пресети** (5: minimal/elegant/bold/gloss/script) + розмір S/M/L + елементи кадру (тогл аватар, тогл Місце-для-посилання=пунктирна зона під IG-стікер). **Контент:** заготовки в Sheet-модалці. **Фон:** палітра(9, Champagne видалено) / портфоліо / своє фото (градієнти+стокові ВИДАЛЕНО). **A11Y-аудит story-canvas через a11y MCP:** авто-тема textColor/mutedColor/accent/pillBg/badge у ВСІХ режимах, плашка 0.62 (worst-case над білим фото verified), фото-скрім, аватар+ім'я sans+чіп. Деталі+кольори — mempalace drawer `drawer_bookit_architecture_ea1bb49cc6d541472cbd7608` + TRANSITION нотатка. 32 unit-тести, tsc 0, build clean. **M-MKT-07 (адмін-аплоадер) скасовано** founder.
@@ -29,6 +29,34 @@ Sprint-05 переріс із "тільки клієнтська зона" у **
 - `/my/profile`: `instagram_url` + `telegram_handle` міграція ✅, avatar upload ✅
 - `/my/bookings`: `submitReview` ✅, `cancelBooking` ✅
 - `/explore`: фото `h-[134px]` ✅, tags strip ✅
+
+---
+
+## ✅ DONE: `M-SET-03` — Налаштування: BookIT Assistant активний + лінки (P1) · commit `721d9182`
+
+**Тип:** REDESIGN + interaction (НЕ COPY — звірка живого коду показала пасивні поради без дій) · **Тір:** 1-2 · **Скіли:** `impeccable` (craft) + `humanizer` · **Модель:** Opus.
+
+**QA перед кодом (1 батч AskUserQuestion):** (1) поведінка лінка = **клік→скрол до секції + підсвітка**; (2) катало-твердження = **звірити код**; (3) глибина = **активність + редизайн**.
+
+**🔴 Верифікація катало-твердження (звірка `explore/page.tsx`):** пояснення асистента стверджувало «чим вищий % заповненості — тим вища позиція у каталозі». Каталог сортує `.order('rating_count', desc)` + персоналізація за категоріями клієнта. **Заповненість НЕ впливає на ранжування** (цих даних немає в запиті). ФЕЙК → переписано чесно: заповнений профіль = більше довіри/конверсії; позиція росте від реальних відгуків/записів.
+
+**Before:** `SmartAdvisor` — поради ПАСИВНІ (текст «Додайте фото», не клікнути) + **банний hero-metric шаблон** (7xl % score + progress-бар = SaaS-кліше, прямий бан impeccable) + фейк про каталог.
+
+**After (концепт «Наступний крок», асиметрія):**
+- **Score демотовано:** 7xl вани-цифра → чесний «Заповненість профілю · N / 4» + слім-смуга (h-1.5). Прибирає банний шаблон.
+- **ГЕРОЙ = найважливіша наступна дія** (tips[0]): акцент-тінт блок (warning/[0.11] / accent/[0.09] / success) + eyebrow «Наступний крок» + великий title + опис + афорданс «Перейти до розділу ›» (ChevronRight, hover-translate). Весь блок = `<button>` → `jumpToSection`.
+- **Решта порад = компактні клікабельні рядки** з chevron-афордансом.
+- **Клік будь-якої поради → `jumpToSection(id)`:** `getElementById` → `scrollIntoView({behavior:'smooth', block:'center'})` + `.advisor-highlight` (CSS keyframe `advisor-pulse` — box-shadow ring в `var(--accent)` 1.7с, reflow-reset для повторного кліку, reduced-motion aware). Якорі: фото→`#hero`, опис→`#identity`, IG→`#technical`, спеціалізація→`#categories` (додав id у SettingsPage).
+- **Done-стан (4/4):** святковий центрований CheckCircle-блок (не порожнеча).
+- **Пояснення-оверлей:** третій пункт про каталог переписано чесно + перший пункт згадує клік-навігацію.
+
+**a11y (mcp__a11y):** дрібний `text-text-mute` (=text-tertiary 2.76 на periwinkle — бан) → `text-text-sub` (#475569 = **5.94** verified) усюди (описи/eyebrow/chevron-іконки).
+
+**Файли:** `SmartAdvisor.tsx` (рерайт, +120/−78), `SettingsPage.tsx` (+id="categories"), `globals.css` (+`.advisor-highlight` keyframe). Логіка обрахунку tips/score НЕ чіпано — лише подача + клікабельність.
+
+**KEY:** (1) «assistant активний» = зробити пасивні поради навігаційними (scroll+highlight до секції-фіксу), а не косметика. (2) 7xl %-score = банний hero-metric template → демотувати в чесний «N/4», герой = ДІЯ не вани-цифра. (3) Катало-твердження було фейком — звіряй сорт каталогу (rating_count, не completeness) перед обіцянками аналітики/впливу. (4) Frost `text-text-mute` (2.76) провалює дрібний текст — `text-text-sub` (5.94). (5) `.advisor-highlight` reflow-reset (`void el.offsetWidth`) щоб keyframe перезапустився при повторному тапі тієї ж поради.
+
+**Founder QA пройдено. Верифіковано власними очима (devpreview/advisor + Playwright: empty/partial/done). Очікує деплою за командою founder.**
 
 ---
 
@@ -59,9 +87,10 @@ Sprint-05 переріс із "тільки клієнтська зона" у **
 
 ---
 
-## ▶ NEXT: `M-SET-03` — bookit assistant активний + лінки (COPY, Sonnet)
+## ▶ NEXT: `M-SET-04` — Налаштування: відпустки + вихідні редизайн 🔄 (REDESIGN, Sonnet→Opus)
 
-По порядку трекера у Фазі 4 (Налаштування). Тип COPY → без брифа-файлу, `humanizer` на весь текст + показати before/after. Перед стартом — Task Gate (mempalace_search → читати живий код SmartAdvisor/assistant → skill → humanizer → ОК).
+По порядку трекера у Фазі 4 (Налаштування). Тип REDESIGN → пре-код ритуал (brainstorming → impeccable craft → grill-me) + скріншот/рендер поточного стану + бриф. Ціль: `VacationManager.tsx` (у секції #vacations) + логіка вихідних (`master_time_off` / schedule exceptions). Перед стартом — Task Gate (mempalace_search → читати живий код VacationManager + schedule → 3-5 QA → impeccable craft → humanizer → рендер власними очима → ОК founder).
+**Нагадування:** M-ANL-06 «Поведінка» вже лінкує сюди (`/dashboard/settings#vacations`) — звірити узгодженість.
 
 ---
 
