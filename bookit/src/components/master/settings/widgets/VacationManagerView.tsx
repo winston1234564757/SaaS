@@ -99,7 +99,6 @@ export function VacationManagerView({
 
   const inputBase = 'min-w-0 px-3 py-2.5 rounded-xl bg-secondary border border-border text-xs text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-colors';
   const inputCls = `w-full ${inputBase}`;
-  const timeCls = `w-[7.5rem] max-w-full ${inputBase}`;
   const labelCls = 'block text-[10px] font-bold text-text-sub uppercase tracking-wider mb-1';
 
   return (
@@ -260,12 +259,12 @@ export function VacationManagerView({
               ) : (
                 <>
                   <div className="min-w-0"><label className={labelCls}>Дата</label><input type="date" value={startDate} min={today} onChange={e => setStartDate(e.target.value)} aria-label="Дата скороченого дня" className={inputCls} /></div>
-                  <div>
+                  <div className="min-w-0">
                     <label className={labelCls}>Години</label>
-                    <div className="flex items-center gap-2">
-                      <input type="time" value={startTime} onChange={e => setStartTime(e.target.value)} aria-label="Початок" className={timeCls} />
+                    <div className="flex items-center gap-2 w-full px-3 py-2.5 rounded-xl bg-secondary border border-border">
+                      <input type="time" value={startTime} onChange={e => setStartTime(e.target.value)} aria-label="Початок" className="w-[4.5rem] min-w-0 bg-transparent text-xs text-foreground outline-none" />
                       <span className="text-text-sub text-xs shrink-0">—</span>
-                      <input type="time" value={endTime} onChange={e => setEndTime(e.target.value)} aria-label="Кінець" className={timeCls} />
+                      <input type="time" value={endTime} onChange={e => setEndTime(e.target.value)} aria-label="Кінець" className="w-[4.5rem] min-w-0 bg-transparent text-xs text-foreground outline-none" />
                     </div>
                   </div>
                 </>
