@@ -4,8 +4,8 @@
 
 **Спринт:** Sprint-05 — Загальний беклог (77 задач: Зона Майстра + Клієнтська Зона + Глобальне; +3 ad-hoc M-DASH-10/11/12)
 **Розпочато:** 2026-06-22
-**Прогрес:** 60/84 ✅ · 3 ↩️ скасовано (`M-DASH-11` + `M-MKT-01`/`M-MKT-02` поглинуто редизайном M-MKT-04, founder) — **Фаза 3: Analytics 7/7 ✅ ПОВНІСТЮ ЗАКРИТА. Фаза 4: M-SET-01/02/03/04/05 ✅ (усі Settings-задачі закрито).**
-**Наступна задача:** **`M-BILL-01`** — Тариф: спосіб оплати під бренд Monobank (тип REDESIGN, Sonnet→Opus). По порядку трекера у Фазі 4.
+**Прогрес:** 61/84 ✅ · 3 ↩️ скасовано (`M-DASH-11` + `M-MKT-01`/`M-MKT-02` поглинуто редизайном M-MKT-04, founder) — **Фаза 3: Analytics 7/7 ✅. Фаза 4: M-SET-01..05 ✅ · M-BILL-01 ✅ (задеплоєно).**
+**Наступна задача:** **`M-BILL-02`** — Тариф: Pro 2x довший за Starter + опис (тип COPY, Haiku). По порядку трекера у Фазі 4.
 **Оновлено:** 2026-07-01
 
 **🚀 ЗАДЕПЛОЄНО НА ПРОД 2026-07-01** (`vercel --prod` CLI з `bookit/`): усе Sprint-05 до M-SET-04 включно + усі ad-hoc фікси. Фінальний deploy `bookit-cta5akidq…` READY. **Live URL = `bookit-winston1234564757s-projects.vercel.app`** (той, яким користується founder — підтверджено). ⚠️ `bookit.com.ua` НЕ прив'язаний до цього Vercel-проєкту (`vercel domains ls`=0, фронтиться Cloudflare на інший origin → 404) — founder ним НЕ користується, не чіпаємо. **🔴 ВАЖЛИВО: git до цього НІКОЛИ не пушився — 78 комітів накопичилось локально; тепер `origin/main` синхронізовано (пуш після кожного коміту).** Деплой = `vercel --prod` CLI (НЕ git-integration). ⚠️ PWA service worker кешує → після деплою потрібен ПОВНИЙ реоупен застосунку.
@@ -36,6 +36,32 @@ Sprint-05 переріс із "тільки клієнтська зона" у **
 - `/my/profile`: `instagram_url` + `telegram_handle` міграція ✅, avatar upload ✅
 - `/my/bookings`: `submitReview` ✅, `cancelBooking` ✅
 - `/explore`: фото `h-[134px]` ✅, tags strip ✅
+
+---
+
+## ✅ DONE: `M-BILL-01` — Тариф: повний редизайн + бренд Monobank (P1) · commit `441e1e1f` · ЗАДЕПЛОЄНО `dpl_5RnDcCrnSqmQAvGd6dRn39Ed9RNd`
+
+**Тип:** REDESIGN (Tier 2, вся сторінка) · **Скіли:** `brainstorming` → `impeccable (craft)` → self-grill → `humanizer` → `mcp__a11y` · **Модель:** Opus.
+
+**Скоуп (founder):** вся сторінка тарифів (не лише блок оплати) · тумблер→інфо-панель · бренд Monobank.
+
+**Концепт «Один шлях наверх» — state-aware герой** (Закон темного блоку):
+- **Герой (col-8, темний slate #0F172A + аврора + Cormorant):** Starter → офер Pro (serif-ціна 700₴ clamp + УСІ 9 можливостей у 2 колонки + біла інвертована CTA «Перейти на Pro» + trust «Оплата захищена через Monobank»); Pro/Studio → керування (active «Наступне списання X» / canceled «Діє до X, автопродовження вимкнено»+CTA «Відновити» / no-card «Прив'язати картку»). Чіп статусу картки за `subscription.token` (дедуп із рядком автопродовження).
+- **Monobank-панель (col-4, плаский чорний #0A0A0A):** офіційний monobank SVG-лого (`public/monobank-logo.svg` з Wikimedia, білий через `[filter:brightness(0)_invert(1)]`) + 3 рядки довіри + тиха бренд-мітка картки (rotated rounded-rect). Неінтерактивна інфо-панель, НЕ тумблер.
+- **Плани = 1 герой + 2 тихі диференційовані рядки** (у світлому bento): інші 2 плани (не hero-Pro) hairline-рядками — Starter «Ваш план» чіп / Studio «Скоро» чіп + beta-лінк. Замість 3 однакових карток.
+- Реферал-нудж + legal-згода збережено; success/error-банери зверху.
+
+**🔴 Два темні блоки не сваряться — різні МАТЕРІАЛИ** (§5 закону: «сміливо»≠«темно»): герой = slate editorial + аврора-blur + serif (журнальна обкладинка); Monobank = плаский матовий чорний + тільки sans + компактний (платіжний чіп). Ролі зчитуються миттєво.
+
+**Бекенд НЕ чіпано:** `createMonoInvoice`/`cancelSubscription`/`recoverCardToken`/`submitBetaRequest` + усі searchParams-ефекти (`?paid=1`/`?plan=`) + cancel-модалка + beta Sheet. Прибрано лише мертвий `provider`-стейт (не передавався в actions) + емодзі 🍋.
+
+**Self-grill (дірки до коду):** (1) Monobank-панель generic-довіра, автопродовж-стан лише в героєві (інакше бреше при canceled); (2) `currentTier ∈ (pro,studio)` → герой=керування (захист від даунгрейд-абсурду); (3) моб Monobank компактний (уник dark-wall); (4) hero CTA інвертована (біла, бо Frost primary=slate зіллявся б); (5) панель неінтерактивна (уник мертвого афордансу).
+
+**Ітерації founder (2):** (1) «максимально детально про Pro» → 4 killer-фічі замінено на ПОВНИЙ перелік 9; (2) офіційний бренд — дав Wikimedia SVG → замінив текстову реконструкцію на вектор.
+
+**Гейти:** TSC 0 · Build clean · a11y MCP (trust white/50 на slate=5.23, emerald-chip=11.71) · humanizer (em dash прибрано) · рендер власними очима 8 скрінів (starter/pro/canceled/nocard × desk/mob) через мок-прев'ю-роут `/bill-preview` (тимч. export `MasterContext` + Playwright, усе видалено перед commit). Founder QA пройдено, деплой за командою.
+
+**Уроки:** (1) фейк-тумблер з 1 опцією + мертвий стейт = прибрати, не «покращувати»; (2) grayscale+alpha PNG/SVG → `brightness(0) invert(1)` = будь-який моно-лого в біле на темному; (3) SVG в `next/image` блокується → плаский `<img>` + eslint-disable no-img-element; (4) прев'ю віджета що вимагає MasterContext = тимч. `export` сирого контексту + мок-Provider (обійти MasterProvider-фетчі); (5) два темні блоки поруч ок якщо різні матеріали (editorial slate vs плаский brand-чорний), не однакова темрява; (6) обережно з повторним Edit `const X`→`export const X` коли попередній не ревертнутий → `export export` build-краш.
 
 ---
 
