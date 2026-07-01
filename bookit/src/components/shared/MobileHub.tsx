@@ -93,10 +93,10 @@ function NavBar({
   return (
     <div className="fixed bottom-0 left-0 right-0 z-[75] px-4 pb-safe pb-4 pointer-events-none">
       <div className="mx-auto max-w-lg pointer-events-auto">
-        <motion.div
-          layout
-          className="mobile-nav-bar rounded-full px-2 py-2 flex items-center justify-between"
-        >
+        {/* Plain div (no framer `layout`): on a position:fixed bar, `layout`
+            re-measures against the scroll offset on re-renders (e.g. todayPending
+            updates) and jumps the bar mid-scroll. */}
+        <div className="mobile-nav-bar rounded-full px-2 py-2 flex items-center justify-between">
           {/* Left pair */}
           <div className="flex items-center gap-1 flex-1 justify-around">
             {BAR_ITEMS.slice(0, 2).map(item => (
@@ -169,7 +169,7 @@ function NavBar({
               />
             </Link>
           </div>
-        </motion.div>
+        </div>
       </div>
     </div>
   );
