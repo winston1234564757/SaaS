@@ -4,9 +4,10 @@ import { useState, useRef, useTransition } from 'react';
 import Link from 'next/link';
 import { motion, useInView, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import { useIsDesktop } from '@/lib/hooks/useIsDesktop';
-import { Check, Loader2, X } from 'lucide-react';
+import { Check, Loader2, X, ArrowRight } from 'lucide-react';
 import { LandingSplitHeading } from '@/components/landing/LandingSplitHeading';
 import { submitBetaRequest } from '@/app/(master)/dashboard/billing/actions';
+import { STARTER_FEATURES, PRO_FEATURES, STUDIO_FEATURES } from '@/lib/constants/tierFeatures';
 import { LANDING_SPRING } from './shared/CountUp';
 
 const easeOut: [number, number, number, number] = [0.22, 1, 0.36, 1];
@@ -27,17 +28,8 @@ const PLANS: Plan[] = [
     name: 'Starter',
     price: '0',
     period: 'назавжди',
-    description: 'Для старту. Без обмежень по часу.',
-    features: [
-      'До 40 записів на місяць',
-      'Публічна сторінка',
-      'Telegram-сповіщення',
-      'Нагадування клієнтам',
-      'Базова аналітика',
-      'CRM клієнтів',
-      'Флеш-акції (до 5 на місяць)',
-      'Розсилки (до 3 на місяць)',
-    ],
+    description: 'Усе для старту. Безкоштовно, без обмежень у часі.',
+    features: [...STARTER_FEATURES],
     cta: 'Почати безкоштовно',
     accent: false,
   },
@@ -45,22 +37,8 @@ const PLANS: Plan[] = [
     name: 'Pro',
     price: '700',
     period: 'місяць',
-    description: 'Для майстра, який хоче більше.',
-    features: [
-      'Необмежені записи',
-      'Публічна сторінка без брендингу Bookit',
-      'Smart Slots + флеш-акції без ліміту',
-      'Авто Flash Deal при скасуванні',
-      'Програма лояльності для клієнтів',
-      'Сторіс та портфоліо',
-      'Магазин товарів',
-      'QR-код для запису',
-      'Розширена аналітика (6 місяців)',
-      'Розсилки без ліміту',
-      'CSV-експорт клієнтської бази',
-      'Кастомна тема оформлення',
-      'Пріоритетна підтримка',
-    ],
+    description: 'Той самий Starter, тільки без лімітів.',
+    features: [...PRO_FEATURES],
     cta: 'Спробувати Pro',
     accent: true,
   },
@@ -68,14 +46,8 @@ const PLANS: Plan[] = [
     name: 'Studio',
     price: '',
     period: '',
-    description: 'Для студій від 2 майстрів. Спільна аналітика та управління командою.',
-    features: [
-      'Все з Pro для кожного майстра',
-      'Управління командою',
-      'Загальна аналітика студії',
-      'Власний брендинг',
-      'Виділений менеджер',
-    ],
+    description: 'Для студій від двох майстрів: спільний кабінет, аналітика й команда.',
+    features: [...STUDIO_FEATURES],
     cta: 'Залишити заявку',
     accent: false,
     waitlist: true,
@@ -145,7 +117,7 @@ export function LandingPricing() {
                 animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
                 transition={{ duration: shouldReduce ? 0 : 0.9, ease: easeOut, delay: shouldReduce ? 0 : 0.1 + i * 0.12 }}
                 whileHover={shouldReduce ? {} : { y: plan.accent ? -6 : -4 }}
-                className={plan.accent ? 'md:-mt-4 md:mb-4' : ''}
+                className={plan.accent ? 'md:-mt-6 md:mb-6 md:scale-[1.03] md:z-10 relative' : ''}
               >
                 <div
                   className="p-1.5 rounded-[1.75rem] h-full"
@@ -179,6 +151,17 @@ export function LandingPricing() {
                       >
                         {plan.name}
                       </p>
+                      {plan.accent && (
+                        <span
+                          className="text-[9px] font-bold px-2 py-0.5 rounded-full"
+                          style={{
+                            color: 'var(--l-text-on-dark)',
+                            background: 'color-mix(in srgb, var(--l-text-on-dark) 18%, transparent)',
+                          }}
+                        >
+                          Рекомендуємо
+                        </span>
+                      )}
                       {plan.waitlist && (
                         <span
                           className="text-[9px] font-bold px-2 py-0.5 rounded-full"
@@ -194,10 +177,10 @@ export function LandingPricing() {
 
                     {plan.waitlist ? (
                       <p
-                        className="font-[family-name:var(--font-cormorant)] font-semibold leading-none mb-4"
-                        style={{ fontSize: 'clamp(1.6rem,3vw,2.2rem)', color: 'var(--l-muted)' }}
+                        className="font-[family-name:var(--font-cormorant)] font-semibold leading-tight mb-4"
+                        style={{ fontSize: 'clamp(1.15rem,2.2vw,1.5rem)', color: 'var(--l-green)' }}
                       >
-                        В розробці
+                        Формуємо першу групу студій
                       </p>
                     ) : (
                       <>
@@ -218,6 +201,14 @@ export function LandingPricing() {
                         >
                           {plan.period}
                         </p>
+                        {plan.accent && (
+                          <p
+                            className="text-[13px] leading-snug mb-1"
+                            style={{ color: 'color-mix(in srgb, var(--l-text-on-dark) 62%, transparent)' }}
+                          >
+                            Коли ти ростеш, Pro росте з тобою.
+                          </p>
+                        )}
                       </>
                     )}
 
@@ -277,6 +268,28 @@ export function LandingPricing() {
                           </span>
                         </motion.li>
                       ))}
+
+                      {/* Клікабельний пункт бети — окремий фрейм від нижньої CTA (soft, цінність) */}
+                      {plan.waitlist && (
+                        <li>
+                          <button
+                            type="button"
+                            onClick={() => setShowBetaForm(true)}
+                            className="flex items-center gap-3 w-full text-left py-1 rounded-lg transition-opacity hover:opacity-70 active:opacity-60 focus-visible:ring-2 focus-visible:ring-[var(--l-green)] focus-visible:outline-none"
+                          >
+                            <span
+                              className="size-5 rounded-full flex items-center justify-center flex-shrink-0"
+                              style={{ background: 'color-mix(in srgb, var(--l-green) 14%, transparent)' }}
+                              aria-hidden="true"
+                            >
+                              <ArrowRight size={11} style={{ color: 'var(--l-green)' }} />
+                            </span>
+                            <span className="text-sm leading-snug font-semibold" style={{ color: 'var(--l-green)' }}>
+                              Ваші ідеї та потреби формують продукт
+                            </span>
+                          </button>
+                        </li>
+                      )}
                     </ul>
 
                     {plan.waitlist ? (
@@ -326,7 +339,7 @@ export function LandingPricing() {
             className="text-center text-sm mt-8"
             style={{ color: 'var(--l-muted)' }}
           >
-            Всі тарифи без прихованих комісій. Змінити або скасувати — в два кліки.
+            Всі тарифи без прихованих комісій. Змінити чи скасувати можна в два кліки.
           </motion.p>
         </div>
       </section>

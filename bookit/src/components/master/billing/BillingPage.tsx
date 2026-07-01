@@ -5,71 +5,28 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Check, Crown, Building2, Zap, Loader2, X, PartyPopper,
-  Gift, Lock, ShieldCheck, CreditCard, CalendarClock, ArrowRight,
+  Gift, Lock, ShieldCheck, CreditCard, CalendarClock, ArrowRight, ChevronDown,
 } from 'lucide-react';
 import { useMasterContext } from '@/lib/supabase/context';
 import { createMonoInvoice, recoverCardToken, cancelSubscription, submitBetaRequest } from '@/app/(master)/dashboard/billing/actions';
 import { Sheet } from '@/components/ui/Sheet';
 import { cn } from '@/lib/utils/cn';
+import { STARTER_FEATURES, PRO_FEATURES, STUDIO_FEATURES } from '@/lib/constants/tierFeatures';
 
 type Tier = 'starter' | 'pro' | 'studio';
 
 const PLANS = [
-  {
-    key: 'starter' as Tier,
-    name: 'Starter',
-    price: '0',
-    period: 'назавжди',
-    icon: Zap,
-    color: '#789A99',
-    features: [
-      'До 40 записів на місяць',
-      'Публічна сторінка',
-      'Telegram-сповіщення',
-      'Нагадування клієнтам',
-      'Базова аналітика',
-      'CRM клієнтів',
-      'Флеш-акції (до 5 на місяць)',
-      'Розсилки (до 3 на місяць)',
-    ],
-  },
-  {
-    key: 'pro' as Tier,
-    name: 'Pro',
-    price: '700',
-    period: '/ місяць',
-    icon: Crown,
-    color: '#D4935A',
-    popular: true,
-    features: [
-      'Необмежені записи',
-      'Сторінка без брендингу Bookit',
-      'Smart Slots + флеш-акції без ліміту',
-      'Програма лояльності',
-      'Магазин товарів',
-      'Розширена аналітика (6 місяців)',
-      'CSV-експорт',
-      'Кастомна тема оформлення',
-      'Пріоритетна підтримка',
-    ],
-  },
-  {
-    key: 'studio' as Tier,
-    name: 'Studio',
-    price: '299',
-    period: '/ майстер/місяць',
-    icon: Building2,
-    color: '#5C9E7A',
-    wip: true,
-    features: [
-      'Все з Pro для кожного майстра',
-      'Мін. 2 майстри',
-      'Єдиний кабінет адміна',
-      'Спільна аналітика по студії',
-      'Кастомний брендинг',
-    ],
-  },
+  { key: 'starter' as Tier, name: 'Starter', price: '0',   period: 'назавжди',        icon: Zap,       color: '#789A99' },
+  { key: 'pro' as Tier,     name: 'Pro',     price: '700', period: '/ місяць',        icon: Crown,     color: '#D4935A', popular: true },
+  { key: 'studio' as Tier,  name: 'Studio',  price: '299', period: '/ майстер/місяць', icon: Building2, color: '#5C9E7A', wip: true },
 ] as const;
+
+/** Перелік можливостей за тарифом — єдине джерело (@/lib/constants/tierFeatures) */
+const FEATURES_BY_TIER: Record<Tier, readonly string[]> = {
+  starter: STARTER_FEATURES,
+  pro: PRO_FEATURES,
+  studio: STUDIO_FEATURES,
+};
 
 const STUDIO_SIZES = [
   { key: '1',   label: '1 майстер' },
@@ -78,19 +35,6 @@ const STUDIO_SIZES = [
 ] as const;
 
 const SLATE = '#0F172A';
-
-/** Повний перелік можливостей Pro для героя (детально, не скорочено) */
-const PRO_FEATURES = [
-  'Необмежені записи',
-  'Сторінка без брендингу Bookit',
-  'Smart Slots + флеш-акції без ліміту',
-  'Програма лояльності',
-  'Магазин товарів',
-  'Розширена аналітика (6 місяців)',
-  'CSV-експорт',
-  'Кастомна тема оформлення',
-  'Пріоритетна підтримка',
-] as const;
 
 function formatDate(iso: string | null | undefined): string {
   if (!iso) return '';
@@ -116,6 +60,7 @@ export function BillingPage() {
   const searchParams = useSearchParams();
 
   const [payingTier, setPayingTier] = useState<Tier | null>(null);
+  const [expandedTier, setExpandedTier] = useState<Tier | null>(null);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -456,34 +401,52 @@ export function BillingPage() {
             const PlanIcon = plan.icon;
             const isCurrent = plan.key === currentTier;
             const isWip = 'wip' in plan && plan.wip === true;
+            const isOpen = expandedTier === plan.key;
+            const features = FEATURES_BY_TIER[plan.key];
+            const panelId = `plan-features-${plan.key}`;
             return (
-              <div key={plan.key} className="flex items-center gap-3 px-3 py-3.5">
-                <span
-                  className="inline-flex size-10 items-center justify-center rounded-2xl flex-shrink-0"
-                  style={{ background: `${plan.color}18` }}
-                >
-                  <PlanIcon size={18} style={{ color: plan.color }} />
-                </span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-foreground leading-tight">{plan.name}</p>
-                  <p className="text-xs text-text-sub mt-0.5">
-                    {plan.price === '0'
-                      ? '0 ₴ назавжди'
-                      : plan.key === 'studio'
-                        ? '299 ₴ за майстра'
-                        : `${plan.price} ₴ / місяць`}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
+              <div key={plan.key}>
+                <div className="flex items-center gap-3 px-3">
+                  {/* Тіло рядка = перемикач розкриття */}
+                  <button
+                    type="button"
+                    onClick={() => setExpandedTier(isOpen ? null : plan.key)}
+                    aria-expanded={isOpen}
+                    aria-controls={panelId}
+                    className="flex flex-1 items-center gap-3 min-w-0 py-3.5 text-left rounded-2xl transition-colors hover:bg-secondary/40 active:scale-[0.995]"
+                  >
+                    <span
+                      className="inline-flex size-10 items-center justify-center rounded-2xl flex-shrink-0"
+                      style={{ background: `${plan.color}18` }}
+                    >
+                      <PlanIcon size={18} style={{ color: plan.color }} />
+                    </span>
+                    <span className="flex-1 min-w-0">
+                      <span className="block text-sm font-bold text-foreground leading-tight">{plan.name}</span>
+                      <span className="block text-xs text-text-sub mt-0.5">
+                        {plan.price === '0'
+                          ? '0 ₴ назавжди'
+                          : plan.key === 'studio'
+                            ? '299 ₴ за майстра'
+                            : `${plan.price} ₴ / місяць`}
+                      </span>
+                    </span>
+                    <ChevronDown
+                      size={16}
+                      className={cn('flex-shrink-0 text-text-sub transition-transform duration-200', isOpen && 'rotate-180')}
+                    />
+                  </button>
+
+                  {/* Дії тарифу — sibling-кнопки, не вкладені в перемикач */}
                   {isCurrent ? (
                     <span
-                      className="text-[11px] font-bold px-2.5 py-1 rounded-full"
+                      className="text-[11px] font-bold px-2.5 py-1 rounded-full flex-shrink-0"
                       style={{ color: plan.color, background: `${plan.color}18` }}
                     >
                       Ваш план
                     </span>
                   ) : isWip ? (
-                    <>
+                    <div className="flex items-center gap-2 flex-shrink-0">
                       <span
                         className="text-[11px] font-bold px-2.5 py-1 rounded-full"
                         style={{ color: plan.color, background: `${plan.color}18` }}
@@ -497,9 +460,32 @@ export function BillingPage() {
                       >
                         Хочу в бету
                       </button>
-                    </>
+                    </div>
                   ) : null}
                 </div>
+
+                {/* Розкривний перелік можливостей тарифу */}
+                <AnimatePresence initial={false}>
+                  {isOpen && (
+                    <motion.div
+                      id={panelId}
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                      className="overflow-hidden"
+                    >
+                      <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 px-3 pb-4 pt-1 pl-16">
+                        {features.map(f => (
+                          <li key={f} className="flex items-start gap-2">
+                            <Check size={14} className="flex-shrink-0 mt-0.5" style={{ color: plan.color }} strokeWidth={2.5} />
+                            <span className="text-[13px] text-text-sub leading-snug">{f}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             );
           })}
