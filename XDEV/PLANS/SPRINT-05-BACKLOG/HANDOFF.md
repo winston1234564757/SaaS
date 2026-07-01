@@ -4,9 +4,9 @@
 
 **Спринт:** Sprint-05 — Загальний беклог (77 задач: Зона Майстра + Клієнтська Зона + Глобальне; +3 ad-hoc M-DASH-10/11/12)
 **Розпочато:** 2026-06-22
-**Прогрес:** 56/84 ✅ · 3 ↩️ скасовано (`M-DASH-11` + `M-MKT-01`/`M-MKT-02` поглинуто редизайном M-MKT-04, founder) — **Фаза 3: Revenue 6/17 done; Growth 2/2 done; Marketing 4/6 done + 2 ↩️; Reviews 2/2 done; Analytics 7/7 done ✅ ПОВНІСТЮ ЗАКРИТА (Огляд + Джерела + Відгуки + Склад + Фінанси + Поведінка + Зростання).**
-**Наступна задача:** **обрати з founder** — секція Analytics (M-ANL-01..07) повністю закрита. Кандидати за `BACKLOG.md`: решта Revenue (11 задач лишилось) або інші секції. **Секції Marketing + Reviews + Analytics закриті.**
-**Оновлено:** 2026-06-30
+**Прогрес:** 57/84 ✅ · 3 ↩️ скасовано (`M-DASH-11` + `M-MKT-01`/`M-MKT-02` поглинуто редизайном M-MKT-04, founder) — **Фаза 3: Analytics 7/7 ✅ ПОВНІСТЮ ЗАКРИТА. Фаза 4 старт: M-SET-01 ✅ + M-SET-02 ✅.**
+**Наступна задача:** **`M-SET-03`** — Налаштування: bookit assistant активний + лінки (тип COPY, Sonnet). По порядку трекера у Фазі 4.
+**Оновлено:** 2026-07-01
 
 > ✅ **M-MKT-04 + M-MKT-03 DONE + founder approved «ахуєнно» (фінал commit `e8837dba`, 2026-06-29, прогнано на проді bookit-five-psi, передеплой з main для останніх фіксів):** StoryGenerator → покроковий проф-едітор (5 кроків: Тип→Контент→Вигляд→Стиль→Готово), live-прев'ю mobile знизу / desktop справа. Reuse-шелл (storyExport/useStoryData fideliti 1080×1920). Мозок `story/useStoryEditor.ts`, модель `story/storySteps.ts`, панелі `story/steps/*`. **Стиль = образи-пресети** (5: minimal/elegant/bold/gloss/script) + розмір S/M/L + елементи кадру (тогл аватар, тогл Місце-для-посилання=пунктирна зона під IG-стікер). **Контент:** заготовки в Sheet-модалці. **Фон:** палітра(9, Champagne видалено) / портфоліо / своє фото (градієнти+стокові ВИДАЛЕНО). **A11Y-аудит story-canvas через a11y MCP:** авто-тема textColor/mutedColor/accent/pillBg/badge у ВСІХ режимах, плашка 0.62 (worst-case над білим фото verified), фото-скрім, аватар+ім'я sans+чіп. Деталі+кольори — mempalace drawer `drawer_bookit_architecture_ea1bb49cc6d541472cbd7608` + TRANSITION нотатка. 32 unit-тести, tsc 0, build clean. **M-MKT-07 (адмін-аплоадер) скасовано** founder.
 **⏳ Технічний борг M-GROW-02:** drop `master_partners` + `master_alliances` окремою міграцією після ~тижня verify на проді (rollback safety). Дані вже в `master_connections`, старі таблиці інертні (не пишуться/не читаються).
@@ -32,7 +32,40 @@ Sprint-05 переріс із "тільки клієнтська зона" у **
 
 ---
 
-## ▶ NEXT: обрати наступну задачу з founder — Analytics ПОВНІСТЮ закрита
+## ✅ DONE: `M-SET-02` — Налаштування: дизайн блоку інфо профілю (ProfileHero) (P1) · commit `ded4332d`
+
+**Тип:** REDESIGN · **Тір:** 1 · **Скіли:** `impeccable` (craft) · **Модель:** Opus.
+
+**QA перед кодом (1 батч AskUserQuestion):** «блок інфо профілю» неоднозначний → 2 кандидати (ProfileHero публічна картка vs Identity «Особисті дані» форма). Founder: **ProfileHero**, напрям = editorial-драма (застаріло/пласко) + підсилити CTA. Друге питання (bio в підвалі лишити/прибрати) → **прибрати** (bio живе в Identity).
+
+**Before (чому пласко):** усе стиснуто в нижній стос на surface-градієнті — ім'я `text-xl` sans (не editorial), bio в рамці, рейтинг-ряд, і **дві конкуруючі дрібні дії** (share-іконка + мікро-піл «Переглянути»). Головна дія картки губиться. Легасі `#D4935A` + `muted-foreground/60` (2.76, провал a11y).
+
+**After (концепт «Опублікована обкладинка», асиметрія):**
+- **ГЕРОЙ — обкладинка:** фото на всю картку + editorial-скрім + **ім'я Cormorant serif (`heading-serif`) = єдина домінанта** (bottom-left), бізнес-назва тихим білим рядком. Pro-бейдж top-right. Клік по фото = upload (як раніше).
+- **РЕШТОК (тихий підвал на surface):** рейтинг (зірка `text-warning` + бал `metric-value`) · N відгуків `text-text-sub`.
+- **ГОЛОВНА ДІЯ:** full-width домінантна кнопка `bg-foreground text-background` «Переглянути сторінку» + вторинний copy icon-button (size-11, 44px таргет).
+
+**🔴 Зловлено рендером власними очима (прев'ю-роут + Playwright headless):**
+1. Serif-ім'я на **світлому фото** втрачало контраст → скрім посилено `from-black/75`→`from-black/85` (h-62%) + `[text-shadow:0_1px_14px_rgba(0,0,0,.5)]` на імені. Верифіковано на екстремально яскравому фото (скріншот дашборда як аватар).
+2. **Empty-стан** вимитий (біле ім'я на світлому placeholder) → placeholder `from-secondary to-muted`→`from-slate-700 to-slate-900`, камера+нудж `text-white/75`. Тепер виглядає як «обкладинка в очікуванні фото».
+
+**Стани покрито:** фото / empty / Pro-бейдж / без slug (`Спочатку опублікуй сторінку`, кнопка-заглушка) / довге ім'я (`text-balance`, wrap) / mobile.
+
+**Файли:** `ProfileHero.tsx` (повний рерайт, −146/+98), `SettingsPage.tsx` (−`bio` prop). Identity-дубль НЕ чіпано (рішення founder).
+
+**KEY:** (1) «Опублікована обкладинка» = картка є прев'ю link-in-bio; один драматичний момент (serif-ім'я над фото) + функціональний підвал з ОДНІЄЮ дією = асиметрія за Законом темного блоку на світлій темі. (2) Текст-над-фото: скрім сам по собі не гарантує читабельність на світлому фото → скрім + `text-shadow` разом (дешева editorial-техніка, не пере-затемнює гарні фото). (3) Empty-стан фото-hero має власну драму (темний placeholder), не вимитий світлий. (4) Прев'ю-роут (`devpreview/profilehero`) + Playwright дав верифікацію happy-path з ЛОКАЛЬНИМ фото (picsum не вантажиться в headless — бери `public/` асет).
+
+**Founder QA пройдено («це воно»). Очікує деплою за командою founder.**
+
+---
+
+## ▶ NEXT: `M-SET-03` — bookit assistant активний + лінки (COPY, Sonnet)
+
+По порядку трекера у Фазі 4 (Налаштування). Тип COPY → без брифа-файлу, `humanizer` на весь текст + показати before/after. Перед стартом — Task Gate (mempalace_search → читати живий код SmartAdvisor/assistant → skill → humanizer → ОК).
+
+---
+
+## ▶ Пройдені раніше — Analytics ПОВНІСТЮ закрита
 
 Секція **Analytics (M-ANL-01..07) закрита 7/7** ✅. Marketing + Reviews + Analytics закриті. Кандидати за `BACKLOG.md`: решта **Revenue** (11 задач, scope Revenue 6/17) або інші зони. Перед стартом — Task Gate (mempalace_search → читати живий код → 3-5 QA → skill → humanizer → ОК).
 
