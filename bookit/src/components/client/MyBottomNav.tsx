@@ -3,36 +3,71 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { CalendarDays, MessageCircle, User, Search, LogIn, Bell, ShoppingBag } from 'lucide-react';
-import { motion, LayoutGroup } from 'framer-motion';
+import { CalendarDays, MessageCircle, User, Search, LogIn, Bell, ShoppingBag, Gift, Home, type LucideIcon } from 'lucide-react';
+import { motion, AnimatePresence, LayoutGroup, useReducedMotion } from 'framer-motion';
 import type { Session } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/client';
 import { NavLoginSheet } from '@/components/public/NavLoginSheet';
 import { useUnreadDMCount } from '@/lib/hooks/useUnreadDMCount';
 import { useActiveCart } from '@/components/public/shop/useActiveCart';
+import { NavSpeedDial, type SpeedDialAction } from './NavSpeedDial';
 
 const SPRING = { type: 'spring', stiffness: 400, damping: 30 } as const;
-
-const MY_NAV = [
-  { href: '/my/bookings',       icon: CalendarDays,  label: 'Записи'      },
-  { href: '/explore',           icon: Search,        label: 'Каталог'     },
-  { href: '/my/messages',       icon: MessageCircle, label: 'Чат'         },
-  { href: '/my/notifications',  icon: Bell,          label: 'Сповіщення'  },
-  { href: '/my/profile',        icon: User,          label: 'Профіль'     },
-];
-
-const PUBLIC_AUTH_NAV = [
-  { href: '/explore',     icon: Search,       label: 'Каталог' },
-  { href: '/my/bookings', icon: CalendarDays, label: 'Записи'  },
-  { href: '/my/profile',  icon: User,         label: 'Профіль' },
-];
 
 function isPublicB2CRoute(pathname: string): boolean {
   if (pathname.startsWith('/my') || pathname.startsWith('/dashboard')) return false;
   if (pathname === '/' || pathname === '/studio/join') return false;
   const excluded = ['/login', '/register', '/auth', '/invite', '/legal'];
-  if (excluded.some(p => pathname.startsWith(p))) return false;
+  if (excluded.some((p) => pathname.startsWith(p))) return false;
   return true;
+}
+
+interface NavItemProps {
+  href?: string;
+  icon: LucideIcon;
+  label: string;
+  active?: boolean;
+  badge?: number;
+  onClick?: () => void;
+}
+
+/** A single quiet nav slot. Owns its shared active-pill via layoutId. */
+function NavItem({ href, icon: Icon, label, active = false, badge = 0, onClick }: NavItemProps) {
+  const tone = active ? 'text-foreground' : 'text-muted-foreground/50';
+  const inner = (
+    <>
+      {active && (
+        <motion.div
+          layoutId="client-nav-active"
+          className="absolute inset-0 rounded-xl"
+          style={{ background: 'color-mix(in srgb, var(--foreground) 8%, transparent)' }}
+          transition={SPRING}
+        />
+      )}
+      <div className="relative z-10">
+        <Icon size={22} strokeWidth={active ? 2.5 : 2} className={tone} />
+        {badge > 0 && (
+          <span className="pointer-events-none absolute -right-1 -top-1 flex h-[14px] min-w-[14px] items-center justify-center rounded-full bg-accent px-0.5 text-[8px] font-bold leading-none text-accent-foreground">
+            {badge > 9 ? '9+' : badge}
+          </span>
+        )}
+      </div>
+      <span className={`relative z-10 truncate text-[10px] font-medium transition-colors duration-150 ${tone}`}>
+        {label}
+      </span>
+    </>
+  );
+
+  const cls = 'relative flex min-w-0 flex-1 flex-col items-center gap-0.5 px-2.5 py-1.5';
+  return href ? (
+    <Link href={href} aria-current={active ? 'page' : undefined} className={cls}>
+      {inner}
+    </Link>
+  ) : (
+    <button type="button" onClick={onClick} className={cls}>
+      {inner}
+    </button>
+  );
 }
 
 interface Props {
@@ -44,6 +79,7 @@ export function MyBottomNav({ initialIsAuth }: Props) {
   const [isAuth, setIsAuth] = useState(initialIsAuth ?? false);
   const [loginOpen, setLoginOpen] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const reduce = useReducedMotion();
 
   const isMyRoute = pathname.startsWith('/my');
   const isPublic = isPublicB2CRoute(pathname);
@@ -84,122 +120,79 @@ export function MyBottomNav({ initialIsAuth }: Props) {
     return pathname.startsWith(href);
   }
 
+  // /my: Каталог is a permanent slot; the dial holds Бонуси + Сповіщення.
+  const myDialActions: SpeedDialAction[] = [
+    { key: 'loyalty', label: 'Бонуси', icon: Gift, href: '/my/loyalty' },
+    { key: 'notifications', label: 'Сповіщення', icon: Bell, href: '/my/notifications' },
+  ];
+  // public: Каталог stays the prominent discovery action in the dial.
+  const publicDialActions: SpeedDialAction[] = [
+    { key: 'explore', label: 'Каталог', icon: Search, href: '/explore' },
+    { key: 'notifications', label: 'Сповіщення', icon: Bell, href: '/my/notifications' },
+  ];
+
   return (
     <>
       <nav
-        className="fixed bottom-0 left-0 right-0 z-50 pointer-events-none md:hidden"
+        className="pointer-events-none fixed bottom-0 left-0 right-0 z-50 md:hidden"
         aria-label="Навігація"
       >
-        <div className="bg-secondary/45 backdrop-blur-3xl border-t border-border flex items-center justify-around pt-1.5 pointer-events-auto shadow-lg pb-[max(env(safe-area-inset-bottom),12px)]">
+        {/* Floating cart pill — above the bar, never steals a slot. */}
+        <AnimatePresence>
+          {showCart && cart && (
+            <motion.div
+              className="pointer-events-auto absolute bottom-full right-4 mb-3"
+              initial={reduce ? { opacity: 0 } : { opacity: 0, y: 10, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={reduce ? { opacity: 0 } : { opacity: 0, y: 10, scale: 0.9 }}
+              transition={SPRING}
+            >
+              <Link
+                href={`/${cart.slug}/shop`}
+                aria-label={`Кошик: ${cart.count} товарів`}
+                className="flex items-center gap-2 rounded-full bg-accent px-4 py-2.5 text-accent-foreground shadow-xl"
+              >
+                <div className="relative">
+                  <ShoppingBag size={18} strokeWidth={2.5} />
+                  <span className="pointer-events-none absolute -right-1.5 -top-1.5 flex h-[15px] min-w-[15px] items-center justify-center rounded-full bg-background px-0.5 text-[8px] font-bold leading-none tabular-nums text-foreground">
+                    {cart.count > 9 ? '9+' : cart.count}
+                  </span>
+                </div>
+                <span className="text-xs font-semibold">Кошик</span>
+              </Link>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
+        <div className="pointer-events-auto flex items-center justify-around border-t border-border bg-secondary/45 pt-1.5 shadow-lg backdrop-blur-3xl pb-[max(env(safe-area-inset-bottom),12px)]">
+
+          {/* ── /my (authed): Записи | Бонуси | [FAB] | Чат | Профіль ── */}
           {isMyRoute && (
             <LayoutGroup id="client-nav">
-              {MY_NAV.map(({ href, icon: Icon, label }) => {
-                const active = isActive(href);
-                return (
-                  <Link
-                    key={href}
-                    href={href}
-                    aria-current={active ? 'page' : undefined}
-                    className="relative flex flex-col items-center gap-0.5 px-2.5 py-1.5 min-w-0 flex-1"
-                  >
-                    {active && (
-                      <motion.div
-                        layoutId="client-nav-active"
-                        className="absolute inset-0 rounded-xl"
-                        style={{ background: 'color-mix(in srgb, var(--foreground) 8%, transparent)' }}
-                        transition={SPRING}
-                      />
-                    )}
-                    <div className="relative z-10">
-                      <Icon
-                        size={22}
-                        strokeWidth={active ? 2.5 : 2}
-                        className={active ? 'text-foreground' : 'text-muted-foreground/50'}
-                      />
-                      {href === '/my/messages' && unreadDM > 0 && (
-                        <span className="absolute -top-1 -right-1 min-w-[14px] h-[14px] rounded-full bg-accent text-accent-foreground text-[8px] font-bold flex items-center justify-center px-0.5 leading-none pointer-events-none">
-                          {unreadDM > 9 ? '9+' : unreadDM}
-                        </span>
-                      )}
-                    </div>
-                    <span className={`relative z-10 text-[10px] font-medium truncate transition-colors duration-150 ${
-                      active ? 'text-foreground' : 'text-muted-foreground/50'
-                    }`}>
-                      {label}
-                    </span>
-                  </Link>
-                );
-              })}
+              <NavItem href="/my/bookings" icon={CalendarDays} label="Записи" active={isActive('/my/bookings')} />
+              <NavItem href="/explore" icon={Search} label="Каталог" active={isActive('/explore')} />
+              <NavSpeedDial actions={myDialActions} />
+              <NavItem href="/my/messages" icon={MessageCircle} label="Чат" active={isActive('/my/messages')} badge={unreadDM} />
+              <NavItem href="/my/profile" icon={User} label="Профіль" active={isActive('/my/profile')} />
             </LayoutGroup>
           )}
 
-          {!isMyRoute && isAuth && PUBLIC_AUTH_NAV.map(({ href, icon: Icon, label }) => {
-            const active = isActive(href);
-            return (
-              <Link
-                key={href}
-                href={href}
-                aria-current={active ? 'page' : undefined}
-                className="flex flex-col items-center gap-0.5 px-2.5 py-1.5 min-w-0 flex-1"
-              >
-                <Icon
-                  size={22}
-                  strokeWidth={active ? 2.5 : 2}
-                  className={`transition-colors duration-150 ${active ? 'text-foreground' : 'text-muted-foreground/50'}`}
-                />
-                <span className={`text-[10px] font-medium truncate transition-colors duration-150 ${
-                  active ? 'text-foreground' : 'text-muted-foreground/50'
-                }`}>
-                  {label}
-                </span>
-              </Link>
-            );
-          })}
-
-          {!isMyRoute && !isAuth && (
-            <>
-              <Link
-                href="/explore"
-                aria-current={pathname.startsWith('/explore') ? 'page' : undefined}
-                className="flex flex-col items-center gap-0.5 px-2.5 py-1.5 min-w-0 flex-1"
-              >
-                <Search
-                  size={22}
-                  strokeWidth={2}
-                  className={`transition-colors duration-150 ${pathname.startsWith('/explore') ? 'text-foreground' : 'text-muted-foreground/50'}`}
-                />
-                <span className={`text-[10px] font-medium transition-colors duration-150 ${
-                  pathname.startsWith('/explore') ? 'text-foreground' : 'text-muted-foreground/50'
-                }`}>
-                  Каталог
-                </span>
-              </Link>
-              <button
-                type="button"
-                onClick={() => setLoginOpen(true)}
-                className="flex flex-col items-center gap-0.5 px-2.5 py-1.5 min-w-0 flex-1 text-muted-foreground/50"
-              >
-                <LogIn size={22} strokeWidth={2} />
-                <span className="text-[10px] font-medium">Увійти</span>
-              </button>
-            </>
+          {/* ── public authed: Записи | [FAB] | Профіль ── */}
+          {!isMyRoute && isPublic && isAuth && (
+            <LayoutGroup id="public-nav">
+              <NavItem href="/my/bookings" icon={CalendarDays} label="Записи" active={isActive('/my/bookings')} />
+              <NavSpeedDial actions={publicDialActions} />
+              <NavItem href="/my/profile" icon={User} label="Профіль" active={isActive('/my/profile')} />
+            </LayoutGroup>
           )}
 
-          {showCart && cart && (
-            <Link
-              href={`/${cart.slug}/shop`}
-              aria-label={`Кошик: ${cart.count} товарів`}
-              className="relative flex flex-col items-center gap-0.5 px-2.5 py-1.5 min-w-0 flex-1"
-            >
-              <div className="relative z-10">
-                <ShoppingBag size={22} strokeWidth={2.5} className="text-accent" />
-                <span className="absolute -top-1 -right-1.5 min-w-[15px] h-[15px] rounded-full bg-accent text-accent-foreground text-[8px] font-bold flex items-center justify-center px-0.5 leading-none tabular-nums pointer-events-none">
-                  {cart.count > 9 ? '9+' : cart.count}
-                </span>
-              </div>
-              <span className="relative z-10 text-[10px] font-semibold text-accent truncate">Кошик</span>
-            </Link>
+          {/* ── public guest: Головна | [FAB Каталог] | Увійти ── */}
+          {!isMyRoute && isPublic && !isAuth && (
+            <>
+              <NavItem href="/" icon={Home} label="Головна" active={pathname === '/'} />
+              <NavSpeedDial direct={{ key: 'explore', label: 'Каталог', icon: Search, href: '/explore' }} />
+              <NavItem icon={LogIn} label="Увійти" onClick={() => setLoginOpen(true)} />
+            </>
           )}
 
         </div>
