@@ -15,12 +15,12 @@
 4. Відповісти: "STARTUP OK: Palace [N] drawers | Next: [ID] — [назва]"
 
 ═══ ПОТОЧНИЙ СТАН ═══
-Прогрес: 66/86 ✅ · 3 ↩️ (M-DASH-11, M-MKT-01, M-MKT-02 скасовано) | Sprint-05 IN PROGRESS · ФАЗА 3 закрита (ANALYTICS 7/7 ✅) · ФАЗА 4: усі Settings M-SET-01..05 ✅ · M-BILL-01 ✅ (задеплоєно) · M-BILL-02 ✅ (НЕ задеплоєно) · M-PORT-01 ✅ · M-PORT-02 ✅ · M-ORD-01 ✅ · M-DOC-01 ✅ (НЕ задеплоєно). Total 84→86 (+M-SHOP-05 Нова Пошта, +M-CLI-07 CSV — чесні борги з M-BILL-02).
-⚠️ Незадеплоєний батч (1 build + vercel --prod за командою founder): M-BILL-02, M-PORT-01, M-PORT-02, M-ORD-01, M-DOC-01. Усі tsc:0.
+Прогрес: 67/86 ✅ · 3 ↩️ (M-DASH-11, M-MKT-01, M-MKT-02 скасовано) | Sprint-05 IN PROGRESS · ФАЗА 3 закрита (ANALYTICS 7/7 ✅) · ФАЗА 4: усі Settings M-SET-01..05 ✅ · M-BILL-01 ✅ (задеплоєно) · M-BILL-02 ✅ (НЕ задеплоєно) · M-PORT-01 ✅ · M-PORT-02 ✅ · M-ORD-01 ✅ · M-DOC-01 ✅ · M-HELP-01 ✅ (НЕ задеплоєно). Total 84→86 (+M-SHOP-05 Нова Пошта, +M-CLI-07 CSV — чесні борги з M-BILL-02).
+⚠️ Незадеплоєний батч (1 build + vercel --prod за командою founder): M-BILL-02, M-PORT-01, M-PORT-02, M-ORD-01, M-DOC-01, M-HELP-01. Усі tsc:0.
 
-▶ НАСТУПНА ДІЯ: `M-HELP-01` — Підтримка/Академія: дедуп + навігація (P1, Sonnet). По порядку трекера у Фазі 4.
-  Ціль: сторінка підтримки/академії майстра (знайти компонент — /dashboard/help або /dashboard/support/academy). «Дедуп» = ймовірно дубльований контент між Підтримкою та Академією.
-  Перед стартом — Task Gate: mempalace_search → читати живий код (де обидві поверхні, що дублюється) → тип (REDESIGN + можливо копі) → бриф → ОК founder → код.
+▶ НАСТУПНА ДІЯ: `M-HELP-02` — Підтримка: зручна комунікація юзерів з власником (P2, Sonnet). По порядку трекера у Фазі 4.
+  Ціль: SupportPage.tsx (зведено до комунікації в M-HELP-01) + чат SupportChatPage (shared/support). «Зручна комунікація» = діалог майстер↔команда (швидкі теми/статус/вигляд чату).
+  Перед стартом — Task Gate: mempalace_search → читати живий код (SupportPage + SupportChatPage) → тип REDESIGN → бриф → ОК founder → код.
   Деталі: HANDOFF.md ▶ NEXT.
 
 Нотатки 2026-07-02 (M-DOC-01, commit 7fc7fffb, founder QA пройдено, НЕ задеплоєно): документи quieter + distill. LegalHubPage.tsx (/dashboard/documents). Обсяг за QA founder = ТИХІ КАРТКИ 2×2 (зберегти бенто, не список — питав через AskUserQuestion з прев'ю). «Гучне» = 4 різні хью-акценти (легасі #789A99/#D4935A/#5C9E7A/#6B5750) + тоновані bg-плитки + 3-рядкові юр-описи. Quieter: 4 хью → єдиний Frost-нейтрал (іконка-чіп bg-background border-border, іконка text-foreground; DOCS втратив поля accent/bg). Distill: описи 3 рядки → 1 тихий рядок (line-clamp-1); прибрано дубль-CTA «Відкрити →» (ExternalLink ↗ вгорі + whole-card Link = достатній афорданс). Картки рівні 2×2 (col-span md:col-span-3, h-full min-h-[120px]). Заголовок + контакт-картка лишені (вже тихі). a11y: усі text-muted-foreground/xx → text-text-sub. Скіл impeccable-design-polish (quieter+distill). 1 файл. TSC:0. Уроки: (1) quieter на утилітарній сторінці = прибрати кольорову карусель (N різних хью) до ЄДИНОГО нейтралу — колір без інформаційного сенсу = шум; (2) distill = 1-рядковий опис + прибрати дубль-афорданси (CTA-лінк ПЛЮС ↗ ПЛЮС клікабельна картка = 3 сигнали на одну дію → лишити 1); (3) для юр/reference-сторінки рівномірні картки доречні (як портфоліо-галерея) — не тягнути асиметричний герой.

@@ -58,10 +58,10 @@
 | `/dashboard/products` | Товари: CRUD (for_sale), стоки, замовлення; Розхідники: 3-й таб ConsumablesTab з unit selector (pcs/ml/г) + low-stock warning | `products/page.tsx` | `products/actions.ts` (+ `unit` field) | `master/products/ProductsPage.tsx` (M-SHOP-02: grid/list view + `localStorage['products_view']` перемикач у сайдбарі), `ProductCard.tsx` (M-SHOP-02: marketplace-картка `view` проп grid/list — плитка фото-зверху aspect-[16/10] + glass-піл залишку top-right + footer-дії [Аналітика/Поповнити/Редагувати], тап→редактор; клон ServiceCard), `ConsumableCard.tsx`, `ProductEditor.tsx` (unit selector) |
 | `/dashboard/revenue` (expenses) | Revenue Hub: 3 вкладки — Флеш-акції / Смарт-ціни / Фінанси (master_expenses Pro-gate CRUD + vaul Drawer) | `revenue/page.tsx` | `revenue/expenses.actions.ts` (createExpense/updateExpense/deleteExpense/getExpenses) | `master/revenue/RevenueHubClient.tsx`, `ExpensesTab.tsx` (NEW T30) |
 
-| `/dashboard/documents` | Юридичні документи майстра | `documents/page.tsx` | — | `master/documents/DocumentsPage.tsx` |
-| `/dashboard/support` | Підтримка | `support/page.tsx` | — | `master/support/SupportPage.tsx` |
+| `/dashboard/documents` | Юридичні документи майстра (M-DOC-01: тихі картки 2×2, єдиний Frost-нейтрал, distill-описи) | `documents/page.tsx` | — | `master/documents/LegalHubPage.tsx` |
+| `/dashboard/support` | Підтримка = ТІЛЬКИ комунікація (M-HELP-01: FAQ перенесено в Академію) — чат/Telegram-CTA + картка «База знань → Академія» | `support/page.tsx` | — | `master/support/SupportPage.tsx` (77 рядків, крос-лінк в Академію) |
 | `/dashboard/more` | Додаткові посилання: юридика, акаунт | `more/page.tsx` | — | `master/more/MorePage.tsx` |
-| `/dashboard/academy` | BookIT Академія: 2 tabs (Функції/Цілі), 6+4 sections, 26 articles accordion, Emil springs, deep links, "Пройти тур знову" | `academy/page.tsx` | — | `master/academy/AcademyPage.tsx` (hardcode content, AnimatePresence mode="wait", layoutId tab pill, SPRING_* consts) |
+| `/dashboard/academy` | BookIT Академія = ЄДИНИЙ хаб знань: 3 tabs (Функції/Цілі/**Питання** — M-HELP-01), 6+4 sections + 7 FAQ-категорій (~30 Q&A перенесено з Support), articles accordion, Emil springs, deep links, "Пройти тур знову", FaqChatNudge→чат | `academy/page.tsx` | — | `master/academy/AcademyPage.tsx` (hardcode content, AnimatePresence mode="wait", layoutId tab pill, SPRING_* consts; FAQ_CATEGORIES + FaqSectionGroup/FaqItem дзеркалять SectionGroup/ArticleItem) |
 
 ### Frost Dashboard Grid Architecture (updated 2026-05-30)
 - **File**: `src/components/master/dashboard/FrostDashboard.tsx` — `FrostDesktop` + `FrostMobile`
