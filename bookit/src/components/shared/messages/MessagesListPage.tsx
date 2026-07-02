@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { MessageCircle, LifeBuoy } from 'lucide-react';
 import { ConversationRow } from './ConversationRow';
+import { MastersRail, type RailMaster } from './MastersRail';
 import { NewConversationButton } from '@/components/shared/chat/NewConversationButton';
 import type { ConversationWithParticipant } from '@/lib/actions/messages';
 
@@ -11,6 +12,8 @@ interface MessagesListPageProps {
   /** Support conversation state for the pinned row; null hides it. */
   supportRow?: { status: string; hasReply: boolean } | null;
   supportHref?: string;
+  /** Client only: masters without a conversation → "Написати майстру" rail. */
+  masters?: RailMaster[];
 }
 
 export function MessagesListPage({
@@ -19,15 +22,18 @@ export function MessagesListPage({
   basePath,
   supportRow = null,
   supportHref = '/dashboard/support/chat',
+  masters,
 }: MessagesListPageProps) {
   const hasConversations = conversations.length > 0;
 
   return (
     <div className="flex flex-col min-h-screen">
-      <div className="px-4 pt-5 pb-4 flex items-center justify-between gap-3">
+      <div className="px-4 pt-5 pb-4 flex items-center justify-between gap-3 border-b border-border/40">
         <h1 className="heading-serif text-2xl text-foreground">Повідомлення</h1>
         <NewConversationButton basePath={basePath} />
       </div>
+
+      {masters && masters.length > 0 && <MastersRail masters={masters} />}
 
       {/* Pinned support row — always available inbox entry to the BookIT team */}
       {supportRow && (
