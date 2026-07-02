@@ -47,6 +47,10 @@ export function MyBottomNav({ initialIsAuth }: Props) {
 
   const isMyRoute = pathname.startsWith('/my');
   const isPublic = isPublicB2CRoute(pathname);
+  // Full-screen chat surfaces (DM thread, support chat) own the whole viewport
+  // via ChatShell; the fixed bottom nav would sit on top of the composer.
+  const isFullscreenChat =
+    pathname === '/my/support/chat' || /^\/my\/messages\/[^/]+$/.test(pathname);
 
   const unreadDM = useUnreadDMCount(userId);
   const cart = useActiveCart();
@@ -72,6 +76,7 @@ export function MyBottomNav({ initialIsAuth }: Props) {
     return () => subscription.unsubscribe();
   }, [isPublic]);
 
+  if (isFullscreenChat) return null;
   if (!isMyRoute && !isPublic) return null;
 
   function isActive(href: string): boolean {
