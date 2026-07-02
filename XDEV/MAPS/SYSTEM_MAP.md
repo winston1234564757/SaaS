@@ -259,6 +259,7 @@ All numbered sections (Agitation, Process, ClientFlow) and feature rows (Magic) 
 - `types.ts` — `ChatMessage { id, sender_id, message, attachment_url, created_at, read_at? }`.
 - **Консумери:** `DirectChatPage` (DM клієнт+майстер) + `SupportChatPage` (support клієнт+майстер) = повний ChatShell; `AdminSupportConsole` (десктоп-пульт) переюзає ЛИШЕ `ChatMessageList` (currentUserId=adminId з `admin/support/page.tsx`), лишає свій каркас черги+resolve.
 - **Layout bypass:** `my/layout.tsx` + `DashboardLayout.tsx` `isChatRoute` тепер матчить і `/messages/[id]` (regex), не тільки support/chat.
+- **M-HELP-02 (support comms + інбокс-nav, commit `aa7944f0`):** `supportHours.ts` `getSupportPresence()` (щодня 8:00-20:00 → presence-лейбл/крапка); `SupportPage` картка активної розмови (статус+«Нова відповідь»=похідна `sender_id`, БЕЗ read-таблиці); `SupportChatPage` статус-чіп у хедері. **Єдиний інбокс:** `messages.ts getInboxSummary()` + `support.ts getSupportChatState()` (бейдж = DM-непрочитане + відповідь підтримки, БЕЗ нової DB); `InboxNavButton` (спільний icon/fab/row, live realtime `direct_messages`/`support_messages`+focus, канал `useId`); `MessagesListPage` закріплений рядок «Підтримка BookIT». **Кнопка «Чат» у nav:** майстер `DashboardTopBar`(icon)+`MobileHub`(fab+hub-row); клієнт `PublicNavbar`(desktop)+`my/layout`(плаваючий fab mobile — інтерим до `C-NAV-01` MyBottomNav). 🔴 `C-MSG-01` закрито через M-CHAT-01.
 - `src/app/my/portfolio-consent/actions.ts` → `approvePortfolioConsent`, `declinePortfolioConsent`
 
 ### Публічний Магазин
