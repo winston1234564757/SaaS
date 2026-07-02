@@ -59,6 +59,48 @@ export async function getOrCreateConversation(otherUserId: string): Promise<{ id
   return created ? { id: created.id } : null;
 }
 
+/**
+ * Aggregate unread badge for the unified inbox nav button (all roles).
+ * DM unread (per-role side of each conversation) + support reply (0/1).
+ */
+export async function getInboxSummary(): Promise<{ dmUnread: number; supportUnread: number; total: number }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { dmUnread: 0, supportUnread: 0, total: 0 };
+
+  const { data: convs } = await supabase
+    .from('conversations')
+    .select('client_id, client_unread, master_unread');
+
+  let dmUnread = 0;
+  for (const c of (convs ?? []) as { client_id: string; client_unread: number; master_unread: number }[]) {
+    dmUnread += c.client_id === user.id ? (c.client_unread ?? 0) : (c.master_unread ?? 0);
+  }
+
+  let supportUnread = 0;
+  const { data: ticket } = await supabase
+    .from('support_tickets')
+    .select('id')
+    .eq('user_id', user.id)
+    .eq('type', 'chat')
+    .in('status', ['open', 'active'])
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (ticket) {
+    const { data: lastMsg } = await supabase
+      .from('support_messages')
+      .select('sender_id')
+      .eq('ticket_id', ticket.id)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (lastMsg && lastMsg.sender_id !== user.id) supportUnread = 1;
+  }
+
+  return { dmUnread, supportUnread, total: dmUnread + supportUnread };
+}
+
 export async function getConversations(): Promise<ConversationWithParticipant[]> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();

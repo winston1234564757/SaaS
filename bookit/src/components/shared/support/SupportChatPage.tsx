@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { X, LifeBuoy, Sparkles, History, Plus } from 'lucide-react';
 import { useLiveChat } from '@/lib/hooks/useLiveChat';
+import { getSupportPresence } from '@/lib/utils/supportHours';
 import { createSupportTicketAction, sendSupportMessageAction } from '@/lib/actions/support';
 import { parseError } from '@/lib/utils/errors';
 import { createClient } from '@/lib/supabase/client';
@@ -148,10 +149,18 @@ export function SupportChatPage({ user, userRole, initialTicketId }: SupportChat
     else router.push(userRole === 'master' ? '/dashboard/support' : '/my/bookings');
   };
 
+  const presence = getSupportPresence();
+  const currentStatus = tickets.find((t) => t.id === activeTicketId)?.status ?? null;
+  const isResolved = currentStatus === 'resolved' || currentStatus === 'closed';
+
   const avatar = (
     <div className="relative size-9 rounded-full bg-accent/10 border border-border flex items-center justify-center shrink-0">
       <LifeBuoy className="size-5 text-accent" />
-      <span className="absolute -bottom-0.5 -right-0.5 block size-2.5 rounded-full bg-[var(--success)] ring-2 ring-background animate-pulse" />
+      <span
+        className={`absolute -bottom-0.5 -right-0.5 block size-2.5 rounded-full ring-2 ring-background ${
+          presence.online ? 'bg-[var(--success)] animate-pulse' : 'bg-[var(--text-tertiary)]'
+        }`}
+      />
     </div>
   );
 
@@ -190,17 +199,28 @@ export function SupportChatPage({ user, userRole, initialTicketId }: SupportChat
         <ChatHeader
           avatar={avatar}
           title="Служба підтримки BookIT"
-          subtitle="Зазвичай відповідає за 15 хвилин"
+          subtitle={presence.label}
           onBack={handleBack}
           action={
-            <button
-              type="button"
-              onClick={() => setShowHistory(true)}
-              aria-label="Історія розмов"
-              className="flex items-center justify-center size-11 shrink-0 rounded-full border border-border hover:bg-secondary active:scale-[0.95] transition-all cursor-pointer"
-            >
-              <History className="size-5 text-muted-foreground" />
-            </button>
+            <div className="flex items-center gap-2">
+              {currentStatus && (
+                <span
+                  className={`inline-flex items-center text-[10px] font-bold px-2 py-1 rounded-full ${
+                    isResolved ? 'bg-secondary text-text-sub' : 'bg-[var(--success)]/12 text-[#0D6B2F]'
+                  }`}
+                >
+                  {isResolved ? 'Вирішено' : 'Відкрито'}
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={() => setShowHistory(true)}
+                aria-label="Історія розмов"
+                className="flex items-center justify-center size-11 shrink-0 rounded-full border border-border hover:bg-secondary active:scale-[0.95] transition-all cursor-pointer"
+              >
+                <History className="size-5 text-muted-foreground" />
+              </button>
+            </div>
           }
         />
       }

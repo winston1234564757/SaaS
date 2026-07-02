@@ -4,6 +4,39 @@ import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { NotificationOrchestrator } from '@/lib/notifications/NotificationOrchestrator';
 
+/**
+ * Current state of the user's open support chat, for the hub + unified inbox.
+ * `hasReply` = the newest message is from support (not the user) → unread signal.
+ * Returns null when there is no open chat ticket.
+ */
+export async function getSupportChatState(): Promise<{ status: string; hasReply: boolean } | null> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  const { data: ticket } = await supabase
+    .from('support_tickets')
+    .select('id, status')
+    .eq('user_id', user.id)
+    .eq('type', 'chat')
+    .in('status', ['open', 'active'])
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (!ticket) return null;
+
+  const { data: lastMsg } = await supabase
+    .from('support_messages')
+    .select('sender_id')
+    .eq('ticket_id', ticket.id)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  return { status: ticket.status, hasReply: !!lastMsg && lastMsg.sender_id !== user.id };
+}
+
 export async function createSupportTicketAction(
   type: 'feedback' | 'bug' | 'idea' | 'chat',
   message: string,

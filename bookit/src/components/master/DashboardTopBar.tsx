@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils/cn';
 import { useMasterContext } from '@/lib/supabase/context';
 import { useDashboardStats } from '@/lib/supabase/hooks/useDashboardStats';
 import { NotificationsBell } from '@/components/master/dashboard/NotificationsBell';
+import { InboxNavButton } from '@/components/shared/chat/InboxNavButton';
 import { ScrollStrip } from '@/components/shared/ScrollStrip';
 
 const PRIMARY_NAV = [
@@ -293,6 +294,9 @@ export function DashboardTopBar() {
 
         {/* Right */}
         <div className="flex items-center gap-1.5 ml-auto">
+          {/* Messages (unified inbox) */}
+          <InboxNavButton href="/dashboard/messages" />
+
           {/* Notifications */}
           <NotificationsBell />
 

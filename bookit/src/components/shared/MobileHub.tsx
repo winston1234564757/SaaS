@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils/cn';
 import { useDashboardStats } from '@/lib/supabase/hooks/useDashboardStats';
 import { useMasterContext } from '@/lib/supabase/context';
 import { NotificationsBell } from '@/components/master/dashboard/NotificationsBell';
+import { InboxNavButton } from '@/components/shared/chat/InboxNavButton';
 
 /* ─── Nav bar items ─────────────────────────────── */
 const BAR_ITEMS = [
@@ -363,6 +364,16 @@ export function MobileHub() {
         </div>
       )}
 
+      {/* ── Floating messages (unified inbox) — stacked above the bell ── */}
+      {!isOpen && (
+        <div
+          className="fixed right-4 z-[76] pointer-events-auto"
+          style={{ bottom: 'calc(env(safe-area-inset-bottom) + 202px)' }}
+        >
+          <InboxNavButton href="/dashboard/messages" variant="fab" />
+        </div>
+      )}
+
       {/* ── Hub Overlay ── */}
       <AnimatePresence>
         {isOpen && (
@@ -411,6 +422,13 @@ export function MobileHub() {
                 </h2>
                 <div className="mt-3 h-0.5 w-12 rounded-full" style={{ background: 'var(--accent)' }} />
               </motion.div>
+
+              {/* Communication */}
+              <HubSection title="Спілкування">
+                <motion.div variants={itemVariants}>
+                  <InboxNavButton href="/dashboard/messages" variant="row" />
+                </motion.div>
+              </HubSection>
 
               {/* Operations */}
               <HubSection title="Операції">

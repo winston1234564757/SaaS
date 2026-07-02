@@ -15,6 +15,7 @@ import { ClientNotificationsBell } from '@/components/client/ClientNotifications
 import { SmartBackButton } from '@/components/shared/SmartBackButton';
 import { SupportWidget } from '@/components/shared/support/SupportWidget';
 import { GlassSafeArea } from '@/components/shared/GlassSafeArea';
+import { InboxNavButton } from '@/components/shared/chat/InboxNavButton';
 
 export default async function MyLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -107,6 +108,13 @@ export default async function MyLayout({ children }: { children: React.ReactNode
         <B2CRouteGuard phone={profile?.phone || null}>
           {children}
         </B2CRouteGuard>
+      </div>
+      {/* Client mobile has no persistent nav — surface the inbox as a floating entry */}
+      <div
+        className="md:hidden fixed left-4 z-40"
+        style={{ bottom: 'calc(env(safe-area-inset-bottom) + 16px)' }}
+      >
+        <InboxNavButton href="/my/messages" variant="fab" />
       </div>
       <SupportWidget />
     </div>
