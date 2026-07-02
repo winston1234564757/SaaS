@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { MessageCircle, LifeBuoy } from 'lucide-react';
 import { ConversationRow } from './ConversationRow';
+import { NewConversationButton } from '@/components/shared/chat/NewConversationButton';
 import type { ConversationWithParticipant } from '@/lib/actions/messages';
 
 interface MessagesListPageProps {
@@ -23,8 +24,9 @@ export function MessagesListPage({
 
   return (
     <div className="flex flex-col min-h-screen">
-      <div className="px-4 pt-5 pb-4">
+      <div className="px-4 pt-5 pb-4 flex items-center justify-between gap-3">
         <h1 className="heading-serif text-2xl text-foreground">Повідомлення</h1>
+        <NewConversationButton basePath={basePath} />
       </div>
 
       {/* Pinned support row — always available inbox entry to the BookIT team */}

@@ -4,7 +4,14 @@ import { useState, useEffect, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useLiveChat } from '@/lib/hooks/useLiveChat';
 import { ChatMessageList } from '@/components/shared/chat/ChatMessageList';
-import { sendSupportMessageAction, resolveSupportTicketAction } from '@/lib/actions/support';
+import { Sheet } from '@/components/ui/Sheet';
+import {
+  sendSupportMessageAction,
+  resolveSupportTicketAction,
+  getAdminMessageTargets,
+  createAdminTicketForUser,
+  type AdminTarget,
+} from '@/lib/actions/support';
 import {
   MessageSquare,
   CheckCircle2,
@@ -37,6 +44,13 @@ export function AdminSupportConsole({ adminId }: { adminId: string }) {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'open' | 'active' | 'resolved'>('all');
   const [activeTicketId, setActiveTicketId] = useState<string | null>(null);
+
+  // New-conversation picker (admin → master/client)
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [pickerTab, setPickerTab] = useState<'master' | 'client'>('master');
+  const [pickerSearch, setPickerSearch] = useState('');
+  const [targets, setTargets] = useState<{ masters: AdminTarget[]; clients: AdminTarget[] } | null>(null);
+  const [startingId, setStartingId] = useState<string | null>(null);
 
   // Chat message send states
   const [messageText, setMessageText] = useState('');
@@ -186,6 +200,30 @@ export function AdminSupportConsole({ adminId }: { adminId: string }) {
     }
   };
 
+  const openPicker = () => {
+    setPickerOpen(true);
+    if (!targets) getAdminMessageTargets().then(setTargets).catch(() => setTargets({ masters: [], clients: [] }));
+  };
+
+  const startWithUser = async (userId: string) => {
+    setStartingId(userId);
+    try {
+      const { ticketId, error: startErr } = await createAdminTicketForUser(userId);
+      if (startErr) throw new Error(startErr);
+      await fetchTickets();
+      if (ticketId) setActiveTicketId(ticketId);
+      setPickerOpen(false);
+      setPickerSearch('');
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setStartingId(null);
+    }
+  };
+
+  const pickerList = ((pickerTab === 'master' ? targets?.masters : targets?.clients) ?? [])
+    .filter(t => !pickerSearch.trim() || t.name.toLowerCase().includes(pickerSearch.trim().toLowerCase()));
+
   const filteredTickets = tickets.filter(t => {
     const nameMatch = (t.profiles?.full_name || '').toLowerCase().includes(search.toLowerCase()) ||
       (t.profiles?.phone || '').includes(search);
@@ -202,6 +240,13 @@ export function AdminSupportConsole({ adminId }: { adminId: string }) {
       <div className="w-[320px] shrink-0 border-r border-slate-200/60 flex flex-col overflow-hidden">
         {/* Search */}
         <div className="p-4 border-b border-slate-100 space-y-3">
+          <button
+            type="button"
+            onClick={openPicker}
+            className="w-full flex items-center justify-center gap-2 rounded-full bg-slate-900 text-slate-50 py-2.5 text-xs font-bold hover:bg-slate-800 active:scale-[0.98] transition cursor-pointer"
+          >
+            <MessageSquare className="size-3.5" /> Нова розмова
+          </button>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-slate-400" />
             <input
@@ -411,6 +456,73 @@ export function AdminSupportConsole({ adminId }: { adminId: string }) {
           </div>
         )}
       </div>
+
+      {/* New-conversation picker: masters / clients → start a support ticket */}
+      <Sheet open={pickerOpen} onOpenChange={setPickerOpen} title="Нова розмова" variant="dialog" maxWidth="md">
+        <div className="flex flex-col gap-4">
+          <div className="flex gap-2">
+            {(['master', 'client'] as const).map(tab => (
+              <button
+                key={tab}
+                type="button"
+                onClick={() => setPickerTab(tab)}
+                aria-pressed={pickerTab === tab}
+                className={`flex-1 rounded-full py-2 text-xs font-bold transition cursor-pointer ${
+                  pickerTab === tab ? 'bg-slate-900 text-slate-50' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
+              >
+                {tab === 'master' ? 'Майстри' : 'Клієнти'}
+              </button>
+            ))}
+          </div>
+
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-slate-400" />
+            <input
+              type="text"
+              value={pickerSearch}
+              onChange={e => setPickerSearch(e.target.value)}
+              placeholder="Пошук за іменем"
+              aria-label="Пошук за іменем"
+              className="w-full rounded-full border border-slate-200 bg-white pl-9 pr-4 py-2 text-xs text-slate-900 placeholder-slate-400 outline-none focus:border-slate-400 transition"
+            />
+          </div>
+
+          <div className="max-h-[50vh] overflow-y-auto scrollbar-hide flex flex-col gap-1">
+            {!targets ? (
+              <div className="flex justify-center py-8"><Loader2 className="size-5 animate-spin text-slate-400" /></div>
+            ) : pickerList.length === 0 ? (
+              <p className="text-center text-xs text-slate-400 py-8">Нікого не знайдено</p>
+            ) : (
+              pickerList.map(t => {
+                const initials = t.name.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase();
+                return (
+                  <button
+                    key={t.id}
+                    type="button"
+                    disabled={!!startingId}
+                    onClick={() => startWithUser(t.id)}
+                    className="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-50 active:scale-[0.99] transition text-left disabled:opacity-60"
+                  >
+                    {t.avatarUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={t.avatarUrl} alt={t.name} className="size-9 rounded-full object-cover shrink-0" />
+                    ) : (
+                      <div className="size-9 rounded-full bg-slate-100 flex items-center justify-center shrink-0">
+                        <span className="text-[11px] font-semibold text-slate-500">{initials}</span>
+                      </div>
+                    )}
+                    <span className="flex-1 text-sm font-medium text-slate-900 truncate">{t.name}</span>
+                    {startingId === t.id
+                      ? <Loader2 className="size-4 animate-spin text-slate-400" />
+                      : <Send className="size-4 text-slate-400" />}
+                  </button>
+                );
+              })
+            )}
+          </div>
+        </div>
+      </Sheet>
     </div>
   );
 }

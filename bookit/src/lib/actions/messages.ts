@@ -27,19 +27,132 @@ type ConvRow = {
   master: ProfileMini | null;
 };
 
+export type MessageableContact = {
+  /** Account user id — present when a DM can be opened. Null = invite-only. */
+  userId: string | null;
+  name: string;
+  avatarUrl: string | null;
+  phone: string | null;
+};
+
+export type MessageableContacts = {
+  role: 'master' | 'client';
+  /** Master: clients with a BookIT account. Client: masters they interacted with. */
+  contacts: MessageableContact[];
+  /** Master only: known clients without an account → invite candidates. */
+  invitable: MessageableContact[];
+};
+
+/**
+ * People the current user can start a conversation with.
+ * Master → CRM clients (split by account) . Client → masters they booked.
+ */
+export async function getMessageableContacts(): Promise<MessageableContacts> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { role: 'client', contacts: [], invitable: [] };
+
+  // Role is the source of truth (profiles.role), not "has a master_profiles row".
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .maybeSingle();
+  const isMasterRole = profile?.role === 'master';
+
+  // ── Master: CRM client base via get_master_clients RPC (same source as the
+  // Clients page — bookings aggregated by phone), split by account vs invite. ──
+  if (isMasterRole) {
+    const { data: rows } = await supabase
+      .rpc('get_master_clients', { p_master_id: user.id });
+
+    type ClientRpcRow = { client_id: string | null; client_name: string | null; client_phone: string | null };
+    const clientRows = (rows ?? []) as ClientRpcRow[];
+
+    // Enrich account-holders with profile avatar.
+    const accountIds = clientRows.map(r => r.client_id).filter((id): id is string => !!id);
+    const avatarById = new Map<string, string | null>();
+    if (accountIds.length) {
+      const { data: profs } = await supabase
+        .from('profiles')
+        .select('id, avatar_url')
+        .in('id', accountIds);
+      for (const p of profs ?? []) avatarById.set(p.id, p.avatar_url);
+    }
+
+    const contacts: MessageableContact[] = [];
+    const invitable: MessageableContact[] = [];
+    for (const r of clientRows) {
+      // Skip the master's own self-bookings (can't DM yourself).
+      if (r.client_id === user.id) continue;
+      const c: MessageableContact = {
+        userId: r.client_id ?? null,
+        name: r.client_name ?? 'Клієнт',
+        avatarUrl: r.client_id ? avatarById.get(r.client_id) ?? null : null,
+        phone: r.client_phone ?? null,
+      };
+      if (r.client_id) contacts.push(c);
+      else if (r.client_phone) invitable.push(c);
+    }
+    contacts.sort((a, b) => a.name.localeCompare(b.name, 'uk'));
+    invitable.sort((a, b) => a.name.localeCompare(b.name, 'uk'));
+    return { role: 'master', contacts, invitable };
+  }
+
+  // ── Client: masters they have interacted with (booking history), newest first ──
+  const { data: bookings } = await supabase
+    .from('bookings')
+    .select('master_id, created_at')
+    .eq('client_id', user.id)
+    .order('created_at', { ascending: false });
+
+  const seen = new Set<string>();
+  const orderedMasterIds: string[] = [];
+  for (const b of bookings ?? []) {
+    if (b.master_id && !seen.has(b.master_id)) {
+      seen.add(b.master_id);
+      orderedMasterIds.push(b.master_id);
+    }
+  }
+
+  if (!orderedMasterIds.length) return { role: 'client', contacts: [], invitable: [] };
+
+  // master_profiles PK `id` == profiles.id == auth user id. Business name from
+  // master_profiles, avatar from profiles (keyed by the same id).
+  const [{ data: masters }, { data: masterProfs }] = await Promise.all([
+    supabase.from('master_profiles').select('id, business_name').in('id', orderedMasterIds),
+    supabase.from('profiles').select('id, avatar_url, full_name').in('id', orderedMasterIds),
+  ]);
+
+  const bizById = new Map((masters ?? []).map(m => [m.id, m.business_name]));
+  const profById = new Map((masterProfs ?? []).map(p => [p.id, p]));
+  const contacts: MessageableContact[] = orderedMasterIds
+    .filter(id => bizById.has(id) || profById.has(id))
+    .map(id => ({
+      userId: id,
+      name: bizById.get(id) ?? profById.get(id)?.full_name ?? 'Майстер',
+      avatarUrl: profById.get(id)?.avatar_url ?? null,
+      phone: null,
+    }));
+
+  return { role: 'client', contacts, invitable: [] };
+}
+
 export async function getOrCreateConversation(otherUserId: string): Promise<{ id: string } | null> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const { data: currentMaster } = await supabase
-    .from('master_profiles')
-    .select('user_id')
-    .eq('user_id', user.id)
-    .single();
+  // master_profiles PK is `id` (== user id); role is the reliable discriminator.
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .maybeSingle();
+  const isMaster = profile?.role === 'master';
 
-  const clientId = currentMaster ? otherUserId : user.id;
-  const masterId = currentMaster ? user.id : otherUserId;
+  const clientId = isMaster ? otherUserId : user.id;
+  const masterId = isMaster ? user.id : otherUserId;
 
   const { data: existing } = await supabase
     .from('conversations')

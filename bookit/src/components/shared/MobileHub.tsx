@@ -364,16 +364,6 @@ export function MobileHub() {
         </div>
       )}
 
-      {/* ── Floating messages (unified inbox) — stacked above the bell ── */}
-      {!isOpen && (
-        <div
-          className="fixed right-4 z-[76] pointer-events-auto"
-          style={{ bottom: 'calc(env(safe-area-inset-bottom) + 202px)' }}
-        >
-          <InboxNavButton href="/dashboard/messages" variant="fab" />
-        </div>
-      )}
-
       {/* ── Hub Overlay ── */}
       <AnimatePresence>
         {isOpen && (

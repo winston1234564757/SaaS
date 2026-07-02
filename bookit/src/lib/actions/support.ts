@@ -228,6 +228,78 @@ export async function sendSupportMessageAction(
   return { error: null, messageData: newMsg };
 }
 
+/**
+ * Admin-initiated support ticket with a target user (master or client).
+ * Reuses the support system so the user sees it under "Підтримка BookIT".
+ * Returns the ticket id (existing open chat ticket is reused when present).
+ */
+export async function createAdminTicketForUser(
+  targetUserId: string
+): Promise<{ error: string | null; ticketId?: string }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: 'Не авторизований' };
+
+  const { data: profile } = await supabase
+    .from('profiles').select('role').eq('id', user.id).single();
+  if (profile?.role !== 'admin') return { error: 'Недостатньо прав' };
+
+  const admin = createAdminClient();
+
+  // Reuse an open chat ticket for that user if one exists.
+  const { data: existing } = await admin
+    .from('support_tickets')
+    .select('id')
+    .eq('user_id', targetUserId)
+    .eq('type', 'chat')
+    .in('status', ['open', 'active'])
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (existing) return { error: null, ticketId: existing.id };
+
+  const { data: ticket, error } = await admin
+    .from('support_tickets')
+    .insert({ user_id: targetUserId, type: 'chat', status: 'active' })
+    .select('id')
+    .single();
+
+  if (error || !ticket) return { error: error?.message || 'Помилка створення тікету' };
+  return { error: null, ticketId: ticket.id };
+}
+
+export type AdminTarget = { id: string; name: string; avatarUrl: string | null };
+
+/**
+ * Admin-only directory of masters and clients to start a support chat with.
+ */
+export async function getAdminMessageTargets(): Promise<{ masters: AdminTarget[]; clients: AdminTarget[] }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { masters: [], clients: [] };
+
+  const { data: profile } = await supabase
+    .from('profiles').select('role').eq('id', user.id).single();
+  if (profile?.role !== 'admin') return { masters: [], clients: [] };
+
+  const admin = createAdminClient();
+  const { data: rows } = await admin
+    .from('profiles')
+    .select('id, full_name, avatar_url, role')
+    .in('role', ['master', 'client'])
+    .order('full_name', { ascending: true });
+
+  const masters: AdminTarget[] = [];
+  const clients: AdminTarget[] = [];
+  for (const r of (rows ?? []) as { id: string; full_name: string | null; avatar_url: string | null; role: string }[]) {
+    const t: AdminTarget = { id: r.id, name: r.full_name ?? 'Без імені', avatarUrl: r.avatar_url };
+    if (r.role === 'master') masters.push(t);
+    else clients.push(t);
+  }
+  return { masters, clients };
+}
+
 export async function resolveSupportTicketAction(
   ticketId: string
 ): Promise<{ error: string | null }> {
