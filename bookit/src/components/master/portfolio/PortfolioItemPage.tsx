@@ -3,7 +3,7 @@
 import { useState, useTransition, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ChevronLeft, ChevronDown, User, Scissors, Star, Trash2, Loader2, Eye, EyeOff, UserX, Sparkles } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronDown, User, Scissors, Star, Trash2, Loader2, Eye, EyeOff, UserX, Sparkles, Search } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useToast } from '@/lib/toast/context';
 import { PortfolioPhotoUploader } from './PortfolioPhotoUploader';
@@ -75,6 +75,8 @@ export function PortfolioItemPage({ id, masterId, services, reviews, clients }: 
   const [publishPending, startPublishTransition] = useTransition();
   const [deletePending, startDeleteTransition] = useTransition();
   const [errors, setErrors] = useState<{ title?: string }>({});
+  const [reviewSearch, setReviewSearch] = useState('');
+  const [reviewPage, setReviewPage] = useState(0);
 
   const consentBadge =
     consentStatus === 'pending'
@@ -191,6 +193,18 @@ export function PortfolioItemPage({ id, masterId, services, reviews, clients }: 
       router.push('/dashboard/portfolio');
     });
   };
+
+  const REVIEWS_PER_PAGE = 5;
+  const reviewQuery = reviewSearch.trim().toLowerCase();
+  const filteredReviews = reviewQuery
+    ? reviews.filter(r =>
+        (r.client_name ?? '').toLowerCase().includes(reviewQuery) ||
+        (r.comment ?? '').toLowerCase().includes(reviewQuery)
+      )
+    : reviews;
+  const reviewPageCount = Math.max(1, Math.ceil(filteredReviews.length / REVIEWS_PER_PAGE));
+  const safePage = Math.min(reviewPage, reviewPageCount - 1);
+  const pagedReviews = filteredReviews.slice(safePage * REVIEWS_PER_PAGE, (safePage + 1) * REVIEWS_PER_PAGE);
 
   return (
     <motion.div
@@ -365,45 +379,93 @@ export function PortfolioItemPage({ id, masterId, services, reviews, clients }: 
           <>
             <div className="h-px bg-border" />
             <div className="space-y-3">
-              <label className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
-                <Star size={13} /> Відгуки
-              </label>
-              <div className="space-y-2 max-h-48 overflow-y-auto">
-                {reviews.map(r => {
-                  const isSelected = selectedReviewIds.includes(r.id);
-                  return (
-                    <button type="button"
-                      key={r.id}
-                      onClick={() =>
-                        setSelectedReviewIds(
-                          isSelected
-                            ? selectedReviewIds.filter(id => id !== r.id)
-                            : [...selectedReviewIds, r.id]
-                        )
-                      }
-                      className={`w-full flex items-start gap-3 rounded-2xl p-3 text-left transition-all border active:scale-[0.95] cursor-pointer ${
-                        isSelected
-                          ? 'bg-accent/10 border-accent/30'
-                          : 'bg-secondary/40 border-transparent hover:bg-secondary/60'
-                      }`}
-                    >
-                      <div className={`size-4 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 transition-colors ${
-                        isSelected ? 'border-accent bg-accent' : 'border-border bg-transparent'
-                      }`}>
-                        {isSelected && <div className="size-1.5 rounded-full bg-accent-foreground" />}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-semibold text-foreground">
-                          {'★'.repeat(r.rating)} {r.client_name ?? 'Клієнт'}
-                        </p>
-                        {r.comment && (
-                          <p className="text-xs text-muted-foreground truncate mt-0.5">{r.comment}</p>
-                        )}
-                      </div>
-                    </button>
-                  );
-                })}
+              <div className="flex items-center justify-between gap-2">
+                <label className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
+                  <Star size={13} /> Відгуки
+                </label>
+                {selectedReviewIds.length > 0 && (
+                  <span className="text-[11px] font-semibold text-accent">Обрано: {selectedReviewIds.length}</span>
+                )}
               </div>
+
+              {/* Search */}
+              <div className="relative">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-sub pointer-events-none" />
+                <input
+                  value={reviewSearch}
+                  onChange={e => { setReviewSearch(e.target.value); setReviewPage(0); }}
+                  placeholder="Пошук за іменем або відгуком"
+                  aria-label="Пошук відгуків"
+                  className="w-full rounded-xl border border-border bg-secondary/40 pl-9 pr-3 py-2.5 text-sm text-foreground placeholder:text-text-sub outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                />
+              </div>
+
+              {filteredReviews.length === 0 ? (
+                <p className="text-xs text-text-sub text-center py-6">Нічого не знайшлося</p>
+              ) : (
+                <div className="space-y-2">
+                  {pagedReviews.map(r => {
+                    const isSelected = selectedReviewIds.includes(r.id);
+                    return (
+                      <button type="button"
+                        key={r.id}
+                        onClick={() =>
+                          setSelectedReviewIds(
+                            isSelected
+                              ? selectedReviewIds.filter(id => id !== r.id)
+                              : [...selectedReviewIds, r.id]
+                          )
+                        }
+                        className={`w-full flex items-start gap-3 rounded-2xl p-3 text-left transition-all border active:scale-[0.95] cursor-pointer ${
+                          isSelected
+                            ? 'bg-accent/10 border-accent/30'
+                            : 'bg-secondary/40 border-transparent hover:bg-secondary/60'
+                        }`}
+                      >
+                        <div className={`size-4 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 transition-colors ${
+                          isSelected ? 'border-accent bg-accent' : 'border-border bg-transparent'
+                        }`}>
+                          {isSelected && <div className="size-1.5 rounded-full bg-accent-foreground" />}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-semibold text-foreground">
+                            {'★'.repeat(r.rating)} {r.client_name ?? 'Клієнт'}
+                          </p>
+                          {r.comment && (
+                            <p className="text-xs text-muted-foreground truncate mt-0.5">{r.comment}</p>
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Pagination */}
+              {reviewPageCount > 1 && (
+                <div className="flex items-center justify-between pt-1">
+                  <button type="button"
+                    onClick={() => setReviewPage(Math.max(0, safePage - 1))}
+                    disabled={safePage === 0}
+                    aria-label="Попередня сторінка"
+                    className="size-8 flex items-center justify-center rounded-lg border border-border text-text-sub disabled:opacity-40 hover:bg-secondary/60 active:scale-[0.92] transition-all"
+                  >
+                    <ChevronLeft size={16} />
+                  </button>
+                  <span className="text-[11px] font-medium text-text-sub tabular-nums">
+                    {safePage * REVIEWS_PER_PAGE + 1}-{Math.min((safePage + 1) * REVIEWS_PER_PAGE, filteredReviews.length)} з {filteredReviews.length}
+                  </span>
+                  <button type="button"
+                    onClick={() => setReviewPage(Math.min(reviewPageCount - 1, safePage + 1))}
+                    disabled={safePage >= reviewPageCount - 1}
+                    aria-label="Наступна сторінка"
+                    className="size-8 flex items-center justify-center rounded-lg border border-border text-text-sub disabled:opacity-40 hover:bg-secondary/60 active:scale-[0.92] transition-all"
+                  >
+                    <ChevronRight size={16} />
+                  </button>
+                </div>
+              )}
+
               <button type="button"
                 onClick={handleSaveReviews}
                 disabled={reviewsPending || !itemId}
