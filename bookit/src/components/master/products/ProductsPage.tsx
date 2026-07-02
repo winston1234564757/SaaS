@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Package, ShoppingBag, FlaskConical, Search, LayoutGrid, List } from 'lucide-react';
+import { Plus, Package, ShoppingBag, FlaskConical, Search, LayoutGrid, List, ChevronDown } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import type { DropResult } from '@hello-pangea/dnd';
 const DragDropContext = dynamic(() => import('@hello-pangea/dnd').then(m => ({ default: m.DragDropContext })), { ssr: false });
@@ -53,6 +53,7 @@ export function ProductsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [orderFilter, setOrderFilter] = useState<OrderStatus | undefined>(undefined);
+  const [orderSort, setOrderSort] = useState<'newest' | 'oldest' | 'amount_desc' | 'amount_asc'>('newest');
 
   const tab = (searchParams.get('tab') as 'products' | 'orders' | 'consumables') || 'products';
   const restockId = searchParams.get('restockId');
@@ -143,6 +144,15 @@ export function ProductsPage() {
     { label: 'Завершені', value: 'completed' },
     { label: 'Скасовані', value: 'cancelled' },
   ];
+
+  const sortedOrders = [...orders].sort((a, b) => {
+    switch (orderSort) {
+      case 'oldest': return a.created_at.localeCompare(b.created_at);
+      case 'amount_desc': return b.total_kopecks - a.total_kopecks;
+      case 'amount_asc': return a.total_kopecks - b.total_kopecks;
+      default: return b.created_at.localeCompare(a.created_at);
+    }
+  });
 
   return (
     <div className="flex flex-col gap-4 pb-24 lg:pb-8">
@@ -295,30 +305,46 @@ export function ProductsPage() {
                 transition={{ duration: 0.15 }}
                 className="flex flex-col gap-3"
               >
-                <ScrollStrip className="flex gap-2 pb-1">
-                  {ORDER_FILTERS.map(f => (
-                    <button
-                      key={f.label}
-                      type="button"
-                      aria-pressed={orderFilter === f.value}
-                      onClick={() => setOrderFilter(f.value)}
-                      className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                        orderFilter === f.value
-                          ? 'bg-primary text-white'
-                          : 'bg-secondary/60 text-muted-foreground hover:bg-secondary/80'
-                      }`}
+                <div className="flex items-center gap-2">
+                  <ScrollStrip className="flex gap-2 pb-1 flex-1 min-w-0">
+                    {ORDER_FILTERS.map(f => (
+                      <button
+                        key={f.label}
+                        type="button"
+                        aria-pressed={orderFilter === f.value}
+                        onClick={() => setOrderFilter(f.value)}
+                        className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                          orderFilter === f.value
+                            ? 'bg-primary text-white'
+                            : 'bg-secondary/60 text-muted-foreground hover:bg-secondary/80'
+                        }`}
+                      >
+                        {f.label}
+                      </button>
+                    ))}
+                  </ScrollStrip>
+                  <div className="relative shrink-0">
+                    <select
+                      value={orderSort}
+                      onChange={e => setOrderSort(e.target.value as typeof orderSort)}
+                      aria-label="Сортування замовлень"
+                      className="appearance-none rounded-full bg-secondary/60 text-xs font-medium text-foreground pl-3 pr-7 py-1.5 outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
                     >
-                      {f.label}
-                    </button>
-                  ))}
-                </ScrollStrip>
+                      <option value="newest">Спочатку нові</option>
+                      <option value="oldest">Спочатку давні</option>
+                      <option value="amount_desc">Більша сума</option>
+                      <option value="amount_asc">Менша сума</option>
+                    </select>
+                    <ChevronDown size={13} className="absolute right-2 top-1/2 -translate-y-1/2 text-text-sub pointer-events-none" />
+                  </div>
+                </div>
 
                 {oLoading ? (
                   <SkeletonList />
-                ) : orders.length === 0 ? (
+                ) : sortedOrders.length === 0 ? (
                   <EmptyOrders />
                 ) : (
-                  orders.map(o => (
+                  sortedOrders.map(o => (
                     <OrderCard
                       key={o.id}
                       order={o as UnifiedSale}
