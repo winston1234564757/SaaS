@@ -1,6 +1,6 @@
 # C-MSG-02 — Повідомлення: рейка «Мої майстри» + hairline під тайтлом
 
-**Статус:** DRAFT → чекає APPROVE
+**Статус:** DONE (commit `a7ed44ce`, НЕ задеплоєно) · founder APPROVE «Все плюс» · TSC:0 Build:clean · a11y лейбл 6.79 · рендер власними очима ✓
 **Тип:** MOTION + REDESIGN (гібрид, Тір 1) · **Зона:** Клієнт (B) · **P1**
 **Скіли:** `impeccable` (craft) → `scroll-experience` (реюз ScrollStrip) → `humanizer` → `mcp__a11y`
 **Модель:** Opus

@@ -243,10 +243,10 @@ All numbered sections (Agitation, Process, ClientFlow) and feature rows (Magic) 
 - `src/components/client/ChannelBanner.tsx` — persistent top-banner: TG deep-link + Push; закривається X (сесійно); зникає server-side коли обидва канали підключені
 - `src/app/my/bookings/` → `MyBookingsPage.tsx` + `my/bookings/actions.ts`
 - `src/app/my/profile/` → профіль клієнта
-- `src/app/my/masters/` → мої майстри
+- `src/app/my/masters/` → мої майстри; дані з `getMyMasters()` (`lib/actions/myMasters.ts`) — спільне джерело (bookings-групування по майстру), реюзиться рейкою в /my/messages
 - `src/app/my/loyalty/` → прогрес лояльності
 - `src/app/my/notifications/` → `ClientNotificationsPage.tsx` — in-app нотифікації + pending portfolio consent requests
-- `src/app/my/messages/` → `MessagesListPage.tsx` — список DM-розмов клієнта з майстрами (T-chat, migration 20260615000002)
+- `src/app/my/messages/` → `MessagesListPage.tsx` (спільний клієнт+майстер) — список DM-розмов (T-chat, migration 20260615000002); hairline під тайтлом; **C-MSG-02:** опційний проп `masters?` рендерить `MastersRail.tsx` (рейка «Написати майстру» — майстри БЕЗ активної розмови, дедуп `master.id`===`participant.id`, тап→`?to=id`; реюз `ScrollStrip`; master-safe: майстер проп не передає). Дані рейки = `getMyMasters()` мінус учасники наявних conversations
 - `src/app/my/messages/[id]/` → `DirectChatPage.tsx` — переписка з майстром; тонкий консумер спільного **Chat-модуля** (див. нижче); `useDMChat` (Supabase Realtime INSERT+UPDATE); read receipts; bucket `support_attachments` для вкладень
 
 ### Chat / Messaging Module (shared) — `src/components/shared/chat/` (2026-07-02, device-confirmed iPhone)
