@@ -247,7 +247,18 @@ All numbered sections (Agitation, Process, ClientFlow) and feature rows (Magic) 
 - `src/app/my/loyalty/` → прогрес лояльності
 - `src/app/my/notifications/` → `ClientNotificationsPage.tsx` — in-app нотифікації + pending portfolio consent requests
 - `src/app/my/messages/` → `MessagesListPage.tsx` — список DM-розмов клієнта з майстрами (T-chat, migration 20260615000002)
-- `src/app/my/messages/[id]/` → `DirectChatPage.tsx` — переписка з майстром; `useDMChat` (Supabase Realtime INSERT+UPDATE); read receipts; iOS visualViewport keyboard push-up; bucket `support_attachments` для вкладень
+- `src/app/my/messages/[id]/` → `DirectChatPage.tsx` — переписка з майстром; тонкий консумер спільного **Chat-модуля** (див. нижче); `useDMChat` (Supabase Realtime INSERT+UPDATE); read receipts; bucket `support_attachments` для вкладень
+
+### Chat / Messaging Module (shared) — `src/components/shared/chat/` (2026-07-02, device-confirmed iPhone)
+- **Проблема:** iOS Safari не стискає `100dvh`/`h-dvh` під клавіатуру → інпут зависав з дірою над клавою, хедер залазив під статус-бар.
+- `useChatViewport` (`src/lib/hooks/useChatViewport.ts`) — висота = `window.visualViewport.height` (resize+scroll), `scrollTo(0,0)` проти iOS-зсуву, lock body overflow/overscroll; fallback innerHeight / CSS `100dvh` до гідратації.
+- `ChatShell.tsx` — корінь `position: fixed; inset-x-0 top-0 z-40` + height від хука. **Fixed навмисно** — імунітет до скролу сторінки й padding батьків-layout-ів, тож `ChatHeader` — єдине джерело safe-area-top (без подвійного відступу).
+- `ChatHeader.tsx` — закріплений, тримає `pt-[env(safe-area-inset-top)]`; props avatar/title/subtitle/onBack|backHref/action.
+- `ChatMessageList.tsx` — групування + роздільники днів через `src/lib/utils/chatGrouping.ts` (formatDayLabel Сьогодні/Вчора/дата, startsGroup/endsGroup 5-хв вікно); хвостик+час лише на кінці групи; own=bg-accent, other=bg-secondary+border; ResizeObserver→скрол донизу при відкритті клави; props showReadReceipts (DM), emptyState (Support).
+- `ChatComposer.tsx` — attach + auto-grow textarea (Enter=send) + send; тримає safe-area-bottom; children для підказок/прев'ю/помилки; canSend.
+- `types.ts` — `ChatMessage { id, sender_id, message, attachment_url, created_at, read_at? }`.
+- **Консумери:** `DirectChatPage` (DM клієнт+майстер) + `SupportChatPage` (support клієнт+майстер) = повний ChatShell; `AdminSupportConsole` (десктоп-пульт) переюзає ЛИШЕ `ChatMessageList` (currentUserId=adminId з `admin/support/page.tsx`), лишає свій каркас черги+resolve.
+- **Layout bypass:** `my/layout.tsx` + `DashboardLayout.tsx` `isChatRoute` тепер матчить і `/messages/[id]` (regex), не тільки support/chat.
 - `src/app/my/portfolio-consent/actions.ts` → `approvePortfolioConsent`, `declinePortfolioConsent`
 
 ### Публічний Магазин

@@ -72,7 +72,10 @@ export default async function MyLayout({ children }: { children: React.ReactNode
 
   const headersList = await headers();
   const pathname = headersList.get('x-pathname') ?? '';
-  const isChatRoute = pathname === '/my/support/chat';
+  // Full-screen chat surfaces bypass the padded chrome (navbar, max-w-lg,
+  // bottom padding, floating SupportWidget): support chat + any DM thread.
+  const isChatRoute =
+    pathname === '/my/support/chat' || /^\/my\/messages\/[^/]+$/.test(pathname);
 
   if (isChatRoute) {
     return (

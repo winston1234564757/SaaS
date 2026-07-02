@@ -1,8 +1,12 @@
 import { AdminSupportConsole } from '@/components/admin/AdminSupportConsole';
+import { createClient } from '@/lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
 
-export default function AdminSupportPage() {
+export default async function AdminSupportPage() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
   return (
     <div className="space-y-6 flex flex-col flex-1 h-full min-h-0 overflow-hidden">
       <div className="shrink-0">
@@ -10,7 +14,7 @@ export default function AdminSupportPage() {
         <p className="text-sm text-slate-500 mt-1">Чат у реальному часі з майстрами та клієнтами платформи</p>
       </div>
 
-      <AdminSupportConsole />
+      <AdminSupportConsole adminId={user?.id ?? ''} />
     </div>
   );
 }

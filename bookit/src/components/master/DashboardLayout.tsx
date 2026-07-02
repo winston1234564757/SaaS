@@ -54,7 +54,11 @@ function ThemeApplier() {
 function DashboardInner({ children }: { children: React.ReactNode }) {
   useRealtimeNotifications();
   const pathname = usePathname();
-  const isChatRoute = pathname === '/dashboard/support/chat';
+  // Full-screen chat surfaces bypass the dashboard chrome (topbar, mobile hub,
+  // content padding, floating widgets): support chat + any DM thread.
+  const isChatRoute =
+    pathname === '/dashboard/support/chat' ||
+    /^\/dashboard\/messages\/[^/]+$/.test(pathname);
 
   if (isChatRoute) {
     return (

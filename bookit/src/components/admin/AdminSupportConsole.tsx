@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useLiveChat } from '@/lib/hooks/useLiveChat';
+import { ChatMessageList } from '@/components/shared/chat/ChatMessageList';
 import { sendSupportMessageAction, resolveSupportTicketAction } from '@/lib/actions/support';
 import {
   MessageSquare,
@@ -30,7 +31,7 @@ interface TicketRecord {
   } | null;
 }
 
-export function AdminSupportConsole() {
+export function AdminSupportConsole({ adminId }: { adminId: string }) {
   const [tickets, setTickets] = useState<TicketRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -46,7 +47,6 @@ export function AdminSupportConsole() {
 
   const { messages, loading: chatLoading } = useLiveChat(activeTicketId);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const chatEndRef = useRef<HTMLDivElement>(null);
   const supabase = createClient();
 
   const fetchTickets = async () => {
@@ -87,13 +87,6 @@ export function AdminSupportConsole() {
       supabase.removeChannel(channel);
     };
   }, []);
-
-  // Auto-scroll chat to bottom
-  useEffect(() => {
-    if (chatEndRef.current) {
-      chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [messages, activeTicketId]);
 
   // Clean file preview url
   useEffect(() => {
@@ -339,49 +332,13 @@ export function AdminSupportConsole() {
               </div>
             )}
 
-            {/* Chat Messages */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-4 scrollbar-hide">
-              {chatLoading && messages.length === 0 ? (
-                <div className="flex h-full items-center justify-center">
-                  <Loader2 className="size-6 animate-spin text-slate-400" />
-                </div>
-              ) : (
-                messages.map((msg) => {
-                  const isOwn = msg.sender_id === activeTicket.user_id; // користувач
-                  return (
-                    <div
-                      key={msg.id}
-                      className={`flex w-full ${!isOwn ? 'justify-end' : 'justify-start'}`}
-                    >
-                      <div
-                        className={`max-w-[70%] rounded-2xl px-4 py-2.5 text-xs shadow-sm ${
-                          !isOwn
-                            ? 'bg-slate-900 text-slate-50 rounded-br-none'
-                            : 'bg-white text-slate-900 rounded-bl-none border border-slate-150'
-                        }`}
-                      >
-                        <p>{msg.message}</p>
-                        {msg.attachment_url && (
-                          <div className="mt-2 overflow-hidden rounded-lg border border-slate-100">
-                            <a href={msg.attachment_url} target="_blank" rel="noopener noreferrer">
-                              <img
-                                src={msg.attachment_url}
-                                alt="Attachment"
-                                className="max-h-48 w-full object-cover transition hover:scale-102 cursor-zoom-in"
-                              />
-                            </a>
-                          </div>
-                        )}
-                        <div className="text-[8px] text-right mt-1 text-slate-400">
-                          {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-              <div ref={chatEndRef} />
-            </div>
+            {/* Chat Messages — shared grouped stream (admin = own → right) */}
+            <ChatMessageList
+              messages={messages}
+              currentUserId={adminId}
+              loading={chatLoading}
+              className="p-2"
+            />
 
             {/* Chat Send Form */}
             {activeTicket.status !== 'resolved' ? (

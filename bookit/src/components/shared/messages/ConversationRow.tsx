@@ -34,7 +34,9 @@ export function ConversationRow({
   return (
     <Link
       href={href}
-      className="flex items-center gap-3 px-4 py-3.5 border-b border-border/40 last:border-0 active:bg-secondary/60 transition-colors min-h-[72px]"
+      className={`flex items-center gap-3 px-4 py-3.5 border-b border-border/40 last:border-0 active:bg-secondary/60 transition-colors min-h-[72px] ${
+        unreadCount > 0 ? 'bg-accent/[0.04]' : ''
+      }`}
     >
       <div className="relative shrink-0">
         {participantAvatarUrl ? (
@@ -62,9 +64,11 @@ export function ConversationRow({
           <p className={`text-sm truncate ${unreadCount > 0 ? 'font-semibold text-foreground' : 'font-medium text-foreground'}`}>
             {participantName}
           </p>
-          <span className="text-[10px] text-muted-foreground/60 shrink-0">{fmtTime(lastMessageAt)}</span>
+          <span className={`text-[10px] shrink-0 ${unreadCount > 0 ? 'text-accent font-semibold' : 'text-foreground/45'}`}>
+            {fmtTime(lastMessageAt)}
+          </span>
         </div>
-        <p className={`text-xs mt-0.5 truncate ${unreadCount > 0 ? 'text-foreground/70 font-medium' : 'text-muted-foreground'}`}>
+        <p className={`text-xs mt-0.5 truncate ${unreadCount > 0 ? 'text-foreground/80 font-medium' : 'text-foreground/55'}`}>
           {lastMessage ?? 'Почніть розмову'}
         </p>
       </div>
