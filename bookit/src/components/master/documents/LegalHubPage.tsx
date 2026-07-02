@@ -11,33 +11,25 @@ const DOCS = [
     slug: 'public-offer',
     icon: Handshake,
     label: 'Публічна оферта',
-    desc: 'Договір між BookIT та Майстром. Умови підписки, рекурентні платежі, відповідальність сторін.',
-    accent: '#789A99',
-    bg: 'rgba(120,154,153,0.08)',
+    desc: 'Умови підписки та рекурентні платежі',
   },
   {
     slug: 'terms-of-service',
     icon: FileText,
     label: 'Умови надання послуг',
-    desc: 'Правила використання платформи, заборонені дії, SLA доступності 99%, права на контент.',
-    accent: '#D4935A',
-    bg: 'rgba(212,147,90,0.08)',
+    desc: 'Правила користування, SLA 99%',
   },
   {
     slug: 'privacy-policy',
     icon: ShieldCheck,
     label: 'Політика конфіденційності',
-    desc: 'GDPR та ЗУ «Про захист персональних даних». Де зберігаються дані, як обробляються номери телефонів.',
-    accent: '#5C9E7A',
-    bg: 'rgba(92,158,122,0.08)',
+    desc: 'GDPR та захист персональних даних',
   },
   {
     slug: 'refund-policy',
     icon: RotateCcw,
     label: 'Повернення коштів',
-    desc: 'Цифрові підписки non-refundable після активації. Виключення: подвійне списання, технічні збої.',
-    accent: '#6B5750',
-    bg: 'rgba(107,87,80,0.06)',
+    desc: 'Умови повернення за підписку',
   },
 ] as const;
 
@@ -52,12 +44,12 @@ export function LegalHubPage() {
         className="bento-card p-5"
       >
         <h1 className="heading-serif text-xl text-foreground">Юридичні документи</h1>
-        <p className="text-sm text-muted-foreground/60 mt-0.5">
+        <p className="text-sm text-text-sub mt-0.5">
           ФОП Кошель Віктор Миколайович · РНОКПП 3705708939
         </p>
       </motion.div>
 
-      {/* Bento grid */}
+      {/* Bento grid — quiet, single neutral treatment */}
       <div className="grid grid-cols-2 md:grid-cols-6 gap-3 items-stretch">
         {DOCS.map((doc, i) => {
           const Icon = doc.icon;
@@ -75,28 +67,18 @@ export function LegalHubPage() {
                 rel="noopener noreferrer"
                 className="block h-full"
               >
-                <div
-                  className="bento-card p-4 h-full flex flex-col gap-3 group active:scale-[0.98] hover:scale-[1.01] transition-transform duration-200 min-h-[140px]"
-                  style={{ background: doc.bg }}
-                >
+                <div className="bento-card p-4 h-full flex flex-col gap-3 group active:scale-[0.98] hover:scale-[1.01] transition-transform duration-200 min-h-[120px]">
                   <div className="flex items-start justify-between">
-                    <div
-                      className="size-10 rounded-2xl flex items-center justify-center shrink-0"
-                      style={{ background: `${doc.accent}18` }}
-                    >
-                      <Icon size={18} style={{ color: doc.accent }} />
+                    <div className="size-10 rounded-2xl flex items-center justify-center shrink-0 bg-background border border-border">
+                      <Icon size={18} className="text-foreground" />
                     </div>
-                    <ExternalLink size={13} className="text-muted-foreground/50 mt-1 group-hover:text-muted-foreground/60 transition-colors" />
+                    <ExternalLink size={13} className="text-text-sub mt-1" />
                   </div>
 
                   <div className="flex-1">
                     <p className="text-sm font-bold text-foreground mb-1">{doc.label}</p>
-                    <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">{doc.desc}</p>
+                    <p className="text-xs text-text-sub leading-relaxed line-clamp-1">{doc.desc}</p>
                   </div>
-
-                  <p className="text-xs font-semibold" style={{ color: doc.accent }}>
-                    Відкрити →
-                  </p>
                 </div>
               </Link>
             </motion.div>
@@ -113,7 +95,7 @@ export function LegalHubPage() {
       >
         <div>
           <p className="text-sm font-semibold text-foreground">Питання щодо документів?</p>
-          <p className="text-xs text-muted-foreground/60 mt-0.5">Напишіть нам — відповімо протягом 2 робочих днів</p>
+          <p className="text-xs text-text-sub mt-0.5">Напишіть нам — відповімо протягом 2 робочих днів</p>
         </div>
         <a
           href="mailto:viktor.koshel24@gmail.com"
