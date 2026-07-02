@@ -75,7 +75,7 @@ export function PortfolioPage({ initialItems, tier, masterSlug }: Props) {
             {publishedCount} {pluralUk(publishedCount, 'робота', 'роботи', 'робіт')}
             {isStarter && ` · ${STARTER_LIMIT} макс.`}
           </p>
-          <p className="text-xs text-muted-foreground/50 mt-1">
+          <p className="text-xs text-text-sub mt-1">
             Роботи, які бачать клієнти на вашій публічній сторінці
           </p>
         </div>
@@ -114,8 +114,7 @@ export function PortfolioPage({ initialItems, tier, masterSlug }: Props) {
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-3xl p-4 flex items-start gap-3"
-          style={{ background: 'rgba(212,147,90,0.08)', border: '1px solid rgba(212,147,90,0.2)' }}
+          className="rounded-3xl p-4 flex items-start gap-3 bg-warning/[0.08] border border-warning/20"
         >
           <div className="size-9 rounded-2xl bg-warning/15 flex items-center justify-center shrink-0">
             <Lock size={16} className="text-warning" />
@@ -127,7 +126,7 @@ export function PortfolioPage({ initialItems, tier, masterSlug }: Props) {
             </p>
             <a
               href="/dashboard/billing"
-              className="inline-block mt-2 text-xs font-semibold text-warning underline underline-offset-2"
+              className="inline-block mt-2 text-xs font-semibold text-[#92400E] underline underline-offset-2"
             >
               Переглянути тарифи →
             </a>
@@ -140,11 +139,10 @@ export function PortfolioPage({ initialItems, tier, masterSlug }: Props) {
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-3xl py-16 flex flex-col items-center justify-center gap-4 text-center"
-          style={{ background: 'rgba(255,255,255,0.55)', border: '1px solid rgba(255,255,255,0.4)' }}
+          className="rounded-3xl py-16 flex flex-col items-center justify-center gap-4 text-center bg-secondary border border-border"
         >
-          <div className="size-16 rounded-3xl bg-secondary flex items-center justify-center">
-            <Images size={28} className="text-[#C8B8B2]" />
+          <div className="size-16 rounded-3xl bg-background flex items-center justify-center">
+            <Images size={28} className="text-text-sub" />
           </div>
           <div>
             <p className="text-base font-bold text-foreground">Портфоліо порожнє</p>
@@ -178,7 +176,7 @@ export function PortfolioPage({ initialItems, tier, masterSlug }: Props) {
                         initial={{ opacity: 0, y: 12 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: i * 0.04 }}
-                        className=""
+                        className="h-full"
                         style={{
                           ...prov.draggableProps.style,
                           opacity: snap.isDragging ? 0.5 : 1,
@@ -198,12 +196,11 @@ export function PortfolioPage({ initialItems, tier, masterSlug }: Props) {
 
                 {/* Add card — shown when not at limit */}
                 {!atLimit && (
-                  <div className="">
+                  <div className="h-full">
                     <button type="button"
                       onClick={handleCreate}
                       disabled={isCreating}
-                      className="w-full rounded-3xl aspect-[4/3] flex flex-col items-center justify-center gap-2 text-muted-foreground/60 hover:text-accent transition-colors active:scale-95 transition-all disabled:opacity-50"
-                      style={{ border: '2px dashed #E8D5CF' }}
+                      className="w-full h-full min-h-[200px] rounded-3xl border-2 border-dashed border-border flex flex-col items-center justify-center gap-2 text-text-sub hover:text-accent hover:border-accent/40 transition-colors active:scale-95 transition-all disabled:opacity-50"
                     >
                       {isCreating ? <Loader2 size={20} className="animate-spin" /> : <Plus size={20} />}
                       <span className="text-xs font-medium">{isCreating ? 'Створення...' : 'Додати'}</span>
