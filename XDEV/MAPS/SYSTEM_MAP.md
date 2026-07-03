@@ -234,9 +234,17 @@ All numbered sections (Agitation, Process, ClientFlow) and feature rows (Magic) 
 - Route: `src/app/studio/[slug]/page.tsx` — окрема точка входу для Studio-сторінки
 - `src/components/public/StudioPublicPage.tsx`
 
-### Explore (Каталог Майстрів)
-- Route: `src/app/explore/page.tsx`
-- Component: `src/components/public/ExplorePage.tsx` (~16KB)
+### Explore (Каталог Майстрів) — «Пошуковий портал» (C-EXPL-01+02, `373e9701`)
+- Route: `src/app/explore/page.tsx` (SSR force-dynamic; master_profiles is_published + categoryCounts + preferredCategories з bookings-історії; `availableToday/Tomorrow` = `schedule_templates.is_working` для DOW — «працює в цей день», НЕ вільний слот)
+- Layout: `src/app/explore/layout.tsx` — `PublicNavbar` (desktop, `hidden md:block`) + `SmartBackButton`; мобільний нижній навбар = глобальний `MyBottomNav` (C-NAV-01)
+- Component: `src/components/public/ExplorePage.tsx` — контейнер стану (фільтри/сорт/пагінація/spotlight/sticky IntersectionObserver)
+- Під-компоненти `src/components/public/explore/`:
+  - `shared.ts` — типи (ExploreMaster/ProcessedMaster/SortMode/ViewMode), консти, helpers (`getCategoryLabel`, `primaryPhoto`, `monogramHue` [char-codes→220-286 indigo-violet Frost band], `initialOf`)
+  - `SearchPortal.tsx` — темна slate-банда (`bg-accent`): Great Vibes-заголовок + пошук-герой (min-h-56) + категорії-типографіка однакового розміру з superscript-лічильниками (нульові приховані)
+  - `IntentGrid.tsx` — герой-плитка з даних «Працюють сьогодні·N» (fallback today→tomorrow→top) + чіпи Поруч/Завтра/PRO/Топ + тригер «Фільтри» (badge)
+  - `FilterSheet.tsx` — vaul BottomSheet (реюз `ui/Sheet` variant adaptive): ціна-сегменти/сортування-radio/тумблер «з відгуками»/Скинути+Готово
+  - `cards.tsx` — `MasterCard`/`MasterListCard`/`SpotlightCard`/`SkeletonGrid`; no-photo → `MediaCover` монограм-обкладинка (data-hue serif-ініціал) замість «сумної E»; спеціалізація → темний slate-пілл; чесні лейбли «Працює сьогодні/завтра»; `SpotlightCard` = 1 топ-PRO з фото (дедуп, зникає без фото)
+- Усі кольори → Frost CSS-vars (slate-портал = рідний `--accent` #0F172A). Десктоп mobile-first (повний desktop-лейаут → C-DESK-01)
 
 ### Client Area `/my/`
 - Layout: `src/app/my/layout.tsx` — fetches `profiles.telegram_chat_id` + `push_subscriptions` count; рендерить `ChannelBanner` якщо хоч один канал відсутній (Фаза 4)
