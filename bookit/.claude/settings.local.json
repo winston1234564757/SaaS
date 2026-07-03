@@ -118,7 +118,8 @@
       "Bash(npx playwright:*)",
       "PowerShell(head *)",
       "PowerShell(Get-ChildItem \"C:\\\\Users\\\\Vitossik\\\\SaaS\\\\.claude\\\\\" -Recurse | Select-Object -First 80 | ForEach-Object { $_.FullName })",
-      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\Vitossik\\\\SaaS\\\\.claude\\\\skills\\\\impeccable\\\\\" -Recurse | Select-Object -Skip 0 | ForEach-Object { $_.FullName } | Select-Object -First 60)"
+      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\Vitossik\\\\SaaS\\\\.claude\\\\skills\\\\impeccable\\\\\" -Recurse | Select-Object -Skip 0 | ForEach-Object { $_.FullName } | Select-Object -First 60)",
+      "PowerShell(& \"C:\\\\Users\\\\Vitossik\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Users-Vitossik-SaaS-bookit\\\\8381b8cc-c684-4d2d-8ddd-c3bfc04ff314\\\\scratchpad\\\\migration\\\\bookit-migration-2026-07-03\\\\verify-migration.ps1\")"
     ]
   },
   "enableAllProjectMcpServers": true,

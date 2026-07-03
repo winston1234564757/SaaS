@@ -62,7 +62,9 @@
       "mcp__mempalace__mempalace_kg_add",
       "mcp__mempalace__mempalace_kg_stats",
       "mcp__mempalace__mempalace_kg_timeline",
-      "mcp__mempalace__mempalace_update_drawer"
+      "mcp__mempalace__mempalace_update_drawer",
+      "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\({k.split\\('\\\\\\\\\\\\\\\\'\\)[-1]:v for k,v in d.get\\('edit_counts',{}\\).items\\(\\) if v>0}\\)\")",
+      "Bash(rm -f .claude/hooks/state/session_state.json)"
     ],
     "defaultMode": "acceptEdits"
   },

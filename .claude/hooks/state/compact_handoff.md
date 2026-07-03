@@ -1,7 +1,7 @@
-# COMPACT HANDOFF — 2026-06-22T16:08:09.225097
+# COMPACT HANDOFF — 2026-06-30T23:12:24.413763
 
 ## Session State (restored after compact)
-- skills_called: senior-frontend, self-improving-agent, scroll-experience
+- skills_called: impeccable, humanizer
 - qa_gate_passed: PASSED
 - ts_edited_since_tsc: clean
 - startup_confirmed: False (must re-confirm after compact)
