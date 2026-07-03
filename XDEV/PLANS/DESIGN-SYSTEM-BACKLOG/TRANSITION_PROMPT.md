@@ -17,7 +17,7 @@
 
 ═══ ПОТОЧНИЙ СТАН ═══
 Фундамент ✅ (C-CLI-01, 03.07, founder 10/10): токени --cover-bg / .editorial-cover · примітиви EditorialCover + Section · Button/Badge під мову · BentoCard видалено · Sheet srTitle · DESIGN_LANGUAGE.md.
-Прогрес задач: 5/23 ✅ (DS-DASH-01 герой дня · DS-DASH-02 тижневий графік · DS-DASH-03 пікові години · DS-DASH-04 рейт скасувань · DS-DASH-05 вільні дні).
+Прогрес задач: 6/23 ✅ (DS-DASH-01 герой дня · DS-DASH-02 тижневий графік · DS-DASH-03 пікові години · DS-DASH-04 рейт скасувань · DS-DASH-05 вільні дні · DS-DASH-06 інсайти-рядок).
 Кіт: bookit/src/components/ui/ — EditorialCover (темний герой, 1 на поверхню) · Section (білий тіло, hairline) · Button (primary slate / secondary hairline / ghost / danger) · Badge (surface light|dark) · Sheet (srTitle).
 Еталон реалізації: ClientDossierHero + ClientDetailSheet + BookingDetailsModal band (variant cover/inline). Читай BRIEFS/C-CLI-01.md перш ніж робити першу модалку/картку.
 
@@ -27,8 +27,8 @@
   3. Кожен віджет = домінанта-заголовок (що читається за 3 сек) + виділена «зірка» в даних + за можливості actionable-лінк (напр. пік→«Підняти ціну в пік»→`/dashboard?drawer=dynamic_pricing`). Смарт-drawer на дашборді = `<Link href="/dashboard?drawer=NAME">` (nuqs, див. DashboardDrawers.tsx: flash_deals, dynamic_pricing).
   4. 🔴 КОНТРАСТ НА FROST (DS-DASH-04): токени `--success`/`--warning` провалюють 4.5:1 на дрібному (12px) тексті на periwinkle-картці (≈3.95). `.heading-serif`=weight500 → NIE bold → навіть 19px = normal text (4.5, не 3). Для тексту-статусу юзай калібровані тони good`#0B6B2E`/warn`#9A4508`/bad`--error`. **`--text-tertiary` (2.78:1) = забанене §4 значення → НІКОЛИ для тексту; тільки `--text-primary`/`--text-secondary`. Ієрархію — розміром.**
 
-▶ НАСТУПНА ДІЯ: DS-DASH-06 — Інсайти-рядок (InsightsRow, Тір 1, Opus).
-  Далі P1: DS-DASH-07..10 (віджети). Порядок фаз: P1 дашборд → P3 модалки → P2 клієнт-зона → P5 лендинг; P4 кнопки опортуністично всередині.
+▶ НАСТУПНА ДІЯ: DS-DASH-07 — Здоров'я каналів (ChannelHealthWidget, Тір 1, Opus).
+  Далі P1: DS-DASH-08..10 (віджети). Порядок фаз: P1 дашборд → P3 модалки → P2 клієнт-зона → P5 лендинг; P4 кнопки опортуністично всередині.
 
 ═══ TASK GATE (перед кодом) ═══
 1. mempalace_search теми задачі
@@ -54,6 +54,14 @@ TRACKER: DS-[ID] ⬜→✅ + оновити ▶ NEXT + прогрес N/23 → �
 ---
 
 ## Нотатки сесій (свіжі зверху)
+
+### DS-DASH-06 — Інсайти-рядок (04.07, ✅ own-eyes, автономна сесія)
+- **Що:** `InsightsRow` = дві РІВНІ `bento-card` (Топ клієнт + Середній чек) пліч-о-пліч → маркер провалу #1. Переписано на ОДИН `Section` з асиметрією: домінанта = **середній чек** (`metric-value 2.4rem` + delta + тап→розбивка по послугах Sheet) · підтримка = порівняльні смуги цей/минулий (2 різні, домінанта primary) · featured hairline-рядок **топ-клієнт** (аватар + `heading-serif` ім'я + візити/сума, тап→`ClientDetailSheet`). Кінець рівним карткам.
+- **Чому чек — герой:** гроші з трендом читаються за 3 сек і мають зірку (напрям delta); клієнт = реляційна підтримка. Обидва дані збережені (обидва Sheet), лише переранжовано в ієрархію.
+- **4 стани (рідкі дані):** empty(`!hasBookings`→serif «Записів цього тижня ще немає») · partial(`avgCheck=0`→«—» + нота «Завершіть записи…» + топ-клієнт) · low-data(1 completed→число+смуги, delta null) · full(число+delta+смуги+клієнт). Бари лише при `avgCheck>0` (щоб partial не читався як «падіння»).
+- **Хук `useWeeklyInsights`:** консолідує 2× `useBookings` (цей+минулий тиждень) → avgCheck/delta/prevAvg/breakdown/completedCount/topClient/hasBookings. Props-only `InsightsCard` (export) для own-eyes.
+- **Контраст (урок DS-DASH-04):** delta-тони калібровані `good #0B6B2E` (5.25:1 на картці, рахував скриптом) / `bad --error #B91C1C` (5.11:1) — НЕ `--success`/`--warning` (провал 4.5 на дрібному). Викорінено `--text-tertiary` (§4-бан) → тільки `--text-primary`/`--text-secondary`. Label «Топ-клієнт тижня» sentence-case (не 2-й uppercase eyebrow).
+- **Own-eyes:** ds-preview (5 станів + Sheet) + Playwright headless, видалено перед commit. a11y MCP досі не піднявся — контраст рахований вручну. TSC:0 · Build:clean.
 
 ### DS-DASH-05 — Найближчі вільні дні (04.07, ✅ founder QA)
 - **Що:** `NextFreeDaysWidget` → `Section`. **ІНВЕРСІЯ low-data DS-DASH-04:** founder має мало записів → майже все вільне → стара сітка 5 однакових пілів = «дані», хоч означає «порожньо». Домінанта = найближче вільне вікно (heading-serif день `dayFull` + metric-value дата accent, зірка), решта = тихий менший рейл. Кінець рівній сітці.
