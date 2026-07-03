@@ -17,7 +17,7 @@
 
 ═══ ПОТОЧНИЙ СТАН ═══
 Фундамент ✅ (C-CLI-01, 03.07, founder 10/10): токени --cover-bg / .editorial-cover · примітиви EditorialCover + Section · Button/Badge під мову · BentoCard видалено · Sheet srTitle · DESIGN_LANGUAGE.md.
-Прогрес задач: 8/23 ✅ (DS-DASH-01 герой дня · DS-DASH-02 тижневий графік · DS-DASH-03 пікові години · DS-DASH-04 рейт скасувань · DS-DASH-05 вільні дні · DS-DASH-06 інсайти-рядок · DS-DASH-07 здоров'я каналів · DS-DASH-08 топ послуги).
+Прогрес задач: 9/23 ✅ (DS-DASH-01 герой дня · DS-DASH-02 тижневий графік · DS-DASH-03 пікові години · DS-DASH-04 рейт скасувань · DS-DASH-05 вільні дні · DS-DASH-06 інсайти-рядок · DS-DASH-07 здоров'я каналів · DS-DASH-08 топ послуги · DS-DASH-09 пульс доходу).
 Кіт: bookit/src/components/ui/ — EditorialCover (темний герой, 1 на поверхню) · Section (білий тіло, hairline) · Button (primary slate / secondary hairline / ghost / danger) · Badge (surface light|dark) · Sheet (srTitle).
 Еталон реалізації: ClientDossierHero + ClientDetailSheet + BookingDetailsModal band (variant cover/inline). Читай BRIEFS/C-CLI-01.md перш ніж робити першу модалку/картку.
 
@@ -27,8 +27,8 @@
   3. Кожен віджет = домінанта-заголовок (що читається за 3 сек) + виділена «зірка» в даних + за можливості actionable-лінк (напр. пік→«Підняти ціну в пік»→`/dashboard?drawer=dynamic_pricing`). Смарт-drawer на дашборді = `<Link href="/dashboard?drawer=NAME">` (nuqs, див. DashboardDrawers.tsx: flash_deals, dynamic_pricing).
   4. 🔴 КОНТРАСТ НА FROST (DS-DASH-04): токени `--success`/`--warning` провалюють 4.5:1 на дрібному (12px) тексті на periwinkle-картці (≈3.95). `.heading-serif`=weight500 → NIE bold → навіть 19px = normal text (4.5, не 3). Для тексту-статусу юзай калібровані тони good`#0B6B2E`/warn`#9A4508`/bad`--error`. **`--text-tertiary` (2.78:1) = забанене §4 значення → НІКОЛИ для тексту; тільки `--text-primary`/`--text-secondary`. Ієрархію — розміром.**
 
-▶ НАСТУПНА ДІЯ: DS-DASH-09 — Пульс доходу (EarningsPulseWidget, Тір 1, Opus).
-  Далі P1: DS-DASH-10 (адаптивна смуга контексту). Порядок фаз: P1 дашборд → P3 модалки → P2 клієнт-зона → P5 лендинг; P4 кнопки опортуністично всередині.
+▶ НАСТУПНА ДІЯ: DS-DASH-10 — Адаптивна смуга контексту (AdaptiveContextStrip, Тір 1, Opus). ЗАВЕРШУЄ P1 дашборд.
+  Далі: P3 модалки (DS-MODAL-01..07). Порядок фаз: P1 дашборд → P3 модалки → P2 клієнт-зона → P5 лендинг; P4 кнопки опортуністично всередині.
 
 ═══ TASK GATE (перед кодом) ═══
 1. mempalace_search теми задачі
@@ -55,12 +55,18 @@ TRACKER: DS-[ID] ⬜→✅ + оновити ▶ NEXT + прогрес N/23 → �
 
 ## Нотатки сесій (свіжі зверху)
 
+### DS-DASH-09 — Пульс доходу (04.07, ✅ own-eyes, автономна сесія)
+- **Що:** `EarningsPulseWidget` (топ-зона, поряд AdaptiveContextStrip) — `bento-card` + uppercase-eyebrow + `--text-tertiary` + TrendBadge-піл `--success` на 14%-тінті (пара **≈3.3:1, провал 4.5** для 11px). → один `Section` «Сьогодні»: домінанта-дохід (`metric-value 30px`, spring-анім збережена), trend плоским колірним текстом `action` праворуч, контекст «N записів · M завершено», пульс-смуги Сьогодні/Вчора (primary/secondary) внизу.
+- **🔴 Баг з own-eyes:** trend показував `−100%` червоним коли дохід сьогодні=0 але записи є (день триває) = фальш-доум. Фікс: `trendOf` повертає null коли `today===0` (пульс-смуги самі розкажуть «день починається»). Тренд лише при today>0.
+- **Тони:** піл-на-тінті → плоский текст up good `#0B6B2E`(5.25)/down `--error`(5.11)/flat secondary. Викорінено `--text-tertiary`.
+- **5 станів:** empty(₴0+«Ще немає записів») · day-starting(0+смуги вчора, БЕЗ trend) · up/down(trend+смуги) · перший дохід. Props-only `EarningsPulseCard` (export). `useDashboardStats` без змін. TSC:0 · Build:clean. commit d4d後.
+
 ### DS-DASH-08 — Топ послуги (04.07, ✅ own-eyes, автономна сесія)
 - **Що:** `TopServicesWidget` мав **numbered markers `01/02/03`** (§4-бан скафолд) + `--text-tertiary` + футер **3 РІВНІ** нав-лінки. → один `Section` «Топ послуги» (місяць тихим `action` праворуч): **герой = хіт місяця** (`heading-serif` назва + `metric-value` count + повна accent-смуга — домінантний бар), **рейл №2/№3** компактні рядки з тоншими `--border-strong` смугами. Ранг несе позиція+розмір бару, НЕ друковані номери.
 - **Футер:** 3 рівні → 2 диференційовані (secondary «Послуги»→/services + primary «Промо» Zap→/flash).
 - **4 стани:** empty(serif «Ще нема замовлень») · one(лише герой — founder-реальність) · full(герой+рейл). Truncate на довгих назвах ок.
 - **Тони:** без статус-кольорів (нейтральні числа), акцент лише на герой-барі. Викорінено `--text-tertiary`.
-- **Архітектура:** `useTopServices` без змін; props-only `TopServicesCard` (export). TSC:0 · Build:clean. commit.
+- **Архітектура:** `useTopServices` без змін; props-only `TopServicesCard` (export). TSC:0 · Build:clean. commit 3a30166a.
 
 ### DS-DASH-07 — Здоров'я каналів (04.07, ✅ own-eyes, автономна сесія)
 - **Що:** `ChannelHealthWidget` = дві РІВНІ бордер-плитки Telegram/Push з % (маркер #1) → один `Section` «Зв'язок з клієнтами» з асиметрією. **Telegram = герой** (первинний канал, поріг 60%): домінанта-% + вердикт `heading-serif` Сильний/Помірний/Слабкий + «N із M клієнтів». **Push = тиха підтримка** (окремий hairline-рядок зі смугою `--border-strong`, тихіший за героя).

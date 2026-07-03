@@ -1,8 +1,8 @@
 # DESIGN-SYSTEM TRACKER — конвергенція на дизайн-мову
 
 > Джерело задач: [DESIGN_SYSTEM_ROLLOUT.md](file:///C:/Users/Vitos/SaaS/XDEV/PLANS/DESIGN_SYSTEM_ROLLOUT.md) · Спека: [DESIGN_LANGUAGE.md](file:///C:/Users/Vitos/SaaS/XDEV/DESIGN_LANGUAGE.md) · Еталон: C-CLI-01
-> Прогрес: **8/23 ✅** · Фундамент ✅ · Активна тема: Frost
-> ▶ **NEXT: `DS-DASH-09`** — Пульс доходу (`EarningsPulseWidget`, Тір 1)
+> Прогрес: **9/23 ✅** · Фундамент ✅ · Активна тема: Frost
+> ▶ **NEXT: `DS-DASH-10`** — Адаптивна смуга контексту (`AdaptiveContextStrip`, Тір 1)
 
 Легенда: ⬜ не почато · 🔧 в роботі · ✅ здано+founder QA · ↩️ скасовано · тір за WORKFLOW (0 дрібний / 1 середній / 2 повний редизайн).
 
@@ -35,8 +35,8 @@
 | DS-DASH-06 | Інсайти-рядок | `widgets/frost/InsightsRow.tsx` | 1 | ✅ |
 | DS-DASH-07 | Здоров'я каналів | `widgets/frost/ChannelHealthWidget.tsx` | 1 | ✅ |
 | DS-DASH-08 | Топ послуги | `widgets/frost/TopServicesWidget.tsx` | 1 | ✅ |
-| DS-DASH-09 | Пульс доходу | `widgets/EarningsPulseWidget.tsx` | 1 | ⬜ ▶ NEXT |
-| DS-DASH-10 | Адаптивна смуга контексту | `widgets/AdaptiveContextStrip.tsx` | 1 | ⬜ |
+| DS-DASH-09 | Пульс доходу | `widgets/EarningsPulseWidget.tsx` | 1 | ✅ |
+| DS-DASH-10 | Адаптивна смуга контексту | `widgets/AdaptiveContextStrip.tsx` | 1 | ⬜ ▶ NEXT |
 
 > +опційно за потреби (не окремі задачі поки): `MonthlyCalendarWidget`, `FrostMetricsStrip`, `QuickActionsWidget`, `StockWidget`. Дрібні (Тір 1) віджети можна батчити 2–3 за сесію, важкі (Тір 2) — окремо.
 
