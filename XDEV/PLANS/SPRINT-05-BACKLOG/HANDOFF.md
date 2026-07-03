@@ -5,6 +5,9 @@
 **Спринт:** Sprint-05 — Загальний беклог (77 задач: Зона Майстра + Клієнтська Зона + Глобальне; +3 ad-hoc M-DASH-10/11/12)
 **Розпочато:** 2026-06-22
 **Прогрес:** 74/87 ✅ · 3 ↩️ скасовано (`M-DASH-11` + `M-MKT-01`/`M-MKT-02` поглинуто редизайном M-MKT-04, founder) — **Фаза 3: Analytics 7/7 ✅. Фаза 4: M-SET-01..05 ✅ · M-BILL-01/02 ✅ · M-PORT-01/02 ✅ · M-ORD-01 ✅ · M-DOC-01 ✅ · M-HELP-01/02 ✅ · M-CHAT-01 ✅ · C-MSG-03 ✅ (ad-hoc). Фаза 5: C-MSG-02 ✅ · C-NAV-01 ✅ · C-EXPL-01(+02) ✅.** Total 84→87. Батч до M-CHAT-01 задеплоєно; решта (M-HELP-02, C-MSG-02/03, C-NAV-01, C-EXPL-01) очікують деплою.
+
+**✅ УСІ ЗРОБЛЕНІ ЗАДАЧІ ПЕРЕВІРЕНО founder (2026-07-03) — QA-гейт спринту закрито.** Деплой на прод = окремий батч `vercel --prod` за командою (частина комітів «НЕ задеплоєно» — операційний факт).
+
 **Наступна задача:** **`С-CLI-01`** — Клієнти: сторінка клієнта, повний редизайн (P1, клієнт-зона B, Opus).
 
 **➕ C-EXPL follow-up (commit `fa526bc4`, НЕ задеплоєно): реферальний CTA «Не знайшла свого майстра?» на /explore** (запит founder). Механіка C2B (клієнт запрошує свого майстра) ЗВІРЕНА з живим `invite/[code]/page.tsx`: клієнт −50% на перший запис · майстер 🔴 **21 день Pro** (не 30, як каже застарілий REFERRAL_MAP — рядок 292). `ReferralInviteCTA.tsx`: inviteCode є → inline `navigator.share`+clipboard-fallback+toast; null (анонім/майстер) → Link `/my/loyalty`. `explore/page.tsx` read-only SELECT `client_profiles.c2b_referral_code` (БЕЗ генерації-side-effect). Обидва CTA внизу (реферальний зверху + тихіший «Ти майстер?»). humanizer: share «Хочу записуватись до тебе онлайн. Приєднуйся до BookIT.». TSC:0 Build:clean. Також дрібна правка C-EXPL: категорії на герої → Cormorant serif (commit `b3ede2bc`).
@@ -126,7 +129,7 @@ Sprint-05 переріс із "тільки клієнтська зона" у **
 
 **KEY:** (1) «включити тижневі дні» + «чистіше» = single-source (useSettingsForm) з одним UI для on/off (тут), другий (ScheduleWidget) лише години — розділення відповідальності без дублю-редагування. (2) Full-width hero-банда > вузька колонка з пустотою — коли одна колонка коротка, роби її повноширинним рядом. (3) Split container/view + devpreview = рендер власними очима віджета що вимагає MasterProvider/RPC, без auth.
 
-**Founder QA пройдено. Верифіковано власними очима (VacationManagerView desktop+mobile, повний+empty). Очікує деплою.**
+**Founder QA пройдено. Верифіковано власними очима (VacationManagerView desktop+mobile, повний+empty). Перевірено founder ✅.**
 
 ---
 
@@ -151,7 +154,7 @@ Sprint-05 переріс із "тільки клієнтська зона" у **
 
 **KEY:** (1) Бінарний «працюю/перерва» на часовому статусі — класична пастка: не-робочий-час ≠ перерва (є до-відкриття/після-закриття/вихідний). Часовий статус потребує явних станів. (2) Статус на основі `new Date()` при рендері застрягає — потрібен тик (`setInterval`), інакше UI бреше поки не буде re-render. (3) `getNow()` E2E-cookie `next-public-debug-now` = time-travel для верифікації часових станів власними очима (не треба чіпати системний час). (4) Перевіряй, що логіка реально консультує всі джерела (breaks[] ігнорувались — статус був неповний в обидва боки).
 
-**Founder QA пройдено. Очікує деплою за командою.**
+**Founder QA пройдено. Перевірено founder ✅.**
 
 ---
 
@@ -179,7 +182,7 @@ Sprint-05 переріс із "тільки клієнтська зона" у **
 
 **KEY:** (1) «assistant активний» = зробити пасивні поради навігаційними (scroll+highlight до секції-фіксу), а не косметика. (2) 7xl %-score = банний hero-metric template → демотувати в чесний «N/4», герой = ДІЯ не вани-цифра. (3) Катало-твердження було фейком — звіряй сорт каталогу (rating_count, не completeness) перед обіцянками аналітики/впливу. (4) Frost `text-text-mute` (2.76) провалює дрібний текст — `text-text-sub` (5.94). (5) `.advisor-highlight` reflow-reset (`void el.offsetWidth`) щоб keyframe перезапустився при повторному тапі тієї ж поради.
 
-**Founder QA пройдено. Верифіковано власними очима (devpreview/advisor + Playwright: empty/partial/done). Очікує деплою за командою founder.**
+**Founder QA пройдено. Верифіковано власними очима (devpreview/advisor + Playwright: empty/partial/done). Перевірено founder ✅ founder.**
 
 ---
 
@@ -206,7 +209,7 @@ Sprint-05 переріс із "тільки клієнтська зона" у **
 
 **KEY:** (1) «Опублікована обкладинка» = картка є прев'ю link-in-bio; один драматичний момент (serif-ім'я над фото) + функціональний підвал з ОДНІЄЮ дією = асиметрія за Законом темного блоку на світлій темі. (2) Текст-над-фото: скрім сам по собі не гарантує читабельність на світлому фото → скрім + `text-shadow` разом (дешева editorial-техніка, не пере-затемнює гарні фото). (3) Empty-стан фото-hero має власну драму (темний placeholder), не вимитий світлий. (4) Прев'ю-роут (`devpreview/profilehero`) + Playwright дав верифікацію happy-path з ЛОКАЛЬНИМ фото (picsum не вантажиться в headless — бери `public/` асет).
 
-**Founder QA пройдено («це воно»). Очікує деплою за командою founder.**
+**Founder QA пройдено («це воно»). Перевірено founder ✅ founder.**
 
 ---
 
@@ -252,7 +255,7 @@ Sprint-05 переріс із "тільки клієнтська зона" у **
 - **Консолідація:** `GrowthTab`(Pro-gate+loading+empty, приймає дані пропсами з AnalyticsPage)+`GrowthTabView`(презентація). **Видалено 8 мертвих файлів:** BentoSecondary, GrowthLists, DynamicPricingUplift, FlashDealsCard, BroadcastEngagement, LtvConcentration, ServicePairing, LtvHistogram. GoalProgress прибрано зі Зростання (founder; компонент лишено — є тести); `ServicePairingMatrix` лишено (тип `ServicePair`).
 - **Дані:** growth-дані з page-level `extras` (useAnalyticsExtras scope all) + `useAnalyticsMarketing` — передаються пропсами (НЕ re-fetch). `hasData = summary.bookings > 0`, `isLoading = isExtrasLoading`.
 - Pro-gate value-екран. a11y: #92400E (5.56), text-text-sub, emerald/rose на slate.
-- Верифіковано власними очима (Playwright headless: full/noUplift/mobile). TSC:0 Build:clean humanizer✓. Очікує візуального QA founder.
+- Верифіковано власними очима (Playwright headless: full/noUplift/mobile). TSC:0 Build:clean humanizer✓. Перевірено founder ✅.
 
 ---
 
@@ -269,7 +272,7 @@ Sprint-05 переріс із "тільки клієнтська зона" у **
 - **Pro-gate:** value-екран (Activity icon + «Ритм бізнесу — у Pro» + опис), як Finances/Stock. Раніше таб гейтився `&& isPro` на рівні сторінки (Starter бачив порожнечу).
 - **a11y:** `text-muted-foreground/60`→`text-text-sub` усюди; #92400E (5.56) дрібні warning-лейбли (скасування/недоотримано); #B91C1C (5.08) destructive; точки графіка 3:1.
 - **Дані-нота:** `bookings.total_price` = ГРИВНІ (DECIMAL), `useVacationImpact` множить ×100 → повертає копійки (`grn`=/100).
-- Верифіковано власними очима (Playwright headless: full/clean/mobile). TSC:0 Build:clean humanizer✓. Очікує візуального QA founder.
+- Верифіковано власними очима (Playwright headless: full/clean/mobile). TSC:0 Build:clean humanizer✓. Перевірено founder ✅.
 
 ---
 
@@ -287,7 +290,7 @@ Sprint-05 переріс із "тільки клієнтська зона" у **
 - **Фікс dummy:** Pro empty-state (нема даних) → skeleton-силует БЕЗ цифр + teaser (прибрано захардкоджений `displayFin`).
 - **Розділено** `FinancesTab` (fetch+Δ+стани) + `FinancesTabView` (презентація). Дані: `FinanceAnalytics` усе в КОПІЙКАХ (`grn()` = /100).
 - **a11y:** #0D6B2F (5.21), #B91C1C (5.08) на periwinkle; emerald-300/rose-300 на slate (11.71/9.44).
-- Верифіковано власними очима (Playwright headless: profit/healthy/loss/mobile — усі 4 стани). TSC:0 Build:clean humanizer✓. Очікує візуального QA founder.
+- Верифіковано власними очима (Playwright headless: profit/healthy/loss/mobile — усі 4 стани). TSC:0 Build:clean humanizer✓. Перевірено founder ✅.
 
 ---
 
@@ -303,7 +306,7 @@ Sprint-05 переріс із "тільки клієнтська зона" у **
 - **Латентний баг M-ANL-02 виправлено в цьому коміті:** SourceTab DeltaChip-down `text-error`→`text-destructive` (`--color-error` не існує в Tailwind v4 — мапінг `--color-destructive: var(--error)`; раніше рендерилось темним, не червоним).
 - **a11y:** critical #B91C1C, warning eyebrow #92400E (5.56), normal eyebrow #0D6B2F (5.21) на periwinkle #DCE3FF.
 - **Tone record** `TONE[severity]` = { dot, eyebrow, daysBig, label }; `itemDetail(item)` будує payload для Sheet.
-- Верифіковано власними очима (Playwright headless: crit/ok/mobile). TSC:0 Build:clean humanizer✓. Очікує візуального QA founder.
+- Верифіковано власними очима (Playwright headless: crit/ok/mobile). TSC:0 Build:clean humanizer✓. Перевірено founder ✅.
 
 ---
 
@@ -331,7 +334,7 @@ Sprint-05 переріс із "тільки клієнтська зона" у **
 
 **KEY:** (1) В аналітиці «розподіл-як-фільтр» (з ReviewsPage M-REVW-01) НЕ переноситься — тут інсайт, не керування; клік→пояснення, не фільтрація 10 останніх. (2) Спільний `OverviewDetailSheet` універсальний для будь-якого payload (бакет/відгук/NPS) — нуль нових Sheet-компонентів. (3) Δ на темному герої = світлі тінти (emerald-300/rose-300), на світлому = темні (#0D6B2F); тон Δ-чіпа залежить від фону. (4) Білі тінти на slate: white/55 поріг (6.09), white/40 провалює (3.98) — для дрібного hint бери ≥white/55. (5) Клон патерну верифікації (split fetch/view + devpreview) дав чистий перший прохід.
 
-**Очікує візуального QA founder.**
+**Перевірено founder ✅.**
 
 ---
 
@@ -360,7 +363,7 @@ Sprint-05 переріс із "тільки клієнтська зона" у **
 
 **KEY:** (1) Alternating темний/світлий герой через таб = протидія втомі від темного, тримає спорідненість зі спільними патернами. (2) Next App Router виключає `_folder` з роутингу — прев'ю-роут має бути без `_`. (3) Featured-герой потребує заповнення мертвого простору — гліф-якій сутності (іконка каналу) дає і ідентичність, і баланс. (4) Смуги-частки чесні лише відносно загального лідера, не відносно під-вибірки. (5) Hook повертав копійки, formatPrice очікує гривні — звіряй одиниці при переюзі хука. (6) Розділення fetch/view = верифікація власними очима з мок-даними без auth.
 
-**Очікує візуального QA founder.**
+**Перевірено founder ✅.**
 
 ---
 
@@ -412,7 +415,7 @@ Sprint-05 переріс із "тільки клієнтська зона" у **
 
 **KEY:** (1) Гістограма-як-фільтр = два завдання (показати розподіл + фільтрувати за балом) в одному елементі — елегантніше за окремий ряд зіркових чіпів. (2) Full-card underlay-кнопка + `pointer-events-none` контент + sibling-виняток на вторинну дію = клікабельна картка без вкладеної кнопки-в-кнопці (патерн M-SHOP-02/M-SVC-03). (3) Frost `muted-foreground` (2.76) провалює дрібний текст на periwinkle — для контентного дрібного тексту бери `text-text-sub` (#475569), не muted. (4) Назва задачі обіцяла «фільтрацію/сортування» — наявна сторінка вже мала фільтр публікації, бракувало сорту + зіркового фільтра; звіряй живий компонент перед оцінкою скоупу.
 
-**Очікує візуального QA founder.**
+**Перевірено founder ✅.**
 
 ---
 
@@ -467,7 +470,7 @@ Sprint-05 переріс із "тільки клієнтська зона" у **
 
 **KEY:** (1) Розвідка ДО брифа на HARD-задачі обовʼязкова — «об'єднати X+Y» було неоднозначне, виявилось 3 сутності з різною семантикою + білінг-coupling. (2) Bilateral-модель уніфікує: directional alliance → 2 рядки з role, читання тривіальне (`WHERE master_id=me`), напрям збережено. (3) Supabase RLS пастка: вузька політика «лише сторони» вбиває публічне читання анонами — публічні фічі потребують явної anon-політики на opt-in-полях. (4) Additive міграція (нова таблиця, старі лишаються) = безпечний прод-мердж з тривіальним rollback. (5) `text-primary` Frost (#789A99) провалює малий текст — `#3F5C5B`+.
 
-**⏳ Борг:** drop `master_partners`+`master_alliances` після ~тижня verify. **✅ ЗАДЕПЛОЄНО на прод 2026-06-29 (`dpl_2JosLfqYJRzeG2tb964gvDAEq9Pm`, bookit.com.ua). Очікує візуального QA founder.**
+**⏳ Борг:** drop `master_partners`+`master_alliances` після ~тижня verify. **✅ ЗАДЕПЛОЄНО на прод 2026-06-29 (`dpl_2JosLfqYJRzeG2tb964gvDAEq9Pm`, bookit.com.ua). Перевірено founder ✅.**
 
 ---
 
@@ -499,7 +502,7 @@ Sprint-05 переріс із "тільки клієнтська зона" у **
 
 **KEY:** (1) DATA-розвідка ДО дизайну зловила що знижка лояльності ніде не персистилась → impact неможливий без міграції; redemption-tracking forward-only + чесний empty (як M-REV-03). (2) self-grill зловив guest-діру total_visits ДО коду. (3) Supabase REVOKE public НЕ знімає anon EXECUTE — завжди `REVOKE FROM anon` явно на auth.uid-RPC. (4) `text-success` Frost (#16803C) провалює малий текст на periwinkle (3.45) — для дрібних success-лінків бери #0D6B2F+.
 
-**✅ ЗАДЕПЛОЄНО на прод 2026-06-29 (разом з M-GROW-02, `dpl_2JosLfqYJRzeG2tb964gvDAEq9Pm`, bookit.com.ua). Очікує візуального QA founder.**
+**✅ ЗАДЕПЛОЄНО на прод 2026-06-29 (разом з M-GROW-02, `dpl_2JosLfqYJRzeG2tb964gvDAEq9Pm`, bookit.com.ua). Перевірено founder ✅.**
 
 ---
 
@@ -522,7 +525,7 @@ Sprint-05 переріс із "тільки клієнтська зона" у **
 
 **KEY:** (1) Distill = прибрати інтеракцію-заради-довідки; ліміти вже демонструють живі `PreviewRow` + картки правил + M-REV-05 overview одразу під hero, тож hero не місце для туторіалу. (2) grill-me на дизайні зловив a11y-діру muted-токена ДО написання коду — це і є сенс ритуалу (дешево). (3) «Тихий» текст у Frost ≠ `muted-foreground` для дрібного шрифту — використовуй `--text-secondary` (#475569) як «тихо але читабельно».
 
-**Очікує візуального QA founder (на Vercel).**
+**Перевірено founder ✅ (на Vercel).**
 
 ---
 
@@ -687,7 +690,7 @@ Sprint-05 переріс із "тільки клієнтська зона" у **
 - `ProductCard.tsx` — Eye-кнопка в `actions` (перша) → `onPreview`. Грід `grid-cols-1 md:grid-cols-2` (мобілка = 1 колонка на всю ширину) → 4 footer-кнопки (Eye/Аналітика/Поповнити/Редагувати) + тогл вміщаються.
 - `ProductsPage.tsx` — `previewProduct` стан → `Sheet variant=adaptive` з `ProductDetailView mode="master"` read-only.
 
-**Перевірка:** TSC 0 · Build clean (роут `/[slug]/shop/[productId]` згенеровано) · encoding clean · deploy READY на прод. **Очікує візуального QA founder** — особливо **рефактор кошика** (додати з каталогу + зі сторінки товару → спільний кошик → checkout самовивіз/НП → замовлення → success; reload зберігає кошик). Деталі — `BRIEFS/M-SHOP-03.md`.
+**Перевірка:** TSC 0 · Build clean (роут `/[slug]/shop/[productId]` згенеровано) · encoding clean · deploy READY на прод. **Перевірено founder ✅** — особливо **рефактор кошика** (додати з каталогу + зі сторінки товару → спільний кошик → checkout самовивіз/НП → замовлення → success; reload зберігає кошик). Деталі — `BRIEFS/M-SHOP-03.md`.
 
 **KEY:** (1) Sheet→роут перетворення тягне за собою підняття будь-якого ефемерного стану (тут — кошик) у persistent-сховище, бо компонент-хост розмонтовується. shop-`layout.tsx` + context = стан переживає навігацію; localStorage = переживає reload. (2) Спільний презентаційний `ProductDetailView` без стану → юзається і публічною сторінкою (з cart-actions слотом), і майстер-прев'ю (read-only) — один patern, як ServiceDetailSheet, але як сторінка а не лише Sheet. (3) `ShopCartBar` на двох роутах безпечний бо активний лише один роут — нема двох checkout одночасно. (4) `reviews` намертво прив'язана до bookings → відгуки про товар вимагають окремої таблиці, не розширення reviews (винесено в M-SHOP-03b).
 
@@ -718,7 +721,7 @@ Sprint-05 переріс із "тільки клієнтська зона" у **
 
 **Збережено без змін:** тогл активності, restock, edit, drag reorder, `onOpenStats` overlay, opacity-55 неактивних, SkeletonList, бекенд/хуки/RPC, ConsumableCard (розхідники поза скоупом).
 
-**Перевірка:** TSC 0 · Build clean (exit 0) · encoding clean · deploy READY на прод. Новий copy — лише «Сітка»/«Список» (стандартні слова, humanizer N/A) + технічні aria-labels. **Очікує візуального QA founder** (stock-бейдж на фото, паритет із картками послуг, mobile+desktop). Деталі — `BRIEFS/M-SHOP-02.md`.
+**Перевірка:** TSC 0 · Build clean (exit 0) · encoding clean · deploy READY на прод. Новий copy — лише «Сітка»/«Список» (стандартні слова, humanizer N/A) + технічні aria-labels. **Перевірено founder ✅** (stock-бейдж на фото, паритет із картками послуг, mobile+desktop). Деталі — `BRIEFS/M-SHOP-02.md`.
 
 **KEY:** (1) Marketplace-картка товару = клон ServiceCard (M-SVC-02) + 1 товарна поправка — залишок як glass-піл оверлеєм на фото (текст-колір за порогами 0/≤3, власне скляне тло замість full-bg піла, бо на фото full-bg піл нечитабельний). (2) Stats-on-tap → edit-on-tap: коли картка має і редактор, і аналітику, тіло веде на найчастішу дію (редагування), вторинне (аналітика) = явна кнопка — інакше повнокарткова z-0 підкладка конфліктує з контент-кнопкою. (3) DnD у grid — `@hello-pangea/dnd` Droppable працює прямо на grid-контейнері, контейнер-клас перемикається за `view`.
 
@@ -810,7 +813,7 @@ Sprint-05 переріс із "тільки клієнтська зона" у **
 
 **a11y (зловив реальний баг):** статус-лейбл спершу був bold у `statusColor` на власному 6%-тінті → контраст completed 2.45 / cancelled 3.31 / no_show 2.26 (треба 4.5). Виправлено → `text-foreground`; колір лишився лише на іконці (декоративно). Решта hex у файлі — лише іконки.
 
-**Перевірка:** TSC 0 · Build clean (exit 0) · encoding clean (×=U+00D7 навмисно, не mojibake) · ReschedulePanel/бекенд/хук не чіпано · прибрано 3 мертві імпорти. **Очікує візуального QA founder** (mobile drawer + desktop dialog, особливо подвійний пунктир + serif-total + outcome на скасованому). Деталі — `BRIEFS/M-BOOK-05.md`.
+**Перевірка:** TSC 0 · Build clean (exit 0) · encoding clean (×=U+00D7 навмисно, не mojibake) · ReschedulePanel/бекенд/хук не чіпано · прибрано 3 мертві імпорти. **Перевірено founder ✅** (mobile drawer + desktop dialog, особливо подвійний пунктир + serif-total + outcome на скасованому). Деталі — `BRIEFS/M-BOOK-05.md`.
 
 **KEY:** (1) пастельні `BOOKING_STATUS_CONFIG`-кольори НЕ годяться як bold-текст навіть на власному тінті — усі <4.5:1; статус сигналь іконкою+фоном, текст лишай `text-foreground`. (2) Термінальний запис ≠ глухий кут: re-book через наявний `UrlActionBus` (booking:create + clientId) = нуль нового plumbing. (3) Звіряй що хук ВІДДАЄ vs що екран ПОКАЗУЄ — `status_changed_at`/`cancellation_reason` приходили давно, але були невидимі.
 
