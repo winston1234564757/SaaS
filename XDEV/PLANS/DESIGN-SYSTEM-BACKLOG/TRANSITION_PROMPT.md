@@ -17,7 +17,7 @@
 
 ═══ ПОТОЧНИЙ СТАН ═══
 Фундамент ✅ (C-CLI-01, 03.07, founder 10/10): токени --cover-bg / .editorial-cover · примітиви EditorialCover + Section · Button/Badge під мову · BentoCard видалено · Sheet srTitle · DESIGN_LANGUAGE.md.
-Прогрес задач: 6/23 ✅ (DS-DASH-01 герой дня · DS-DASH-02 тижневий графік · DS-DASH-03 пікові години · DS-DASH-04 рейт скасувань · DS-DASH-05 вільні дні · DS-DASH-06 інсайти-рядок).
+Прогрес задач: 7/23 ✅ (DS-DASH-01 герой дня · DS-DASH-02 тижневий графік · DS-DASH-03 пікові години · DS-DASH-04 рейт скасувань · DS-DASH-05 вільні дні · DS-DASH-06 інсайти-рядок · DS-DASH-07 здоров'я каналів).
 Кіт: bookit/src/components/ui/ — EditorialCover (темний герой, 1 на поверхню) · Section (білий тіло, hairline) · Button (primary slate / secondary hairline / ghost / danger) · Badge (surface light|dark) · Sheet (srTitle).
 Еталон реалізації: ClientDossierHero + ClientDetailSheet + BookingDetailsModal band (variant cover/inline). Читай BRIEFS/C-CLI-01.md перш ніж робити першу модалку/картку.
 
@@ -27,8 +27,8 @@
   3. Кожен віджет = домінанта-заголовок (що читається за 3 сек) + виділена «зірка» в даних + за можливості actionable-лінк (напр. пік→«Підняти ціну в пік»→`/dashboard?drawer=dynamic_pricing`). Смарт-drawer на дашборді = `<Link href="/dashboard?drawer=NAME">` (nuqs, див. DashboardDrawers.tsx: flash_deals, dynamic_pricing).
   4. 🔴 КОНТРАСТ НА FROST (DS-DASH-04): токени `--success`/`--warning` провалюють 4.5:1 на дрібному (12px) тексті на periwinkle-картці (≈3.95). `.heading-serif`=weight500 → NIE bold → навіть 19px = normal text (4.5, не 3). Для тексту-статусу юзай калібровані тони good`#0B6B2E`/warn`#9A4508`/bad`--error`. **`--text-tertiary` (2.78:1) = забанене §4 значення → НІКОЛИ для тексту; тільки `--text-primary`/`--text-secondary`. Ієрархію — розміром.**
 
-▶ НАСТУПНА ДІЯ: DS-DASH-07 — Здоров'я каналів (ChannelHealthWidget, Тір 1, Opus).
-  Далі P1: DS-DASH-08..10 (віджети). Порядок фаз: P1 дашборд → P3 модалки → P2 клієнт-зона → P5 лендинг; P4 кнопки опортуністично всередині.
+▶ НАСТУПНА ДІЯ: DS-DASH-08 — Топ послуги (TopServicesWidget, Тір 1, Opus).
+  Далі P1: DS-DASH-09..10 (віджети). Порядок фаз: P1 дашборд → P3 модалки → P2 клієнт-зона → P5 лендинг; P4 кнопки опортуністично всередині.
 
 ═══ TASK GATE (перед кодом) ═══
 1. mempalace_search теми задачі
@@ -54,6 +54,13 @@ TRACKER: DS-[ID] ⬜→✅ + оновити ▶ NEXT + прогрес N/23 → �
 ---
 
 ## Нотатки сесій (свіжі зверху)
+
+### DS-DASH-07 — Здоров'я каналів (04.07, ✅ own-eyes, автономна сесія)
+- **Що:** `ChannelHealthWidget` = дві РІВНІ бордер-плитки Telegram/Push з % (маркер #1) → один `Section` «Зв'язок з клієнтами» з асиметрією. **Telegram = герой** (первинний канал, поріг 60%): домінанта-% + вердикт `heading-serif` Сильний/Помірний/Слабкий + «N із M клієнтів». **Push = тиха підтримка** (окремий hairline-рядок зі смугою `--border-strong`, тихіший за героя).
+- **4 стани (low-data):** empty(`total=0`→serif «Ще нема кого сповіщати» + CTA до клієнтів) · sparse(`total<5`→чесна дробина «2 з 3», НЕ %-шум) · dense(`total≥5`→%+вердикт+смуга Push). Нудж «Хто ще не підключив канали»→`/dashboard/clients` лише коли слабкий канал (tg<60 або push<40).
+- **Тони:** вердикт калібрований good `#0B6B2E`/warn `#9A4508`/bad `--error` (≥5:1 на Frost) — старий `%` був у `--success` (провал 4.5 на 17.6px bold). Викорінено `--text-tertiary`.
+- **Архітектура:** хук `useChannelHealth` без змін (raw `{total,tg,push}`); props-only `ChannelHealthCard` (export) для own-eyes. Обидва канали збережені, лише переранжовано.
+- **Own-eyes:** ds-preview 5 станів Playwright, видалено. a11y MCP не піднявся → контраст скриптом. TSC:0 · Build:clean. commit fff.
 
 ### DS-DASH-06 — Інсайти-рядок (04.07, ✅ own-eyes, автономна сесія)
 - **Що:** `InsightsRow` = дві РІВНІ `bento-card` (Топ клієнт + Середній чек) пліч-о-пліч → маркер провалу #1. Переписано на ОДИН `Section` з асиметрією: домінанта = **середній чек** (`metric-value 2.4rem` + delta + тап→розбивка по послугах Sheet) · підтримка = порівняльні смуги цей/минулий (2 різні, домінанта primary) · featured hairline-рядок **топ-клієнт** (аватар + `heading-serif` ім'я + візити/сума, тап→`ClientDetailSheet`). Кінець рівним карткам.
