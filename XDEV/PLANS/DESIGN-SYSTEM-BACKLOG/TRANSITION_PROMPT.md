@@ -17,7 +17,7 @@
 
 ═══ ПОТОЧНИЙ СТАН ═══
 Фундамент ✅ (C-CLI-01, 03.07, founder 10/10): токени --cover-bg / .editorial-cover · примітиви EditorialCover + Section · Button/Badge під мову · BentoCard видалено · Sheet srTitle · DESIGN_LANGUAGE.md.
-Прогрес задач: 9/23 ✅ (DS-DASH-01 герой дня · DS-DASH-02 тижневий графік · DS-DASH-03 пікові години · DS-DASH-04 рейт скасувань · DS-DASH-05 вільні дні · DS-DASH-06 інсайти-рядок · DS-DASH-07 здоров'я каналів · DS-DASH-08 топ послуги · DS-DASH-09 пульс доходу).
+Прогрес задач: 10/23 ✅ — **Фаза P1 дашборд ЗАКРИТА** (DS-DASH-01..10: герой дня · тижневий графік · пікові години · рейт скасувань · вільні дні · інсайти-рядок · здоров'я каналів · топ послуги · пульс доходу · адаптивна смуга).
 Кіт: bookit/src/components/ui/ — EditorialCover (темний герой, 1 на поверхню) · Section (білий тіло, hairline) · Button (primary slate / secondary hairline / ghost / danger) · Badge (surface light|dark) · Sheet (srTitle).
 Еталон реалізації: ClientDossierHero + ClientDetailSheet + BookingDetailsModal band (variant cover/inline). Читай BRIEFS/C-CLI-01.md перш ніж робити першу модалку/картку.
 
@@ -27,8 +27,8 @@
   3. Кожен віджет = домінанта-заголовок (що читається за 3 сек) + виділена «зірка» в даних + за можливості actionable-лінк (напр. пік→«Підняти ціну в пік»→`/dashboard?drawer=dynamic_pricing`). Смарт-drawer на дашборді = `<Link href="/dashboard?drawer=NAME">` (nuqs, див. DashboardDrawers.tsx: flash_deals, dynamic_pricing).
   4. 🔴 КОНТРАСТ НА FROST (DS-DASH-04): токени `--success`/`--warning` провалюють 4.5:1 на дрібному (12px) тексті на periwinkle-картці (≈3.95). `.heading-serif`=weight500 → NIE bold → навіть 19px = normal text (4.5, не 3). Для тексту-статусу юзай калібровані тони good`#0B6B2E`/warn`#9A4508`/bad`--error`. **`--text-tertiary` (2.78:1) = забанене §4 значення → НІКОЛИ для тексту; тільки `--text-primary`/`--text-secondary`. Ієрархію — розміром.**
 
-▶ НАСТУПНА ДІЯ: DS-DASH-10 — Адаптивна смуга контексту (AdaptiveContextStrip, Тір 1, Opus). ЗАВЕРШУЄ P1 дашборд.
-  Далі: P3 модалки (DS-MODAL-01..07). Порядок фаз: P1 дашборд → P3 модалки → P2 клієнт-зона → P5 лендинг; P4 кнопки опортуністично всередині.
+▶ НАСТУПНА ДІЯ: DS-MODAL-01 — Ручний запис (ManualBookingForm, Тір 2, Opus). СТАРТ Фази P3 модалки.
+  Реюз еталону C-CLI-01 (EditorialCover hero + Section body + Sheet srTitle). Читай BRIEFS/C-CLI-01.md перед першою модалкою. Порядок фаз: P1 ✅ → P3 модалки → P2 клієнт-зона → P5 лендинг; P4 кнопки опортуністично всередині.
 
 ═══ TASK GATE (перед кодом) ═══
 1. mempalace_search теми задачі
@@ -54,6 +54,12 @@ TRACKER: DS-[ID] ⬜→✅ + оновити ▶ NEXT + прогрес N/23 → �
 ---
 
 ## Нотатки сесій (свіжі зверху)
+
+### DS-DASH-10 — Адаптивна смуга контексту (04.07, ✅ own-eyes, автономна сесія) — ЗАКРИВАЄ P1
+- **Чесна оцінка:** найменш-порушливий віджет P1 — вже редизайнено M-DASH-01 (домінант+secondary, `--text-secondary`, нуль §4-банів). Targeted alignment, НЕ rewrite.
+- **Що:** (1) головна CTA хендрол-`<button>` з `var(--accent)` → **kit `Button variant="primary"`** (slate `--btn-primary-bg` — «одна домінант-дія на поверхню», сильніша домінанта + тактильний whileTap). (2) Витягнуто props-only `ContextStripView({main,secondary})` (export) для own-eyes + консистентності. (3) Домінанта FitText 15–20→16–22.
+- **Свідома межа (НЕ чіпав):** логіка станів busyness (empty/quiet/moderate/busy) + pending-пріоритет, FitText, hideOnDesktop, popLayout AnimatePresence, spring-stagger — 1:1. Section/EditorialCover не пасує (роль=смуга-рекомендація, не титульний блок; 2-й dark cover заборонено).
+- **Own-eyes:** ds-preview 5 станів × mobile+desktop Playwright, видалено. Copy незмінний (humanizer не потрібен). TSC:0 · Build:clean.
 
 ### DS-DASH-09 — Пульс доходу (04.07, ✅ own-eyes, автономна сесія)
 - **Що:** `EarningsPulseWidget` (топ-зона, поряд AdaptiveContextStrip) — `bento-card` + uppercase-eyebrow + `--text-tertiary` + TrendBadge-піл `--success` на 14%-тінті (пара **≈3.3:1, провал 4.5** для 11px). → один `Section` «Сьогодні»: домінанта-дохід (`metric-value 30px`, spring-анім збережена), trend плоским колірним текстом `action` праворуч, контекст «N записів · M завершено», пульс-смуги Сьогодні/Вчора (primary/secondary) внизу.

@@ -6,6 +6,7 @@ import {
   Zap, Megaphone, Share2, Sparkles, TrendingUp, Link2, Clock,
 } from 'lucide-react';
 import { FitText } from '@/components/shared/FitText';
+import { Button } from '@/components/ui/Button';
 import { useBusyness } from '@/lib/supabase/hooks/useBusyness';
 import { useDashboardStats } from '@/lib/supabase/hooks/useDashboardStats';
 import { useMasterContext } from '@/lib/supabase/context';
@@ -14,7 +15,7 @@ import { pluralUk } from '@/lib/utils/pluralUk';
 
 type StripState = 'empty' | 'quiet' | 'moderate' | 'busy';
 
-interface StripCard {
+export interface StripCard {
   id: string;
   Icon: React.ElementType;
   title: string;
@@ -39,7 +40,7 @@ const cardVariants = {
   }),
 };
 
-/* ─── Main card — dominant recommendation ─────────────────────── */
+/* ─── Головна картка — домінантна рекомендація (tinted + slate-CTA) ─── */
 function MainCard({ card }: { card: StripCard }) {
   const tint = card.urgent ? 16 : 10;
   return (
@@ -55,19 +56,17 @@ function MainCard({ card }: { card: StripCard }) {
         <span
           className="flex items-center justify-center size-11 rounded-2xl shrink-0"
           style={{
-            background: card.urgent
-              ? 'var(--accent)'
-              : 'color-mix(in srgb, var(--accent) 18%, transparent)',
+            background: card.urgent ? 'var(--accent)' : 'color-mix(in srgb, var(--accent) 18%, transparent)',
             color: card.urgent ? 'var(--accent-on)' : 'var(--accent)',
           }}
         >
-          <card.Icon size={20} strokeWidth={1.8} />
+          <card.Icon size={20} strokeWidth={1.8} aria-hidden />
         </span>
         <div className="flex-1 min-w-0 pt-0.5">
           <FitText
             text={card.title}
-            minSize={15}
-            maxSize={20}
+            minSize={16}
+            maxSize={22}
             maxLines={2}
             className="font-semibold leading-tight"
             style={{ color: 'var(--text-primary)' }}
@@ -77,19 +76,14 @@ function MainCard({ card }: { card: StripCard }) {
           </p>
         </div>
       </div>
-      <button
-        type="button"
-        onClick={card.onCta}
-        className="w-full text-[13px] font-semibold py-3 rounded-2xl transition-transform duration-150 active:scale-[0.97]"
-        style={{ background: 'var(--accent)', color: 'var(--accent-on)' }}
-      >
+      <Button variant="primary" size="md" fullWidth onClick={card.onCta}>
         {card.cta}
-      </button>
+      </Button>
     </motion.div>
   );
 }
 
-/* ─── Secondary card — compact ────────────────────────────────── */
+/* ─── Вторинна картка — компактна, тихіша (surface, pill-CTA) ─── */
 function SecondaryCard({ card, index, hideOnDesktop }: { card: StripCard; index: number; hideOnDesktop?: boolean }) {
   return (
     <motion.div
@@ -102,12 +96,9 @@ function SecondaryCard({ card, index, hideOnDesktop }: { card: StripCard; index:
       <div className="flex items-start gap-3.5">
         <span
           className="flex items-center justify-center size-10 rounded-xl shrink-0"
-          style={{
-            background: 'color-mix(in srgb, var(--accent) 8%, transparent)',
-            color: 'var(--accent)',
-          }}
+          style={{ background: 'color-mix(in srgb, var(--accent) 8%, transparent)', color: 'var(--accent)' }}
         >
-          <card.Icon size={17} strokeWidth={1.8} />
+          <card.Icon size={17} strokeWidth={1.8} aria-hidden />
         </span>
         <div className="flex-1 min-w-0">
           <p className="text-[13px] font-semibold leading-tight" style={{ color: 'var(--text-primary)' }}>
@@ -122,14 +113,36 @@ function SecondaryCard({ card, index, hideOnDesktop }: { card: StripCard; index:
         type="button"
         onClick={card.onCta}
         className="self-start text-[11px] font-semibold px-3 py-2 rounded-full transition-transform duration-150 active:scale-[0.95]"
-        style={{
-          background: 'color-mix(in srgb, var(--accent) 12%, transparent)',
-          color: 'var(--accent)',
-        }}
+        style={{ background: 'color-mix(in srgb, var(--accent) 12%, transparent)', color: 'var(--accent)' }}
       >
         {card.cta}
       </button>
     </motion.div>
+  );
+}
+
+/* ─── Презентаційний view (props-only) — для own-eyes прев'ю без хуків ─── */
+export function ContextStripView({ main, secondary }: { main: StripCard; secondary: StripCard[] }) {
+  return (
+    <AnimatePresence mode="popLayout">
+      <motion.div
+        key={main.id}
+        className="flex flex-col lg:flex-row gap-3"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2 }}
+      >
+        <MainCard card={main} />
+        {secondary.length > 0 && (
+          <div className="flex flex-col gap-3 lg:flex-1">
+            {secondary.map((card, i) => (
+              <SecondaryCard key={card.id} card={card} index={i + 1} hideOnDesktop={i > 0} />
+            ))}
+          </div>
+        )}
+      </motion.div>
+    </AnimatePresence>
   );
 }
 
@@ -254,33 +267,5 @@ export function AdaptiveContextStrip() {
     ? [pendingCard, ...STATE_CARDS[state]]
     : [...STATE_CARDS[state]];
 
-  const main = cards[0];
-  const secondary = cards.slice(1, 3);
-
-  return (
-    <AnimatePresence mode="popLayout">
-      <motion.div
-        key={main.id}
-        className="flex flex-col lg:flex-row gap-3"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.2 }}
-      >
-        <MainCard card={main} />
-        {secondary.length > 0 && (
-          <div className="flex flex-col gap-3 lg:flex-1">
-            {secondary.map((card, i) => (
-              <SecondaryCard
-                key={card.id}
-                card={card}
-                index={i + 1}
-                hideOnDesktop={i > 0}
-              />
-            ))}
-          </div>
-        )}
-      </motion.div>
-    </AnimatePresence>
-  );
+  return <ContextStripView main={cards[0]} secondary={cards.slice(1, 3)} />;
 }
