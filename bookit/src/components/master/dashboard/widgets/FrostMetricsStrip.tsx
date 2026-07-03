@@ -51,6 +51,8 @@ interface TickerItemDef {
   value: string;
   rawCount?: number;
   href: string;
+  /** Головна метрика дня — важча за решту (розбиває «N рівних»). */
+  primary?: boolean;
 }
 
 const SEP = (
@@ -76,6 +78,13 @@ const DOT = (
   />
 );
 
+const PRIMARY_DOT = (
+  <span
+    aria-hidden
+    style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--accent)', flexShrink: 0, display: 'inline-block', boxShadow: '0 0 6px color-mix(in srgb, var(--accent) 45%, transparent)' }}
+  />
+);
+
 const TICKER_DURATION = 28;
 
 export function FrostMetricsStrip() {
@@ -94,8 +103,8 @@ export function FrostMetricsStrip() {
   const convRate = fmtPct(weekNewClients, weekClients);
 
   const items: TickerItemDef[] = [
+    { label: 'Виручка сьогодні',    value: isLoading ? '—' : fmtRevenue(todayRevenue),                                                    href: '/dashboard/analytics', primary: true },
     { label: 'Записів сьогодні',    value: isLoading ? '—' : String(todayCount),      rawCount: isLoading ? undefined : todayCount,      href: '/dashboard/bookings'  },
-    { label: 'Виручка',             value: isLoading ? '—' : fmtRevenue(todayRevenue),                                                    href: '/dashboard/analytics' },
     { label: 'Підтверджено',        value: isLoading ? '—' : String(todayConfirmed),   rawCount: isLoading ? undefined : todayConfirmed,  href: '/dashboard/bookings'  },
     { label: 'Очікує',              value: isLoading ? '—' : String(todayPending),     rawCount: isLoading ? undefined : todayPending,    href: '/dashboard/bookings'  },
     { label: 'Клієнтів тиждень',    value: isLoading ? '—' : String(weekClients),      rawCount: isLoading ? undefined : weekClients,     href: '/dashboard/clients'   },
@@ -176,14 +185,14 @@ export function FrostMetricsStrip() {
           >
             <span
               className="text-[10px] font-bold tracking-[0.16em] uppercase"
-              style={{ color: 'var(--text-tertiary)' }}
+              style={{ color: item.primary ? 'var(--accent)' : 'var(--text-sub, var(--text-secondary))' }}
             >
               {item.label}
             </span>
-            {DOT}
+            {item.primary ? PRIMARY_DOT : DOT}
             <span
-              className="metric-value text-[13px] font-bold"
-              style={{ color: 'var(--text-primary)' }}
+              className={item.primary ? 'metric-value text-[15px] font-bold' : 'metric-value text-[13px] font-bold'}
+              style={{ color: item.primary ? 'var(--accent)' : 'var(--text-primary)' }}
             >
               {item.rawCount !== undefined && loaded
                 ? <AnimatedCount target={item.rawCount} loaded={loaded} />

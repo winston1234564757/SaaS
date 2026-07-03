@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect, useMemo, useRef } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useEffect, useMemo } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import { format, addDays } from 'date-fns';
 import { uk } from 'date-fns/locale';
 import Link from 'next/link';
-import { FitText } from '@/components/shared/FitText';
-import { useAdaptiveColor } from '@/lib/hooks/useAdaptiveColor';
+import { ArrowUpRight, Zap, Sparkles } from 'lucide-react';
+import { EditorialCover } from '@/components/ui/EditorialCover';
 import { useMasterContext } from '@/lib/supabase/context';
 import { useBookings, type BookingWithServices } from '@/lib/supabase/hooks/useBookings';
 import { getNow } from '@/lib/utils/now';
@@ -19,57 +19,22 @@ function getGreeting(hour: number): string {
   return 'Доброї ночі';
 }
 
-function NextBookingRow({ booking, todayStr }: { booking: BookingWithServices; todayStr: string }) {
-  const serviceName = booking.services[0]?.name ?? 'Запис';
-  const tomorrowStr = format(addDays(new Date(todayStr), 1), 'yyyy-MM-dd');
-  const isToday    = booking.date === todayStr;
-  const isTomorrow = booking.date === tomorrowStr;
-
-  const dotClass =
-    booking.status === 'confirmed'
-      ? 'bg-[var(--success)] shadow-[0_0_6px_color-mix(in_srgb,var(--success)_50%,transparent)]'
-      : booking.status === 'pending'
-      ? 'bg-[var(--warning)]'
-      : 'opacity-30';
-
-  return (
-    <div
-      className="mt-4 rounded-[var(--card-radius)] overflow-hidden relative"
-      style={{ background: 'var(--hero-card-bg)', boxShadow: 'var(--hero-card-shadow)' }}
-    >
-      <div className="absolute inset-x-0 top-0 h-px pointer-events-none" style={{ background: 'color-mix(in srgb, var(--accent-on) 7%, transparent)' }} />
-      <p
-        className="px-5 pt-4 pb-0 text-[10px] font-bold tracking-[0.2em] uppercase"
-        style={{ color: 'var(--accent-on)', opacity: 0.42 }}
-      >
-        Найближчий запис
-      </p>
-      <Link href={`/dashboard/bookings?bookingId=${booking.id}`} className="block px-5 pt-3 pb-5 group">
-        <div className="flex items-end justify-between gap-4">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className={`w-[7px] h-[7px] rounded-full flex-shrink-0 ${dotClass}`} />
-            <div className="min-w-0">
-              <p className="font-service text-[21px] truncate leading-tight" style={{ color: 'var(--accent-on)' }}>
-                {serviceName}
-              </p>
-              <p className="text-[14px] mt-0.5 truncate" style={{ color: 'var(--accent-on)', opacity: 0.45 }}>
-                {booking.client_name}
-              </p>
-            </div>
-          </div>
-          <div className="text-right flex-shrink-0">
-            <p className="text-[12px] whitespace-nowrap" style={{ color: 'var(--accent-on)', opacity: 0.42 }}>
-              {isToday ? 'Сьогодні' : isTomorrow ? 'Завтра' : format(new Date(booking.date + 'T00:00:00'), 'd MMMM', { locale: uk })}
-            </p>
-            <p className="metric-value text-[20px] font-bold leading-tight whitespace-nowrap" style={{ color: 'var(--accent-on)' }}>
-              {booking.start_time}
-            </p>
-          </div>
-        </div>
-      </Link>
-    </div>
-  );
+/** On-dark статус-мета: світлі тінти (не Frost-хекси, відтюнені під світле). */
+function statusMeta(status: BookingWithServices['status']) {
+  if (status === 'confirmed') return { glow: '#34D399', dot: 'bg-emerald-300', ring: 'shadow-[0_0_8px_rgba(52,211,153,0.55)]' };
+  if (status === 'pending')   return { glow: '#FBBF24', dot: 'bg-amber-300',   ring: '' };
+  return { glow: undefined, dot: 'bg-white/40', ring: '' };
 }
+
+/* ─── Hero stagger (Emil spring, bounce 0) ─────────────────── */
+const cover = {
+  hidden:  {},
+  visible: { transition: { staggerChildren: 0.06, delayChildren: 0.04 } },
+};
+const item = {
+  hidden:  { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0, transition: { type: 'spring' as const, duration: 0.5, bounce: 0 } },
+};
 
 export function GreetingWidget() {
   const { profile, isLoading } = useMasterContext();
@@ -91,7 +56,7 @@ export function GreetingWidget() {
       dayLabel:     raw.charAt(0).toUpperCase() + raw.slice(1),
       dateLabel:    format(now, 'd MMMM', { locale: uk }),
     };
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const nextBooking = useMemo<BookingWithServices | null>(() => {
     if (!bookings) return null;
@@ -109,89 +74,153 @@ export function GreetingWidget() {
       })[0] ?? null;
   }, [bookings, timeStr, todayStr]);
 
-  if (isLoading) return (
-    <div className="pb-4 flex flex-col gap-3">
-      <div className="flex justify-between">
-        <div className="skeleton-shimmer h-8 w-32 rounded-lg" />
-        <div className="skeleton-shimmer h-8 w-20 rounded-lg" />
-      </div>
-      <div className="skeleton-shimmer h-3 w-36 rounded-full mt-1" />
-      <div className="skeleton-shimmer h-[90px] rounded-[24px] mt-2" />
-    </div>
-  );
-
+  const reduce = useReducedMotion();
   const firstName = (profile?.full_name ?? 'Майстре').split(' ')[0];
-  const greetingRef = useRef<HTMLDivElement>(null);
-  const colorScheme = useAdaptiveColor(greetingRef);
+
+  /* ─── Loading — skeleton on dark ─────────────────────────── */
+  if (isLoading) {
+    return (
+      <EditorialCover>
+        <div className="flex flex-col gap-5">
+          <div className="flex items-center justify-between">
+            <div className="h-3 w-28 rounded-full bg-white/10" />
+            <div className="h-3 w-12 rounded-full bg-white/10" />
+          </div>
+          <div className="h-5 w-40 rounded-lg bg-white/10" />
+          <div className="flex items-end justify-between pt-2">
+            <div className="flex flex-col gap-2">
+              <div className="h-8 w-44 rounded-lg bg-white/10" />
+              <div className="h-3 w-32 rounded-full bg-white/10" />
+            </div>
+            <div className="h-8 w-16 rounded-lg bg-white/10" />
+          </div>
+        </div>
+      </EditorialCover>
+    );
+  }
+
+  const meta = nextBooking ? statusMeta(nextBooking.status) : { glow: undefined, dot: '', ring: '' };
 
   return (
-    <div className="pb-4">
-      {/* Date + time as primary data hero */}
+    <EditorialCover glowColor={meta.glow}>
       <motion.div
-        initial={{ opacity: 0, y: -4 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ type: 'spring' as const, duration: 0.45, bounce: 0 }}
-        className="flex items-end justify-between gap-4 mb-3"
-        suppressHydrationWarning
+        variants={reduce ? undefined : cover}
+        initial={reduce ? undefined : 'hidden'}
+        animate={reduce ? undefined : 'visible'}
+        className="flex flex-col"
       >
-        <div>
-          <p
-            className="text-[11px] font-bold tracking-[0.18em] uppercase mb-1"
-            style={{ color: 'var(--text-tertiary)' }}
-          >
-            {dayLabel}
-          </p>
-          <p
-            className="metric-value text-[36px] font-bold leading-tight"
-            style={{ color: 'var(--text-primary)', letterSpacing: '-0.02em' }}
-          >
-            {dateLabel}
-          </p>
-        </div>
+        {/* Привітання — велике тепле editorial-вітання */}
+        <motion.p
+          variants={reduce ? undefined : item}
+          className="heading-serif text-[24px] leading-[1.15] text-white"
+          suppressHydrationWarning
+        >
+          {greetingText}, {firstName}
+        </motion.p>
 
-        <div className="text-right flex-shrink-0">
-          <p
-            className="text-[11px] font-bold tracking-[0.14em] uppercase mb-1"
-            style={{ color: 'var(--text-tertiary)' }}
-          >
-            Зараз
+        {/* Дата + час — великим tabular-рядком */}
+        <motion.div
+          variants={reduce ? undefined : item}
+          className="mt-1.5 flex items-baseline justify-between gap-4"
+          suppressHydrationWarning
+        >
+          <p className="metric-value text-[16px] font-semibold text-white/70">
+            {dayLabel}, {dateLabel}
           </p>
-          <p
-            className="metric-value text-[36px] font-bold leading-tight"
-            style={{ color: 'var(--accent)', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' }}
-            suppressHydrationWarning
-          >
+          <p className="metric-value text-[16px] font-semibold text-white/70" suppressHydrationWarning>
             {timeStr}
           </p>
-        </div>
-      </motion.div>
-
-      {/* Greeting */}
-      <motion.div
-        ref={greetingRef}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.4, delay: 0.15 }}
-        suppressHydrationWarning
-      >
-        <FitText
-          text={`${greetingText}, ${firstName}`}
-          minSize={16}
-          maxSize={28}
-          className="font-semibold"
-          style={{ color: colorScheme === 'light' ? 'white' : 'var(--text-primary)' }}
-        />
-      </motion.div>
-
-      {nextBooking && (
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ type: 'spring' as const, duration: 0.5, bounce: 0, delay: 0.22 }}
-        >
-          <NextBookingRow booking={nextBooking} todayStr={todayStr} />
         </motion.div>
-      )}
-    </div>
+
+        <motion.div variants={reduce ? undefined : item} className="mt-4 h-px bg-white/10" />
+
+        {/* Домінанта */}
+        {nextBooking ? (
+          <NextBookingHero booking={nextBooking} todayStr={todayStr} meta={meta} reduce={!!reduce} />
+        ) : (
+          <EmptyDayHero reduce={!!reduce} />
+        )}
+      </motion.div>
+    </EditorialCover>
+  );
+}
+
+/* ─── Домінанта: наступний запис ───────────────────────────── */
+export function NextBookingHero({
+  booking, todayStr, meta,
+}: {
+  booking: BookingWithServices;
+  todayStr: string;
+  meta: ReturnType<typeof statusMeta>;
+  reduce: boolean;
+}) {
+  const serviceName = booking.services[0]?.name ?? 'Запис';
+  const tomorrowStr = format(addDays(new Date(todayStr), 1), 'yyyy-MM-dd');
+  const whenLabel =
+    booking.date === todayStr    ? 'Сьогодні'
+    : booking.date === tomorrowStr ? 'Завтра'
+    : format(new Date(booking.date + 'T00:00:00'), 'd MMMM', { locale: uk });
+
+  return (
+    <motion.div variants={item}>
+      <p className="mt-4 text-[10px] font-bold tracking-[0.2em] uppercase text-white/55">
+        Наступний
+      </p>
+      <Link
+        href={`/dashboard/bookings?bookingId=${booking.id}`}
+        className="group mt-1.5 flex items-end justify-between gap-4 rounded-lg active:scale-[0.99] transition-transform outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+      >
+        <div className="min-w-0">
+          <p className="heading-serif text-[30px] leading-[1.05] text-white line-clamp-2">
+            {booking.client_name}
+          </p>
+          <p className="mt-1 text-[13px] text-white/55 truncate">
+            {serviceName} · {whenLabel}
+          </p>
+        </div>
+        <div className="flex flex-col items-end shrink-0">
+          <span className="flex items-center gap-2">
+            <span className={`w-[7px] h-[7px] rounded-full ${meta.dot} ${meta.ring}`} />
+            <span className="metric-value text-[26px] leading-none text-white">
+              {booking.start_time}
+            </span>
+          </span>
+          <span className="mt-1.5 flex items-center gap-0.5 text-[11px] font-semibold text-white/55 group-hover:text-white/80 transition-colors">
+            Відкрити <ArrowUpRight size={13} strokeWidth={2} aria-hidden />
+          </span>
+        </div>
+      </Link>
+    </motion.div>
+  );
+}
+
+/* ─── Диференційований порожній стан → маркетинг ───────────── */
+export function EmptyDayHero({ }: { reduce: boolean }) {
+  return (
+    <motion.div variants={item} className="mt-4">
+      <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-white/50">
+        Попереду вільно
+      </p>
+      <p className="heading-serif text-[28px] leading-tight text-white mt-1.5">
+        Записів більше немає
+      </p>
+      <p className="text-[13px] text-white/55 mt-1.5 max-w-[34ch]">
+        Заповни вікно: запусти акцію або покажи вільні місця в сторіс.
+      </p>
+      <div className="mt-4 flex flex-wrap items-center gap-2.5">
+        <Link
+          href="/dashboard/flash"
+          className="inline-flex items-center gap-1.5 h-11 px-4 rounded-xl bg-white text-slate-900 text-[13px] font-bold active:scale-[0.97] transition-transform outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+        >
+          <Zap size={15} strokeWidth={2} aria-hidden /> Запустити акцію
+        </Link>
+        <Link
+          href="/dashboard/marketing?mode=free_slots"
+          className="inline-flex items-center gap-1.5 h-11 px-4 rounded-xl border border-white/20 text-white/80 text-[13px] font-semibold hover:bg-white/5 active:scale-[0.97] transition-all outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+        >
+          <Sparkles size={15} strokeWidth={2} aria-hidden /> Сторіс
+        </Link>
+      </div>
+    </motion.div>
   );
 }
