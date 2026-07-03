@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { Search, X } from 'lucide-react';
 import { serviceCategories } from '@/lib/constants/categories';
 import { pluralUk } from '@/lib/utils/pluralUk';
-import { SPRING } from './shared';
+import { SPRING, CORMORANT } from './shared';
 
 interface Props {
   searchQuery: string;
@@ -96,7 +96,8 @@ export function SearchPortal({
               type="button"
               aria-pressed={!activeCategory}
               onClick={() => onSelectCategory(null)}
-              className={`py-1.5 min-h-[44px] font-medium transition-colors duration-150 active:scale-95 text-xl leading-none ${
+              style={{ fontFamily: CORMORANT, fontWeight: 500 }}
+              className={`py-1.5 min-h-[44px] transition-colors duration-150 active:scale-95 text-[1.15rem] leading-none ${
                 !activeCategory
                   ? 'text-accent-foreground underline decoration-2 underline-offset-[6px]'
                   : 'text-accent-foreground/45 hover:text-accent-foreground/75'
@@ -112,14 +113,20 @@ export function SearchPortal({
                   type="button"
                   aria-pressed={active}
                   onClick={() => onSelectCategory(active ? null : w.id)}
-                  className={`py-1.5 min-h-[44px] font-medium transition-colors duration-150 active:scale-95 text-xl leading-none ${
+                  style={{ fontFamily: CORMORANT, fontWeight: 500 }}
+                  className={`py-1.5 min-h-[44px] transition-colors duration-150 active:scale-95 text-[1.15rem] leading-none ${
                     active
                       ? 'text-accent-foreground underline decoration-2 underline-offset-[6px]'
                       : 'text-accent-foreground/55 hover:text-accent-foreground/80'
                   }`}
                 >
                   {w.label}
-                  <span className="text-accent-foreground/35 text-[11px] align-super ml-0.5">{w.count}</span>
+                  <span
+                    className="text-accent-foreground/35 text-[11px] align-super ml-0.5 metric-value"
+                    style={{ fontFamily: 'var(--font-geist-sans, system-ui, sans-serif)' }}
+                  >
+                    {w.count}
+                  </span>
                 </button>
               );
             })}
