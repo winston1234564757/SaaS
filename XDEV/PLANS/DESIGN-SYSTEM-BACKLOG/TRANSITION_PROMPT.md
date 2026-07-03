@@ -17,12 +17,17 @@
 
 ═══ ПОТОЧНИЙ СТАН ═══
 Фундамент ✅ (C-CLI-01, 03.07, founder 10/10): токени --cover-bg / .editorial-cover · примітиви EditorialCover + Section · Button/Badge під мову · BentoCard видалено · Sheet srTitle · DESIGN_LANGUAGE.md.
-Прогрес задач: 2/23 ✅ (DS-DASH-01 герой дня, DS-DASH-02 тижневий графік).
+Прогрес задач: 3/23 ✅ (DS-DASH-01 герой дня · DS-DASH-02 тижневий графік · DS-DASH-03 пікові години).
 Кіт: bookit/src/components/ui/ — EditorialCover (темний герой, 1 на поверхню) · Section (білий тіло, hairline) · Button (primary slate / secondary hairline / ghost / danger) · Badge (surface light|dark) · Sheet (srTitle).
 Еталон реалізації: ClientDossierHero + ClientDetailSheet + BookingDetailsModal band (variant cover/inline). Читай BRIEFS/C-CLI-01.md перш ніж робити першу модалку/картку.
 
-▶ НАСТУПНА ДІЯ: DS-DASH-03 — Години пік (PeakHoursWidget, Тір 1, Opus).
-  Далі P1: DS-DASH-04..10 (віджети). Порядок фаз: P1 дашборд → P3 модалки → P2 клієнт-зона → P5 лендинг; P4 кнопки опортуністично всередині.
+★ 3 ЗАКРІПЛЕНІ УРОКИ P1-дашборду (застосовуй у КОЖНІЙ наступній DS-DASH):
+  1. Дашборд-віджет = СВІТЛИЙ `Section` (не другий темний герой; єдиний темний cover поверхні = DS-DASH-01). Патерн: `<Section title icon className="flex-1 flex flex-col" bodyClassName="flex flex-col flex-1">` для desktop h-full гріда. Section НЕ приймає style/onMouseLeave/...rest — обробники на внутрішній обгортці.
+  2. 🔴 СТАН РІДКИХ ДАНИХ ОБОВ'ЯЗКОВИЙ. Founder-акаунт має мало записів → графіки/сітки вироджуються, редизайн невидимий. Кожен data-віджет: 0→empty · рідко→editorial-текст/список · густо→повна візуалізація. ЗАВЖДИ рендерити прев'ю на рідких даних, не лише густий seed.
+  3. Кожен віджет = домінанта-заголовок (що читається за 3 сек) + виділена «зірка» в даних + за можливості actionable-лінк (напр. пік→«Підняти ціну в пік»→`/dashboard?drawer=dynamic_pricing`). Смарт-drawer на дашборді = `<Link href="/dashboard?drawer=NAME">` (nuqs, див. DashboardDrawers.tsx: flash_deals, dynamic_pricing).
+
+▶ НАСТУПНА ДІЯ: DS-DASH-04 — Рейт скасувань (CancellationRateWidget, Тір 1, Opus).
+  Далі P1: DS-DASH-05..10 (віджети). Порядок фаз: P1 дашборд → P3 модалки → P2 клієнт-зона → P5 лендинг; P4 кнопки опортуністично всередині.
 
 ═══ TASK GATE (перед кодом) ═══
 1. mempalace_search теми задачі
@@ -48,6 +53,14 @@ TRACKER: DS-[ID] ⬜→✅ + оновити ▶ NEXT + прогрес N/23 → �
 ---
 
 ## Нотатки сесій (свіжі зверху)
+
+### DS-DASH-03 — Пікові години (03.07, ✅ impeccable 20/20)
+- **Що:** `PeakHoursWidget` → `Section`. Домінанта = пік-слот заголовком: день `heading-serif` + час `metric-value` («Пʼятниця 14:00») + «Найзавантаженіший час · N записів». Heatmap 7×13 (год 8–20) збережений — рівномірність тут ЛЕГІТИМНА (як фото-грід).
+- **Пік-клітинка = зірка:** opacity 1 + світле кільце-halo (`box-shadow: 0 0 0 1.5px --surface, 0 0 0 3px --accent, м'яка тінь`) → вибивається серед темних сусідів. Founder попросив виділити сильніше.
+- **Actionable:** лінк «Підняти ціну в пік ↗» → `/dashboard?drawer=dynamic_pricing` (Смарт-ціни). Founder-запит. Патерн nuqs-drawer з DashboardDrawers.tsx.
+- **Low-data (той самий урок DS-DASH-02):** пороги max===0→«Немає даних за 30 днів» · max===1 (жоден слот не повторюється)→«Замало записів, щоб побачити пік» + підказка · max≥2→heatmap+пік. 91 клітинка → на рідких даних sparse-сітка виглядала б поламано.
+- **Збережено без змін:** tooltip fixed (сибл поза Section), клавіатура (arrows+roving tabindex), a11y (aria-label/pressed), overflow-visible для scale активної. onPointerLeave dismiss — на обгортці сітки.
+- **Скіли:** design-taste-frontend + impeccable 20/20. humanizer: нові рядки чисті (укр. апостроф ʼ, без AI-tells). Own-eyes Playwright (rich+low-data).
 
 ### DS-DASH-02 — Тижневий графік (03.07, ✅)
 - **Що:** `WeeklyChartWidget` → `Section`-примітив. Домінанта = сума тижня + delta. Бари: пік-день solid-accent+підпис (зірка), сьогодні = accent-label+крапка (позиція), решта тиха sequential-рампа. **dataviz-урок:** селективні лейбли — підписаний лише пік, решта значень на тап (не число на кожному барі).
