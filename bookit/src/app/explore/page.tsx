@@ -126,11 +126,24 @@ export default async function Explore() {
     }
   }
 
+  // Client's C2B referral code for the inline "invite your master" CTA (read-only;
+  // generation happens in /my/loyalty). Absent for anon/masters → CTA routes there.
+  let inviteCode: string | null = null;
+  if (user) {
+    const { data: cp } = await supabase
+      .from('client_profiles')
+      .select('c2b_referral_code')
+      .eq('id', user.id)
+      .maybeSingle();
+    inviteCode = (cp?.c2b_referral_code as string | null) ?? null;
+  }
+
   return (
     <ExplorePage
       masters={items}
       categoryCounts={categoryCounts}
       preferredCategories={preferredCategories}
+      inviteCode={inviteCode}
     />
   );
 }

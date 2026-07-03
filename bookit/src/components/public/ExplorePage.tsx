@@ -15,6 +15,7 @@ import { SearchPortal } from './explore/SearchPortal';
 import { IntentGrid, type HeroMode } from './explore/IntentGrid';
 import { FilterSheet } from './explore/FilterSheet';
 import { MasterCard, MasterListCard, SpotlightCard } from './explore/cards';
+import { ReferralInviteCTA } from './explore/ReferralInviteCTA';
 
 export type { ExploreMaster } from './explore/shared';
 
@@ -22,6 +23,7 @@ interface Props {
   masters: ExploreMaster[];
   categoryCounts: Record<string, number>;
   preferredCategories: string[];
+  inviteCode: string | null;
 }
 
 // ─── Sticky compact search (appears once the portal scrolls away) ───────────────
@@ -90,7 +92,7 @@ function StickySearch({
 
 // ─── Main ────────────────────────────────────────────────────────────────────────
 
-export function ExplorePage({ masters, categoryCounts, preferredCategories }: Props) {
+export function ExplorePage({ masters, categoryCounts, preferredCategories, inviteCode }: Props) {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [slotToday,      setSlotToday]      = useState(false);
   const [slotTomorrow,   setSlotTomorrow]   = useState(false);
@@ -418,9 +420,14 @@ export function ExplorePage({ masters, categoryCounts, preferredCategories }: Pr
             </div>
           )}
 
-          {/* Footer CTA */}
+          {/* Referral CTA — invite your master (C2B) */}
           {!hasMore && visible.length > 0 && (
-            <div className="mt-16 text-center px-6 py-8 rounded-3xl bg-accent/5 border border-accent/10">
+            <ReferralInviteCTA inviteCode={inviteCode} />
+          )}
+
+          {/* Footer CTA — recruit masters */}
+          {!hasMore && visible.length > 0 && (
+            <div className="mt-4 text-center px-6 py-8 rounded-3xl bg-accent/5 border border-accent/10">
               <p className="text-sm font-semibold text-foreground mb-1.5">Ти майстер?</p>
               <p className="text-xs text-muted-foreground mb-5 max-w-[260px] mx-auto leading-relaxed">
                 Приєднуйся безкоштовно. Перший запис можеш отримати вже сьогодні.
