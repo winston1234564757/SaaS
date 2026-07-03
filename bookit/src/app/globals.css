@@ -39,6 +39,26 @@
 }
 
 /* ═══════════════════════════════════════════════════════════
+   EDITORIAL COVER — темний блок (дизайн-мова, theme-independent)
+   Джерело: DESIGN_LANGUAGE.md «Закон темного блоку». Фіксований slate —
+   темний блок лишається темним у будь-якій темі (не залежить від --accent).
+   ═══════════════════════════════════════════════════════════ */
+:root {
+  --cover-bg: linear-gradient(157deg, #1E293B 0%, #0F172A 52%, #0B1220 100%);
+  --cover-shadow: 0 18px 40px -24px rgba(2, 6, 23, 0.9);
+}
+
+/* Темна editorial-обкладинка. Контент = світлий on-dark ramp (white/55..90). */
+.editorial-cover {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--card-radius);
+  color: #ffffff;
+  background: var(--cover-bg);
+  box-shadow: var(--cover-shadow);
+}
+
+/* ═══════════════════════════════════════════════════════════
    THEME 1 — BLOSSOM  (Light · Taupe)  ← DEFAULT
    Palette: #DDD5C6 · #A8896A · #28201A · #7A7060
    ═══════════════════════════════════════════════════════════ */

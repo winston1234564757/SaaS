@@ -28,7 +28,6 @@ import {
 import { PricingBadge } from '@/components/shared/PricingBadge';
 import type { BookingStatus } from '@/types/database';
 import { BOOKING_STATUS_CONFIG } from '@/lib/constants/bookingStatus';
-import { statusGlow } from '@/lib/utils/statusGlow';
 
 const UA_MONTHS = [
   'січня','лютого','березня','квітня','травня','червня',
@@ -484,29 +483,37 @@ export function BookingDetailsModal() {
             }
           />
 
-          {/* RECEIPT — bold hero (дата/час/статус) + склад замовлення + total */}
+          {/* RECEIPT — темна обкладинка-герой (дата/час/джерело) + світле тіло (C-CLI-01: спільний стиль з карткою клієнта) */}
           <div className="bento-card overflow-hidden">
-            {/* Hero band */}
-            <div className="px-5 pt-5 pb-4" style={{ backgroundImage: statusGlow(statusColor) }}>
-              <div className="flex items-start justify-between gap-3">
+            {/* Hero band — темна editorial-обкладинка */}
+            <div
+              className="relative overflow-hidden px-5 pt-5 pb-4 text-white"
+              style={{ background: 'var(--cover-bg)' }}
+            >
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-0"
+                style={{ background: `radial-gradient(120% 90% at 0% 0%, ${statusColor}40 0%, transparent 56%)` }}
+              />
+              <div className="relative flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/60 mb-1.5">Запис на</p>
-                  <p className="heading-serif text-[26px] leading-[1.05] text-foreground">{formatDate(displayBooking.date)}</p>
-                  <div className="flex items-center gap-1.5 mt-2 text-sm font-bold text-foreground">
-                    <Clock size={14} className="text-primary opacity-70 shrink-0" />
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/55 mb-1.5">Запис на</p>
+                  <p className="heading-serif text-[26px] leading-[1.05] text-white">{formatDate(displayBooking.date)}</p>
+                  <div className="flex items-center gap-1.5 mt-2 text-sm font-bold text-white">
+                    <Clock size={14} className="text-white/70 shrink-0" />
                     <span className="tabular-nums">{displayBooking.start_time} — {displayBooking.end_time}</span>
                     {durationMinutes > 0 && (
-                      <span className="text-muted-foreground/60 font-medium">· {formatDurationFull(durationMinutes)}</span>
+                      <span className="text-white/55 font-medium">· {formatDurationFull(durationMinutes)}</span>
                     )}
                   </div>
                 </div>
                 <div className="shrink-0">
                   {displayBooking.source === 'manual' ? (
-                    <span className="flex items-center gap-1 text-[10px] font-bold text-muted-foreground/70 bg-secondary/60 px-2.5 py-1 rounded-full">
+                    <span className="flex items-center gap-1 text-[10px] font-bold text-white/75 bg-white/10 px-2.5 py-1 rounded-full">
                       <PenLine size={11} /> Вручну
                     </span>
                   ) : (
-                    <span className="flex items-center gap-1 text-[10px] font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-full">
+                    <span className="flex items-center gap-1 text-[10px] font-bold text-indigo-200 bg-indigo-400/15 px-2.5 py-1 rounded-full">
                       <Globe size={11} /> Онлайн
                     </span>
                   )}

@@ -14,21 +14,27 @@ interface ButtonProps extends Omit<HTMLMotionProps<'button'>, 'size'> {
   fullWidth?: boolean;
 }
 
+/**
+ * Button — канонічна кнопка дизайн-мови (DESIGN_LANGUAGE.md).
+ * Ієрархія дій: `primary` = темний slate-домінант (одна на поверхню) · `secondary` = hairline
+ * тиха · `ghost` = майже невидима · `danger` = деструктив тінтом. Sentence-case (не uppercase),
+ * rounded-xl, тактильний whileTap. Радіус узгоджено з картками (не pill — pill лишається пілам/чіпам).
+ */
 const variantClasses: Record<ButtonVariant, string> = {
   primary:
-    'bg-[var(--btn-primary-bg)] text-[var(--accent-on)] hover:opacity-90 active:opacity-80 btn-primary-shadow',
+    'bg-[var(--btn-primary-bg)] text-[var(--accent-on)] shadow-sm hover:opacity-90 active:opacity-80',
   secondary:
-    'bg-transparent text-[var(--text-secondary)] border border-[var(--border-strong)] hover:border-[var(--accent)] hover:text-[var(--text-primary)]',
+    'bg-secondary/60 border border-border text-foreground hover:bg-secondary',
   ghost:
-    'bg-transparent text-[var(--text-tertiary)] hover:text-[var(--text-primary)]',
+    'bg-transparent text-text-sub hover:text-foreground hover:bg-secondary/50',
   danger:
-    'bg-[var(--error)]/10 text-[var(--error)] hover:bg-[var(--error)]/18',
+    'bg-destructive/10 text-destructive hover:bg-destructive/16',
 };
 
 const sizeClasses: Record<ButtonSize, string> = {
-  sm: 'h-9  px-5  text-[11px] tracking-[0.08em] uppercase font-semibold rounded-lg gap-1.5',
-  md: 'h-11 px-6  text-[12px] tracking-[0.09em] uppercase font-semibold rounded-lg gap-2',
-  lg: 'h-14 px-8  text-[13px] tracking-[0.09em] uppercase font-semibold rounded-lg gap-2.5',
+  sm: 'h-10 px-4  text-[13px] rounded-lg  gap-1.5',
+  md: 'h-12 px-5  text-sm    rounded-xl  gap-2',
+  lg: 'h-14 px-6  text-sm    rounded-xl  gap-2.5',
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -41,6 +47,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       className,
       children,
       disabled,
+      type = 'button',
       ...props
     },
     ref
@@ -48,13 +55,14 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <motion.button
         ref={ref}
+        type={type}
         whileTap={{ scale: 0.97 }}
         transition={{ type: 'spring', stiffness: 400, damping: 17 }}
         disabled={disabled || isLoading}
         aria-disabled={disabled || isLoading}
         data-state={isLoading ? 'loading' : undefined}
         className={cn(
-          'inline-flex items-center justify-center cursor-pointer select-none',
+          'inline-flex items-center justify-center cursor-pointer select-none font-bold',
           'transition-all duration-200',
           'disabled:opacity-40 disabled:cursor-not-allowed',
           variantClasses[variant],

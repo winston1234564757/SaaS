@@ -12,6 +12,8 @@ export interface SheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   title?: string;
+  /** Доступна назва діалогу коли `title` навмисно порожній (напр. власна обкладинка-герой володіє ідентичністю). */
+  srTitle?: string;
   children: ReactNode;
   variant?: 'adaptive' | 'dialog' | 'bottom';
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl';
@@ -27,7 +29,7 @@ const maxWidthClasses: Record<string, string> = {
 
 const SPRING = { type: 'spring', stiffness: 350, damping: 32 } as const;
 
-function DialogVariant({ open, onOpenChange, title, children, maxWidth = 'xl', className, contentClassName }: SheetProps) {
+function DialogVariant({ open, onOpenChange, title, srTitle, children, maxWidth = 'xl', className, contentClassName }: SheetProps) {
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <AnimatePresence>
@@ -66,7 +68,7 @@ function DialogVariant({ open, onOpenChange, title, children, maxWidth = 'xl', c
                         {title}
                       </Dialog.Title>
                     ) : (
-                      <Dialog.Title className="sr-only">Діалог</Dialog.Title>
+                      <Dialog.Title className="sr-only">{srTitle || 'Діалог'}</Dialog.Title>
                     )}
                     <Dialog.Close asChild>
                       <button
@@ -92,7 +94,7 @@ function DialogVariant({ open, onOpenChange, title, children, maxWidth = 'xl', c
   );
 }
 
-function BottomVariant({ open, onOpenChange, title, children, className, contentClassName, dismissible = true }: SheetProps) {
+function BottomVariant({ open, onOpenChange, title, srTitle, children, className, contentClassName, dismissible = true }: SheetProps) {
   return (
     <Drawer.Root
       open={open}
@@ -133,7 +135,7 @@ function BottomVariant({ open, onOpenChange, title, children, className, content
               </button>
             </div>
           ) : (
-            <Drawer.Title className="sr-only">Панель</Drawer.Title>
+            <Drawer.Title className="sr-only">{srTitle || 'Панель'}</Drawer.Title>
           )}
 
           <div className={cn('flex-1 overflow-y-auto scrollbar-hide overscroll-contain px-6 pt-2 pb-32', contentClassName)}>

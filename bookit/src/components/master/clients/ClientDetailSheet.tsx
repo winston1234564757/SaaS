@@ -4,8 +4,8 @@ import { useState, useRef, useTransition, useMemo } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useQueryClient } from '@tanstack/react-query';
 import {
-  Phone, Calendar, TrendingUp, Star, Crown, Bell, PenLine, Loader2,
-  Heart, AlertTriangle, ShieldPlus, Tag, Plus, X, Clock, Repeat,
+  Crown, Bell, PenLine, Loader2,
+  AlertTriangle, ShieldPlus, Tag, Plus, ChevronDown,
 } from 'lucide-react';
 import {
   sendChurnReminder, saveClientNote, toggleClientVip, archiveClient,
@@ -14,8 +14,7 @@ import {
 import { PricingBadge } from '@/components/shared/PricingBadge';
 import type { ClientRow } from './ClientsPage';
 import { RETENTION_CONFIG } from './ClientsPage';
-import { ClientIdentityHeader } from './ClientIdentityHeader';
-import { ClientStatChips, type StatChip } from './ClientStatChips';
+import { ClientDossierHero } from './ClientDossierHero';
 import { useMasterContext } from '@/lib/supabase/context';
 import { formatPrice } from '@/components/master/services/types';
 import { formatDate, timeAgo } from '@/lib/utils/dates';
@@ -25,6 +24,7 @@ import { useClientBookings } from '@/lib/supabase/hooks/useClientBookings';
 import { useClientTags, useClientTagsInvalidate } from '@/lib/supabase/hooks/useClientTags';
 import { useClients } from '@/lib/supabase/hooks/useClients';
 import { useAmbassadorStatus } from '@/lib/supabase/hooks/useAmbassadorStatus';
+import type { RetentionStatus } from '@/lib/supabase/hooks/useClients';
 import type { BookingStatus } from '@/types/database';
 import { BOOKING_STATUS_CONFIG } from '@/lib/constants/bookingStatus';
 import { cn } from '@/lib/utils/cn';
@@ -42,6 +42,14 @@ const TAG_PRESETS = [
   'Завжди з доглядом', 'Рекомендує друзям', 'Дуже балакучий',
 ];
 
+// Retention-тони, відтюнені під ТЕМНУ обкладинку (RETENTION_CONFIG — під світлий фон, на slate провалюють).
+const RETENTION_DARK: Record<RetentionStatus, { text: string; glow: string }> = {
+  active:   { text: '#6EE7B7', glow: '#34D399' }, // emerald — 11.4:1 на #0F172A
+  sleeping: { text: '#5EEAD4', glow: '#2DD4BF' }, // teal    — 11.9:1
+  at_risk:  { text: '#FDBA74', glow: '#FB923C' }, // orange  —  9.6:1
+  lost:     { text: '#FCA5A5', glow: '#F87171' }, // red     —  7.6:1
+};
+
 export function ClientDetailSheet({ client, onClose }: ClientDetailSheetProps) {
   const { masterProfile } = useMasterContext();
   const queryClient = useQueryClient();
@@ -50,6 +58,7 @@ export function ClientDetailSheet({ client, onClose }: ClientDetailSheetProps) {
   const [archiving, setArchiving] = useState(false);
   const [reminding, setReminding] = useState(false);
   const [archiveConfirmStep, setArchiveConfirmStep] = useState(false);
+  const [healthOpen, setHealthOpen] = useState(false);
 
   const { data: bookings = [], isLoading: isLoadingBookings } = useClientBookings(client?.client_phone);
   const { data: isAmbassador = false } = useAmbassadorStatus(client?.client_phone, masterProfile?.id);
@@ -95,13 +104,16 @@ export function ClientDetailSheet({ client, onClose }: ClientDetailSheetProps) {
     setArchiveConfirmStep(false);
     setCustomTag('');
     setTags([]);
+    setHealthOpen(false);
     if (client) {
       setMedicalNotes(client.medical_notes ?? '');
       setHealthNotes(client.health_notes ?? '');
     }
   }
 
-  const retention = RETENTION_CONFIG[client?.retention_status ?? 'active'];
+  const retentionStatus = client?.retention_status ?? 'active';
+  const retention = RETENTION_CONFIG[retentionStatus];
+  const retentionDark = RETENTION_DARK[retentionStatus];
 
   // Реальний LTV: ранг за сукупною виручкою серед усіх клієнтів майстра.
   const { maxSpent, rank, totalClients } = useMemo(() => {
@@ -132,11 +144,11 @@ export function ClientDetailSheet({ client, onClose }: ClientDetailSheetProps) {
     return `Приходить приблизно раз на ${m} ${pluralUk(m, 'місяць', 'місяці', 'місяців')}`;
   }, [bookings]);
 
-  const statChips: StatChip[] = useMemo(() => [
-    { icon: Calendar, label: 'Візити', value: client?.total_visits ?? 0, color: '#0F766E' },
-    { icon: TrendingUp, label: 'Витрачено', value: formatPrice(client?.total_spent ?? 0), color: '#15803D' },
-    { icon: Star, label: 'Сер. чек', value: formatPrice(client?.average_check ?? 0), color: '#B45309' },
-    { icon: Clock, label: 'Останній візит', value: client?.last_visit_at ? timeAgo(client.last_visit_at) : '—', color: '#C2410C' },
+  // Другорядні метрики — тихий by-numbers ряд у герої (total_spent = домінанта, тут його немає).
+  const byNumbers = useMemo(() => [
+    { label: 'Візити', value: String(client?.total_visits ?? 0) },
+    { label: 'Середній чек', value: formatPrice(client?.average_check ?? 0) },
+    { label: 'Останній візит', value: client?.last_visit_at ? timeAgo(client.last_visit_at) : '—' },
   ], [client]);
 
   const handleToggleVip = () => {
@@ -214,75 +226,38 @@ export function ClientDetailSheet({ client, onClose }: ClientDetailSheetProps) {
   const tagChips = Array.from(new Set([...TAG_PRESETS, ...tags]));
   const canManage = !!client?.client_id;
   const isAtRisk = client?.retention_status === 'at_risk' || client?.retention_status === 'lost';
+  const hasAlert = !!medicalNotes.trim();
+  const hasHealthInfo = hasAlert || !!healthNotes.trim();
 
   return (
     <Sheet
       open={!!client}
       onOpenChange={(v) => !v && onClose()}
-      title={client?.client_name ?? 'Інформація про клієнта'}
+      srTitle={client?.client_name || 'Інформація про клієнта'}
     >
       <div className="flex flex-col gap-5">
-        {/* Identity */}
-        <ClientIdentityHeader
-          name={client?.client_name ?? ''}
-          phone={client?.client_phone ?? ''}
-          isVip={client?.is_vip}
-          glowColor={retention.color}
-          statusPill={
-            <span
-              className="text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0"
-              style={{ color: retention.color, background: retention.bg }}
-            >
-              {retention.label}
-            </span>
-          }
-          badge={isAmbassador ? (
-            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-sage bg-sage/10 px-2 py-0.5 rounded-lg border border-sage/20 leading-tight">
-              <Heart size={12} className="fill-current" />
-              Амбасадор: запросив вас у Bookit
-            </span>
-          ) : undefined}
+        {/* ── HERO: темна обкладинка-досьє (ідентичність + цінність + сигнал) ── */}
+        <ClientDossierHero
+          name={client?.client_name || ''}
+          phone={client?.client_phone || ''}
+          retentionLabel={retention.label}
+          retentionText={retentionDark.text}
+          retentionGlow={retentionDark.glow}
+          isVip={!!client?.is_vip}
+          isAmbassador={isAmbassador}
+          hasAlert={hasAlert}
+          totalSpentLabel={formatPrice(client?.total_spent ?? 0)}
+          showRank={showRank}
+          rank={rank}
+          totalClients={totalClients}
+          spentPct={spentPct}
+          cadenceText={cadenceText}
+          byNumbers={byNumbers}
         />
 
-        {/* Stats */}
-        <ClientStatChips chips={statChips} />
-
-        {/* Value / LTV (realized) */}
+        {/* ── Останні записи (свіжий = featured, решта компактні) ── */}
         <div className="bento-card p-5">
-          <div className="flex items-center gap-1.5 mb-3">
-            <TrendingUp size={14} className="text-sage" />
-            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.16em]">Цінність клієнта</p>
-          </div>
-          <div className="flex items-end justify-between gap-3">
-            <div>
-              <p className="text-2xl font-bold text-foreground leading-none">{formatPrice(client?.total_spent ?? 0)}</p>
-              <p className="text-[11px] text-muted-foreground/70 mt-1.5">Сукупно за весь час співпраці</p>
-            </div>
-            {showRank && (
-              <span className="text-xs font-bold text-sage bg-sage/10 px-2.5 py-1 rounded-full shrink-0">
-                {rank} з {totalClients}
-              </span>
-            )}
-          </div>
-          {showRank && (
-            <div className="mt-3">
-              <div className="h-1.5 rounded-full bg-sage/10 overflow-hidden">
-                <div className="h-full rounded-full bg-sage/60" style={{ width: `${spentPct}%` }} />
-              </div>
-              <p className="text-[10px] text-muted-foreground/60 mt-1.5">Місце за сукупною виручкою</p>
-            </div>
-          )}
-          {cadenceText && (
-            <div className="flex items-center gap-1.5 mt-3 pt-3 border-t border-dashed border-border/60">
-              <Repeat size={13} className="text-muted-foreground/60" />
-              <p className="text-xs font-medium text-foreground/80">{cadenceText}</p>
-            </div>
-          )}
-        </div>
-
-        {/* Recent bookings */}
-        <div className="bento-card p-5">
-          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.16em] mb-4">Останні записи</p>
+          <p className="text-[10px] font-bold text-text-sub uppercase tracking-[0.16em] mb-4">Останні записи</p>
           {isLoadingBookings ? (
             <div className="flex flex-col gap-2.5">
               {[0, 1, 2].map(i => (
@@ -291,20 +266,27 @@ export function ClientDetailSheet({ client, onClose }: ClientDetailSheetProps) {
             </div>
           ) : bookings.length === 0 ? (
             <div className="text-center py-6 bg-secondary/20 rounded-xl border border-dashed border-border/40">
-              <p className="text-xs text-muted-foreground/60">Записів ще немає</p>
+              <p className="text-xs text-text-sub">Записів ще немає</p>
             </div>
           ) : (
             <div className="flex flex-col gap-2.5">
-              {bookings.map(b => {
+              {bookings.map((b, i) => {
                 const cfg = BOOKING_STATUS_CONFIG[b.status as BookingStatus] ?? BOOKING_STATUS_CONFIG.pending;
+                const featured = i === 0;
                 return (
-                  <div key={b.id} className="flex items-center gap-4 py-3 px-4 rounded-xl bg-secondary/50 border border-border">
+                  <div
+                    key={b.id}
+                    className={cn(
+                      'flex items-center gap-4 rounded-xl border border-border',
+                      featured ? 'py-4 px-4 bg-secondary/60' : 'py-2.5 px-4 bg-secondary/35',
+                    )}
+                  >
                     <div className="flex-shrink-0 w-12 text-center">
-                      <p className="text-xs font-bold text-foreground">{b.start_time}</p>
-                      <p className="text-[9px] text-muted-foreground/60 font-bold uppercase mt-0.5">{formatDate(b.date)}</p>
+                      <p className={cn('font-bold text-foreground tabular-nums', featured ? 'text-sm' : 'text-xs')}>{b.start_time}</p>
+                      <p className="text-[9px] text-text-sub font-bold uppercase mt-0.5">{formatDate(b.date)}</p>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-bold text-foreground truncate">{b.service_name}</p>
+                      <p className={cn('font-bold text-foreground truncate', featured ? 'text-sm' : 'text-xs')}>{b.service_name}</p>
                       <div className="flex flex-wrap items-center gap-1.5 mt-1">
                         <span
                           className="text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-tighter inline-block"
@@ -319,7 +301,7 @@ export function ClientDetailSheet({ client, onClose }: ClientDetailSheetProps) {
                         )}
                       </div>
                     </div>
-                    <p className="text-xs font-bold text-foreground flex-shrink-0">{formatPrice(b.total_price)}</p>
+                    <p className={cn('font-bold text-foreground flex-shrink-0 tabular-nums', featured ? 'text-sm' : 'text-xs')}>{formatPrice(b.total_price)}</p>
                   </div>
                 );
               })}
@@ -327,12 +309,12 @@ export function ClientDetailSheet({ client, onClose }: ClientDetailSheetProps) {
           )}
         </div>
 
-        {/* Vibe tags (persisted) */}
+        {/* ── Особисті мітки ── */}
         <div className="bento-card p-5">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <Tag size={14} className="text-muted-foreground/60" />
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.16em]">Особисті мітки</p>
+              <Tag size={14} className="text-text-sub" />
+              <p className="text-[10px] font-bold text-text-sub uppercase tracking-[0.16em]">Особисті мітки</p>
             </div>
             {isSavingTags ? (
               <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-sage/10 text-sage">
@@ -340,7 +322,7 @@ export function ClientDetailSheet({ client, onClose }: ClientDetailSheetProps) {
                 <span className="text-[9px] font-bold uppercase tracking-tight">Зберігаємо</span>
               </span>
             ) : (
-              <span className="text-[10px] text-muted-foreground/40 font-medium italic">Лише для вас</span>
+              <span className="text-[10px] text-text-sub font-medium">Лише для вас</span>
             )}
           </div>
 
@@ -365,7 +347,7 @@ export function ClientDetailSheet({ client, onClose }: ClientDetailSheetProps) {
                           'px-3 py-1.5 rounded-xl text-[11px] font-bold border transition-colors active:scale-[0.92]',
                           active
                             ? 'bg-primary/10 border-primary/20 text-primary'
-                            : 'bg-secondary/50 border-border text-muted-foreground/70',
+                            : 'bg-secondary/50 border-border text-text-sub',
                         )}
                       >
                         {tag}
@@ -381,7 +363,7 @@ export function ClientDetailSheet({ client, onClose }: ClientDetailSheetProps) {
                   onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addCustomTag(); } }}
                   placeholder="Своя мітка"
                   maxLength={40}
-                  className="flex-1 text-[12px] font-medium bg-secondary/50 border border-border rounded-xl px-3 py-2 outline-none focus:border-primary transition-colors text-foreground placeholder:text-muted-foreground/40"
+                  className="flex-1 text-[12px] font-medium bg-secondary/50 border border-border rounded-xl px-3 py-2 outline-none focus:border-primary transition-colors text-foreground placeholder:text-text-sub"
                 />
                 <button
                   type="button"
@@ -395,80 +377,99 @@ export function ClientDetailSheet({ client, onClose }: ClientDetailSheetProps) {
               </div>
             </>
           ) : (
-            <p className="text-[11px] text-muted-foreground/60 bg-secondary/20 py-2.5 px-3 rounded-xl border border-border/40">
+            <p className="text-[11px] text-text-sub bg-secondary/20 py-2.5 px-3 rounded-xl border border-border/40">
               Мітки доступні для клієнтів з акаунтом Bookit
             </p>
           )}
         </div>
 
-        {/* Safety & health */}
-        <div className="bento-card p-5">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
+        {/* ── Безпека та здоров'я: тихий розкривний блок (сигнал уже в герої) ── */}
+        <div className={cn('bento-card overflow-hidden', hasAlert && 'ring-1 ring-destructive/20')}>
+          <button
+            type="button"
+            onClick={() => setHealthOpen(o => !o)}
+            aria-expanded={healthOpen}
+            className="w-full flex items-center justify-between gap-3 p-5 text-left active:scale-[0.99] transition-transform"
+          >
+            <div className="flex items-center gap-2.5 min-w-0">
               <div className={cn(
-                'p-2 rounded-xl flex items-center justify-center',
-                medicalNotes ? 'bg-destructive/10 text-destructive' : 'bg-warning/10 text-warning',
+                'p-2 rounded-xl flex items-center justify-center shrink-0',
+                hasAlert ? 'bg-destructive/10 text-destructive' : 'bg-warning/10 text-warning',
               )}>
-                {medicalNotes ? <AlertTriangle size={16} /> : <ShieldPlus size={16} />}
+                {hasAlert ? <AlertTriangle size={16} /> : <ShieldPlus size={16} />}
               </div>
-              <div>
-                <p className={cn(
-                  'text-[10px] font-bold uppercase tracking-[0.16em]',
-                  medicalNotes ? 'text-destructive' : 'text-muted-foreground',
-                )}>Безпека та здоров&apos;я</p>
-                <p className="text-[10px] text-muted-foreground/40 font-medium">Доступно клієнту та майстру</p>
+              <div className="min-w-0">
+                <p className={cn('text-sm font-bold', hasAlert ? 'text-destructive' : 'text-foreground')}>Безпека та здоров&apos;я</p>
+                <p className="text-[11px] text-text-sub truncate">
+                  {hasAlert ? 'Є критичне застереження' : hasHealthInfo ? 'Є нотатки' : 'Алергії та особливості для безпечної процедури'}
+                </p>
               </div>
             </div>
-            {isSavingHealth && (
-              <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-destructive/5 text-destructive">
-                <Loader2 size={10} className="animate-spin" />
-                <span className="text-[9px] font-bold uppercase tracking-tight">Зберігаємо</span>
-              </span>
-            )}
-          </div>
+            <ChevronDown size={18} className={cn('text-text-sub shrink-0 transition-transform', healthOpen && 'rotate-180')} />
+          </button>
 
-          <div className="space-y-3">
-            <div>
-              <label className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-tight mb-1.5 block px-1">
-                Критичні застереження (алергії)
-              </label>
-              <textarea
-                value={medicalNotes}
-                onChange={e => onHealthChange(e.target.value, healthNotes)}
-                placeholder="Алергія на фарбу, чутлива шкіра, діабет"
-                rows={1}
-                className={cn(
-                  'w-full text-sm font-medium bg-secondary/50 border rounded-xl px-4 py-3 outline-none transition-all resize-none',
-                  medicalNotes
-                    ? 'border-destructive/30 text-destructive placeholder:text-destructive/30 focus:border-destructive'
-                    : 'border-border text-foreground placeholder:text-muted-foreground/30 focus:border-primary',
-                )}
-              />
-            </div>
-            <div>
-              <label className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-tight mb-1.5 block px-1">
-                Загальний стан здоров&apos;я
-              </label>
-              <textarea
-                value={healthNotes}
-                onChange={e => onHealthChange(medicalNotes, e.target.value)}
-                placeholder="Вподобання щодо тиску, особливості постави"
-                rows={1}
-                className="w-full text-sm text-foreground bg-secondary/50 border border-border rounded-xl px-4 py-3 outline-none focus:border-primary resize-none transition-all placeholder:text-muted-foreground/30"
-              />
-            </div>
-          </div>
-          <p className="text-[10px] text-muted-foreground/50 mt-3 font-medium">
-            Ця інформація допомагає зробити процедуру безпечною. Вона синхронізована з профілем клієнта.
-          </p>
+          <AnimatePresence initial={false}>
+            {healthOpen && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 32 }}
+                className="overflow-hidden"
+              >
+                <div className="px-5 pb-5 space-y-3">
+                  <div className="flex items-center justify-end -mt-1 h-4">
+                    {isSavingHealth && (
+                      <span className="flex items-center gap-1.5 text-destructive">
+                        <Loader2 size={10} className="animate-spin" />
+                        <span className="text-[9px] font-bold uppercase tracking-tight">Зберігаємо</span>
+                      </span>
+                    )}
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-text-sub uppercase tracking-tight mb-1.5 block px-1">
+                      Критичні застереження (алергії)
+                    </label>
+                    <textarea
+                      value={medicalNotes}
+                      onChange={e => onHealthChange(e.target.value, healthNotes)}
+                      placeholder="Алергія на фарбу, чутлива шкіра, діабет"
+                      rows={1}
+                      className={cn(
+                        'w-full text-sm font-medium bg-secondary/50 border rounded-xl px-4 py-3 outline-none transition-all resize-none',
+                        hasAlert
+                          ? 'border-destructive/30 text-destructive placeholder:text-destructive/30 focus:border-destructive'
+                          : 'border-border text-foreground placeholder:text-text-sub focus:border-primary',
+                      )}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-text-sub uppercase tracking-tight mb-1.5 block px-1">
+                      Загальний стан здоров&apos;я
+                    </label>
+                    <textarea
+                      value={healthNotes}
+                      onChange={e => onHealthChange(medicalNotes, e.target.value)}
+                      placeholder="Вподобання щодо тиску, особливості постави"
+                      rows={1}
+                      className="w-full text-sm text-foreground bg-secondary/50 border border-border rounded-xl px-4 py-3 outline-none focus:border-primary resize-none transition-all placeholder:text-text-sub"
+                    />
+                  </div>
+                  <p className="text-[10px] text-text-sub font-medium">
+                    Синхронізовано з профілем клієнта. Допомагає зробити процедуру безпечною.
+                  </p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
-        {/* Private notes */}
+        {/* ── Приватні нотатки ── */}
         <div className="bento-card p-5">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <PenLine size={14} className="text-muted-foreground/60" />
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.16em]">Приватні нотатки</p>
+              <PenLine size={14} className="text-text-sub" />
+              <p className="text-[10px] font-bold text-text-sub uppercase tracking-[0.16em]">Приватні нотатки</p>
             </div>
             {isSavingNote && (
               <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-sage/10 text-sage">
@@ -482,12 +483,12 @@ export function ClientDetailSheet({ client, onClose }: ClientDetailSheetProps) {
             onChange={e => onNoteChange(e.target.value)}
             placeholder="Формула фарбування, особливі побажання, важливі деталі"
             rows={3}
-            className="w-full text-sm text-foreground bg-secondary/50 border border-border rounded-xl px-4 py-3.5 outline-none focus:border-primary resize-none transition-all leading-relaxed placeholder:text-muted-foreground/30"
+            className="w-full text-sm text-foreground bg-secondary/50 border border-border rounded-xl px-4 py-3.5 outline-none focus:border-primary resize-none transition-all leading-relaxed placeholder:text-text-sub"
           />
-          <p className="text-[10px] text-muted-foreground/50 mt-2 font-medium">Видимо тільки вам. Автозбереження увімкнено.</p>
+          <p className="text-[10px] text-text-sub mt-2 font-medium">Видимо тільки вам. Автозбереження увімкнено.</p>
         </div>
 
-        {/* Actions */}
+        {/* ── Дії ── */}
         <div className="space-y-3">
           {client && isAtRisk && (
             <button
@@ -523,7 +524,7 @@ export function ClientDetailSheet({ client, onClose }: ClientDetailSheetProps) {
               {client.is_vip ? 'Прибрати статус VIP' : 'Позначити як VIP'}
             </button>
           ) : (
-            <p className="text-[11px] text-muted-foreground/60 text-center bg-secondary/20 py-2 rounded-xl border border-border/40">
+            <p className="text-[11px] text-text-sub text-center bg-secondary/20 py-2 rounded-xl border border-border/40">
               VIP доступний для клієнтів з акаунтом Bookit
             </p>
           )}
