@@ -17,12 +17,12 @@
 
 ═══ ПОТОЧНИЙ СТАН ═══
 Фундамент ✅ (C-CLI-01, 03.07, founder 10/10): токени --cover-bg / .editorial-cover · примітиви EditorialCover + Section · Button/Badge під мову · BentoCard видалено · Sheet srTitle · DESIGN_LANGUAGE.md.
-Прогрес задач: 1/23 ✅ (DS-DASH-01 done, founder «роз'єбалово»).
+Прогрес задач: 2/23 ✅ (DS-DASH-01 герой дня, DS-DASH-02 тижневий графік).
 Кіт: bookit/src/components/ui/ — EditorialCover (темний герой, 1 на поверхню) · Section (білий тіло, hairline) · Button (primary slate / secondary hairline / ghost / danger) · Badge (surface light|dark) · Sheet (srTitle).
 Еталон реалізації: ClientDossierHero + ClientDetailSheet + BookingDetailsModal band (variant cover/inline). Читай BRIEFS/C-CLI-01.md перш ніж робити першу модалку/картку.
 
-▶ НАСТУПНА ДІЯ: DS-DASH-02 — Тижневий графік (WeeklyChartWidget, Тір 2, Opus).
-  Далі P1: DS-DASH-03..10 (віджети). Порядок фаз: P1 дашборд → P3 модалки → P2 клієнт-зона → P5 лендинг; P4 кнопки опортуністично всередині.
+▶ НАСТУПНА ДІЯ: DS-DASH-03 — Години пік (PeakHoursWidget, Тір 1, Opus).
+  Далі P1: DS-DASH-04..10 (віджети). Порядок фаз: P1 дашборд → P3 модалки → P2 клієнт-зона → P5 лендинг; P4 кнопки опортуністично всередині.
 
 ═══ TASK GATE (перед кодом) ═══
 1. mempalace_search теми задачі
@@ -48,6 +48,12 @@ TRACKER: DS-[ID] ⬜→✅ + оновити ▶ NEXT + прогрес N/23 → �
 ---
 
 ## Нотатки сесій (свіжі зверху)
+
+### DS-DASH-02 — Тижневий графік (03.07, ✅)
+- **Що:** `WeeklyChartWidget` → `Section`-примітив. Домінанта = сума тижня + delta. Бари: пік-день solid-accent+підпис (зірка), сьогодні = accent-label+крапка (позиція), решта тиха sequential-рампа. **dataviz-урок:** селективні лейбли — підписаний лише пік, решта значень на тап (не число на кожному барі).
+- **🔴 Ключовий урок (founder «наче нічого не змінилось» на своєму 1 записі):** на рідких даних 7-баровий графік вироджувався в 1 бар → редизайн невидимий. Додано `LowDataWeek` — 1–2 активні дні рендерять editorial-СПИСОК (день+значення+к-сть, пік accent-крапка) замість порожніх барів. Пороги: 0→empty · ≤2 активні дні→список · 3+→бари. **ЗАВЖДИ перевіряти редизайн на реальних рідких даних, не лише густий seed.**
+- **Скіли:** dataviz (перед кодом чарта) → impeccable 19/20. humanizer не потрібен (нема нового user-copy). Own-eyes Playwright (густі + малі дані).
+- **Section h-full:** desktop-грід дає `[&>*]:h-full` → `Section className="flex-1 flex flex-col" bodyClassName="flex flex-col flex-1"` + бари `mt-auto`. Tooltip fixed — сибл ПОЗА Section (backdrop-filter containment). `onMouseLeave` НЕ на Section (не приймає) — на обгортці барів.
 
 ### DS-DASH-01 — Герой дня (03.07, ✅ founder «роз'єбалово»)
 - **Що:** `GreetingWidget` переписано на темний `EditorialCover`-герой. Домінанта = наступний запис (ім'я Cormorant 30px + час metric-value + status-dot + emerald/amber glow). Порожній стан = власна домінанта + 2 маркетинг-CTA (Flash/Сторіс). `FrostMetricsStrip`: розбито «8 рівних» — головна метрика «Виручка сьогодні» акцентна+важча.
