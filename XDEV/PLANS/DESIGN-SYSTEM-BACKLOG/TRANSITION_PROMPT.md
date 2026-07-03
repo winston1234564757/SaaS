@@ -17,7 +17,7 @@
 
 ═══ ПОТОЧНИЙ СТАН ═══
 Фундамент ✅ (C-CLI-01, 03.07, founder 10/10): токени --cover-bg / .editorial-cover · примітиви EditorialCover + Section · Button/Badge під мову · BentoCard видалено · Sheet srTitle · DESIGN_LANGUAGE.md.
-Прогрес задач: 4/23 ✅ (DS-DASH-01 герой дня · DS-DASH-02 тижневий графік · DS-DASH-03 пікові години · DS-DASH-04 рейт скасувань).
+Прогрес задач: 5/23 ✅ (DS-DASH-01 герой дня · DS-DASH-02 тижневий графік · DS-DASH-03 пікові години · DS-DASH-04 рейт скасувань · DS-DASH-05 вільні дні).
 Кіт: bookit/src/components/ui/ — EditorialCover (темний герой, 1 на поверхню) · Section (білий тіло, hairline) · Button (primary slate / secondary hairline / ghost / danger) · Badge (surface light|dark) · Sheet (srTitle).
 Еталон реалізації: ClientDossierHero + ClientDetailSheet + BookingDetailsModal band (variant cover/inline). Читай BRIEFS/C-CLI-01.md перш ніж робити першу модалку/картку.
 
@@ -27,8 +27,8 @@
   3. Кожен віджет = домінанта-заголовок (що читається за 3 сек) + виділена «зірка» в даних + за можливості actionable-лінк (напр. пік→«Підняти ціну в пік»→`/dashboard?drawer=dynamic_pricing`). Смарт-drawer на дашборді = `<Link href="/dashboard?drawer=NAME">` (nuqs, див. DashboardDrawers.tsx: flash_deals, dynamic_pricing).
   4. 🔴 КОНТРАСТ НА FROST (DS-DASH-04): токени `--success`/`--warning` провалюють 4.5:1 на дрібному (12px) тексті на periwinkle-картці (≈3.95). `.heading-serif`=weight500 → NIE bold → навіть 19px = normal text (4.5, не 3). Для тексту-статусу юзай калібровані тони good`#0B6B2E`/warn`#9A4508`/bad`--error`. **`--text-tertiary` (2.78:1) = забанене §4 значення → НІКОЛИ для тексту; тільки `--text-primary`/`--text-secondary`. Ієрархію — розміром.**
 
-▶ НАСТУПНА ДІЯ: DS-DASH-05 — Найближчі вільні дні (NextFreeDaysWidget, Тір 1, Opus).
-  Далі P1: DS-DASH-06..10 (віджети). Порядок фаз: P1 дашборд → P3 модалки → P2 клієнт-зона → P5 лендинг; P4 кнопки опортуністично всередині.
+▶ НАСТУПНА ДІЯ: DS-DASH-06 — Інсайти-рядок (InsightsRow, Тір 1, Opus).
+  Далі P1: DS-DASH-07..10 (віджети). Порядок фаз: P1 дашборд → P3 модалки → P2 клієнт-зона → P5 лендинг; P4 кнопки опортуністично всередині.
 
 ═══ TASK GATE (перед кодом) ═══
 1. mempalace_search теми задачі
@@ -54,6 +54,14 @@ TRACKER: DS-[ID] ⬜→✅ + оновити ▶ NEXT + прогрес N/23 → �
 ---
 
 ## Нотатки сесій (свіжі зверху)
+
+### DS-DASH-05 — Найближчі вільні дні (04.07, ✅ founder QA)
+- **Що:** `NextFreeDaysWidget` → `Section`. **ІНВЕРСІЯ low-data DS-DASH-04:** founder має мало записів → майже все вільне → стара сітка 5 однакових пілів = «дані», хоч означає «порожньо». Домінанта = найближче вільне вікно (heading-serif день `dayFull` + metric-value дата accent, зірка), решта = тихий менший рейл. Кінець рівній сітці.
+- **4 стани:** win(`freeCount===0` → «Усе розписано» + emerald; замінює `return null`, що лишав діру в desktop `h-full [&>*]:h-full` комірці) · open(`openness≥0.7` → eyebrow «Багато вільних вікон», founder-реальність) · gaps(`<0.7` → «Найближче вільне вікно») · loading. Поріг openness 0.7 узгоджено.
+- **Хук `useNextFreeDays` +:** `freeCount` (усього вільних робочих днів, uncapped), `workingDays` (не-неділя днів; денумератор openness), `dayFull` (повний день). Цикл без кепу для лічильників, кеп 5 лише для display-списку.
+- **Диференціація:** 4 CTA → 2 (Сторіс primary free_slots + Flash hairline; узгоджено). `text-tertiary` (2.78, §4-бан) → `text-secondary` скрізь. Нових hex нема — усі тони верифіковані.
+- **Свідома межа:** «робочий день» = не-неділя (як наявна логіка вільних днів; хук не читає schedule_templates). openness для founder(0 записів)=1.0 → open-фреймінг. Не регресія.
+- **Own-eyes:** props-only `NextFreeDaysCard` (експорт) + 4 стани, Playwright. `onDayClick` збережено (клік→Sheet слотів дня). Видалено ds-preview перед commit.
 
 ### DS-DASH-04 — Рейт скасувань (04.07, ✅ founder QA)
 - **Що:** `CancellationRateWidget` → `Section`. Домінанта адаптується до щільності: старий голий `%` брехав (1 скасув. з 2 = «50%»). Хук `useCancellationRate` +`thisTotal` (денумератор). 4 стани: empty · clean(win «Без скасувань» + emerald-точка) · sparse(<5: веде ПОДІЯ + чесний «N з M записів», НЕ фальш-%) · dense(≥5: `%` + вердикт Низький/Помірний/Високий + тренд словами). Поріг 5 узгоджено з founder.
