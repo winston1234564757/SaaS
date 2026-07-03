@@ -3,12 +3,16 @@
 import { useBookings, type BookingWithServices } from '@/lib/supabase/hooks/useBookings';
 import { getWeekRange } from '@/lib/utils/dates';
 
+const VALID_STATUSES = ['confirmed', 'pending', 'completed', 'cancelled'];
+
 function calcRate(bookings: { status: string }[]): number | null {
-  const valid = bookings.filter(b =>
-    ['confirmed', 'pending', 'completed', 'cancelled'].includes(b.status),
-  );
+  const valid = bookings.filter(b => VALID_STATUSES.includes(b.status));
   if (!valid.length) return null;
   return Math.round((valid.filter(b => b.status === 'cancelled').length / valid.length) * 100);
+}
+
+function countValid(bookings: { status: string }[] | null | undefined): number {
+  return (bookings ?? []).filter(b => VALID_STATUSES.includes(b.status)).length;
 }
 
 export interface CancelledEntry {
@@ -39,6 +43,8 @@ export interface CancellationRateData {
   lastRate: number | null;
   delta: number | null;
   improved: boolean | null;
+  /** Денумератор: valid-записи цього тижня. % — шум коли мало; поріг для домінанти. */
+  thisTotal: number;
   /** Скасовані записи поточного тижня, найновіші зверху */
   cancelledList: CancelledEntry[];
   isLoading: boolean;
@@ -49,10 +55,11 @@ export function useCancellationRate(): CancellationRateData {
   const lastWeek = getWeekRange(-1);
   const { bookings: thisBk, isLoading: l1 } = useBookings(thisWeek.from, thisWeek.to);
   const { bookings: lastBk, isLoading: l2 } = useBookings(lastWeek.from, lastWeek.to);
-  const thisRate = thisBk ? calcRate(thisBk) : null;
-  const lastRate = lastBk ? calcRate(lastBk) : null;
-  const delta    = thisRate !== null && lastRate !== null ? thisRate - lastRate : null;
-  const improved = delta !== null ? delta < 0 : null;
+  const thisRate  = thisBk ? calcRate(thisBk) : null;
+  const lastRate  = lastBk ? calcRate(lastBk) : null;
+  const thisTotal = countValid(thisBk);
+  const delta     = thisRate !== null && lastRate !== null ? thisRate - lastRate : null;
+  const improved  = delta !== null ? delta < 0 : null;
   const cancelledList = (thisBk ?? [])
     .filter(b => b.status === 'cancelled')
     .map(toCancelledEntry)
@@ -61,5 +68,5 @@ export function useCancellationRate(): CancellationRateData {
       const tc = c.when ? new Date(c.when).getTime() : new Date(c.bookingDate).getTime();
       return tc - ta;
     });
-  return { thisRate, lastRate, delta, improved, cancelledList, isLoading: l1 || l2 };
+  return { thisRate, lastRate, delta, improved, thisTotal, cancelledList, isLoading: l1 || l2 };
 }

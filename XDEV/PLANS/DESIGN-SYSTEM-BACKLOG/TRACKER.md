@@ -1,8 +1,8 @@
 # DESIGN-SYSTEM TRACKER — конвергенція на дизайн-мову
 
 > Джерело задач: [DESIGN_SYSTEM_ROLLOUT.md](file:///C:/Users/Vitos/SaaS/XDEV/PLANS/DESIGN_SYSTEM_ROLLOUT.md) · Спека: [DESIGN_LANGUAGE.md](file:///C:/Users/Vitos/SaaS/XDEV/DESIGN_LANGUAGE.md) · Еталон: C-CLI-01
-> Прогрес: **3/23 ✅** · Фундамент ✅ · Активна тема: Frost
-> ▶ **NEXT: `DS-DASH-04`** — Рейт скасувань (`CancellationRateWidget`, Тір 1)
+> Прогрес: **4/23 ✅** · Фундамент ✅ · Активна тема: Frost
+> ▶ **NEXT: `DS-DASH-05`** — Найближчі вільні дні (`NextFreeDaysWidget`, Тір 1)
 
 Легенда: ⬜ не почато · 🔧 в роботі · ✅ здано+founder QA · ↩️ скасовано · тір за WORKFLOW (0 дрібний / 1 середній / 2 повний редизайн).
 
@@ -30,8 +30,8 @@
 | DS-DASH-01 | Shell + «Герой дня» (greeting/hero-зона) | `widgets/frost/GreetingWidget.tsx` + `FrostMetricsStrip.tsx` | 2 | ✅ |
 | DS-DASH-02 | Тижневий графік | `widgets/frost/WeeklyChartWidget.tsx` | 2 | ✅ |
 | DS-DASH-03 | Години пік | `widgets/frost/PeakHoursWidget.tsx` | 1 | ✅ |
-| DS-DASH-04 | Рейт скасувань | `widgets/frost/CancellationRateWidget.tsx` | 1 | ⬜ ▶ NEXT |
-| DS-DASH-05 | Найближчі вільні дні | `widgets/frost/NextFreeDaysWidget.tsx` | 1 | ⬜ |
+| DS-DASH-04 | Рейт скасувань | `widgets/frost/CancellationRateWidget.tsx` | 1 | ✅ |
+| DS-DASH-05 | Найближчі вільні дні | `widgets/frost/NextFreeDaysWidget.tsx` | 1 | ⬜ ▶ NEXT |
 | DS-DASH-06 | Інсайти-рядок | `widgets/frost/InsightsRow.tsx` | 1 | ⬜ |
 | DS-DASH-07 | Здоров'я каналів | `widgets/frost/ChannelHealthWidget.tsx` | 1 | ⬜ |
 | DS-DASH-08 | Топ послуги | `widgets/frost/TopServicesWidget.tsx` | 1 | ⬜ |

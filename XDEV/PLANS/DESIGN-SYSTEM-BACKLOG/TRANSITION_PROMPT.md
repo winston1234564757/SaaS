@@ -17,17 +17,18 @@
 
 ═══ ПОТОЧНИЙ СТАН ═══
 Фундамент ✅ (C-CLI-01, 03.07, founder 10/10): токени --cover-bg / .editorial-cover · примітиви EditorialCover + Section · Button/Badge під мову · BentoCard видалено · Sheet srTitle · DESIGN_LANGUAGE.md.
-Прогрес задач: 3/23 ✅ (DS-DASH-01 герой дня · DS-DASH-02 тижневий графік · DS-DASH-03 пікові години).
+Прогрес задач: 4/23 ✅ (DS-DASH-01 герой дня · DS-DASH-02 тижневий графік · DS-DASH-03 пікові години · DS-DASH-04 рейт скасувань).
 Кіт: bookit/src/components/ui/ — EditorialCover (темний герой, 1 на поверхню) · Section (білий тіло, hairline) · Button (primary slate / secondary hairline / ghost / danger) · Badge (surface light|dark) · Sheet (srTitle).
 Еталон реалізації: ClientDossierHero + ClientDetailSheet + BookingDetailsModal band (variant cover/inline). Читай BRIEFS/C-CLI-01.md перш ніж робити першу модалку/картку.
 
-★ 3 ЗАКРІПЛЕНІ УРОКИ P1-дашборду (застосовуй у КОЖНІЙ наступній DS-DASH):
+★ 4 ЗАКРІПЛЕНІ УРОКИ P1-дашборду (застосовуй у КОЖНІЙ наступній DS-DASH):
   1. Дашборд-віджет = СВІТЛИЙ `Section` (не другий темний герой; єдиний темний cover поверхні = DS-DASH-01). Патерн: `<Section title icon className="flex-1 flex flex-col" bodyClassName="flex flex-col flex-1">` для desktop h-full гріда. Section НЕ приймає style/onMouseLeave/...rest — обробники на внутрішній обгортці.
   2. 🔴 СТАН РІДКИХ ДАНИХ ОБОВ'ЯЗКОВИЙ. Founder-акаунт має мало записів → графіки/сітки вироджуються, редизайн невидимий. Кожен data-віджет: 0→empty · рідко→editorial-текст/список · густо→повна візуалізація. ЗАВЖДИ рендерити прев'ю на рідких даних, не лише густий seed.
   3. Кожен віджет = домінанта-заголовок (що читається за 3 сек) + виділена «зірка» в даних + за можливості actionable-лінк (напр. пік→«Підняти ціну в пік»→`/dashboard?drawer=dynamic_pricing`). Смарт-drawer на дашборді = `<Link href="/dashboard?drawer=NAME">` (nuqs, див. DashboardDrawers.tsx: flash_deals, dynamic_pricing).
+  4. 🔴 КОНТРАСТ НА FROST (DS-DASH-04): токени `--success`/`--warning` провалюють 4.5:1 на дрібному (12px) тексті на periwinkle-картці (≈3.95). `.heading-serif`=weight500 → NIE bold → навіть 19px = normal text (4.5, не 3). Для тексту-статусу юзай калібровані тони good`#0B6B2E`/warn`#9A4508`/bad`--error`. **`--text-tertiary` (2.78:1) = забанене §4 значення → НІКОЛИ для тексту; тільки `--text-primary`/`--text-secondary`. Ієрархію — розміром.**
 
-▶ НАСТУПНА ДІЯ: DS-DASH-04 — Рейт скасувань (CancellationRateWidget, Тір 1, Opus).
-  Далі P1: DS-DASH-05..10 (віджети). Порядок фаз: P1 дашборд → P3 модалки → P2 клієнт-зона → P5 лендинг; P4 кнопки опортуністично всередині.
+▶ НАСТУПНА ДІЯ: DS-DASH-05 — Найближчі вільні дні (NextFreeDaysWidget, Тір 1, Opus).
+  Далі P1: DS-DASH-06..10 (віджети). Порядок фаз: P1 дашборд → P3 модалки → P2 клієнт-зона → P5 лендинг; P4 кнопки опортуністично всередині.
 
 ═══ TASK GATE (перед кодом) ═══
 1. mempalace_search теми задачі
@@ -53,6 +54,13 @@ TRACKER: DS-[ID] ⬜→✅ + оновити ▶ NEXT + прогрес N/23 → �
 ---
 
 ## Нотатки сесій (свіжі зверху)
+
+### DS-DASH-04 — Рейт скасувань (04.07, ✅ founder QA)
+- **Що:** `CancellationRateWidget` → `Section`. Домінанта адаптується до щільності: старий голий `%` брехав (1 скасув. з 2 = «50%»). Хук `useCancellationRate` +`thisTotal` (денумератор). 4 стани: empty · clean(win «Без скасувань» + emerald-точка) · sparse(<5: веде ПОДІЯ + чесний «N з M записів», НЕ фальш-%) · dense(≥5: `%` + вердикт Низький/Помірний/Високий + тренд словами). Поріг 5 узгоджено з founder.
+- **Диференціація:** 2 рівні filled-CTA → Пропозиція(primary slate)+Розсилка(hairline), і лише коли count>0. Sheet M-DASH-07 збережено; 1-й рядок featured(serif), решта компактні.
+- **🔴 КЛЮЧОВИЙ УРОК (контраст на Frost, застосовуй усюди на periwinkle-картці):** токени `--success #16803C` / `--warning #B45309` відтюнено під більший розмір і провалюють **4.5:1 на дрібному тексті** (≈3.95 на `--surface` L=0.779). `.heading-serif` = weight 500 → NIE bold → вердикт 19px рахується як normal text (треба 4.5, не 3). Ввів калібровані тони: good `#0B6B2E`(5.3) · warn `#9A4508`(5.1) · bad `--error #B91C1C`(5.1). **`--text-tertiary` (#0F172A@0.45 = 2.78:1) = САМЕ забанене DESIGN_LANGUAGE §4 значення 2.76 → для тексту НІКОЛИ; юзай `--text-secondary` (5.98). Ієрархію нести розміром, не третім тоном.**
+- **Own-eyes:** прев'ю-роут з чистим props-only `CancellationCard` (експорт) + 5 мок-станів + Sheet, Playwright. Контраст рахований скриптом (a11y MCP досі не піднявся). Видалено ds-preview+ds-shot+*.png перед commit.
+- **Не мій баг (founder-репорт «9/9 годин»):** це `AdaptiveContextStrip` (Насичений день) через `useBusyness`, НЕ чіпав. Діагностика DB: 1 booking `[SEED] sat 9h` 09:00-18:00=540хв → коректно заповнює 9-год день. Seed-артефакт (нереальна тривалість), не логіка. Фікс — у seed-скрипті, окрема задача.
 
 ### DS-DASH-03 — Пікові години (03.07, ✅ impeccable 20/20)
 - **Що:** `PeakHoursWidget` → `Section`. Домінанта = пік-слот заголовком: день `heading-serif` + час `metric-value` («Пʼятниця 14:00») + «Найзавантаженіший час · N записів». Heatmap 7×13 (год 8–20) збережений — рівномірність тут ЛЕГІТИМНА (як фото-грід).
