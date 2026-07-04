@@ -7,7 +7,6 @@ import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { formatPrice } from '@/components/master/services/types';
 import { Sheet } from '@/components/ui/Sheet';
 import type { ClientRow } from './ClientsPage';
-import { RETENTION_CONFIG } from './ClientsPage';
 import { useMasterContext } from '@/lib/supabase/context';
 import { useAnalytics } from '@/lib/supabase/hooks/useAnalytics';
 import { useTopAmbassadors } from '@/lib/supabase/hooks/useTopAmbassadors';
@@ -58,14 +57,8 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
   const { data: ambassadorResult } = useTopAmbassadors(masterProfile?.id);
 
   const {
-    activeCount, sleepingCount, atRiskCount, lostCount,
-    totalRevenue, avgCheck, lostTreasures, newbiesAtRisk, archiveCount,
+    avgCheck, lostTreasures, newbiesAtRisk, archiveCount,
   } = useMemo(() => {
-    const activeCount   = clients.filter(c => c.retention_status === 'active').length;
-    const sleepingCount = clients.filter(c => c.retention_status === 'sleeping').length;
-    const atRiskCount   = clients.filter(c => c.retention_status === 'at_risk').length;
-    const lostCount     = clients.filter(c => c.retention_status === 'lost').length;
-
     const totalRevenue = clients.reduce((s, c) => s + c.total_spent, 0);
     const totalVisits  = clients.reduce((s, c) => s + c.total_visits, 0);
     const avgCheck     = totalVisits > 0 ? totalRevenue / totalVisits : 0;
@@ -81,7 +74,7 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
       return new Date(c.last_visit_at) < archiveThreshold;
     }).length;
 
-    return { activeCount, sleepingCount, atRiskCount, lostCount, totalRevenue, avgCheck, lostTreasures, newbiesAtRisk, archiveCount };
+    return { avgCheck, lostTreasures, newbiesAtRisk, archiveCount };
   }, [clients, masterProfile?.retention_cycle_days]);
 
   const cleanupDismiss  = useDismissable('clients_cleanup', archiveCount);
@@ -92,7 +85,6 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
   if (isLoading) {
     return (
       <div className="grid grid-cols-2 gap-3">
-        <div className="col-span-2 h-32 skeleton-shimmer rounded-3xl" />
         <div className="h-28 skeleton-shimmer rounded-3xl" />
         <div className="h-28 skeleton-shimmer rounded-3xl" />
       </div>
@@ -104,56 +96,7 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
   return (
     <div className="grid grid-cols-2 gap-3">
 
-      {/* 1. Retention Funnel */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={SPRING}
-        className="col-span-2 bento-card p-5 relative overflow-hidden"
-      >
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <p className="text-[10px] font-bold text-text-sub">Утримання бази</p>
-            <h3 className="text-2xl font-display font-bold text-foreground">
-              {Math.round((activeCount / clients.length) * 100 || 0)}%
-              <span className="text-xs font-medium text-text-sub ml-2">здоровий стан</span>
-            </h3>
-          </div>
-          <Users className="text-accent opacity-10" size={40} />
-        </div>
-
-        <div className="flex gap-1.5 h-2.5 rounded-full overflow-hidden bg-secondary/20">
-          <div style={{ width: `${(activeCount/clients.length)*100}%`, background: RETENTION_CONFIG.active.color }} />
-          <div style={{ width: `${(sleepingCount/clients.length)*100}%`, background: RETENTION_CONFIG.sleeping.color }} />
-          <div style={{ width: `${(atRiskCount/clients.length)*100}%`, background: RETENTION_CONFIG.at_risk.color }} />
-          <div style={{ width: `${(lostCount/clients.length)*100}%`, background: RETENTION_CONFIG.lost.color }} />
-        </div>
-
-        <div className="grid grid-cols-4 gap-2 mt-5">
-          {[
-            { id: 'active',   label: 'Активні',   count: activeCount,   color: RETENTION_CONFIG.active.color,   bg: RETENTION_CONFIG.active.bg },
-            { id: 'sleeping', label: 'Дрімають',  count: sleepingCount, color: RETENTION_CONFIG.sleeping.color, bg: RETENTION_CONFIG.sleeping.bg },
-            { id: 'at_risk',  label: 'У ризику',  count: atRiskCount,   color: RETENTION_CONFIG.at_risk.color,  bg: RETENTION_CONFIG.at_risk.bg },
-            { id: 'lost',     label: 'Втрачені',  count: lostCount,     color: RETENTION_CONFIG.lost.color,     bg: RETENTION_CONFIG.lost.bg },
-          ].map(item => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => onSegmentSelect(item.id)}
-              aria-pressed={activeSegment === item.id}
-              className={`p-2 rounded-xl active:scale-[0.88] transition-all text-left ${activeSegment === item.id ? 'ring-2 ring-inset ring-foreground/10 bg-secondary/60' : 'hover:bg-secondary/40'}`}
-            >
-              <div className="flex items-center gap-1.5 mb-1">
-                <span className="size-1.5 rounded-full" style={{ background: item.color }} />
-                <p className="text-[13px] font-bold text-foreground leading-none">{item.count}</p>
-              </div>
-              <p className="text-[9px] font-bold text-text-sub">{item.label}</p>
-            </button>
-          ))}
-        </div>
-      </motion.div>
-
-      {/* 2. Average Check */}
+      {/* Середній чек */}
       <motion.button
         type="button"
         initial={{ opacity: 0, y: 12 }}
@@ -167,7 +110,7 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
           <TrendingUp size={14} className="text-primary/40" />
         </div>
         <div className="mt-2">
-          <p className="text-2xl font-bold text-foreground whitespace-nowrap">
+          <p className="metric-value text-2xl text-foreground whitespace-nowrap">
             {formatCompact(Math.round(avgCheck))}
           </p>
           <p className="text-[10px] text-text-sub mt-1">за весь час</p>
@@ -219,12 +162,12 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
                 </div>
                 {lostTreasures.length > 0 ? (
                   <div>
-                    <p className="text-2xl font-display font-bold text-warning">{lostTreasures.length}</p>
+                    <p className="metric-value text-2xl text-warning">{lostTreasures.length}</p>
                     <p className="text-[10px] text-[#9A4508] mt-1 font-medium italic">VIP під загрозою</p>
                   </div>
                 ) : (
                   <div>
-                    <p className="text-2xl font-display font-bold text-foreground">0</p>
+                    <p className="metric-value text-2xl text-foreground">0</p>
                     <p className="text-[10px] text-text-sub mt-1">всі VIP активні</p>
                   </div>
                 )}
@@ -247,7 +190,7 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
                   <p className="text-[10px] font-bold text-text-sub">Амбасадори</p>
                 </div>
                 <div>
-                  <p className="text-2xl font-display font-bold text-accent">{ambassadorData?.ambassadors.length ?? 0}</p>
+                  <p className="metric-value text-2xl text-accent">{ambassadorData?.ambassadors.length ?? 0}</p>
                   <p className="text-[10px] text-accent/70 mt-1 font-medium italic">топ-реферали</p>
                 </div>
               </motion.div>

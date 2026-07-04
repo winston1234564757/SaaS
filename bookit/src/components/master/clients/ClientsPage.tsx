@@ -13,6 +13,7 @@ import { ClientDetailSheet } from './ClientDetailSheet';
 import { ClientWidgets } from './ClientWidgets';
 import { ClientListRow } from './ClientListRow';
 import { ClientGridCard } from './ClientGridCard';
+import { ClientBaseHero, type RetentionSegId } from './ClientBaseHero';
 import { useClients } from '@/lib/supabase/hooks/useClients';
 import type { ClientRow, RetentionStatus } from '@/lib/supabase/hooks/useClients';
 import { Sheet } from '@/components/ui/Sheet';
@@ -158,6 +159,32 @@ export function ClientsPage() {
     setBookingFormOpen(true);
   }
 
+  // Спільний селектор сегментів (пульс героя + віджети бази).
+  function selectSegment(id: string) {
+    setCustomSegmentId(null);
+    if (['active', 'sleeping', 'at_risk', 'lost', 'all'].includes(id)) {
+      setRetentionFilter(id as RetentionFilter);
+      setSmartSegment('none');
+    } else {
+      setSmartSegment(id as SmartSegment);
+      setRetentionFilter('all');
+    }
+    setShowFab(true);
+  }
+
+  const activeSegmentId = smartSegment !== 'none' ? smartSegment : retentionFilter;
+
+  // Дані героя-пульсу: загальна к-сть + retention-розподіл + цінність бази.
+  const heroData = useMemo(() => {
+    const counts: Record<RetentionSegId, number> = { active: 0, sleeping: 0, at_risk: 0, lost: 0 };
+    let revenue = 0;
+    for (const c of clients) {
+      if (c.retention_status in counts) counts[c.retention_status as RetentionSegId] += 1;
+      revenue += c.total_spent;
+    }
+    return { total: clients.length, counts, totalRevenue: revenue };
+  }, [clients]);
+
   const filtered = useMemo(() => {
     const cycle = masterProfile?.retention_cycle_days ?? 60;
     const archiveDate = new Date();
@@ -223,37 +250,16 @@ export function ClientsPage() {
 
   return (
     <div className="flex flex-col gap-6 lg:gap-10 pb-32" data-tour-step="act-3">
-      {/* Header */}
-      <div className="flex flex-col gap-6 lg:gap-8">
-        <div className="flex items-end justify-between" data-tour-key="cli-header">
-          <div className="flex flex-col">
-            <h1
-              className="text-[60px] lg:text-[100px] text-foreground font-display transition-all duration-500"
-              style={{ fontFamily: 'var(--font-great-vibes, cursive)', fontWeight: 400, lineHeight: 0.85 }}
-            >
-              Клієнти
-            </h1>
-            <p className="text-xs lg:text-sm text-text-sub ml-2 lg:ml-4 mt-2 lg:mt-4 font-medium">
-              Ваша база клієнтів та CRM
-            </p>
-          </div>
-
-          <div className="flex gap-3 mb-1">
-            <button
-              type="button"
-              data-tour-key="cli-broadcast"
-              onClick={() => router.push('/dashboard/marketing?tab=broadcasts')}
-              className="group relative flex items-center gap-2 px-5 py-3 rounded-xl bg-[var(--btn-primary-bg)] text-[var(--accent-on)] font-bold text-sm shadow-xl shadow-black/10 transition-all hover:scale-105 active:scale-[0.95] overflow-hidden"
-            >
-              <div
-                className="absolute inset-0 translate-y-full group-hover:translate-y-0 transition-transform duration-300"
-                style={{ background: 'color-mix(in srgb, var(--accent-on) 10%, transparent)' }}
-              />
-              <Send size={18} className="relative z-10" />
-              <span className="relative z-10 hidden sm:inline">Розсилка</span>
-            </button>
-          </div>
-        </div>
+      {/* Герой бази — темна editorial-обкладинка (С-CLI-01) */}
+      <div data-tour-key="cli-header">
+        <ClientBaseHero
+          total={heroData.total}
+          counts={heroData.counts}
+          totalRevenue={heroData.totalRevenue}
+          activeSegment={activeSegmentId}
+          onSegmentSelect={selectSegment}
+          onBroadcast={() => router.push('/dashboard/marketing?tab=broadcasts')}
+        />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-start" data-tour-key="cli-list">
@@ -263,17 +269,8 @@ export function ClientsPage() {
           <ClientWidgets
             clients={clients}
             isLoading={isLoading}
-            activeSegment={smartSegment !== 'none' ? smartSegment : retentionFilter}
-            onSegmentSelect={(id) => {
-              setCustomSegmentId(null);
-              if (['active', 'sleeping', 'at_risk', 'lost', 'all'].includes(id)) {
-                setRetentionFilter(id as RetentionFilter);
-                setSmartSegment('none');
-              } else {
-                setSmartSegment(id as SmartSegment);
-                setRetentionFilter('all');
-              }
-            }}
+            activeSegment={activeSegmentId}
+            onSegmentSelect={selectSegment}
           />
         </div>
 
@@ -282,17 +279,8 @@ export function ClientsPage() {
           <ClientWidgets
             clients={clients}
             isLoading={isLoading}
-            activeSegment={smartSegment !== 'none' ? smartSegment : retentionFilter}
-            onSegmentSelect={(id) => {
-              setCustomSegmentId(null);
-              if (['active', 'sleeping', 'at_risk', 'lost', 'all'].includes(id)) {
-                setRetentionFilter(id as RetentionFilter);
-                setSmartSegment('none');
-              } else {
-                setSmartSegment(id as SmartSegment);
-                setRetentionFilter('all');
-              }
-            }}
+            activeSegment={activeSegmentId}
+            onSegmentSelect={selectSegment}
           />
         </div>
 
