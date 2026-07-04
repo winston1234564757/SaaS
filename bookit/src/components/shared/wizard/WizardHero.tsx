@@ -28,10 +28,10 @@ interface WizardHeroProps {
 
 function heroTitle(step: WizardStep, mode: 'client' | 'master'): string {
   switch (step) {
-    case 'services': return 'Оберіть послуги';
-    case 'datetime': return 'Оберіть час';
-    case 'products': return 'Додайте товари';
-    case 'details':  return mode === 'master' ? 'Деталі запису' : 'Ваші контакти';
+    case 'services': return 'Обери послуги';
+    case 'datetime': return 'Обери час';
+    case 'products': return 'Додай товари';
+    case 'details':  return mode === 'master' ? 'Деталі запису' : 'Твої контакти';
     default:         return '';
   }
 }
@@ -66,9 +66,9 @@ function heroMetric(p: WizardHeroProps): { value: string; sub: string } | null {
 
 /** Тихий підпис під домінантою коли ще нема вибору (веде фокус). */
 function heroHint(p: WizardHeroProps): string | null {
-  if (p.step === 'services' && p.selectedCount === 0) return 'Одна або кілька — рахунок оновиться сам';
-  if (p.step === 'datetime' && !p.selectedTime) return 'Оберіть вільний день і зручний час';
-  if (p.step === 'products' && p.cartCount === 0) return 'За бажанням — додайте товари до запису';
+  if (p.step === 'services' && p.selectedCount === 0) return 'Одна чи кілька — рахунок оновиться сам';
+  if (p.step === 'datetime' && !p.selectedTime) return 'Обери вільний день і зручний час';
+  if (p.step === 'products' && p.cartCount === 0) return 'За бажанням — додай товари до запису';
   return null;
 }
 

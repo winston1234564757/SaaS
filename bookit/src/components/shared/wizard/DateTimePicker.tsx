@@ -2,7 +2,7 @@
 // src/components/shared/wizard/DateTimePicker.tsx
 import { useState, useEffect } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Coffee, Calendar, Utensils, Sparkles, Star } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Coffee, Calendar, Utensils, Star } from 'lucide-react';
 import { addDays } from 'date-fns';
 import {
   buildSlotRenderItems,
@@ -16,6 +16,7 @@ import type { ScheduleStore } from '@/lib/supabase/hooks/useWizardSchedule';
 import { DAY_S, MONTH_S, toISO, fmt, slide } from './helpers';
 import type { WizardService } from './types';
 import { getNow } from '@/lib/utils/now';
+import { Button } from '@/components/ui/Button';
 
 // ── Spring constants ──────────────────────────────────────────────────────────
 const slotSpring = { type: 'spring' as const, stiffness: 260, damping: 26 };
@@ -103,10 +104,10 @@ export function DateTimePicker({
           type="button"
           onClick={onBack}
           aria-label="Повернутись до вибору послуг"
-          className="flex items-center gap-3 p-3 rounded-xl bg-primary/10 border border-primary/25 mb-5 w-full text-left active:scale-[0.95] transition-all cursor-pointer"
+          className="flex items-center gap-3 p-3 rounded-xl bg-secondary/50 border border-border mb-5 w-full text-left hover:bg-secondary/70 active:scale-[0.98] transition-all cursor-pointer"
         >
-          <div className="flex items-center justify-center size-7 rounded-lg bg-primary/10 border border-primary/25 flex-shrink-0">
-            <Sparkles size={14} className="text-primary" />
+          <div className="flex items-center justify-center size-7 rounded-lg bg-secondary border border-border flex-shrink-0">
+            <ChevronLeft size={14} className="text-text-sub" />
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-foreground truncate">
@@ -114,13 +115,13 @@ export function DateTimePicker({
                 ? selectedServices[0].name
                 : pluralUk(selectedServices.length, 'послуга', 'послуги', 'послуг')}
             </p>
-            <p className="text-xs text-muted-foreground/60">{formatDurationFull(effectiveDuration)} · {fmt(totalServicesPrice)}</p>
+            <p className="text-xs text-text-sub">{formatDurationFull(effectiveDuration)} · {fmt(totalServicesPrice)}</p>
           </div>
-          <ChevronRight size={14} className="text-muted-foreground/60 rotate-180 flex-shrink-0" />
+          <ChevronRight size={14} className="text-text-sub rotate-180 flex-shrink-0" />
         </button>
 
         {/* ── Date strip ── */}
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Дата</p>
+        <p className="text-sm font-bold text-foreground mb-2">Дата</p>
 
         <div className="flex items-center gap-2 mb-5">
           <button
@@ -168,7 +169,7 @@ export function DateTimePicker({
                   <span className={`text-[10px] font-bold uppercase tracking-wider whitespace-normal text-balance break-words text-center leading-tight ${
                     isOff ? 'text-muted-foreground/40' :
                     isFull ? 'text-destructive/50' :
-                    isSelected ? 'text-[var(--accent-on)]/80' : 'text-muted-foreground'
+                    isSelected ? 'text-[var(--accent-on)]/80' : 'text-text-sub'
                   }`}>
                     {isToday && !isDisabled ? 'Сьогодні' : DAY_S[d.getDay()]}
                   </span>
@@ -182,7 +183,7 @@ export function DateTimePicker({
                   ) : isFull ? (
                     <span className="text-[10px] font-bold text-destructive bg-destructive/15 rounded-full px-1.5 py-0.5 leading-none">зайнято</span>
                   ) : (
-                    <span className={`text-[10px] font-bold uppercase tracking-tight ${isSelected ? 'text-[var(--accent-on)]/70' : 'text-muted-foreground'}`}>
+                    <span className={`text-[10px] font-bold uppercase tracking-tight ${isSelected ? 'text-[var(--accent-on)]/70' : 'text-text-sub'}`}>
                       {MONTH_S[d.getMonth()]}
                     </span>
                   )}
@@ -226,15 +227,15 @@ export function DateTimePicker({
             {/* ── Time grid ── */}
             {selectedDate && (
               <>
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Час</p>
+                <p className="text-sm font-bold text-foreground mb-3">Час</p>
 
                 {offDayDates.has(toISO(selectedDate)) ? (
                   <div className="flex flex-col items-center gap-2 py-8 rounded-xl bg-secondary/30 border border-dashed border-border">
-                    <div className="size-12 rounded-xl bg-secondary flex items-center justify-center mb-1 text-muted-foreground">
+                    <div className="size-12 rounded-xl bg-secondary flex items-center justify-center mb-1 text-text-sub">
                       <Coffee size={28} />
                     </div>
                     <p className="text-sm font-semibold text-foreground">Вихідний день</p>
-                    <p className="text-xs text-muted-foreground">Оберіть інший день</p>
+                    <p className="text-xs text-text-sub">Оберіть інший день</p>
                   </div>
                 ) : (() => {
                   const renderItems = buildSlotRenderItems(slots, selectedDayBreaks);
@@ -242,11 +243,11 @@ export function DateTimePicker({
 
                   if (!hasAvail) return (
                     <div className="flex flex-col items-center gap-2 py-8 rounded-xl bg-secondary/30 border border-dashed border-border">
-                      <div className="size-12 rounded-xl bg-secondary flex items-center justify-center mb-1 text-muted-foreground">
+                      <div className="size-12 rounded-xl bg-secondary flex items-center justify-center mb-1 text-text-sub">
                         <Calendar size={28} />
                       </div>
                       <p className="text-sm font-semibold text-foreground">Немає вільних слотів</p>
-                      <p className="text-xs text-muted-foreground">Всі вікна зайняті</p>
+                      <p className="text-xs text-text-sub">Всі вікна зайняті</p>
                     </div>
                   );
 
@@ -256,7 +257,7 @@ export function DateTimePicker({
                         item.kind === 'break' ? (
                           <div key={`brk-${idx}`} className="col-span-3 flex items-center gap-2 py-0.5">
                             <div className="flex-1 h-px bg-border" />
-                            <span className="text-xs text-muted-foreground flex-shrink-0 flex items-center gap-1.5 font-medium">
+                            <span className="text-xs text-text-sub flex-shrink-0 flex items-center gap-1.5 font-medium">
                               <Utensils size={11} strokeWidth={2.5} />
                               {item.label} · {item.start}–{item.end}
                             </span>
@@ -314,7 +315,7 @@ export function DateTimePicker({
                                     </span>
                                   )}
                                   <span className="block font-semibold">{item.slot.time}</span>
-                                  <span className="block text-[11px] font-normal mt-0.5 text-muted-foreground">
+                                  <span className="block text-[11px] font-normal mt-0.5 text-text-sub">
                                     {endTime}
                                   </span>
                                 </>
@@ -352,7 +353,7 @@ export function DateTimePicker({
                   >
                     <div className="text-left">
                       <p className="text-sm font-medium text-foreground">Застосувати динамічну ціну</p>
-                      <p className="text-xs text-muted-foreground/60 mt-0.5">
+                      <p className="text-xs text-text-sub mt-0.5">
                         {dynamicPricing.label} → {fmt(dynamicPricing.adjustedPrice)}
                       </p>
                     </div>
@@ -375,21 +376,19 @@ export function DateTimePicker({
 
       {/* Continue CTA */}
       <div className="pt-6 pb-2 sticky bottom-0 bg-gradient-to-t from-secondary via-secondary/90 to-transparent z-10">
-        <button
-          type="button"
+        <Button
+          variant="primary"
+          size="lg"
+          fullWidth
           disabled={!canProceedDatetime}
           onClick={onContinue}
           data-testid="wizard-next-btn"
-          className={`w-full py-4 rounded-[100px] font-bold text-sm uppercase tracking-widest transition-all shadow-lg cursor-pointer ${
-            canProceedDatetime
-              ? 'bg-[var(--btn-primary-bg)] text-[var(--accent-on)] hover:opacity-90 active:scale-[0.95]'
-              : 'bg-secondary/80 text-muted-foreground/40 cursor-not-allowed opacity-50'
-          }`}
+          className="shadow-lg"
         >
           {canProceedDatetime
             ? `Далі — ${selectedDate!.getDate()} ${MONTH_S[selectedDate!.getMonth()]} о ${selectedTime}`
             : selectedDate ? 'Обери час' : 'Обери день'}
-        </button>
+        </Button>
       </div>
     </motion.div>
   );
