@@ -12,6 +12,7 @@ import type { WizardService, CartItem } from './types';
 import { getOrCreateReferralLink } from '@/lib/actions/referrals';
 import { PostBookingPartnersBlock } from '@/components/public/PostBookingPartnersBlock';
 import type { TrustedPartner } from '@/components/public/TrustedPartnersBlock';
+import { Button } from '@/components/ui/Button';
 
 interface BookingSuccessProps {
   selectedServices: WizardService[];
@@ -86,48 +87,47 @@ export function BookingSuccess({
       initial="enter" animate="center" exit="exit"
       transition={{ duration: 0.22, ease: 'easeOut' }}
       data-testid="wizard-success"
-      className="flex flex-col items-center text-center py-6 gap-5">
+      className="flex flex-col gap-5 py-2">
 
-      <motion.div
-        initial={{ scale: 0 }} animate={{ scale: 1 }}
-        transition={{ delay: 0.05, type: 'spring' as const, stiffness: 300, damping: 18 }}
-        className="size-20 rounded-full bg-success/15 flex items-center justify-center">
-        <Check size={36} className="text-success" strokeWidth={2.5} />
-      </motion.div>
-
-      <div>
-        <h2 className="heading-serif text-2xl text-foreground">Запис підтверджено!</h2>
-        <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-          {selectedServices.length === 1 ? selectedServices[0].name : pluralUk(selectedServices.length, 'послуга', 'послуги', 'послуг')}
-          {' — '}
-          {selectedDate && `${selectedDate.getDate()} ${MONTH_S[selectedDate.getMonth()]}, `}
-          <span className="font-semibold text-primary">
-            {selectedTime && (() => {
-              const endTime = formatFns(
-                addMinutes(parseFns(selectedTime, 'HH:mm', new Date()), totalDuration),
-                'HH:mm'
-              );
-              return `${selectedTime} – ${endTime}`;
-            })()}
-          </span>
-        </p>
-        {cart.length > 0 && (
-          <p className="text-xs text-muted-foreground/60 mt-1">
-            + {pluralUk(cart.length, 'товар', 'товари', 'товарів')} · {fmt(finalTotal)}
-          </p>
-        )}
-        {masterName && (
-          <p className="text-xs text-muted-foreground/60 mt-1">
-            Очікуй підтвердження від {masterName}
-          </p>
-        )}
+      {/* Темна success-обкладинка — печатка чеку (галочка + намір + сума on-dark) */}
+      <div className="editorial-cover relative overflow-hidden rounded-2xl px-5 pt-5 pb-5">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -top-16 -right-10 size-52 rounded-full blur-3xl"
+          style={{ background: 'rgba(52,211,153,0.22)' }}
+        />
+        <div className="relative flex items-start gap-4">
+          <motion.div
+            initial={{ scale: 0 }} animate={{ scale: 1 }}
+            transition={{ delay: 0.05, type: 'spring' as const, stiffness: 300, damping: 18 }}
+            className="size-12 rounded-2xl bg-emerald-400/15 ring-1 ring-emerald-300/30 flex items-center justify-center shrink-0">
+            <Check size={24} className="text-emerald-300" strokeWidth={2.5} />
+          </motion.div>
+          <div className="min-w-0 flex-1">
+            <h2 className="heading-serif text-[26px] leading-[1.05] text-white">Запис підтверджено</h2>
+            <p className="text-sm text-white/70 mt-1.5 leading-snug">
+              {selectedServices.length === 1 ? selectedServices[0].name : pluralUk(selectedServices.length, 'послуга', 'послуги', 'послуг')}
+              {selectedDate && ` — ${selectedDate.getDate()} ${MONTH_S[selectedDate.getMonth()]}`}
+              {selectedTime && (() => {
+                const endTime = formatFns(addMinutes(parseFns(selectedTime, 'HH:mm', new Date()), totalDuration), 'HH:mm');
+                return <span className="text-white font-medium">{`, ${selectedTime} – ${endTime}`}</span>;
+              })()}
+            </p>
+            {cart.length > 0 && (
+              <p className="metric-value text-lg text-white mt-2 tabular-nums">{fmt(finalTotal)}</p>
+            )}
+            {masterName && (
+              <p className="text-xs text-white/55 mt-2">Очікуй підтвердження від {masterName}</p>
+            )}
+          </div>
+        </div>
       </div>
 
       {masterC2cEnabled && shareLink && clientUserId && (
         <div className="w-full bento-card p-4 flex flex-col gap-3 text-left">
           <div>
             <p className="text-sm font-semibold text-foreground">Поділись з подругою</p>
-            <p className="text-xs text-muted-foreground mt-0.5">
+            <p className="text-xs text-text-sub mt-0.5">
               Вона отримає −{masterC2cDiscountPct ?? 10}% на перший візит · Ти накопиш +{masterC2cDiscountPct ?? 10}% бонус
             </p>
           </div>
@@ -164,12 +164,9 @@ export function BookingSuccess({
       ) : (
         <div className="w-full flex flex-col gap-3">
           <PushPrompt />
-          <button type="button"
-            onClick={onClose}
-            className="w-full py-3.5 rounded-[100px] bg-[var(--btn-primary-bg)] text-[var(--accent-on)] font-semibold text-sm hover:opacity-90 active:scale-[0.95] transition-all cursor-pointer"
-          >
-            Чудово!
-          </button>
+          <Button variant="primary" size="lg" fullWidth onClick={onClose}>
+            Готово
+          </Button>
         </div>
       )}
     </motion.div>
