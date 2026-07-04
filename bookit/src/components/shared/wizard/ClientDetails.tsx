@@ -9,6 +9,7 @@ import { MONTH_S, fmt, slide } from './helpers';
 import type { WizardService } from './types';
 import { ClientCombobox } from './ClientCombobox';
 import type { ClientRow } from '@/lib/supabase/hooks/useClients';
+import { Button } from '@/components/ui/Button';
 
 interface ClientDetailsProps {
   selectedDate: Date | null;
@@ -100,25 +101,25 @@ export function ClientDetails({
       className="flex flex-col min-h-[500px]"
     >
       <div>
-        {/* Recap badge */}
-        <div className="flex items-center gap-2 p-3 rounded-xl bg-primary/10 border border-primary/20 mb-4">
-          <span className="flex items-center justify-center text-primary flex-shrink-0">
-            {selectedServices.length === 0 ? <ShoppingBag size={16} /> : <Calendar size={16} />}
+        {/* Recap — тихий, hero-cover уже несе дату/суму */}
+        <div className="flex items-center gap-2 py-2.5 mb-4 border-b border-border">
+          <span className="flex items-center justify-center text-text-sub flex-shrink-0">
+            {selectedServices.length === 0 ? <ShoppingBag size={15} /> : <Calendar size={15} />}
           </span>
           {selectedServices.length === 0 ? (
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-text-sub">
               <span className="font-semibold text-foreground">Замовлення товарів</span>
               <span className="ml-1">· самовивіз</span>
             </p>
           ) : (
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-text-sub">
               <span className="font-semibold text-foreground">
                 {selectedServices.length === 1 ? selectedServices[0].name : pluralUk(selectedServices.length, 'послуга', 'послуги', 'послуг')}
               </span>
               {' — '}
               {selectedDate && `${selectedDate.getDate()} ${MONTH_S[selectedDate.getMonth()]}`}
               {' о '}
-              <span className="font-semibold text-primary">{selectedTime}</span>
+              <span className="font-semibold text-foreground">{selectedTime}</span>
             </p>
           )}
         </div>
@@ -135,14 +136,14 @@ export function ClientDetails({
         {mode === 'client' && clientUserId && !barterDiscountAmount && (
           <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-success/10 border border-success/20 mb-4">
             <div className="size-1.5 rounded-full bg-success" />
-            <p className="text-xs text-success font-medium">Дані підтягнуто з вашого профілю</p>
+            <p className="text-xs text-[#0B6B2E] font-medium">Дані підтягнуто з вашого профілю</p>
           </div>
         )}
 
         <div className="flex flex-col gap-4 mb-5">
           <div>
             <label htmlFor="wizard-name" className="text-sm font-medium text-foreground flex items-center gap-1.5 mb-1.5">
-              <User size={13} className="text-muted-foreground/60" />
+              <User size={13} className="text-text-sub" />
               {mode === 'master' ? "Ім'я клієнта" : "Ім'я"}
             </label>
             {mode === 'master' && onClientSelect ? (
@@ -161,7 +162,7 @@ export function ClientDetails({
                   type="text"
                   placeholder="Твоє імʼя та прізвище"
                   {...register('clientName')}
-                  className={`w-full h-12 px-4 rounded-[100px] bg-secondary/75 border text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none transition-all ${
+                  className={`w-full h-12 px-4 rounded-2xl bg-secondary/75 border text-sm text-foreground placeholder:text-text-sub focus:outline-none transition-all ${
                     errors.clientName ? 'border-destructive focus:ring-destructive/20' : 'border-border focus:border-primary focus:ring-2 focus:ring-primary/20'
                   }`}
                 />
@@ -171,7 +172,7 @@ export function ClientDetails({
           </div>
           <div>
             <label htmlFor="wizard-phone" className="text-sm font-medium text-foreground flex items-center gap-1.5 mb-1.5">
-              <Phone size={13} className="text-muted-foreground/60" /> Телефон
+              <Phone size={13} className="text-text-sub" /> Телефон
             </label>
             <div className="relative">
               <input
@@ -189,29 +190,29 @@ export function ClientDetails({
                   const final = '+' + digitsOnly;
                   setValue('clientPhone', final, { shouldValidate: true });
                 }}
-                className={`w-full h-12 px-4 rounded-[100px] bg-secondary/75 border text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none transition-all ${
+                className={`w-full h-12 px-4 rounded-2xl bg-secondary/75 border text-sm text-foreground placeholder:text-text-sub focus:outline-none transition-all ${
                   errors.clientPhone ? 'border-destructive focus:ring-destructive/20' : 'border-border focus:border-primary focus:ring-2 focus:ring-primary/20'
                 }`}
               />
             </div>
             {errors.clientPhone && <p className="text-destructive text-[10px] mt-1 ml-1">{errors.clientPhone.message}</p>}
             {mode === 'client' && c2cAlreadyUsed && (
-              <p className="text-[10px] text-warning mt-1 ml-1">
+              <p className="text-[10px] text-[#9A4508] mt-1 ml-1">
                 Ви вже скористались реферальною знижкою для цього майстра
               </p>
             )}
           </div>
           <div>
             <label htmlFor="wizard-notes" className="text-sm font-medium text-foreground flex items-center gap-1.5 mb-1.5">
-              <MessageSquare size={13} className="text-muted-foreground/60" />
+              <MessageSquare size={13} className="text-text-sub" />
               {mode === 'master' ? 'Нотатки' : 'Побажання'}
-              <span className="text-xs text-muted-foreground/60 font-normal">(необов'язково)</span>
+              <span className="text-xs text-text-sub font-normal">(необов'язково)</span>
             </label>
             <textarea
               id="wizard-notes"
               placeholder={mode === 'master' ? 'Нотатки для себе...' : 'Алергія, особливості, побажання...'}
               value={clientNotes} onChange={e => setClientNotes(e.target.value)} rows={2}
-              className="w-full px-4 py-3 rounded-[100px] bg-secondary/75 border border-border text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all resize-none"
+              className="w-full px-4 py-3 rounded-2xl bg-secondary/75 border border-border text-sm text-foreground placeholder:text-text-sub focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all resize-none"
             />
           </div>
 
@@ -227,9 +228,9 @@ export function ClientDetails({
                     setDiscountPercent(isNaN(v) ? 0 : Math.min(100, Math.max(0, v)));
                   }}
                   placeholder="0"
-                  className="w-24 h-12 px-4 rounded-[100px] bg-secondary/75 border border-border text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                  className="w-24 h-12 px-4 rounded-2xl bg-secondary/75 border border-border text-sm text-foreground placeholder:text-text-sub focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
                 />
-                <span className="text-xs text-muted-foreground/60">
+                <span className="text-xs text-text-sub">
                   {discountPercent > 0 ? `−${masterDiscountAmount.toLocaleString('uk-UA')} ₴` : 'без знижки'}
                 </span>
               </div>
@@ -239,10 +240,10 @@ export function ClientDetails({
 
         {/* Price summary */}
         <div className="rounded-xl bg-secondary/60 border border-border p-4 flex flex-col gap-2 mb-5">
-          <p className="text-xs font-bold text-muted-foreground/60 uppercase tracking-wide mb-1">Підсумок</p>
+          <p className="text-sm font-bold text-foreground mb-1">Підсумок</p>
           {selectedServices.map(s => (
             <div key={s.id} className="flex justify-between items-center text-xs">
-              <span className="text-muted-foreground flex items-center gap-1">
+              <span className="text-text-sub flex items-center gap-1">
                 <Sparkles size={12} className="text-primary flex-shrink-0" />
                 {s.name}
               </span>
@@ -252,45 +253,45 @@ export function ClientDetails({
           {dynamicPricing?.label && useDynamicPrice && (
             <div className="flex justify-between text-xs">
               <span className="text-primary">{dynamicPricing.label}</span>
-              <span className={`font-medium ${dynamicPricing.modifier > 0 ? 'text-warning' : 'text-success'}`}>
+              <span className={`font-medium ${dynamicPricing.modifier > 0 ? 'text-[#9A4508]' : 'text-[#0B6B2E]'}`}>
                 {dynamicPricing.modifier > 0 ? '+' : ''}{(dynamicPricing.adjustedPrice - totalServicesPrice).toLocaleString('uk-UA')} ₴
               </span>
             </div>
           )}
           {totalProductsPrice > 0 && (
             <div className="flex justify-between text-xs">
-              <span className="text-muted-foreground">Товари</span>
+              <span className="text-text-sub">Товари</span>
               <span className="font-semibold text-foreground">+{fmt(totalProductsPrice)}</span>
             </div>
           )}
           {loyaltyDiscount && (
             <div className="flex justify-between text-xs">
-              <span className="text-success flex items-center gap-1">
-                <Gift size={12} className="text-success flex-shrink-0" />
+              <span className="text-[#0B6B2E] flex items-center gap-1">
+                <Gift size={12} className="text-[#0B6B2E] flex-shrink-0" />
                 {loyaltyDiscount.name}
                 <span className="text-[10px] font-bold">-{loyaltyDiscount.percent}%</span>
               </span>
-              <span className="font-semibold text-success">−{fmt(loyaltyDiscountAmount)}</span>
+              <span className="font-semibold text-[#0B6B2E]">−{fmt(loyaltyDiscountAmount)}</span>
             </div>
           )}
           {flashDeal && flashDealAmount > 0 && (
             <div className="flex justify-between text-xs">
-              <span className="text-[var(--warning)] flex items-center gap-1">
-                <Zap size={12} className="text-[var(--warning)] flex-shrink-0" />
+              <span className="text-[#9A4508] flex items-center gap-1">
+                <Zap size={12} className="text-[#9A4508] flex-shrink-0" />
                 Флеш-акція
                 <span className="text-[10px] font-bold">-{flashDeal.discountPct}%</span>
               </span>
-              <span className="font-semibold text-[var(--warning)]">−{fmt(flashDealAmount)}</span>
+              <span className="font-semibold text-[#9A4508]">−{fmt(flashDealAmount)}</span>
             </div>
           )}
           {mode === 'client' && phoneDiscountPct > 0 && !barterDiscountAmount && (
             <div className="flex justify-between text-xs">
-              <span className="text-warning flex items-center gap-1">
-                <Mail size={12} className="text-warning flex-shrink-0" />
+              <span className="text-[#9A4508] flex items-center gap-1">
+                <Mail size={12} className="text-[#9A4508] flex-shrink-0" />
                 Знижка з розсилки
                 <span className="text-[10px] font-bold">-{phoneDiscountPct}%</span>
               </span>
-              <span className="font-semibold text-warning">−{fmt(phoneDiscountAmount)}</span>
+              <span className="font-semibold text-[#9A4508]">−{fmt(phoneDiscountAmount)}</span>
             </div>
           )}
           {mode === 'client' && barterDiscountAmount > 0 && (
@@ -305,8 +306,8 @@ export function ClientDetails({
           )}
           {mode === 'client' && c2cAlreadyUsed && (
             <div className="flex justify-between text-xs">
-              <span className="text-warning">Реферальна знижка вже використана</span>
-              <span className="text-muted-foreground/60 text-[10px]">—</span>
+              <span className="text-[#9A4508]">Реферальна знижка вже використана</span>
+              <span className="text-text-sub text-[10px]">—</span>
             </div>
           )}
           {mode === 'client' && c2cDiscountPct && c2cFriendDiscountAmount > 0 && (
@@ -323,15 +324,15 @@ export function ClientDetails({
           )}
           {mode === 'master' && discountPercent > 0 && (
             <div className="flex justify-between text-xs">
-              <span className="text-success">Знижка {discountPercent}%</span>
-              <span className="font-semibold text-success">−{fmt(masterDiscountAmount)}</span>
+              <span className="text-[#0B6B2E]">Знижка {discountPercent}%</span>
+              <span className="font-semibold text-[#0B6B2E]">−{fmt(masterDiscountAmount)}</span>
             </div>
           )}
-          <div className="border-t border-secondary/80 pt-2 flex justify-between items-center">
+          <div className="border-t border-border pt-2.5 mt-0.5 flex justify-between items-baseline">
             <span className="text-sm font-bold text-foreground">
               {mode === 'client' ? 'До сплати' : 'Разом'}
             </span>
-            <span className="text-lg font-bold text-primary">
+            <span className="metric-value text-2xl text-primary">
               {fmt(Math.max(0, finalTotal
                 - (mode === 'client' && !barterDiscountAmount ? (c2cFriendDiscountAmount ?? 0) : 0)
                 - (mode === 'client' && !barterDiscountAmount && c2cBonusToUse > 0 ? Math.round(finalTotal * c2cBonusToUse / 100) : 0)
@@ -347,7 +348,7 @@ export function ClientDetails({
               <p className="text-xs font-semibold text-foreground">Реферальний бонус</p>
               <span className="text-xs font-bold text-primary">{c2cReferrerBalance}% доступно</span>
             </div>
-            <p className="text-xs text-muted-foreground/60">Використайте бонус від приведених подруг</p>
+            <p className="text-xs text-text-sub">Використайте бонус від приведених подруг</p>
             <div className="flex items-center gap-2">
               <input
                 type="range"
@@ -365,7 +366,7 @@ export function ClientDetails({
         )}
 
         {mode === 'client' && (
-          <p className="text-xs text-muted-foreground/60 text-center mb-3">
+          <p className="text-xs text-text-sub text-center mb-3">
             {selectedServices.length === 0
               ? 'Майстер отримає замовлення та підготує товари'
               : 'Майстер отримає сповіщення та підтвердить запис'}
@@ -387,24 +388,23 @@ export function ClientDetails({
       </div>
 
       <div className="pt-6 pb-2 sticky bottom-0 bg-gradient-to-t from-secondary via-secondary/90 to-transparent z-10">
-        <button
-          type="button"
+        <Button
+          variant="primary"
+          size="lg"
+          fullWidth
           data-testid="wizard-submit-btn"
           disabled={!canSubmit || saving}
+          isLoading={saving}
           onClick={onSubmit}
-          className={`w-full py-4 rounded-[100px] font-bold text-sm uppercase tracking-widest transition-all flex items-center justify-center gap-2 shadow-lg cursor-pointer ${
-            canSubmit && !saving
-              ? 'bg-[var(--btn-primary-bg)] text-[var(--accent-on)] hover:opacity-90 active:scale-[0.95]'
-              : 'bg-secondary/60 border border-border text-muted-foreground/60 cursor-not-allowed shadow-none'
-          }`}
+          className="shadow-lg"
         >
           {saving
-            ? <><div className="size-4 border-2 border-[var(--accent-on)]/40 border-t-[var(--accent-on)] rounded-full animate-spin" /> Зберігаємо...</>
+            ? 'Зберігаємо...'
             : mode === 'client'
               ? (selectedServices.length === 0 ? 'Підтвердити замовлення' : 'Підтвердити запис')
               : 'Зберегти запис'
           }
-        </button>
+        </Button>
       </div>
     </motion.div>
   );
