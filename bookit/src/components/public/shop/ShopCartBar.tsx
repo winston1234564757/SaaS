@@ -6,11 +6,12 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ShoppingBag, X, ArrowLeft, MapPin, Truck, ChevronRight, ChevronLeft,
-  Loader2, CheckCircle2, Minus, Plus, User, Phone, CalendarDays,
+  CheckCircle2, Minus, Plus, User, Phone, CalendarDays,
 } from 'lucide-react';
 import { createOrder } from '@/app/(master)/dashboard/products/actions';
 import { cn } from '@/lib/utils/cn';
 import { useShopCart } from './ShopCartContext';
+import { Button } from '@/components/ui/Button';
 
 const CART_SPRING    = { type: 'spring' as const, stiffness: 380, damping: 32 } as const;
 const SUCCESS_SPRING = { type: 'spring' as const, stiffness: 300, damping: 20 } as const;
@@ -177,7 +178,7 @@ function CartDrawer({ open, masterId, shipsNovaPoshta, isAuth, onClose, onSucces
                 type="button"
                 aria-label="Закрити"
                 onClick={onClose}
-                className="size-8 rounded-full bg-secondary flex items-center justify-center text-muted-foreground active:scale-[0.95] transition-all cursor-pointer"
+                className="size-8 rounded-full bg-secondary flex items-center justify-center text-text-sub active:scale-[0.95] transition-all cursor-pointer"
               >
                 <X size={16} />
               </button>
@@ -186,7 +187,7 @@ function CartDrawer({ open, masterId, shipsNovaPoshta, isAuth, onClose, onSucces
             <div className="flex-1 overflow-y-auto px-5 pb-28 flex flex-col gap-5">
               {/* Cart items summary */}
               <div className="flex flex-col gap-2">
-                <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider">Товари</p>
+                <p className="text-xs font-bold text-foreground">Товари</p>
                 {cart.map(item => (
                   <div key={item.product.id} className="flex items-center gap-3">
                     <div className="size-10 rounded-lg overflow-hidden bg-secondary shrink-0">
@@ -194,14 +195,14 @@ function CartDrawer({ open, masterId, shipsNovaPoshta, isAuth, onClose, onSucces
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-semibold text-foreground truncate">{item.product.name}</p>
-                      <p className="text-[10px] text-muted-foreground/60">{item.qty} шт × {(item.product.price_kopecks / 100).toFixed(0)} ₴</p>
+                      <p className="text-[10px] text-text-sub">{item.qty} шт × {(item.product.price_kopecks / 100).toFixed(0)} ₴</p>
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
                       <button
                         type="button"
                         aria-label="Зменшити кількість"
                         onClick={() => setQty(item.product.id, item.qty - 1)}
-                        className="size-7 rounded-md bg-secondary flex items-center justify-center text-muted-foreground active:scale-[0.95] transition-all"
+                        className="size-7 rounded-md bg-secondary flex items-center justify-center text-text-sub active:scale-[0.95] transition-all"
                       >
                         <Minus size={13} />
                       </button>
@@ -226,10 +227,10 @@ function CartDrawer({ open, masterId, shipsNovaPoshta, isAuth, onClose, onSucces
               {/* Contact info if not auth */}
               {!isAuth && (
                 <div className="flex flex-col gap-3">
-                  <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider">Ваші контакти</p>
+                  <p className="text-xs font-bold text-foreground">Ваші контакти</p>
                   <div className="flex flex-col gap-2">
                     <div className="relative">
-                      <User size={16} className="absolute left-4 top-3.5 text-muted-foreground/60" />
+                      <User size={16} className="absolute left-4 top-3.5 text-text-sub" />
                       <input
                         type="text"
                         placeholder="Ваше ім'я"
@@ -240,7 +241,7 @@ function CartDrawer({ open, masterId, shipsNovaPoshta, isAuth, onClose, onSucces
                       />
                     </div>
                     <div className="relative">
-                      <Phone size={16} className="absolute left-4 top-3.5 text-muted-foreground/60" />
+                      <Phone size={16} className="absolute left-4 top-3.5 text-text-sub" />
                       <input
                         type="tel"
                         placeholder="Номер телефону"
@@ -256,7 +257,7 @@ function CartDrawer({ open, masterId, shipsNovaPoshta, isAuth, onClose, onSucces
 
               {/* Delivery / Pickup */}
               <div className="flex flex-col gap-3">
-                <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider">Спосіб отримання</p>
+                <p className="text-xs font-bold text-foreground">Спосіб отримання</p>
                 <div className="flex gap-2">
                   <DeliveryBtn active={delivery === 'pickup'} onClick={() => setDelivery('pickup')} icon={<MapPin size={15} />} label="Самовивіз" />
                   {shipsNovaPoshta && (
@@ -266,7 +267,7 @@ function CartDrawer({ open, masterId, shipsNovaPoshta, isAuth, onClose, onSucces
 
                 {delivery === 'pickup' ? (
                   <div className="flex flex-col gap-3">
-                    <p className="text-[11px] text-muted-foreground flex items-center gap-1.5 px-1">
+                    <p className="text-[11px] text-text-sub flex items-center gap-1.5 px-1">
                       <CalendarDays size={14} className="text-primary" /> Оберіть зручний день
                     </p>
 
@@ -302,7 +303,7 @@ function CartDrawer({ open, masterId, shipsNovaPoshta, isAuth, onClose, onSucces
                                 ? 'bg-primary border-primary text-primary-foreground shadow-lg shadow-primary/20 scale-[1.02] active:scale-[0.95] cursor-pointer'
                                 : d.isWorking
                                   ? 'bg-secondary border-border text-foreground hover:border-primary active:scale-[0.95] cursor-pointer'
-                                  : 'bg-secondary/30 border-transparent text-muted-foreground/60 opacity-50 cursor-not-allowed'
+                                  : 'bg-secondary/30 border-transparent text-text-sub opacity-50 cursor-not-allowed'
                             )}
                           >
                             <span className="text-[10px] uppercase font-bold opacity-70 mb-0.5">{d.label.split(' ')[0]}</span>
@@ -347,24 +348,24 @@ function CartDrawer({ open, masterId, shipsNovaPoshta, isAuth, onClose, onSucces
               {/* Total & Action */}
               <div className="mt-auto pt-4 flex flex-col gap-4">
                 <div className="flex items-center justify-between px-1">
-                  <span className="text-sm font-medium text-muted-foreground">До сплати</span>
-                  <span className="text-2xl font-bold text-foreground">{(total / 100).toFixed(0)} ₴</span>
+                  <span className="text-sm font-medium text-text-sub">До сплати</span>
+                  <span className="metric-value text-2xl text-foreground">{(total / 100).toFixed(0)} ₴</span>
                 </div>
 
                 {error && <p className="text-xs text-destructive bg-destructive/5 py-2 px-3 rounded-xl border border-destructive/10">{error}</p>}
 
-                <button
-                  type="button"
+                <Button
+                  variant="primary"
+                  size="lg"
+                  fullWidth
                   onClick={handleOrder}
                   disabled={isPending || cart.length === 0}
-                  className="w-full py-4 rounded-lg bg-primary text-primary-foreground font-bold text-base flex items-center justify-center gap-2 disabled:opacity-50 active:scale-[0.95] transition-all cursor-pointer shadow-lg shadow-primary/20"
+                  isLoading={isPending}
+                  className="shadow-lg"
                 >
-                  {isPending
-                    ? <><Loader2 size={18} className="animate-spin" /> Обробка...</>
-                    : <>Підтвердити замовлення</>
-                  }
-                </button>
-                <p className="text-[10px] text-muted-foreground/60 text-center">
+                  {isPending ? 'Обробка...' : 'Підтвердити замовлення'}
+                </Button>
+                <p className="text-[10px] text-text-sub text-center">
                   Оплата готівкою або картою при отриманні
                 </p>
               </div>
@@ -390,7 +391,7 @@ function OrderSuccess({ masterSlug, masterName }: { masterSlug: string; masterNa
         </motion.div>
         <div>
           <h2 className="heading-serif text-2xl text-foreground mb-2">Замовлення прийнято!</h2>
-          <p className="text-sm text-muted-foreground leading-relaxed">
+          <p className="text-sm text-text-sub leading-relaxed">
             {masterName} отримав ваше замовлення і невдовзі зв&apos;яжеться з вами для підтвердження.
           </p>
         </div>
@@ -413,7 +414,7 @@ function DeliveryBtn({ active, onClick, icon, label }: { active: boolean; onClic
       aria-pressed={active}
       className={cn(
         'flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-medium transition-all border active:scale-[0.95] cursor-pointer',
-        active ? 'bg-primary text-primary-foreground border-primary' : 'bg-secondary/60 text-muted-foreground border-border hover:bg-secondary/80'
+        active ? 'bg-primary text-primary-foreground border-primary' : 'bg-secondary/60 text-text-sub border-border hover:bg-secondary/80'
       )}
     >
       {icon} {label}

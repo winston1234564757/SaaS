@@ -2,13 +2,14 @@ import { useState, useRef, useEffect, KeyboardEvent, ClipboardEvent } from 'reac
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  ArrowLeft, Loader2, ClipboardList, X, Star, Bell,
+  ArrowLeft, ClipboardList, X, Star, Bell,
   Sparkles, Gift, Handshake, CalendarDays, Rocket,
   Send, CheckCircle2, Phone, MessageSquare
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { GoogleIcon } from '@/components/icons/GoogleIcon';
 import { formatPhoneDisplay, normalizePhoneInput, toFullPhone } from '@/lib/utils/phone';
+import { Button } from '@/components/ui/Button';
 
 interface MasterLoyaltyProgram {
   id: string;
@@ -265,7 +266,7 @@ export function PostBookingAuth({ bookingId, clientPhone, onSkip, masterId, mast
               <h2 className="heading-serif text-xl text-foreground leading-snug mb-1">
                 Збережи запис —<br />керуй красою легко
               </h2>
-              <p className="text-xs text-muted-foreground/60 leading-relaxed">
+              <p className="text-xs text-text-sub leading-relaxed">
                 Безкоштовно. Без спаму. Тільки твої записи.
               </p>
             </div>
@@ -306,7 +307,7 @@ export function PostBookingAuth({ bookingId, clientPhone, onSkip, masterId, mast
                     <Icon size={18} />
                   </span>
                   <span className="text-xs font-semibold text-foreground">{title}</span>
-                  <span className="text-[11px] text-muted-foreground/60 leading-tight">{desc}</span>
+                  <span className="text-[11px] text-text-sub leading-tight">{desc}</span>
                 </motion.div>
               ))}
             </div>
@@ -367,7 +368,7 @@ export function PostBookingAuth({ bookingId, clientPhone, onSkip, masterId, mast
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-foreground">Запроси подругу</p>
-                      <p className="text-[11px] text-muted-foreground mt-0.5 leading-tight">
+                      <p className="text-[11px] text-text-sub mt-0.5 leading-tight">
                         Вона отримає −{masterC2cDiscountPct ?? 10}% на перший візит, а ти накопиш бонус — після реєстрації нижче
                       </p>
                     </div>
@@ -433,22 +434,18 @@ export function PostBookingAuth({ bookingId, clientPhone, onSkip, masterId, mast
 
             <div className="relative flex items-center gap-3 mb-3">
               <span className="flex-1 border-t border-border" />
-              <span className="text-[10px] text-muted-foreground/60 uppercase tracking-widest font-medium">або</span>
+              <span className="text-[10px] text-text-sub uppercase tracking-widest font-medium">або</span>
               <span className="flex-1 border-t border-border" />
             </div>
 
-            <button
-              type="button"
-              onClick={() => setStep('phone')}
-              className="flex items-center justify-center gap-2 w-full py-4 rounded-lg bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90 active:scale-[0.95] transition-all shadow-md shadow-primary/20 mb-3 cursor-pointer"
-            >
+            <Button variant="primary" size="lg" fullWidth onClick={() => setStep('phone')} className="shadow-md mb-3">
               <Phone size={15} /> Підтвердити номер телефону
-            </button>
+            </Button>
 
             <button
               type="button"
               onClick={onSkip}
-              className="text-xs text-muted-foreground/60 text-center py-1 hover:text-muted-foreground transition-colors active:scale-95 transition-all cursor-pointer"
+              className="text-xs text-text-sub text-center py-1 hover:text-text-sub transition-colors active:scale-95 transition-all cursor-pointer"
             >
               Пропустити, без акаунту →
             </button>
@@ -465,7 +462,7 @@ export function PostBookingAuth({ bookingId, clientPhone, onSkip, masterId, mast
             className="flex flex-col gap-3"
           >
             <div className="flex items-center gap-0 rounded-md border border-border bg-secondary overflow-hidden focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all">
-              <span className="pl-3.5 pr-2 text-muted-foreground text-sm font-medium shrink-0">+38</span>
+              <span className="pl-3.5 pr-2 text-text-sub text-sm font-medium shrink-0">+38</span>
               <input
                 type="tel"
                 inputMode="numeric"
@@ -475,23 +472,17 @@ export function PostBookingAuth({ bookingId, clientPhone, onSkip, masterId, mast
                 onKeyDown={e => e.key === 'Enter' && handleSendSms()}
                 autoFocus
                 aria-label="Номер телефону"
-                className="flex-1 py-3.5 pr-3.5 text-foreground text-sm bg-transparent outline-none placeholder:text-muted-foreground"
+                className="flex-1 py-3.5 pr-3.5 text-foreground text-sm bg-transparent outline-none placeholder:text-text-sub"
               />
             </div>
 
             {error && <p className="text-xs text-destructive pl-1">{error}</p>}
 
-            <button
-              type="button"
-              onClick={handleSendSms}
-              disabled={loading || phone.length < 9}
-              className="flex items-center justify-center gap-2 w-full py-3.5 rounded-lg bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90 active:scale-[0.95] transition-all shadow-md shadow-primary/20 disabled:opacity-50 cursor-pointer"
-            >
-              {loading && <Loader2 size={15} className="animate-spin" />}
+            <Button variant="primary" size="lg" fullWidth onClick={handleSendSms} disabled={loading || phone.length < 9} isLoading={loading} className="shadow-md">
               {loading ? 'Відправляємо...' : 'Отримати код'}
-            </button>
+            </Button>
 
-            <button type="button" onClick={() => { setStep('choose'); setError(''); }} className="flex items-center justify-center gap-1 text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors cursor-pointer">
+            <button type="button" onClick={() => { setStep('choose'); setError(''); }} className="flex items-center justify-center gap-1 text-xs text-text-sub hover:text-text-sub transition-colors cursor-pointer">
               <ArrowLeft size={13} /> Назад
             </button>
           </motion.div>
@@ -506,7 +497,7 @@ export function PostBookingAuth({ bookingId, clientPhone, onSkip, masterId, mast
             exit={{ opacity: 0, x: -16 }}
             className="flex flex-col gap-3"
           >
-            <p className="text-xs text-muted-foreground text-center">
+            <p className="text-xs text-text-sub text-center">
               Код надіслано на +38 {formatPhoneDisplay(phone)}
             </p>
 
@@ -531,21 +522,15 @@ export function PostBookingAuth({ bookingId, clientPhone, onSkip, masterId, mast
 
             {error && <p className="text-xs text-destructive text-center">{error}</p>}
 
-            <button
-              type="button"
-              onClick={() => handleVerify()}
-              disabled={loading || digits.some(d => !d)}
-              className="flex items-center justify-center gap-2 w-full py-3.5 rounded-lg bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90 active:scale-[0.95] transition-all shadow-md shadow-primary/20 disabled:opacity-50 cursor-pointer"
-            >
-              {loading && <Loader2 size={15} className="animate-spin" />}
+            <Button variant="primary" size="lg" fullWidth onClick={() => handleVerify()} disabled={loading || digits.some(d => !d)} isLoading={loading} className="shadow-md">
               {loading ? 'Перевіряємо...' : 'Підтвердити'}
-            </button>
+            </Button>
 
             <div className="flex items-center justify-between">
-              <button type="button" onClick={() => { setStep('phone'); setDigits(['', '', '', '', '', '']); setError(''); }} className="flex items-center gap-1 text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors cursor-pointer">
+              <button type="button" onClick={() => { setStep('phone'); setDigits(['', '', '', '', '', '']); setError(''); }} className="flex items-center gap-1 text-xs text-text-sub hover:text-text-sub transition-colors cursor-pointer">
                 <ArrowLeft size={13} /> Змінити номер
               </button>
-              <button type="button" onClick={handleResend} disabled={resendCooldown > 0} className="text-xs text-primary disabled:text-muted-foreground/60 disabled:cursor-default hover:underline cursor-pointer">
+              <button type="button" onClick={handleResend} disabled={resendCooldown > 0} className="text-xs text-primary disabled:text-text-sub disabled:cursor-default hover:underline cursor-pointer">
                 {resendCooldown > 0 ? `Через ${resendCooldown}с` : 'Надіслати знову'}
               </button>
             </div>
@@ -569,7 +554,7 @@ export function PostBookingAuth({ bookingId, clientPhone, onSkip, masterId, mast
               <h2 className="heading-serif text-xl text-foreground leading-snug mb-1">
                 Підключи сповіщення
               </h2>
-              <p className="text-xs text-muted-foreground/60 leading-relaxed">
+              <p className="text-xs text-text-sub leading-relaxed">
                 Отримуй підтвердження записів та нагадування — де тобі зручно
               </p>
             </div>
@@ -589,7 +574,7 @@ export function PostBookingAuth({ bookingId, clientPhone, onSkip, masterId, mast
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-semibold text-foreground">Telegram-бот</p>
-                    <p className="text-[11px] text-muted-foreground/60 leading-tight mt-0.5">
+                    <p className="text-[11px] text-text-sub leading-tight mt-0.5">
                       {tgOpened ? 'Відкрито — натисни START у боті' : 'Підтвердження та нагадування у Telegram'}
                     </p>
                   </div>
@@ -619,7 +604,7 @@ export function PostBookingAuth({ bookingId, clientPhone, onSkip, masterId, mast
                 </div>
                 <div className="flex-1">
                   <p className="text-sm font-semibold text-foreground">Push-сповіщення</p>
-                  <p className="text-[11px] text-muted-foreground/60 leading-tight mt-0.5">
+                  <p className="text-[11px] text-text-sub leading-tight mt-0.5">
                     {pushState === 'done' ? 'Підключено — все готово!' : 'Миттєві сповіщення прямо у браузері'}
                   </p>
                 </div>
@@ -639,18 +624,14 @@ export function PostBookingAuth({ bookingId, clientPhone, onSkip, masterId, mast
               </motion.div>
             </div>
 
-            <button
-              type="button"
-              onClick={() => { router.refresh(); router.push('/my/bookings'); }}
-              className="flex items-center justify-center w-full py-4 rounded-lg bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90 active:scale-[0.95] transition-all shadow-lg shadow-primary/20 mb-2 cursor-pointer"
-            >
+            <Button variant="primary" size="lg" fullWidth onClick={() => { router.refresh(); router.push('/my/bookings'); }} className="shadow-lg mb-2">
               {tgOpened || pushState === 'done' ? 'Продовжити →' : 'Налаштую пізніше →'}
-            </button>
+            </Button>
 
             <button
               type="button"
               onClick={() => { router.refresh(); router.push('/my/bookings'); }}
-              className="text-[11px] text-muted-foreground/60 text-center py-1 hover:text-muted-foreground/80 transition-colors cursor-pointer"
+              className="text-[11px] text-text-sub text-center py-1 hover:text-text-sub transition-colors cursor-pointer"
             >
               пропустити
             </button>
