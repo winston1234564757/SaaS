@@ -95,10 +95,10 @@ export function NavigationStrip() {
               onClick={() => scrollTo(item.id)}
               aria-current={activeId === item.id ? 'location' : undefined}
               className={cn(
-                'relative px-3 h-8 rounded-full text-[11px] font-bold uppercase tracking-wide whitespace-nowrap transition-all shrink-0 active:scale-[0.88] cursor-pointer',
+                'relative px-3 h-8 rounded-full text-[11px] font-bold whitespace-nowrap transition-all shrink-0 active:scale-[0.88] cursor-pointer',
                 activeId === item.id
                   ? 'bg-accent/10 text-accent'
-                  : 'text-text-mute hover:text-text-sub hover:bg-secondary/60'
+                  : 'text-text-sub hover:text-text-sub hover:bg-secondary/60'
               )}
             >
               {item.label}

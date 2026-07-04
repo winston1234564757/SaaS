@@ -197,13 +197,13 @@ export default function SettingsPage() {
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-text-primary">Особисті дані</h3>
-                  <p className="text-[10px] text-text-mute">Ім'я, студія, фото</p>
+                  <p className="text-[10px] text-text-sub">Ім'я, студія, фото</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label htmlFor="settings-full-name" className="text-[10px] font-bold text-text-mute uppercase tracking-widest px-1">{`Ваше ім'я`}</label>
+                  <label htmlFor="settings-full-name" className="text-[10px] font-bold text-text-sub px-1">{`Ваше ім'я`}</label>
                   <input
                     id="settings-full-name"
                     value={state.fullName}
@@ -214,7 +214,7 @@ export default function SettingsPage() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label htmlFor="settings-business-name" className="text-[10px] font-bold text-text-mute uppercase tracking-widest px-1">{`Бізнес (Студія)`}</label>
+                  <label htmlFor="settings-business-name" className="text-[10px] font-bold text-text-sub px-1">{`Бізнес (Студія)`}</label>
                   <input
                     id="settings-business-name"
                     value={state.businessName}
@@ -260,7 +260,7 @@ export default function SettingsPage() {
                 </div>
                 <div>
                   <h3 className="text-sm font-bold">Цикл повернення</h3>
-                  <p className="text-[10px] text-muted-foreground/60">Поріг неактивного клієнта</p>
+                  <p className="text-[10px] text-text-sub">Поріг неактивного клієнта</p>
                 </div>
               </div>
 
@@ -268,7 +268,7 @@ export default function SettingsPage() {
                 <span className="text-5xl font-bold tracking-tight text-accent leading-none tabular-nums">
                   {state.retentionCycleDays}
                 </span>
-                <span className="text-base font-bold text-text-mute mb-1">днів</span>
+                <span className="text-base font-bold text-text-sub mb-1">днів</span>
               </div>
 
               <div className="flex flex-wrap gap-1.5">
@@ -282,7 +282,7 @@ export default function SettingsPage() {
                       'px-3 py-2 rounded-xl text-xs font-bold transition-all active:scale-[0.88] cursor-pointer',
                       state.retentionCycleDays === days
                         ? 'bg-[var(--btn-primary-bg)] text-[var(--accent-on)] shadow-lg shadow-[var(--btn-primary-bg)]/20'
-                        : 'bg-secondary border border-muted/30 text-muted-foreground hover:border-accent/30',
+                        : 'bg-secondary border border-muted/30 text-text-sub hover:border-accent/30',
                     )}
                   >
                     {days}д
@@ -359,13 +359,13 @@ export default function SettingsPage() {
           >
             <div className="bg-surface/90 backdrop-blur-2xl border border-border p-2 rounded-full shadow-2xl flex items-center gap-2 pointer-events-auto">
               <div className="pl-5 pr-2">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-text-primary whitespace-nowrap">Незбережені зміни</p>
+                <p className="text-[10px] font-bold text-text-primary whitespace-nowrap">Незбережені зміни</p>
               </div>
               <div className="flex gap-1">
                 <button type="button"
                   onClick={actions.handleCancel}
                   disabled={state.saving}
-                  className="px-5 py-3 rounded-full text-xs font-bold text-text-mute hover:bg-muted/10 transition-colors whitespace-nowrap"
+                  className="px-5 py-3 rounded-full text-xs font-bold text-text-sub hover:bg-muted/10 transition-colors whitespace-nowrap"
                 >
                   Скасувати
                 </button>
@@ -373,7 +373,7 @@ export default function SettingsPage() {
                   onClick={actions.handleSave}
                   disabled={state.saving || state.slugStatus === 'taken'}
                   className={cn(
-                    'px-6 py-3 rounded-full text-xs font-bold uppercase tracking-widest text-[var(--accent-on)] shadow-lg transition-all whitespace-nowrap',
+                    'px-6 py-3 rounded-full text-xs font-bold text-[var(--accent-on)] shadow-lg transition-all whitespace-nowrap',
                     state.isDirty ? 'bg-success shadow-success/20 hover:scale-105' : 'bg-accent shadow-accent/20'
                   )}
                 >
@@ -399,7 +399,7 @@ function ExpandableBio({ value, onChange }: { value: string; onChange: (v: strin
 
   return (
     <motion.div layout transition={{ type: 'spring' as const, duration: 0.3, bounce: 0 }} className="space-y-2 pt-2 border-t border-border">
-      <label htmlFor="settings-bio" className="text-[10px] font-bold text-text-mute uppercase tracking-widest px-1">Опис</label>
+      <label htmlFor="settings-bio" className="text-[10px] font-bold text-text-sub px-1">Опис</label>
       <motion.div layout="position">
         <textarea
           id="settings-bio"

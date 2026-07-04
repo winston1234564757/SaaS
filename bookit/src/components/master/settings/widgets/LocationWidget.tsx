@@ -19,7 +19,7 @@ interface LocationWidgetProps {
 
 const FIELD =
   'w-full px-4 py-3.5 rounded-2xl bg-secondary border border-border focus:border-accent/40 focus:ring-2 focus:ring-primary/20 outline-none text-sm transition-all shadow-inner-sm';
-const LABEL = 'text-[10px] font-bold text-text-sub uppercase tracking-widest px-1';
+const LABEL = 'text-[10px] font-bold text-text-sub px-1';
 
 export function LocationWidget({
   city,
@@ -54,7 +54,7 @@ export function LocationWidget({
             <MapPin size={18} />
           </div>
           <div>
-            <h3 className="font-bold text-[11px] uppercase tracking-widest text-text-sub leading-none mb-1">Локація</h3>
+            <h3 className="font-bold text-[11px] text-text-sub leading-none mb-1">Локація</h3>
             <p className="text-[10px] text-text-sub/80">Так клієнти будують маршрут до тебе</p>
           </div>
         </div>

@@ -41,8 +41,8 @@ export function ProductMixWidget({ services, onMonthChange }: ProductMixWidgetPr
           <Award size={18} />
         </div>
         <div>
-          <h3 className="font-bold text-[11px] uppercase tracking-widest text-text-mute leading-none mb-1">Популярні послуги</h3>
-          <p className="text-[10px] font-bold text-accent uppercase tracking-tighter">ТОП запитів</p>
+          <h3 className="font-bold text-[11px] text-text-sub leading-none mb-1">Популярні послуги</h3>
+          <p className="text-[10px] font-bold text-accent">ТОП запитів</p>
         </div>
       </div>
 
@@ -54,7 +54,7 @@ export function ProductMixWidget({ services, onMonthChange }: ProductMixWidgetPr
           aria-label="Попередній місяць"
           className="size-11 rounded-xl flex items-center justify-center hover:bg-secondary active:scale-95 transition-all cursor-pointer"
         >
-          <ChevronLeft size={15} className="text-text-mute" />
+          <ChevronLeft size={15} className="text-text-sub" />
         </button>
         <span className="text-[11px] font-bold text-text-primary capitalize">
           {format(currentDate, 'LLLL yyyy', { locale: uk })}
@@ -65,7 +65,7 @@ export function ProductMixWidget({ services, onMonthChange }: ProductMixWidgetPr
           aria-label="Наступний місяць"
           className="size-11 rounded-xl flex items-center justify-center hover:bg-secondary active:scale-95 transition-all cursor-pointer"
         >
-          <ChevronRight size={15} className="text-text-mute" />
+          <ChevronRight size={15} className="text-text-sub" />
         </button>
       </div>
 
@@ -74,7 +74,7 @@ export function ProductMixWidget({ services, onMonthChange }: ProductMixWidgetPr
         {services.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center opacity-40 py-10">
             <Award size={40} strokeWidth={1} className="mb-2" />
-            <p className="text-[10px] font-bold uppercase tracking-widest">Немає даних за цей період</p>
+            <p className="text-[10px] font-bold">Немає даних за цей період</p>
           </div>
         ) : (
           services.map((service, index) => (
@@ -100,7 +100,7 @@ export function ProductMixWidget({ services, onMonthChange }: ProductMixWidgetPr
       </div>
 
       {/* Legend */}
-      <div className="pt-4 border-t border-border flex items-center text-[10px] font-bold text-text-mute/60">
+      <div className="pt-4 border-t border-border flex items-center text-[10px] font-bold text-text-sub">
         <div className="flex items-center gap-2">
           <div className="size-6 rounded-lg bg-success/10 text-success flex items-center justify-center">
             <TrendingUp size={12} />

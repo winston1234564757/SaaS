@@ -48,7 +48,7 @@ export function CategoriesWidget({ selected, onChange }: CategoriesWidgetProps) 
         </div>
         <div>
           <h3 className="font-bold text-sm text-text-primary">Спеціалізації</h3>
-          <p className="text-[10px] text-text-mute">До 4 напрямків</p>
+          <p className="text-[10px] text-text-sub">До 4 напрямків</p>
         </div>
       </div>
 
@@ -85,9 +85,9 @@ export function CategoriesWidget({ selected, onChange }: CategoriesWidgetProps) 
 
       {/* Progress bar */}
       <div>
-        <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider mb-1.5">
-          <span className="text-text-mute">Вибрано</span>
-          <span className={cn(isMaxed ? 'text-accent' : 'text-text-mute')}>{validCount} / 4</span>
+        <div className="flex items-center justify-between text-[10px] font-bold mb-1.5">
+          <span className="text-text-sub">Вибрано</span>
+          <span className={cn(isMaxed ? 'text-accent' : 'text-text-sub')}>{validCount} / 4</span>
         </div>
         <div
           role="progressbar"

@@ -41,8 +41,8 @@ const DAYS_UA_SHORT: Record<DayKey, string> = {
 const DOW_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const;
 
 const getBusynessColor = (rate: number) => {
-  if (rate < 40) return 'text-success';
-  if (rate < 70) return 'text-warning';
+  if (rate < 40) return 'text-[#0B6B2E]';
+  if (rate < 70) return 'text-[#9A4508]';
   return 'text-destructive';
 };
 
@@ -136,10 +136,10 @@ export function ScheduleWidget({
             <Clock size={18} />
           </div>
           <div>
-            <h3 className="font-bold text-[11px] uppercase tracking-widest text-text-mute leading-none mb-1">
+            <h3 className="font-bold text-[11px] text-text-sub leading-none mb-1">
               Графік роботи
             </h3>
-            <p className={cn('text-[10px] font-bold uppercase tracking-tighter', statusUi.text)}>
+            <p className={cn('text-[10px] font-bold', statusUi.text)}>
               {statusUi.label}
             </p>
           </div>
@@ -149,7 +149,7 @@ export function ScheduleWidget({
           onClick={() => setExpanded(v => !v)}
           aria-expanded={expanded}
           aria-controls="schedule-editor"
-          className="lg:hidden flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl bg-secondary border border-border text-[11px] font-bold text-muted-foreground hover:bg-accent/5 hover:text-accent hover:border-accent/20 active:scale-[0.88] cursor-pointer transition-all shadow-sm"
+          className="lg:hidden flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl bg-secondary border border-border text-[11px] font-bold text-text-sub hover:bg-accent/5 hover:text-accent hover:border-accent/20 active:scale-[0.88] cursor-pointer transition-all shadow-sm"
         >
           {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
           {expanded ? 'Згорнути' : 'Налаштувати'}
@@ -164,7 +164,7 @@ export function ScheduleWidget({
         <h2 className="text-3xl font-bold tracking-tight text-text-primary">
           {isWorkingToday ? todaySchedule.end_time : '—'}
         </h2>
-        <p className="text-[11px] font-bold text-text-mute uppercase tracking-widest flex items-center gap-1.5 ml-2">
+        <p className="text-[11px] font-bold text-text-sub flex items-center gap-1.5 ml-2">
           <Calendar size={12} className="text-accent" />
           {isWorkingToday ? 'Сьогодні' : 'Вихідний'}
         </p>
@@ -178,7 +178,7 @@ export function ScheduleWidget({
           const statusColor = occupancy >= 85 ? 'bg-success' : occupancy > 60 ? 'bg-warning' : occupancy >= 40 ? 'bg-info' : 'bg-destructive';
           return (
             <div key={day} className="flex flex-col items-center gap-1.5">
-              <span className={cn('text-[10px] font-bold uppercase tracking-tighter', isToday ? 'text-accent' : 'text-text-mute/30')}>
+              <span className={cn('text-[10px] font-bold', isToday ? 'text-accent' : 'text-text-sub')}>
                 {DAYS_UA_SHORT[day]}
               </span>
               <div
@@ -197,7 +197,7 @@ export function ScheduleWidget({
                   />
                 )}
               </div>
-              <span className={cn('text-[9px] font-bold leading-none', isWorking ? (isToday ? 'text-accent' : 'text-text-mute/50') : 'text-transparent')}>
+              <span className={cn('text-[9px] font-bold leading-none', isWorking ? (isToday ? 'text-accent' : 'text-text-sub') : 'text-transparent')}>
                 {isWorking ? `${occupancy}%` : '0%'}
               </span>
             </div>
@@ -207,7 +207,7 @@ export function ScheduleWidget({
 
       {busynessData && (
         <div className="pt-4 border-t border-muted/20 space-y-4">
-          <span className="text-[10px] font-bold text-text-mute uppercase tracking-widest">Завантаженість</span>
+          <span className="text-[10px] font-bold text-text-sub">Завантаженість</span>
           <div className="space-y-3">
             {[
               { label: 'Тиждень', data: busynessData.week },
@@ -239,7 +239,7 @@ export function ScheduleWidget({
   const daysEditor = (
     <div className="flex flex-col gap-3">
       <div className="flex items-baseline justify-between gap-2">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-text-sub">Години роботи</p>
+        <p className="text-[10px] font-bold text-text-sub">Години роботи</p>
         <p className="text-[10px] text-text-sub">вихідні — у «Вихідні та відпустки»</p>
       </div>
       {DAYS_ORDER.map((day) => (
@@ -258,7 +258,7 @@ export function ScheduleWidget({
                 aria-label={`Початок роботи ${DAYS_UA_SHORT[day]}`}
                 className="flex-1 min-w-0 px-2 py-1.5 rounded-xl bg-muted/20 border border-transparent focus:bg-secondary focus:border-accent/30 focus:ring-1 focus:ring-accent/20 outline-none text-xs font-medium text-center"
               />
-              <span className="text-muted-foreground/30 text-xs shrink-0">—</span>
+              <span className="text-text-sub text-xs shrink-0">—</span>
               <input type="time" value={schedule[day].end_time}
                 onChange={(e) => setDayTime(day, 'end_time', e.target.value)}
                 aria-label={`Кінець роботи ${DAYS_UA_SHORT[day]}`}
@@ -287,7 +287,7 @@ export function ScheduleWidget({
               'px-3 py-2 rounded-xl text-xs font-bold transition-all active:scale-[0.88] cursor-pointer',
               bufferTime === min
                 ? 'bg-[var(--btn-primary-bg)] text-[var(--accent-on)] shadow-lg shadow-[var(--btn-primary-bg)]/20'
-                : 'bg-secondary border border-muted/30 text-muted-foreground hover:border-accent/30',
+                : 'bg-secondary border border-muted/30 text-text-sub hover:border-accent/30',
             )}
           >
             {min === 0 ? 'Без' : `${min} хв`}
@@ -301,7 +301,7 @@ export function ScheduleWidget({
     <div className="flex flex-col gap-3 h-full">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Info size={14} className="text-muted-foreground/50 shrink-0" />
+          <Info size={14} className="text-text-sub shrink-0" />
           <h4 className="text-sm font-bold">Перерви</h4>
         </div>
         <button type="button" onClick={() => onBreaksChange([...breaks, { start: '13:00', end: '14:00' }])}
@@ -311,7 +311,7 @@ export function ScheduleWidget({
         </button>
       </div>
       {breaks.length === 0 ? (
-        <div className="flex-1 py-4 rounded-2xl border border-dashed border-muted/30 flex flex-col items-center justify-center text-muted-foreground/35 gap-1.5">
+        <div className="flex-1 py-4 rounded-2xl border border-dashed border-muted/30 flex flex-col items-center justify-center text-text-sub gap-1.5">
           <Clock size={18} strokeWidth={1.2} />
           <p className="text-[11px] font-medium">Перерв не додано</p>
         </div>
@@ -324,7 +324,7 @@ export function ScheduleWidget({
                 aria-label={`Початок перерви ${i + 1}`}
                 className="flex-1 px-2 py-1.5 rounded-lg bg-muted/20 border border-transparent focus:bg-secondary focus:border-accent/30 focus:ring-1 focus:ring-accent/20 outline-none text-xs font-medium"
               />
-              <span className="text-muted-foreground/30 text-xs shrink-0">—</span>
+              <span className="text-text-sub text-xs shrink-0">—</span>
               <input type="time" value={b.end}
                 onChange={(e) => { const nb = [...breaks]; nb[i] = { ...nb[i], end: e.target.value }; onBreaksChange(nb); }}
                 aria-label={`Кінець перерви ${i + 1}`}
@@ -349,15 +349,15 @@ export function ScheduleWidget({
       </div>
       <div className="grid grid-cols-2 gap-3 flex-1">
         <div className="p-3 rounded-2xl bg-accent/5 border border-accent/10 flex flex-col justify-between">
-          <p className="text-[10px] font-bold text-text-mute uppercase tracking-widest">Роб. днів</p>
+          <p className="text-[10px] font-bold text-text-sub">Роб. днів</p>
           <p className="text-3xl font-bold tabular-nums text-accent">{workingDays}</p>
         </div>
         <div className="p-3 rounded-2xl bg-secondary border border-border flex flex-col justify-between">
-          <p className="text-[10px] font-bold text-text-mute uppercase tracking-widest">Год/тиждень</p>
+          <p className="text-[10px] font-bold text-text-sub">Год/тиждень</p>
           <p className="text-3xl font-bold tabular-nums text-text-primary">{Math.round(weeklyHours)}</p>
         </div>
         <div className="col-span-2 p-3 rounded-2xl bg-muted/20 border border-border/60 flex items-center justify-between">
-          <span className="text-xs font-bold text-text-mute">Приблизно за місяць</span>
+          <span className="text-xs font-bold text-text-sub">Приблизно за місяць</span>
           <span className="text-sm font-bold text-text-primary tabular-nums">
             ≈ {Math.round(weeklyHours * 4.33)} год
           </span>

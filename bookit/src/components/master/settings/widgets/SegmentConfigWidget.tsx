@@ -37,7 +37,7 @@ export function SegmentConfigWidget({ segments, onChange }: SegmentConfigWidgetP
           </div>
           <div>
             <h3 className="text-sm font-bold text-foreground">Мої сегменти</h3>
-            <p className="text-[11px] text-muted-foreground/60 mt-0.5">Кастомні фільтри клієнтів</p>
+            <p className="text-[11px] text-text-sub mt-0.5">Кастомні фільтри клієнтів</p>
           </div>
         </div>
 
@@ -45,7 +45,7 @@ export function SegmentConfigWidget({ segments, onChange }: SegmentConfigWidgetP
           <button
             type="button"
             onClick={openNew}
-            className="w-full flex flex-col items-center justify-center py-8 rounded-2xl border border-dashed border-muted-foreground/20 text-muted-foreground/40 cursor-pointer hover:border-accent/30 hover:text-accent/60 active:scale-[0.95] transition-all gap-2"
+            className="w-full flex flex-col items-center justify-center py-8 rounded-2xl border border-dashed border-muted-foreground/20 text-text-sub cursor-pointer hover:border-accent/30 hover:text-accent/60 active:scale-[0.95] transition-all gap-2"
           >
             <Plus size={22} strokeWidth={1.5} />
             <p className="text-xs font-medium">Створіть перший сегмент</p>
@@ -67,9 +67,9 @@ export function SegmentConfigWidget({ segments, onChange }: SegmentConfigWidgetP
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-bold text-foreground truncate">{seg.name}</p>
-                  <p className="text-[10px] text-muted-foreground/70">{seg.conditions.length} умов</p>
+                  <p className="text-[10px] text-text-sub">{seg.conditions.length} умов</p>
                 </div>
-                <Pencil size={11} className="text-muted-foreground/30 shrink-0" />
+                <Pencil size={11} className="text-text-sub shrink-0" />
               </motion.button>
             ))}
           </div>

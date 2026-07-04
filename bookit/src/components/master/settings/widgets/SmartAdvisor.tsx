@@ -125,7 +125,7 @@ export function SmartAdvisor({ data }: SmartAdvisorProps) {
           </div>
           <div>
             <h3 className="font-bold text-sm text-text-primary leading-none mb-1">BookIT Assistant</h3>
-            <p className="text-[10px] font-bold text-accent uppercase tracking-tighter">Ваш помічник</p>
+            <p className="text-[10px] font-bold text-accent">Ваш помічник</p>
           </div>
         </div>
         <button type="button"
@@ -140,7 +140,7 @@ export function SmartAdvisor({ data }: SmartAdvisorProps) {
       {/* Progress — honest, demoted (no vanity hero-metric) */}
       <div className="flex flex-col gap-2 px-0.5">
         <div className="flex items-baseline justify-between">
-          <span className="text-xs font-bold text-text-sub uppercase tracking-widest">Заповненість профілю</span>
+          <span className="text-xs font-bold text-text-sub">Заповненість профілю</span>
           <span className="text-sm font-bold text-text-primary">
             <span className="metric-value">{doneCount}</span>
             <span className="text-text-sub"> / 4</span>
@@ -189,7 +189,7 @@ export function SmartAdvisor({ data }: SmartAdvisorProps) {
             >
               <div className="flex items-center gap-2">
                 {TIP_ICON[hero.type]}
-                <span className="text-[10px] font-bold text-text-sub uppercase tracking-widest">Наступний крок</span>
+                <span className="text-[10px] font-bold text-text-sub">Наступний крок</span>
               </div>
               <span className="text-base font-bold text-text-primary leading-snug">{hero.title}</span>
               <p className="text-xs text-text-sub leading-relaxed">{hero.description}</p>
@@ -243,7 +243,7 @@ export function SmartAdvisor({ data }: SmartAdvisorProps) {
             </div>
             <button type="button"
               onClick={() => setShowExplanation(false)}
-              className="mt-5 py-3.5 rounded-2xl bg-[var(--btn-primary-bg)] text-[var(--accent-on)] font-bold text-xs uppercase tracking-widest active:scale-[0.95] cursor-pointer transition-all"
+              className="mt-5 py-3.5 rounded-2xl bg-[var(--btn-primary-bg)] text-[var(--accent-on)] font-bold text-xs active:scale-[0.95] cursor-pointer transition-all"
             >
               Зрозуміло
             </button>

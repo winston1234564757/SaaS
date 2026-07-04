@@ -36,7 +36,7 @@ export function StatsPulseWidget({
           <p className="text-2xl font-bold tracking-tight text-text-primary leading-none mb-1">
             {rating > 0 ? rating.toFixed(1) : '—'}
           </p>
-          <p className="text-[9px] font-bold text-text-mute uppercase tracking-widest leading-none">Рейтинг</p>
+          <p className="text-[9px] font-bold text-text-sub leading-none">Рейтинг</p>
         </div>
       </div>
 
@@ -48,7 +48,7 @@ export function StatsPulseWidget({
           <p className="text-2xl font-bold tracking-tight text-text-primary leading-none mb-1">
             {ratingCount}
           </p>
-          <p className="text-[9px] font-bold text-text-mute uppercase tracking-widest leading-none">
+          <p className="text-[9px] font-bold text-text-sub leading-none">
             {pluralUk(ratingCount, 'Відгук', 'Відгуки', 'Відгуків')}
           </p>
         </div>
@@ -56,13 +56,13 @@ export function StatsPulseWidget({
 
       <div className="flex flex-col justify-between p-3 rounded-2xl bg-muted/20 border border-border/60">
         <div className="size-7 rounded-xl bg-muted/40 flex items-center justify-center shrink-0">
-          <Eye size={13} className="text-text-mute" />
+          <Eye size={13} className="text-text-sub" />
         </div>
         <div>
           <p className="text-2xl font-bold tracking-tight text-text-primary leading-none mb-1">
             {viewsCount > 0 ? viewsCount.toLocaleString() : '—'}
           </p>
-          <p className="text-[9px] font-bold text-text-mute uppercase tracking-widest leading-none">Перегляди</p>
+          <p className="text-[9px] font-bold text-text-sub leading-none">Перегляди</p>
         </div>
       </div>
 
@@ -74,7 +74,7 @@ export function StatsPulseWidget({
           <p className="text-2xl font-bold tracking-tight text-text-primary leading-none mb-1">
             {bookingsCount}
           </p>
-          <p className="text-[9px] font-bold text-text-mute uppercase tracking-widest leading-none">Записів / міс</p>
+          <p className="text-[9px] font-bold text-text-sub leading-none">Записів / міс</p>
         </div>
       </div>
       {// humanized
@@ -87,7 +87,7 @@ export function StatsPulseWidget({
           <p className="text-2xl font-bold tracking-tight text-text-primary leading-none mb-1">
             {conversion > 0 ? `${conversion}%` : '—'}
           </p>
-          <p className="text-[9px] font-bold text-text-mute uppercase tracking-widest leading-none">Конверсія</p>
+          <p className="text-[9px] font-bold text-text-sub leading-none">Конверсія</p>
         </div>
       </div>
 
@@ -99,7 +99,7 @@ export function StatsPulseWidget({
           <p className="text-2xl font-bold tracking-tight text-text-primary leading-none mb-1">
             {repeatRate > 0 ? `${repeatRate}%` : '—'}
           </p>
-          <p className="text-[9px] font-bold text-text-mute uppercase tracking-widest leading-none">Постійних</p>
+          <p className="text-[9px] font-bold text-text-sub leading-none">Постійних</p>
         </div>
       </div>
 

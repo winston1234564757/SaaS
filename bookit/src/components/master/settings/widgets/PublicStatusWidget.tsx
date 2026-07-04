@@ -75,13 +75,13 @@ export function PublicStatusWidget({
         <div className="flex items-center gap-2.5">
           <div className={cn(
             'size-9 rounded-2xl flex items-center justify-center transition-all shadow-sm',
-            isPublished ? 'bg-success text-[var(--accent-on)]' : 'bg-muted text-text-mute'
+            isPublished ? 'bg-success text-[var(--accent-on)]' : 'bg-muted text-text-sub'
           )}>
             <Globe size={18} />
           </div>
           <div>
-            <h3 className="font-bold text-[11px] uppercase tracking-widest text-text-mute">Публікація</h3>
-            <p className={cn('text-[10px] font-bold', isPublished ? 'text-success' : 'text-text-mute')}>
+            <h3 className="font-bold text-[11px] text-text-sub">Публікація</h3>
+            <p className={cn('text-[10px] font-bold', isPublished ? 'text-[#0B6B2E]' : 'text-text-sub')}>
               {isPublished ? 'Опубліковано' : 'Чернетка'}
             </p>
           </div>
@@ -110,15 +110,15 @@ export function PublicStatusWidget({
 
       {/* Slug Input */}
       <div className="space-y-1.5">
-        <label htmlFor="settings-slug" className="text-[10px] font-bold text-text-mute uppercase tracking-widest px-1">Ваша унікальна адреса</label>
+        <label htmlFor="settings-slug" className="text-[10px] font-bold text-text-sub px-1">Ваша унікальна адреса</label>
         <div className="flex items-center gap-2 px-4 py-3.5 rounded-2xl bg-secondary border border-border focus-within:border-accent focus-within:ring-4 focus-within:ring-accent/5 transition-all shadow-inner-sm">
-          <span className="text-sm text-text-mute/40 font-medium select-none shrink-0">bookit.ua/</span>
+          <span className="text-sm text-text-sub font-medium select-none shrink-0">bookit.ua/</span>
           <input
             id="settings-slug"
             value={slug}
             onChange={(e) => onSlugChange(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
             aria-label="Ваша унікальна адреса"
-            className="flex-1 bg-transparent text-sm font-bold text-text-primary outline-none placeholder:text-text-mute/30 min-w-0"
+            className="flex-1 bg-transparent text-sm font-bold text-text-primary outline-none placeholder:text-text-sub min-w-0"
             placeholder="your-name"
           />
           {slugStatus === 'checking' && <Loader2 size={16} className="animate-spin text-accent shrink-0" />}
@@ -190,7 +190,7 @@ export function PublicStatusWidget({
                 </button>
                 <button type="button"
                   onClick={() => setShowQr(false)}
-                  className="px-4 py-3 rounded-xl bg-secondary/80 text-text-mute text-[11px] font-bold border border-border active:scale-95 transition-all cursor-pointer"
+                  className="px-4 py-3 rounded-xl bg-secondary/80 text-text-sub text-[11px] font-bold border border-border active:scale-95 transition-all cursor-pointer"
                 >
                   Сховати
                 </button>

@@ -88,7 +88,7 @@ export function ProfileHero({
         {isPremium && (
           <div className="absolute top-4 right-4 flex items-center gap-1 bg-surface/90 backdrop-blur-sm px-2.5 py-1 rounded-full shadow-sm border border-border/60 z-10">
             <BadgeCheck size={13} className="text-success" />
-            <span className="text-[10px] font-bold text-success uppercase tracking-tight">Pro</span>
+            <span className="text-[10px] font-bold text-[#0B6B2E]">Pro</span>
           </div>
         )}
 

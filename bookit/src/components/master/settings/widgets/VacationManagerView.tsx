@@ -105,7 +105,7 @@ export function VacationManagerView({
   // to intrinsic width, pushing the right edge past the block border. Cap width on a
   // plain <div> wrapper (which reliably respects max-width) and let the input fill it.
   const fieldCap = 'w-full max-w-[13rem]';
-  const labelCls = 'block text-[10px] font-bold text-text-sub uppercase tracking-wider mb-1';
+  const labelCls = 'block text-[10px] font-bold text-text-sub mb-1';
 
   return (
     <div className="widget-card p-6 flex flex-col gap-6">
@@ -116,13 +116,13 @@ export function VacationManagerView({
             <CalendarOff size={18} />
           </div>
           <div>
-            <h3 className="font-bold text-[11px] uppercase tracking-widest text-text-sub leading-none mb-1">Вихідні та відпустки</h3>
+            <h3 className="font-bold text-[11px] text-text-sub leading-none mb-1">Вихідні та відпустки</h3>
             <p className="text-[10px] text-text-sub/80">Коли тебе немає — клієнти цього не забронюють</p>
           </div>
         </div>
         <div className="text-right shrink-0">
           <p className="metric-value text-2xl text-foreground leading-none">{workingDays}<span className="text-sm text-text-sub font-bold"> / 7</span></p>
-          <p className="text-[10px] font-bold text-text-sub uppercase tracking-widest mt-0.5">робочих днів</p>
+          <p className="text-[10px] font-bold text-text-sub mt-0.5">робочих днів</p>
         </div>
       </div>
 
@@ -149,8 +149,8 @@ export function VacationManagerView({
                     : 'bg-secondary/50 border-border text-text-sub',
                 )}
               >
-                <span className="text-xs font-bold uppercase tracking-tight">{DAYS_UA_SHORT[day]}</span>
-                <span className={cn('text-[9px] font-bold uppercase tracking-widest', on ? 'text-success' : 'text-text-sub/60')}>
+                <span className="text-xs font-bold">{DAYS_UA_SHORT[day]}</span>
+                <span className={cn('text-[9px] font-bold', on ? 'text-[#0B6B2E]' : 'text-text-sub/60')}>
                   {on ? 'роб.' : 'вих.'}
                 </span>
               </button>

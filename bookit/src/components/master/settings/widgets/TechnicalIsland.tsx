@@ -102,7 +102,7 @@ export function TechnicalIsland({
             </div>
             <div>
               <h4 className="text-sm font-bold text-text-primary">Соціальні мережі</h4>
-              <p className="text-[11px] text-text-mute">Посилання на ваші профілі</p>
+              <p className="text-[11px] text-text-sub">Посилання на ваші профілі</p>
             </div>
           </div>
 
@@ -114,7 +114,7 @@ export function TechnicalIsland({
                 onChange={(e) => onInstagramChange(e.target.value)}
                 placeholder="Посилання на Instagram"
                 aria-label="Посилання на Instagram"
-                className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/40"
+                className="flex-1 bg-transparent text-sm outline-none placeholder:text-text-sub"
               />
             </div>
             <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-secondary border border-border focus-within:border-accent/40 transition-all">
@@ -124,7 +124,7 @@ export function TechnicalIsland({
                 onChange={(e) => onTelegramChange(e.target.value)}
                 placeholder="Username в Telegram"
                 aria-label="Username в Telegram"
-                className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/40"
+                className="flex-1 bg-transparent text-sm outline-none placeholder:text-text-sub"
               />
             </div>
           </div>
@@ -138,7 +138,7 @@ export function TechnicalIsland({
             </div>
             <div>
               <h4 className="text-sm font-bold text-text-primary">Сповіщення</h4>
-              <p className="text-[11px] text-text-mute">Telegram бот та push-повідомлення</p>
+              <p className="text-[11px] text-text-sub">Telegram бот та push-повідомлення</p>
             </div>
           </div>
 
@@ -155,7 +155,7 @@ export function TechnicalIsland({
               </div>
               <div>
                 <p className="text-sm font-bold">Telegram Бот</p>
-                <p className="text-[11px] text-muted-foreground leading-relaxed mt-0.5">
+                <p className="text-[11px] text-text-sub leading-relaxed mt-0.5">
                   {telegramChatId
                     ? "Сповіщення про нові записи підключено."
                     : "Підключіть бота — миттєві сповіщення про записи."}
@@ -186,7 +186,7 @@ export function TechnicalIsland({
             </div>
             <div>
               <h4 className="text-sm font-bold text-text-primary">Оформлення</h4>
-              <p className="text-[11px] text-text-mute">Тема вашого профілю</p>
+              <p className="text-[11px] text-text-sub">Тема вашого профілю</p>
             </div>
           </div>
 
@@ -235,7 +235,7 @@ export function TechnicalIsland({
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] font-bold">{theme.label}</span>
                     {theme.wip ? (
-                      <span className="text-[9px] font-bold text-muted-foreground bg-secondary px-1 py-0.5 rounded-full leading-none">
+                      <span className="text-[9px] font-bold text-text-sub bg-secondary px-1 py-0.5 rounded-full leading-none">
                         WIP
                       </span>
                     ) : isLocked ? (
@@ -257,15 +257,15 @@ export function TechnicalIsland({
             className="mt-auto flex items-center justify-between p-3.5 rounded-2xl bg-secondary/40 border border-border hover:bg-secondary/80 transition-all group cursor-pointer active:scale-[0.95]"
           >
             <div className="flex items-center gap-3">
-              <div className="size-8 rounded-xl bg-muted/40 flex items-center justify-center text-muted-foreground group-hover:bg-accent/10 group-hover:text-accent transition-colors">
+              <div className="size-8 rounded-xl bg-muted/40 flex items-center justify-center text-text-sub group-hover:bg-accent/10 group-hover:text-accent transition-colors">
                 <CreditCard size={16} />
               </div>
               <div>
                 <p className="text-xs font-bold">Мій тариф</p>
-                <p className="text-[10px] text-muted-foreground">Керування підпискою</p>
+                <p className="text-[10px] text-text-sub">Керування підпискою</p>
               </div>
             </div>
-            <ChevronRight size={15} className="text-muted-foreground group-hover:text-accent transition-colors" />
+            <ChevronRight size={15} className="text-text-sub group-hover:text-accent transition-colors" />
           </a>
         </div>
 
