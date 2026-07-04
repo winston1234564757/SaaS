@@ -27,8 +27,8 @@
   3. Кожен віджет = домінанта-заголовок (що читається за 3 сек) + виділена «зірка» в даних + за можливості actionable-лінк (напр. пік→«Підняти ціну в пік»→`/dashboard?drawer=dynamic_pricing`). Смарт-drawer на дашборді = `<Link href="/dashboard?drawer=NAME">` (nuqs, див. DashboardDrawers.tsx: flash_deals, dynamic_pricing).
   4. 🔴 КОНТРАСТ НА FROST (DS-DASH-04): токени `--success`/`--warning` провалюють 4.5:1 на дрібному (12px) тексті на periwinkle-картці (≈3.95). `.heading-serif`=weight500 → NIE bold → навіть 19px = normal text (4.5, не 3). Для тексту-статусу юзай калібровані тони good`#0B6B2E`/warn`#9A4508`/bad`--error`. **`--text-tertiary` (2.78:1) = забанене §4 значення → НІКОЛИ для тексту; тільки `--text-primary`/`--text-secondary`. Ієрархію — розміром.**
 
-▶ НАСТУПНА ДІЯ: Billing — `master/billing/*`. Спочатку grep banned-токенів + light/dark-контекст (як усюди). Ймовірно conform-пас.
-  Далі: Revenue-таби (flash/pricing) · Борг DS-BOOK-DASH (темні bookings-views) · P5 лендинг (LAND-01).
+▶ НАСТУПНА ДІЯ: Revenue-таби — `master/revenue/*` (flash/pricing). Спочатку grep banned-токенів + light/dark-контекст (як усюди). Багато з M-REV вже конформне — чесний residual-скоуп.
+  Далі: Борг DS-BOOK-DASH (темні bookings-views) · P5 лендинг (LAND-01).
   ⚠️ DS-MODAL-01 + DS-CLIENT-02 (BookingWizard) — НЕ автономно: revenue-critical shared 6-крок flow. Присвячена сесія з founder-in-loop.
   🔴 УРОК founder (застосовуй усюди): «більше крафту над СВІТЛИМИ блоками» — featured-диференціація + домінантна типографіка (metric-value/heading-serif) + hairline-структура в КОЖНОМУ Section, не лише в темному герої. Світлий блок «служить» ≠ «нудний». Пам'ять: feedback_light_blocks_craft.md.
 
@@ -56,6 +56,13 @@ TRACKER: DS-[ID] ⬜→✅ + оновити ▶ NEXT + прогрес N/23 → �
 ---
 
 ## Нотатки сесій (свіжі зверху)
+
+### DS-BILL-CONFORM — Billing (04.07, ✅ автономна) — commit f207c5cf
+- **Чесна оцінка:** `BillingPage` (666 рядків) вже сильно редизайнено під M-BILL — має еталонний dark hero (SLATE `#0F172A`, аврора-glow, Monobank-панель `#0A0A0A` з trust-списком, differentiated plan-rows hairline-divide, калібровані on-dark тони emerald-300/white-55/white-85). НЕ ретрофіть готове — hero не чіпав.
+- **Скоуп = light-chrome двох Sheet** (Скасувати підписку + Studio Beta form) + plan-list eyebrow. Усі 11 `text-muted-foreground` живуть у модалках (light), НЕ в dark-hero → sed безпечний (`text-white/NN` героя не зачеплено).
+- **Зроблено (sed byte-safe):** `text-muted-foreground(/NN)?` ×11 → `text-text-sub` (5.9:1); `placeholder:text-muted-foreground/50` → `placeholder:text-text-sub`; 4 uppercase-tracked eyebrows/labels (plan-list header «Інші тарифи» + 3 beta-form labels) → sentence-case (джерельний текст вже норм-регістр, uppercase був CSS-only); 3 curly `ʼ` (U+2019→U+02BC) у dark-hero опортуністично.
+- **Лишив semantic:** PartyPopper/Check `text-success` (іконки), error banner `text-destructive` (--error калібрований ~5:1, 14px ок). tier-swatch inline-hex (#789A99/#D4935A/#5C9E7A = дані планів, як segment-swatches).
+- **Own-eyes пропущено:** BillingPage потребує MasterContext+subscription+router+searchParams+useTransition — важко мокати; мех. token/label-case пас без layout-змін у модалках. Verify = grep(0 muted) + tsc + build. TSC:0 · Build:clean · encoding чистий · 0 curly · zero new copy.
 
 ### DS-MKT-CONFORM — Marketing (04.07, ✅ автономна) — commit 695b35da
 - **Скоуп:** поверхня маркетингу = 2 таби (Сторіс `StoryGenerator`+story-wizard · Розсилки `BroadcastEditor`+`BroadcastHistory`+`BroadcastsTab`) + shell `MarketingTabs`. 11 light-chrome файлів. Той самий conform-пас (contrast+eyebrow+калібр-тон), НЕ rewrite — поверхня функціонально сильна (wizard+form+list), її layout (nav-rail + content) не кличе темний editorial-герой як detail/dashboard.
