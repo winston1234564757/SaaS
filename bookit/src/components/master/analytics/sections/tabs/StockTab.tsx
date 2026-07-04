@@ -220,7 +220,7 @@ export function StockTabView({
                 <button
                   type="button"
                   onClick={() => setShowList(v => !v)}
-                  className="flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-[var(--btn-primary-bg)] text-[var(--accent-on)] text-xs font-semibold cursor-pointer active:scale-[0.95] transition-transform flex-shrink-0"
+                  className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[var(--btn-primary-bg)] text-[var(--accent-on)] text-xs font-semibold cursor-pointer active:scale-[0.95] transition-transform flex-shrink-0"
                 >
                   <ShoppingBag size={13} />
                   {showList ? 'Сховати' : 'Сформувати список'}

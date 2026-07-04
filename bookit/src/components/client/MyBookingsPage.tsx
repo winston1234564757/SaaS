@@ -15,6 +15,7 @@ import { cancelBooking, submitReview } from '@/app/my/bookings/actions';
 import { Sheet } from '@/components/ui/Sheet';
 import { pluralUk } from '@/lib/utils/pluralUk';
 import { cn } from '@/lib/utils/cn';
+import { Button } from '@/components/ui/Button';
 
 const SPRING = { type: 'spring', stiffness: 280, damping: 24 } as const;
 
@@ -266,9 +267,11 @@ function ReviewSheet({
           >
             Не зараз
           </button>
-          <button
-            type="button"
+          <Button
+            variant="primary"
+            size="md"
             disabled={!rating || pending}
+            isLoading={pending}
             onClick={() => {
               if (!rating) return;
               const r = rating;
@@ -279,10 +282,10 @@ function ReviewSheet({
                 onOpenChange(false);
               });
             }}
-            className="ml-auto h-11 px-6 rounded-full bg-primary text-primary-foreground text-sm font-bold active:scale-[0.97] transition-transform disabled:opacity-40 shadow-sm"
+            className="ml-auto"
           >
-            {pending ? '...' : 'Надіслати'}
-          </button>
+            Надіслати
+          </Button>
         </div>
       </div>
     </Sheet>
@@ -528,13 +531,9 @@ function MasterGroup({ group, index }: { group: MasterGroupData; index: number }
             <MessageCircle size={14} />
             Написати
           </Link>
-          <button
-            type="button"
-            onClick={() => router.push(rebookHref)}
-            className="min-h-[44px] flex-1 flex items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold active:scale-[0.97] transition-transform"
-          >
+          <Button variant="primary" size="sm" onClick={() => router.push(rebookHref)} className="min-h-[44px] flex-1">
             Записатись знову
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -678,7 +677,7 @@ function UpcomingEmpty() {
       </div>
       <Link
         href="/explore"
-        className="h-10 px-5 rounded-full bg-primary text-primary-foreground text-xs font-bold inline-flex items-center active:scale-[0.97] transition-transform"
+        className="h-10 px-5 rounded-xl bg-primary text-primary-foreground text-xs font-bold inline-flex items-center active:scale-[0.97] transition-transform"
       >
         Знайти майстра
       </Link>
@@ -816,7 +815,7 @@ export function MyBookingsPage({ bookings }: { bookings: UnifiedOrder[] }) {
                   </div>
                   <Link
                     href="/explore"
-                    className="h-11 px-6 rounded-full bg-primary text-primary-foreground text-sm font-bold inline-flex items-center active:scale-[0.97] transition-transform"
+                    className="h-11 px-6 rounded-xl bg-primary text-primary-foreground text-sm font-bold inline-flex items-center active:scale-[0.97] transition-transform"
                   >
                     Знайти майстра
                   </Link>
@@ -847,7 +846,7 @@ export function MyBookingsPage({ bookings }: { bookings: UnifiedOrder[] }) {
                   </div>
                   <Link
                     href="/explore"
-                    className="h-11 px-6 rounded-full bg-primary text-primary-foreground text-sm font-bold inline-flex items-center active:scale-[0.97] transition-transform"
+                    className="h-11 px-6 rounded-xl bg-primary text-primary-foreground text-sm font-bold inline-flex items-center active:scale-[0.97] transition-transform"
                   >
                     Знайти майстра
                   </Link>

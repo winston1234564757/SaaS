@@ -331,7 +331,7 @@ export function BehaviorTabView({
               </div>
               <a
                 href="/dashboard/settings#vacations"
-                className="group inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-[var(--btn-primary-bg)] text-[var(--accent-on)] text-[13px] font-semibold cursor-pointer active:scale-[0.97] transition-transform self-start md:self-center flex-shrink-0"
+                className="group inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[var(--btn-primary-bg)] text-[var(--accent-on)] text-[13px] font-semibold cursor-pointer active:scale-[0.97] transition-transform self-start md:self-center flex-shrink-0"
               >
                 Налаштувати вихідні
                 <ArrowRight size={14} className="transition-transform group-hover:translate-x-0.5" />

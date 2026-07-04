@@ -63,7 +63,7 @@ export function AnalyticsActivation({ slug }: AnalyticsActivationProps) {
             type="button"
             onClick={() => window.open(`/${slug}`, '_blank')}
             disabled={!slug}
-            className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-[var(--btn-primary-bg)] text-[var(--accent-on)] text-[13px] font-semibold cursor-pointer active:scale-[0.97] transition-transform disabled:opacity-50"
+            className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[var(--btn-primary-bg)] text-[var(--accent-on)] text-[13px] font-semibold cursor-pointer active:scale-[0.97] transition-transform disabled:opacity-50"
           >
             <Share2 size={14} />
             Моя сторінка

@@ -1,13 +1,14 @@
 'use client';
 
 import { useTransition } from 'react';
-import { Zap, Loader2 } from 'lucide-react';
+import { Zap } from 'lucide-react';
 import { Sheet } from '@/components/ui/Sheet';
 import { useToast } from '@/lib/toast/context';
 import { fireAutoFlashForSlot } from '@/app/(master)/dashboard/bookings/actions';
 import { parseError } from '@/lib/utils/errors';
 import { pluralUk } from '@/lib/utils/pluralUk';
 import { useFlashOnCancelStore } from '@/lib/stores/flashOnCancelStore';
+import { Button } from '@/components/ui/Button';
 
 /**
  * M-REV-02 (B): single global confirm sheet for the auto flash deal. Mounted once
@@ -62,23 +63,13 @@ export function FlashOnCancelConfirmSheet() {
           </div>
 
           <div className="flex flex-col gap-2">
-            <button
-              type="button"
-              onClick={handleFire}
-              disabled={isPending}
-              className="flex items-center justify-center gap-2 h-12 rounded-full bg-primary text-primary-foreground text-sm font-semibold transition-all active:scale-95 disabled:opacity-50"
-            >
-              {isPending ? <Loader2 size={16} className="animate-spin" /> : <Zap size={16} />}
+            <Button variant="primary" size="lg" fullWidth onClick={handleFire} disabled={isPending} isLoading={isPending}>
+              <Zap size={16} />
               Запустити акцію
-            </button>
-            <button
-              type="button"
-              onClick={clear}
-              disabled={isPending}
-              className="h-12 rounded-full text-sm font-medium text-muted-foreground hover:bg-secondary/60 transition-colors disabled:opacity-50"
-            >
+            </Button>
+            <Button variant="ghost" size="lg" fullWidth onClick={clear} disabled={isPending}>
               Не треба
-            </button>
+            </Button>
           </div>
         </div>
       )}

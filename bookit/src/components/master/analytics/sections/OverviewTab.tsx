@@ -153,7 +153,7 @@ export function OverviewTab({
               type="button"
               onClick={onExport}
               disabled={exporting}
-              className="flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-[var(--btn-primary-bg)] text-[var(--accent-on)] text-xs font-semibold cursor-pointer active:scale-[0.95] transition-transform duration-150 disabled:opacity-50"
+              className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[var(--btn-primary-bg)] text-[var(--accent-on)] text-xs font-semibold cursor-pointer active:scale-[0.95] transition-transform duration-150 disabled:opacity-50"
             >
               {exporting ? <><Loader2 size={13} className="animate-spin" />Генеруємо...</> : <><Download size={13} />Експорт в CSV</>}
             </button>
