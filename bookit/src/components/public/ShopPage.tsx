@@ -46,13 +46,13 @@ export function ShopPage({ masterId, masterSlug, masterName, shipsNovaPoshta, pr
         <Link
           href={`/${masterSlug}`}
           aria-label="Назад до майстра"
-          className="size-9 rounded-lg bg-secondary/70 border border-border flex items-center justify-center text-muted-foreground hover:bg-secondary active:scale-[0.95] transition-all cursor-pointer shrink-0"
+          className="size-9 rounded-lg bg-secondary/70 border border-border flex items-center justify-center text-text-sub hover:bg-secondary active:scale-[0.95] transition-all cursor-pointer shrink-0"
         >
           <ArrowLeft size={18} />
         </Link>
         <div className="flex-1 min-w-0">
           <h1 className="heading-serif text-xl text-foreground leading-tight">Магазин</h1>
-          <p className="text-xs text-muted-foreground/60">{masterName}</p>
+          <p className="text-xs text-text-sub">{masterName}</p>
         </div>
       </div>
 
@@ -105,7 +105,7 @@ function ProductTile({ product: p, qty, masterSlug }: { product: Product; qty: n
       <div className="relative w-full aspect-[4/3] overflow-hidden bg-secondary">
         {photo
           ? <Image src={photo} alt={p.name} fill className="object-cover" sizes="(max-width:640px) 50vw,220px" />
-          : <div className="w-full h-full flex items-center justify-center"><ProductIcon name={p.icon_name} size={32} className="text-muted-foreground" /></div>
+          : <div className="w-full h-full flex items-center justify-center"><ProductIcon name={p.icon_name} size={32} className="text-text-sub" /></div>
         }
         <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent pointer-events-none" />
         <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full text-[10px] font-bold text-white" style={{ background: `color-mix(in srgb, ${catColor} 87%, transparent)`, backdropFilter: 'blur(4px)' }}>
@@ -129,8 +129,8 @@ function ProductTile({ product: p, qty, masterSlug }: { product: Product; qty: n
       </div>
       <div className="flex flex-col gap-1 p-3">
         <p className="text-xs font-bold text-foreground leading-tight line-clamp-2">{p.name}</p>
-        {p.description && <p className="text-[10px] text-muted-foreground/60 line-clamp-1">{p.description}</p>}
-        <p className="text-base font-bold text-foreground mt-0.5">{(p.price_kopecks / 100).toFixed(0)} ₴</p>
+        {p.description && <p className="text-[10px] text-text-sub line-clamp-1">{p.description}</p>}
+        <p className="metric-value text-base text-foreground mt-0.5">{(p.price_kopecks / 100).toFixed(0)} ₴</p>
       </div>
     </Link>
   );
@@ -148,7 +148,7 @@ function FilterChip({ active, onClick, children }: { active: boolean; onClick: (
         'shrink-0 px-3.5 py-1.5 rounded-full text-xs font-medium transition-all',
         active
           ? 'bg-primary text-primary-foreground active:scale-[0.95] cursor-pointer'
-          : 'bg-secondary/70 text-muted-foreground border border-border hover:bg-secondary active:scale-[0.95] cursor-pointer'
+          : 'bg-secondary/70 text-text-sub border border-border hover:bg-secondary active:scale-[0.95] cursor-pointer'
       )}
     >
       {children}
@@ -159,7 +159,7 @@ function FilterChip({ active, onClick, children }: { active: boolean; onClick: (
 function EmptyShop({ masterSlug }: { masterSlug: string }) {
   return (
     <div className="col-span-2 bento-card p-10 flex flex-col items-center gap-3 text-center">
-      <ProductIcon name="package" size={28} className="text-muted-foreground/60" />
+      <ProductIcon name="package" size={28} className="text-text-sub" />
       <p className="text-sm font-semibold text-foreground">Товарів поки немає</p>
       <Link href={`/${masterSlug}`} className="text-xs text-primary hover:underline flex items-center gap-1">
         <ArrowLeft size={12} /> Повернутись
