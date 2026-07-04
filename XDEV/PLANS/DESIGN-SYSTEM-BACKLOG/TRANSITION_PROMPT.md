@@ -17,7 +17,7 @@
 
 ═══ ПОТОЧНИЙ СТАН ═══
 Фундамент ✅ (C-CLI-01, 03.07, founder 10/10): токени --cover-bg / .editorial-cover · примітиви EditorialCover + Section · Button/Badge під мову · BentoCard видалено · Sheet srTitle · DESIGN_LANGUAGE.md.
-Прогрес задач: 17/23 ✅ — **P1 дашборд ЗАКРИТА** · **P3 модалки 6/7** · **P2 DS-CLIENT-01 ✅** (публічна: hero + services + reviews + графік + shop + products). 01+CLIENT-02 (BookingWizard) відкладено — окрема сесія з founder.
+Прогрес задач: 20/24 ✅ — **P1 дашборд ЗАКРИТА** · **P3 модалки 6/7** · **P2 клієнт-зона: 01/03/04/05-Explore ✅**. CLIENT-02 (BookingWizard) відкладено — окрема сесія з founder.
 Кіт: bookit/src/components/ui/ — EditorialCover (темний герой, 1 на поверхню) · Section (білий тіло, hairline) · Button (primary slate / secondary hairline / ghost / danger) · Badge (surface light|dark) · Sheet (srTitle).
 Еталон реалізації: ClientDossierHero + ClientDetailSheet + BookingDetailsModal band (variant cover/inline). Читай BRIEFS/C-CLI-01.md перш ніж робити першу модалку/картку.
 
@@ -27,8 +27,8 @@
   3. Кожен віджет = домінанта-заголовок (що читається за 3 сек) + виділена «зірка» в даних + за можливості actionable-лінк (напр. пік→«Підняти ціну в пік»→`/dashboard?drawer=dynamic_pricing`). Смарт-drawer на дашборді = `<Link href="/dashboard?drawer=NAME">` (nuqs, див. DashboardDrawers.tsx: flash_deals, dynamic_pricing).
   4. 🔴 КОНТРАСТ НА FROST (DS-DASH-04): токени `--success`/`--warning` провалюють 4.5:1 на дрібному (12px) тексті на periwinkle-картці (≈3.95). `.heading-serif`=weight500 → NIE bold → навіть 19px = normal text (4.5, не 3). Для тексту-статусу юзай калібровані тони good`#0B6B2E`/warn`#9A4508`/bad`--error`. **`--text-tertiary` (2.78:1) = забанене §4 значення → НІКОЛИ для тексту; тільки `--text-primary`/`--text-secondary`. Ієрархію — розміром.**
 
-▶ НАСТУПНА ДІЯ: DS-CLIENT-03 — Мої записи (app/my/bookings/*, Тір 2). Клієнт-зона: списки записів (майбутні/минулі) на дизайн-мову. Реюз C-CLI-01 + PublicMasterHero + Services/Reviews-патернів (featured-перший, hairline-рядки, metric-value).
-  Далі: DS-CLIENT-04 (Мій профіль) · P5 лендинг (LAND-01).
+▶ НАСТУПНА ДІЯ: Analytics — `AnalyticsPage` (найгірший §4-борг: gradient/glow/blob ×7; Shop уже зроблено commit 29767f07, пропустити). УВАГА: 7 табів уже M-ANL-редизайнено (темний/світлий герої) — перевір grep-аудитом що лишилось (banned-токени/eyebrow), не переробляй готове.
+  Далі: Settings (найбільше eyebrow) → Bookings-list → Clients → Marketing → Billing · P5 лендинг (LAND-01).
   ⚠️ DS-MODAL-01 + DS-CLIENT-02 (BookingWizard) — НЕ автономно: revenue-critical shared 6-крок flow. Присвячена сесія з founder-in-loop.
   🔴 УРОК founder (застосовуй усюди): «більше крафту над СВІТЛИМИ блоками» — featured-диференціація + домінантна типографіка (metric-value/heading-serif) + hairline-структура в КОЖНОМУ Section, не лише в темному герої. Світлий блок «служить» ≠ «нудний». Пам'ять: feedback_light_blocks_craft.md.
 
@@ -56,6 +56,17 @@ TRACKER: DS-[ID] ⬜→✅ + оновити ▶ NEXT + прогрес N/23 → �
 ---
 
 ## Нотатки сесій (свіжі зверху)
+
+### DS-CLIENT-05 — Explore (04.07, ✅ own-eyes, автономна) — commit 80e667bd
+- **Чесна оцінка:** Explore = одна з найсильніших легасі-поверхонь, НЕ зламана. Уже має темний блок-герой (`SearchPortal` = `bg-accent` slate `#0F172A`), spotlight-асиметрію, чесні low-data (hero fallback today→tomorrow→top, spotlight ховається без фото). Тому **token+contrast+craft alignment, не rewrite** (ситуація DS-CLIENT-03). Переписувати = регресія робочого discovery (geo/smart-sort/intent).
+- **Борг викорінено (grep-верифіковано):** `text-muted-foreground` ×30 (на Frost = `--color-muted-foreground: var(--text-tertiary)` = `rgba(15,23,42,.45)` = **2.78:1** = точно §4-бан) → `text-text-sub` (#475569, 5.9:1). Через `replace_all` (edit-guard).
+- **Калібровані тони:** `AvailChip` `var(--success)`/`--warning` (провал 4.5 на 10px) → good `#0B6B2E` / warn `#9A4508`. Зірки-fill лишив `text-warning` (декор-іконка, не текст).
+- **On-dark контраст героя (урок on-dark рамп):** subtitle `/50`(4.46, провал 11px)→`/70`; категорії неактивні `/45`→`/65`, лічильник `/35`→`/55` (мін 6.0 дрібний). accent-on `#F8FAFC` на slate.
+- **§4-eyebrow геть:** Spotlight «ОБРАНЕ» uppercase tracked → sentence-case + Sparkles-іконка; FilterSheet «ЦІНА»/«СОРТУВАННЯ» tracked → sentence-case section-title.
+- **Кіт прийнято:** FilterSheet «Скинути/Готово» → `Button secondary/primary`; empty-reset + load-more → `Button`; ReferralInviteCTA + footer-recruit CTA → `btn-primary` inline (Link не конвертиться в Button). IntentGrid nav-chips лишив `<button>` (toggle-піли, не дії — конверсія=регресія, урок DS-DASH-01/10).
+- **Свідома межа:** grid карток однорідний — легіт (фото-грід, драму несуть hero+spotlight); script-h1 `--font-great-vibes` не чіпав (hero-ідентичність, founder-call). Founder схвалив обсяг (AskUserQuestion «весь план»).
+- **🔧 Мок-урок own-eyes:** `next/image` кидає на не-whitelisted host (picsum) ДО onError-fallback → error boundary. Прев'ю-майстрів роби з `avatarUrl:null` + `portfolioPhotos:[]` (монограм-кавер, і так founder-реальність). `[null]` в portfolioPhotos = TS-помилка (тип string[]).
+- **Own-eyes:** прев'ю-роут `ds-preview` (жива повна Explore, 6 мок-майстрів rich) mobile 430 + desktop 1400 Playwright, видалено. Zero new copy → humanizer пропущено. Encoding чистий. TSC:0 · Build:clean (59 стор.).
 
 ### Повний аудит + клієнт-зона (04.07, автономна) — commits 2ddec323 · c59b921f · 1bdec4e3
 - **🔴 Founder-корекція:** «редизайн ПОВНИХ сторінок, не hero; графік роботи жахливо». Новий закон feedback_full_page_redesign.md. Grep-аудит → REAUDIT_PLAN.md (борг: muted-foreground/tertiary скрізь, uppercase-eyebrow settings 11, §4-декор analytics 7, кіт майже не прийнятий).
