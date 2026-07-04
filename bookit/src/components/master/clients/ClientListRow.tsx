@@ -91,7 +91,7 @@ export const ClientListRow = React.memo(function ClientListRow({
             </div>
           </div>
           {client.last_visit_at && (
-            <span className="text-[10px] text-muted-foreground/60 font-medium mt-1 block">
+            <span className="text-[10px] text-text-sub font-medium mt-1 block">
               Останній візит:{' '}
               {new Date(client.last_visit_at).toLocaleDateString('uk-UA', { day: 'numeric', month: 'short' })}
               {client.last_service_name && (
@@ -106,8 +106,8 @@ export const ClientListRow = React.memo(function ClientListRow({
           <div className="text-right flex-shrink-0 flex flex-col items-end gap-1 sm:group-hover:hidden">
             <p className="text-sm font-bold text-foreground">{formatPrice(client.total_spent)}</p>
             <div className="flex items-center gap-1">
-              <Calendar size={10} className="text-muted-foreground/60" />
-              <span className="text-[11px] text-muted-foreground/60">{client.total_visits}</span>
+              <Calendar size={10} className="text-text-sub" />
+              <span className="text-[11px] text-text-sub">{client.total_visits}</span>
             </div>
           </div>
         )}
@@ -119,7 +119,7 @@ export const ClientListRow = React.memo(function ClientListRow({
           <button
             type="button"
             onClick={() => { setEditing(true); setNoteValue(''); }}
-            className="size-11 rounded-full bg-secondary/60 border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary shadow-sm transition-colors duration-150 active:scale-[0.88]"
+            className="size-11 rounded-full bg-secondary/60 border border-border flex items-center justify-center text-text-sub hover:text-foreground hover:bg-secondary shadow-sm transition-colors duration-150 active:scale-[0.88]"
             aria-label="Швидка нотатка"
           >
             <PenLine size={14} />
@@ -127,7 +127,7 @@ export const ClientListRow = React.memo(function ClientListRow({
           <button
             type="button"
             onClick={() => onSmartAction(client)}
-            className="size-11 rounded-full bg-secondary/60 border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary shadow-sm transition-colors duration-150 active:scale-[0.88]"
+            className="size-11 rounded-full bg-secondary/60 border border-border flex items-center justify-center text-text-sub hover:text-foreground hover:bg-secondary shadow-sm transition-colors duration-150 active:scale-[0.88]"
             aria-label="Smart-дія"
           >
             <Sparkles size={14} />
@@ -135,7 +135,7 @@ export const ClientListRow = React.memo(function ClientListRow({
           <button
             type="button"
             onClick={() => { window.location.href = `tel:${client.client_phone}`; }}
-            className="size-11 rounded-full bg-secondary/60 border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary shadow-sm transition-colors duration-150 active:scale-[0.88]"
+            className="size-11 rounded-full bg-secondary/60 border border-border flex items-center justify-center text-text-sub hover:text-foreground hover:bg-secondary shadow-sm transition-colors duration-150 active:scale-[0.88]"
             aria-label="Подзвонити"
           >
             <Phone size={14} />
@@ -174,7 +174,7 @@ export const ClientListRow = React.memo(function ClientListRow({
             <button
               type="button"
               onClick={() => setEditing(false)}
-              className="px-4 py-2 rounded-lg bg-secondary/40 text-muted-foreground text-[11px] active:scale-[0.88] transition-all"
+              className="px-4 py-2 rounded-lg bg-secondary/40 text-text-sub text-[11px] active:scale-[0.88] transition-all"
             >
               Скасувати
             </button>
@@ -189,7 +189,7 @@ export const ClientListRow = React.memo(function ClientListRow({
             <button
               type="button"
               onClick={() => { setEditing(true); setNoteValue(''); }}
-              className="size-11 rounded-full bg-secondary/60 border border-border flex items-center justify-center text-muted-foreground active:scale-[0.88] transition-all"
+              className="size-11 rounded-full bg-secondary/60 border border-border flex items-center justify-center text-text-sub active:scale-[0.88] transition-all"
               aria-label="Швидка нотатка"
             >
               <PenLine size={14} />
@@ -197,7 +197,7 @@ export const ClientListRow = React.memo(function ClientListRow({
             <button
               type="button"
               onClick={() => onSmartAction(client)}
-              className="size-11 rounded-full bg-secondary/60 border border-border flex items-center justify-center text-muted-foreground active:scale-[0.88] transition-all"
+              className="size-11 rounded-full bg-secondary/60 border border-border flex items-center justify-center text-text-sub active:scale-[0.88] transition-all"
               aria-label="Smart-дія"
             >
               <Sparkles size={14} />
@@ -205,7 +205,7 @@ export const ClientListRow = React.memo(function ClientListRow({
             <button
               type="button"
               onClick={() => { window.location.href = `tel:${client.client_phone}`; }}
-              className="size-11 rounded-full bg-secondary/60 border border-border flex items-center justify-center text-muted-foreground active:scale-[0.88] transition-all"
+              className="size-11 rounded-full bg-secondary/60 border border-border flex items-center justify-center text-text-sub active:scale-[0.88] transition-all"
               aria-label="Подзвонити"
             >
               <Phone size={14} />

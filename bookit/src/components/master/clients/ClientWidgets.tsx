@@ -113,13 +113,13 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
       >
         <div className="flex items-center justify-between mb-4">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Утримання бази</p>
+            <p className="text-[10px] font-bold text-text-sub">Утримання бази</p>
             <h3 className="text-2xl font-display font-bold text-foreground">
               {Math.round((activeCount / clients.length) * 100 || 0)}%
-              <span className="text-xs font-medium text-muted-foreground/70 ml-2">здоровий стан</span>
+              <span className="text-xs font-medium text-text-sub ml-2">здоровий стан</span>
             </h3>
           </div>
-          <Users className="text-sage opacity-10" size={40} />
+          <Users className="text-accent opacity-10" size={40} />
         </div>
 
         <div className="flex gap-1.5 h-2.5 rounded-full overflow-hidden bg-secondary/20">
@@ -147,7 +147,7 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
                 <span className="size-1.5 rounded-full" style={{ background: item.color }} />
                 <p className="text-[13px] font-bold text-foreground leading-none">{item.count}</p>
               </div>
-              <p className="text-[9px] font-bold uppercase tracking-tighter text-muted-foreground/60">{item.label}</p>
+              <p className="text-[9px] font-bold text-text-sub">{item.label}</p>
             </button>
           ))}
         </div>
@@ -163,14 +163,14 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
         onClick={() => setShowCheckDetails(true)}
       >
         <div className="flex items-center justify-between">
-          <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">Середній чек</p>
+          <p className="text-[10px] font-bold text-text-sub">Середній чек</p>
           <TrendingUp size={14} className="text-primary/40" />
         </div>
         <div className="mt-2">
           <p className="text-2xl font-bold text-foreground whitespace-nowrap">
             {formatCompact(Math.round(avgCheck))}
           </p>
-          <p className="text-[10px] text-muted-foreground/60 mt-1">за весь час</p>
+          <p className="text-[10px] text-text-sub mt-1">за весь час</p>
         </div>
       </motion.button>
 
@@ -212,20 +212,20 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
                 className="h-full flex flex-col justify-between"
               >
                 <div className="flex items-center gap-2 mb-2">
-                  <div className={`p-1.5 rounded-lg ${lostTreasures.length > 0 ? 'bg-warning/20 text-warning' : 'bg-secondary text-muted-foreground/40'}`}>
+                  <div className={`p-1.5 rounded-lg ${lostTreasures.length > 0 ? 'bg-warning/20 text-warning' : 'bg-secondary text-text-sub'}`}>
                     <Star size={14} />
                   </div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">Важливі</p>
+                  <p className="text-[10px] font-bold text-text-sub">Важливі</p>
                 </div>
                 {lostTreasures.length > 0 ? (
                   <div>
                     <p className="text-2xl font-display font-bold text-warning">{lostTreasures.length}</p>
-                    <p className="text-[10px] text-warning/70 mt-1 font-medium italic">VIP під загрозою</p>
+                    <p className="text-[10px] text-[#9A4508] mt-1 font-medium italic">VIP під загрозою</p>
                   </div>
                 ) : (
                   <div>
                     <p className="text-2xl font-display font-bold text-foreground">0</p>
-                    <p className="text-[10px] text-muted-foreground/60 mt-1">всі VIP активні</p>
+                    <p className="text-[10px] text-text-sub mt-1">всі VIP активні</p>
                   </div>
                 )}
               </motion.div>
@@ -241,14 +241,14 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
                 className="h-full flex flex-col justify-between"
               >
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="p-1.5 rounded-lg bg-sage/20 text-sage">
+                  <div className="p-1.5 rounded-lg bg-sage/20 text-accent">
                     <Share2 size={14} />
                   </div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">Амбасадори</p>
+                  <p className="text-[10px] font-bold text-text-sub">Амбасадори</p>
                 </div>
                 <div>
-                  <p className="text-2xl font-display font-bold text-sage">{ambassadorData?.ambassadors.length ?? 0}</p>
-                  <p className="text-[10px] text-sage/70 mt-1 font-medium italic">топ-реферали</p>
+                  <p className="text-2xl font-display font-bold text-accent">{ambassadorData?.ambassadors.length ?? 0}</p>
+                  <p className="text-[10px] text-accent/70 mt-1 font-medium italic">топ-реферали</p>
                 </div>
               </motion.div>
             )}
@@ -294,16 +294,16 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
               type="button"
               aria-label="Сховати"
               onClick={cleanupDismiss.dismiss}
-              className="absolute top-2 right-2 z-10 p-1.5 rounded-lg text-muted-foreground/40 hover:text-muted-foreground/70 hover:bg-secondary/60 active:scale-[0.9] transition-all"
+              className="absolute top-2 right-2 z-10 p-1.5 rounded-lg text-text-sub hover:text-text-sub hover:bg-secondary/60 active:scale-[0.9] transition-all"
             >
               <X size={14} />
             </button>
-            <div className="size-12 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground shadow-sm">
+            <div className="size-12 rounded-xl bg-secondary flex items-center justify-center text-text-sub shadow-sm">
               <Users size={20} className="opacity-40" />
             </div>
             <div>
               <h4 className="text-sm font-bold text-foreground">Пора почистити базу</h4>
-              <p className="text-xs text-muted-foreground/60 mt-1 max-w-[240px]">
+              <p className="text-xs text-text-sub mt-1 max-w-[240px]">
                 У вас {archiveCount} {pluralUk(archiveCount, 'клієнт', 'клієнти', 'клієнтів')} у глибокому відтоку.
                 Архівуйте їх, щоб бачити тільки актуальні дані.
               </p>
@@ -340,7 +340,7 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
               </div>
               <div className="flex-1 pr-6">
                 <p className="text-sm font-bold text-foreground">Потрібен follow-up</p>
-                <p className="text-xs text-muted-foreground/70 mt-0.5 leading-tight">
+                <p className="text-xs text-text-sub mt-0.5 leading-tight">
                   {newbiesAtRisk.length} новачків не повернулися. Запропонуйте бонус!
                 </p>
               </div>
@@ -352,7 +352,7 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
               type="button"
               aria-label="Сховати"
               onClick={followupDismiss.dismiss}
-              className="absolute top-2 right-2 z-10 p-1.5 rounded-lg text-muted-foreground/40 hover:text-muted-foreground/70 hover:bg-secondary/60 active:scale-[0.9] transition-all"
+              className="absolute top-2 right-2 z-10 p-1.5 rounded-lg text-text-sub hover:text-text-sub hover:bg-secondary/60 active:scale-[0.9] transition-all"
             >
               <X size={14} />
             </button>
@@ -372,20 +372,20 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
             <>
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-4 rounded-3xl bg-sage/5 border border-sage/10">
-                  <p className="text-[10px] font-bold text-sage uppercase tracking-widest mb-1">Приведено</p>
+                  <p className="text-[10px] font-bold text-accent mb-1">Приведено</p>
                   <p className="text-3xl font-display font-bold text-foreground">{ambassadorData.totalReferrals}</p>
-                  <p className="text-[10px] text-muted-foreground/70 mt-1">клієнтів</p>
+                  <p className="text-[10px] text-text-sub mt-1">клієнтів</p>
                 </div>
                 <div className="p-4 rounded-3xl bg-sage/5 border border-sage/10">
-                  <p className="text-[10px] font-bold text-sage uppercase tracking-widest mb-1">Дохід</p>
+                  <p className="text-[10px] font-bold text-accent mb-1">Дохід</p>
                   <p className="text-3xl font-display font-bold text-foreground">{formatPrice(ambassadorData.totalRevenue)}</p>
-                  <p className="text-[10px] text-muted-foreground/70 mt-1">за весь час</p>
+                  <p className="text-[10px] text-text-sub mt-1">за весь час</p>
                 </div>
               </div>
 
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
-                  <Users size={16} className="text-sage" />
+                  <Users size={16} className="text-accent" />
                   <h4 className="text-sm font-bold text-foreground">Топ амбасадори</h4>
                 </div>
 
@@ -402,21 +402,21 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
-                            <div className="size-9 rounded-full bg-sage/10 flex items-center justify-center text-sage font-bold text-xs">
+                            <div className="size-9 rounded-full bg-sage/10 flex items-center justify-center text-accent font-bold text-xs">
                               {amb.name[0]}
                             </div>
                             <div>
                               <p className="text-sm font-bold text-foreground">{amb.name}</p>
-                              <p className="text-[10px] text-muted-foreground/60">
+                              <p className="text-[10px] text-text-sub">
                                 {amb.completedCount} {pluralUk(amb.completedCount, 'рекомендація', 'рекомендації', 'рекомендацій')}
                               </p>
                             </div>
                           </div>
                           <div className="text-right flex items-center gap-2">
                             {amb.revenue > 0 && (
-                              <p className="text-sm font-bold text-sage">{formatPrice(amb.revenue)}</p>
+                              <p className="text-sm font-bold text-accent">{formatPrice(amb.revenue)}</p>
                             )}
-                            <ChevronRight size={14} className={`text-sage/40 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
+                            <ChevronRight size={14} className={`text-accent/40 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
                           </div>
                         </div>
 
@@ -427,9 +427,9 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
                             transition={SPRING}
                             className="pl-4 border-l-2 border-sage/10 space-y-2 py-1"
                           >
-                            <p className="text-[9px] font-bold text-sage uppercase tracking-widest mb-1">Запрошені друзі:</p>
+                            <p className="text-[9px] font-bold text-accent mb-1">Запрошені друзі:</p>
                             {amb.referrals.map((ref, j) => (
-                              <div key={j} className="flex items-center gap-2 text-xs text-muted-foreground/70">
+                              <div key={j} className="flex items-center gap-2 text-xs text-text-sub">
                                 <div className="size-1.5 rounded-full bg-sage/30" />
                                 {ref.name} · {ref.date}
                               </div>
@@ -445,11 +445,11 @@ export function ClientWidgets({ clients, isLoading, onSegmentSelect, activeSegme
           ) : (
             <div className="flex flex-col items-center gap-4 py-8 text-center">
               <div className="size-14 rounded-2xl bg-sage/10 flex items-center justify-center">
-                <Share2 size={24} className="text-sage/40" />
+                <Share2 size={24} className="text-accent/40" />
               </div>
               <div>
                 <p className="text-sm font-bold text-foreground">Реферальна програма</p>
-                <p className="text-xs text-muted-foreground/60 mt-1 max-w-[220px]">
+                <p className="text-xs text-text-sub mt-1 max-w-[220px]">
                   Поки що немає активних амбасадорів. Поділіться посиланням із клієнтами — вони приведуть нових.
                 </p>
               </div>
@@ -511,8 +511,8 @@ function AvgCheckModal({
                           'bg-error/5 border-error/10'
         }`}>
           <div>
-            <p className={`text-[10px] font-bold uppercase tracking-widest mb-1 ${
-              deltaPositive ? 'text-success' : deltaNeutral ? 'text-muted-foreground' : 'text-error'
+            <p className={`text-[10px] font-bold mb-1 ${
+              deltaPositive ? 'text-success' : deltaNeutral ? 'text-text-sub' : 'text-error'
             }`}>
               {format(new Date(), 'LLLL yyyy')} vs попередній
             </p>
@@ -521,22 +521,22 @@ function AvgCheckModal({
             </p>
             {monthAvg.prev !== null && (
               <p className={`text-[11px] mt-1 font-medium ${
-                deltaPositive ? 'text-success' : deltaNeutral ? 'text-muted-foreground/60' : 'text-error'
+                deltaPositive ? 'text-success' : deltaNeutral ? 'text-text-sub' : 'text-error'
               }`}>
                 {deltaPositive ? '+' : ''}{monthAvg.delta}% vs {formatPrice(monthAvg.prev)} (попередній)
               </p>
             )}
           </div>
           {deltaPositive ? <TrendingUp size={40} className="text-success opacity-20" /> :
-           deltaNeutral  ? <Minus size={40} className="text-muted-foreground opacity-20" /> :
+           deltaNeutral  ? <Minus size={40} className="text-text-sub opacity-20" /> :
                            <TrendingDown size={40} className="text-error opacity-20" />}
         </div>
       ) : (
         <div className="flex items-center justify-between p-5 rounded-3xl bg-accent/5 border border-accent/10">
           <div>
-            <p className="text-[10px] font-bold text-accent uppercase tracking-widest mb-1">Загальний</p>
+            <p className="text-[10px] font-bold text-accent mb-1">Загальний</p>
             <p className="text-3xl font-display font-bold text-foreground">{formatPrice(allTimeAvg)}</p>
-            <p className="text-[11px] text-muted-foreground/60 mt-1">середній чек за весь час</p>
+            <p className="text-[11px] text-text-sub mt-1">середній чек за весь час</p>
           </div>
           <TrendingUp size={40} className="text-accent opacity-20" />
         </div>
@@ -547,10 +547,10 @@ function AvgCheckModal({
           <div className="p-4 rounded-xl bg-secondary/60 border border-border">
             <div className="flex items-center gap-1.5 mb-2">
               <Crown size={13} className="text-warning" />
-              <p className="text-[10px] font-bold text-warning uppercase tracking-widest">VIP-чек</p>
+              <p className="text-[10px] font-bold text-warning">VIP-чек</p>
             </div>
             <p className="text-xl font-display font-bold text-foreground">{formatPrice(vipAvg)}</p>
-            <p className="text-[10px] text-muted-foreground/60 mt-0.5">
+            <p className="text-[10px] text-text-sub mt-0.5">
               {vipLift > 0 ? '+' : ''}{vipLift}% до середнього
             </p>
           </div>
@@ -558,13 +558,13 @@ function AvgCheckModal({
 
         <div className="p-4 rounded-xl bg-secondary/60 border border-border">
           <div className="flex items-center gap-1.5 mb-2">
-            <AlertCircle size={13} className={oneTimerPct > 40 ? 'text-error' : 'text-muted-foreground/60'} />
-            <p className={`text-[10px] font-bold uppercase tracking-widest ${oneTimerPct > 40 ? 'text-error' : 'text-muted-foreground/60'}`}>
+            <AlertCircle size={13} className={oneTimerPct > 40 ? 'text-error' : 'text-text-sub'} />
+            <p className={`text-[10px] font-bold ${oneTimerPct > 40 ? 'text-error' : 'text-text-sub'}`}>
               Разові
             </p>
           </div>
           <p className="text-xl font-display font-bold text-foreground">{oneTimerPct}%</p>
-          <p className="text-[10px] text-muted-foreground/60 mt-0.5">клієнтів прийшли лише раз</p>
+          <p className="text-[10px] text-text-sub mt-0.5">клієнтів прийшли лише раз</p>
         </div>
       </div>
 
@@ -628,7 +628,7 @@ function InsightRow({ index, color, children }: { index: number; color: string; 
       <div className={`size-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${colorMap[color] ?? colorMap.primary}`}>
         {index}
       </div>
-      <p className="text-xs text-muted-foreground leading-relaxed">{children}</p>
+      <p className="text-xs text-text-sub leading-relaxed">{children}</p>
     </div>
   );
 }

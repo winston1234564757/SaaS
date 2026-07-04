@@ -228,7 +228,7 @@ function ConditionRow({
                 <option key={f} value={f}>{SEGMENT_FIELD_LABELS[f]}</option>
               ))}
             </select>
-            <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground/40 pointer-events-none" />
+            <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-sub pointer-events-none" />
           </div>
           {/* Delete — min 44px touch target */}
           <button
@@ -255,7 +255,7 @@ function ConditionRow({
                     'px-3 py-1.5 rounded-xl text-[11px] font-bold whitespace-nowrap shrink-0 transition-all',
                     cond.operator === op
                       ? 'bg-accent text-white shadow-sm'
-                      : 'bg-muted/15 text-muted-foreground hover:bg-muted/30'
+                      : 'bg-muted/15 text-text-sub hover:bg-muted/30'
                   )}
                 >
                   {SEGMENT_OPERATOR_LABELS[op]}
@@ -286,7 +286,7 @@ function ConditionRow({
                   'flex-1 py-2.5 rounded-xl text-xs font-bold transition-all',
                   cond.value === opt.v
                     ? 'bg-accent text-white shadow-sm'
-                    : 'bg-muted/15 text-muted-foreground hover:bg-muted/30'
+                    : 'bg-muted/15 text-text-sub hover:bg-muted/30'
                 )}
               >
                 {opt.l}
@@ -311,7 +311,7 @@ function ConditionRow({
                   }}
                   className={cn(
                     'flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all',
-                    selected ? 'text-white shadow-sm' : 'bg-muted/15 text-muted-foreground hover:bg-muted/30'
+                    selected ? 'text-white shadow-sm' : 'bg-muted/15 text-text-sub hover:bg-muted/30'
                   )}
                   style={selected ? { background: s.color } : {}}
                 >
@@ -328,23 +328,23 @@ function ConditionRow({
 
         {/* Hint */}
         <div className="flex items-start gap-1.5 pt-0.5 border-t border-muted/20">
-          <Info size={11} className="text-muted-foreground/35 shrink-0 mt-0.5" />
-          <p className="text-[10px] text-muted-foreground/45 leading-relaxed">{hint}</p>
+          <Info size={11} className="text-text-sub shrink-0 mt-0.5" />
+          <p className="text-[10px] text-text-sub leading-relaxed">{hint}</p>
         </div>
       </div>
 
       {/* AND/OR connector */}
       {index < total - 1 && (
         <div className="flex items-center gap-3 px-2 my-0.5">
-          <div className="h-px flex-1 bg-muted-foreground/10" />
+          <div className="h-px flex-1 bg-secondary" />
           <button
             type="button"
             onClick={onToggleJoin}
-            className="px-3.5 py-1.5 rounded-xl bg-accent/10 text-accent text-[10px] font-bold uppercase tracking-widest hover:bg-accent/20 active:scale-[0.88] transition-all"
+            className="px-3.5 py-1.5 rounded-xl bg-accent/10 text-accent text-[10px] font-bold hover:bg-accent/20 active:scale-[0.88] transition-all"
           >
             {cond.joinNext === 'OR' ? 'або' : 'і'}
           </button>
-          <div className="h-px flex-1 bg-muted-foreground/10" />
+          <div className="h-px flex-1 bg-secondary" />
         </div>
       )}
     </div>
@@ -441,7 +441,7 @@ export function SegmentBuilder({
             transition={SPRING}
             className="flex flex-col gap-5 pb-4"
           >
-            <p className="text-xs text-muted-foreground/60 -mt-1">
+            <p className="text-xs text-text-sub -mt-1">
               Оберіть готовий шаблон — умови заповняться автоматично. Після цього можна відредагувати.
             </p>
 
@@ -462,16 +462,16 @@ export function SegmentBuilder({
                   </div>
                   <div>
                     <p className="text-xs font-bold text-foreground leading-tight">{t.name}</p>
-                    <p className="text-[10px] text-muted-foreground/70 mt-0.5 leading-tight">{t.hint}</p>
+                    <p className="text-[10px] text-text-sub mt-0.5 leading-tight">{t.hint}</p>
                   </div>
                 </motion.button>
               ))}
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="h-px flex-1 bg-muted-foreground/10" />
-              <span className="text-[10px] text-muted-foreground/40 font-medium">або</span>
-              <div className="h-px flex-1 bg-muted-foreground/10" />
+              <div className="h-px flex-1 bg-secondary" />
+              <span className="text-[10px] text-text-sub font-medium">або</span>
+              <div className="h-px flex-1 bg-secondary" />
             </div>
 
             <button
@@ -528,7 +528,7 @@ export function SegmentBuilder({
                 >
                   <div className="flex flex-col gap-3 p-4 rounded-2xl bg-muted/10 border border-muted/20">
                     <div>
-                      <p className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest mb-2">Іконка</p>
+                      <p className="text-[10px] font-bold text-text-sub mb-2">Іконка</p>
                       {/* 6-col grid with 44px buttons for touch compliance */}
                       <div className="grid grid-cols-6 gap-2">
                         {SEGMENT_PRESET_ICONS.map(ic => (
@@ -542,7 +542,7 @@ export function SegmentBuilder({
                               'size-11 rounded-xl flex items-center justify-center active:scale-[0.88] transition-all',
                               icon === ic
                                 ? 'bg-[var(--btn-primary-bg)] text-[var(--accent-on)] shadow-md'
-                                : 'bg-secondary border border-border text-muted-foreground/50 hover:text-foreground'
+                                : 'bg-secondary border border-border text-text-sub hover:text-foreground'
                             )}
                           >
                             {getSegmentIcon(ic, 15)}
@@ -551,7 +551,7 @@ export function SegmentBuilder({
                       </div>
                     </div>
                     <div>
-                      <p className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest mb-2">Колір</p>
+                      <p className="text-[10px] font-bold text-text-sub mb-2">Колір</p>
                       <div className="flex gap-2 flex-wrap">
                         {SEGMENT_PRESET_COLORS.map(c => (
                           <button
@@ -577,7 +577,7 @@ export function SegmentBuilder({
             {/* Conditions */}
             <div>
               <div className="flex items-center justify-between mb-3">
-                <p className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest">Умови фільтрації</p>
+                <p className="text-[10px] font-bold text-text-sub">Умови фільтрації</p>
                 <div
                   className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold"
                   style={{ background: `${color}15`, color }}
@@ -631,7 +631,7 @@ export function SegmentBuilder({
                 <button
                   type="button"
                   onClick={() => setStep('template')}
-                  className="px-4 py-3.5 rounded-2xl bg-muted/20 text-muted-foreground text-sm font-bold hover:bg-muted/30 active:scale-[0.95] transition-all"
+                  className="px-4 py-3.5 rounded-2xl bg-muted/20 text-text-sub text-sm font-bold hover:bg-muted/30 active:scale-[0.95] transition-all"
                 >
                   Шаблони
                 </button>

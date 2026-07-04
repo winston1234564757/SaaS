@@ -233,7 +233,7 @@ export function ClientsPage() {
             >
               Клієнти
             </h1>
-            <p className="text-xs lg:text-sm text-muted-foreground/60 ml-2 lg:ml-4 mt-2 lg:mt-4 font-medium">
+            <p className="text-xs lg:text-sm text-text-sub ml-2 lg:ml-4 mt-2 lg:mt-4 font-medium">
               Ваша база клієнтів та CRM
             </p>
           </div>
@@ -401,7 +401,7 @@ export function ClientsPage() {
                   aria-label={v === 'list' ? 'Список' : 'Сітка'}
                   onClick={() => setParam('view', v)}
                   className={`flex-1 lg:flex-none lg:px-6 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-[0.88] ${
-                    view === v ? 'bg-secondary shadow-md text-primary scale-105' : 'text-muted-foreground/60 hover:text-muted-foreground'
+                    view === v ? 'bg-secondary shadow-md text-primary scale-105' : 'text-text-sub hover:text-text-sub'
                   }`}
                 >
                   {v === 'list' ? <List size={16} /> : <LayoutGrid size={16} />}
@@ -412,7 +412,7 @@ export function ClientsPage() {
 
             <div className="flex items-center gap-4 w-full lg:w-auto justify-between lg:justify-end">
               <div className="relative group flex-1 lg:flex-none lg:min-w-[240px]">
-                <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/40 group-focus-within:text-primary transition-colors" />
+                <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-sub group-focus-within:text-primary transition-colors" />
                 <input
                   type="text"
                   value={search}
@@ -434,7 +434,7 @@ export function ClientsPage() {
                   className="h-full px-4 py-3 rounded-xl bg-secondary/60 border border-border text-sm font-bold text-foreground hover:bg-secondary transition-all active:scale-[0.88] flex items-center gap-2 whitespace-nowrap shadow-sm"
                 >
                   <span className="hidden sm:inline">{SORT_OPTIONS.find(o => o.value === sort)?.label}</span>
-                  <ChevronDown size={14} className={`text-muted-foreground/40 transition-transform ${sortOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown size={14} className={`text-text-sub transition-transform ${sortOpen ? 'rotate-180' : ''}`} />
                 </button>
                 {sortOpen && (
                   <div className="absolute right-0 top-full mt-2 z-30 bg-secondary/95 backdrop-blur-sm rounded-xl border border-border shadow-lg overflow-hidden min-w-[180px]">
@@ -443,7 +443,7 @@ export function ClientsPage() {
                         key={opt.value}
                         type="button"
                         onClick={() => { setParam('sort', opt.value); setSortOpen(false); }}
-                        className="w-full text-left px-4 py-3 text-sm transition-colors text-muted-foreground hover:bg-secondary/60 font-medium"
+                        className="w-full text-left px-4 py-3 text-sm transition-colors text-text-sub hover:bg-secondary/60 font-medium"
                       >
                         {opt.label}
                       </button>
@@ -486,7 +486,7 @@ export function ClientsPage() {
                         : retentionFilter === 'lost' ? 'Почати реактивацію'
                         : 'Написати обраним'}
                     </p>
-                    <p className="text-xs text-muted-foreground/70 mt-0.5 leading-tight">
+                    <p className="text-xs text-text-sub mt-0.5 leading-tight">
                       {filtered.length} контактів у вибірці
                     </p>
                   </div>
@@ -499,7 +499,7 @@ export function ClientsPage() {
                   type="button"
                   onClick={(e) => { e.stopPropagation(); setShowFab(false); }}
                   aria-label="Закрити"
-                  className="absolute -top-1.5 -right-1.5 size-6 rounded-full bg-secondary border border-secondary shadow-md flex items-center justify-center text-muted-foreground hover:text-foreground transition-all active:scale-[0.88] z-10"
+                  className="absolute -top-1.5 -right-1.5 size-6 rounded-full bg-secondary border border-secondary shadow-md flex items-center justify-center text-text-sub hover:text-foreground transition-all active:scale-[0.88] z-10"
                 >
                   <X size={12} />
                 </button>
@@ -515,16 +515,16 @@ export function ClientsPage() {
           {isLoading ? (
             <div className="bento-card p-10 flex flex-col items-center gap-3">
               <Loader2 size={24} className="text-primary animate-spin" />
-              <p className="text-sm text-muted-foreground/60">Завантаження клієнтів...</p>
+              <p className="text-sm text-text-sub">Завантаження клієнтів...</p>
             </div>
           ) : filtered.length === 0 ? (
             search ? (
               <div className="bento-card p-10 flex flex-col items-center gap-3 text-center">
                 <div className="size-14 rounded-full bg-secondary flex items-center justify-center">
-                  <Users size={26} className="text-muted-foreground/60" />
+                  <Users size={26} className="text-text-sub" />
                 </div>
                 <p className="text-sm font-semibold text-foreground">Нічого не знайдено</p>
-                <p className="text-xs text-muted-foreground/60">Спробуйте інший запит</p>
+                <p className="text-xs text-text-sub">Спробуйте інший запит</p>
               </div>
             ) : (
               <motion.div
@@ -538,7 +538,7 @@ export function ClientsPage() {
                     <Users size={28} className="text-primary" />
                   </div>
                   <p className="text-base font-bold text-foreground">Ваша база клієнтів порожня</p>
-                  <p className="text-sm text-muted-foreground/60 mt-1 text-balance">
+                  <p className="text-sm text-text-sub mt-1 text-balance">
                     Ось як залучити перших клієнтів за 24 години
                   </p>
                 </div>
@@ -556,7 +556,7 @@ export function ClientsPage() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-semibold text-foreground">{step.title}</p>
-                          <p className="text-xs text-muted-foreground/60 mt-0.5 leading-relaxed">{step.desc}</p>
+                          <p className="text-xs text-text-sub mt-0.5 leading-relaxed">{step.desc}</p>
                           {step.href && (
                             <a href={step.href} className="inline-flex mt-2 text-xs font-semibold text-primary hover:text-primary/90 transition-colors">
                               {step.cta} →
@@ -643,14 +643,14 @@ export function ClientsPage() {
                     <h4 className="text-sm font-bold text-foreground">
                       {getSmartAction(showSmartAction, smartSegment).title}
                     </h4>
-                    <p className="text-xs text-muted-foreground/70 mt-1">
+                    <p className="text-xs text-text-sub mt-1">
                       {getSmartAction(showSmartAction, smartSegment).description}
                     </p>
                   </div>
                 </div>
 
                 <div className="space-y-3">
-                  <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">
+                  <label className="text-[10px] font-bold text-text-sub ml-1">
                     Повідомлення клієнту
                   </label>
                   <textarea
@@ -685,7 +685,7 @@ export function ClientsPage() {
                   </button>
                 </div>
 
-                <p className="text-[10px] text-center text-muted-foreground/40 italic">
+                <p className="text-[10px] text-center text-text-sub italic">
                   * Посилання в Telegram відкриє чат за номером телефону
                 </p>
               </div>
