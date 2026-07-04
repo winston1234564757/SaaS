@@ -102,7 +102,7 @@
 
 | ID | Поверхня | Обсяг | Статус |
 |----|----------|-------|--------|
-| DS-BTN-01 | Хендрол-кнопки/картки повз кіт | Прибирати в межах кожної DS-задачі P1–P3 + окремі догрібання. Зроблено: wizard (5), shop-checkout, OTP-auth. Лишок ~30 файлів (master-editors/admin/inline-чіпи) — опортуністично. | 🔧 ongoing |
+| DS-BTN-01 | Хендрол-кнопки → кіт + pill→rounded-xl | ✅ **візуально завершено:** усі pill-CTA (rounded-full/[100px] primary) → rounded-xl/kit + save-CTA editors → kit. 🔑 Frost --primary=--btn-primary-bg=#0F172A → усі хендрол primary вже коректний slate (0 колірного боргу). Лишок: kit-component adoption у 47 файлах = ІНВІЗІБЛ code-refactor (whileTap/single-source), опортуністично. | ✅ (visual) / 🔧 (kit-adoption opportunistic) |
 
 ---
 
