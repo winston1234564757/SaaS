@@ -17,7 +17,7 @@
 
 ═══ ПОТОЧНИЙ СТАН ═══
 Фундамент ✅ (C-CLI-01, 03.07, founder 10/10): токени --cover-bg / .editorial-cover · примітиви EditorialCover + Section · Button/Badge під мову · BentoCard видалено · Sheet srTitle · DESIGN_LANGUAGE.md.
-Прогрес задач: 10/23 ✅ — **Фаза P1 дашборд ЗАКРИТА** (DS-DASH-01..10: герой дня · тижневий графік · пікові години · рейт скасувань · вільні дні · інсайти-рядок · здоров'я каналів · топ послуги · пульс доходу · адаптивна смуга).
+Прогрес задач: 16/23 ✅ — **P1 дашборд ЗАКРИТА** (DS-DASH-01..10) · **P3 модалки 6/7** (DS-MODAL-02..05,07 редизайн + 06 конформний; 01 відкладено — shared BookingWizard, окрема сесія з founder).
 Кіт: bookit/src/components/ui/ — EditorialCover (темний герой, 1 на поверхню) · Section (білий тіло, hairline) · Button (primary slate / secondary hairline / ghost / danger) · Badge (surface light|dark) · Sheet (srTitle).
 Еталон реалізації: ClientDossierHero + ClientDetailSheet + BookingDetailsModal band (variant cover/inline). Читай BRIEFS/C-CLI-01.md перш ніж робити першу модалку/картку.
 
@@ -27,8 +27,10 @@
   3. Кожен віджет = домінанта-заголовок (що читається за 3 сек) + виділена «зірка» в даних + за можливості actionable-лінк (напр. пік→«Підняти ціну в пік»→`/dashboard?drawer=dynamic_pricing`). Смарт-drawer на дашборді = `<Link href="/dashboard?drawer=NAME">` (nuqs, див. DashboardDrawers.tsx: flash_deals, dynamic_pricing).
   4. 🔴 КОНТРАСТ НА FROST (DS-DASH-04): токени `--success`/`--warning` провалюють 4.5:1 на дрібному (12px) тексті на periwinkle-картці (≈3.95). `.heading-serif`=weight500 → NIE bold → навіть 19px = normal text (4.5, не 3). Для тексту-статусу юзай калібровані тони good`#0B6B2E`/warn`#9A4508`/bad`--error`. **`--text-tertiary` (2.78:1) = забанене §4 значення → НІКОЛИ для тексту; тільки `--text-primary`/`--text-secondary`. Ієрархію — розміром.**
 
-▶ НАСТУПНА ДІЯ: DS-MODAL-01 — Ручний запис (ManualBookingForm, Тір 2, Opus). СТАРТ Фази P3 модалки.
-  Реюз еталону C-CLI-01 (EditorialCover hero + Section body + Sheet srTitle). Читай BRIEFS/C-CLI-01.md перед першою модалкою. Порядок фаз: P1 ✅ → P3 модалки → P2 клієнт-зона → P5 лендинг; P4 кнопки опортуністично всередині.
+▶ НАСТУПНА ДІЯ: DS-CLIENT-01 — Публічна сторінка майстра (PublicMasterPage, Тір 2). СТАРТ Фази P2 клієнт-зона.
+  Реюз еталону C-CLI-01 + delivery/detail-патернів P3 (EditorialCover hero + Section body + kit Button/Sheet srTitle).
+  ⚠️ DS-MODAL-01 (BookingWizard) — НЕ автономно: revenue-critical shared 6-крок flow, = DS-CLIENT-02. Об'єднати в присвячену сесію з founder-in-loop.
+  Порядок фаз, що лишився: P2 клієнт-зона (CLIENT-01..04) → P5 лендинг (LAND-01); P4 кнопки опортуністично всередині.
 
 ═══ TASK GATE (перед кодом) ═══
 1. mempalace_search теми задачі
@@ -54,6 +56,17 @@ TRACKER: DS-[ID] ⬜→✅ + оновити ▶ NEXT + прогрес N/23 → �
 ---
 
 ## Нотатки сесій (свіжі зверху)
+
+### DS-MODAL-02..05,07 — 5 P3 модалок одним батчем (04.07, ✅ own-eyes, автономна сесія) — commit e93bdd38
+- **Стратегічна корекція (чесно):** NEXT був DS-MODAL-01, але `ManualBookingForm` = 92-рядковий врапер над shared `BookingWizard` (448 + 14 sub). Редизайн = переписати revenue-critical booking flow, спільний з клієнт-зоною (= DS-CLIENT-02). Автономний rewrite booking flow = найризикованіше → **відкладено в присвячену сесію**. Пересеквенсовано на 5 самодостатніх detail-шторок.
+- **DS-MODAL-04 Flash:** обкладинка несе долю акції (Заброньовано emerald-glow / Чекає amber-glow) — домінанта-зірка; тіло — звіт про доставку. 🔴 Own-eyes баг: loading-стан (`stats=null`) рендерив фальш-вердикт «Чекає на клієнта» → гейтнув на skeleton-плейсхолдер поки дані вантажаться.
+- **DS-MODAL-05 Broadcast:** 🔴 фікс реального бага — дублювався заголовок (`title` у Sheet + власний `<h2>Результати розсилки`) + внутрішні sticky header/footer не працювали (Sheet обгортає в scroll-контейнер). → `srTitle`, обкладинка = охоплення (домінанта N + мікс каналів chips).
+- **Спільний `deliveryReportKit.tsx`** (Flash+Broadcast сіблінги): `ChannelLegend`/`DeliveryRoster`/`ChannelSummary`. Реєстр = легітимно однорідний список (люди, як фото-грід) — асиметрію несе герой.
+- **DS-MODAL-03 Review:** оцінка = домінанта на темній обкладинці (glow за настроєм ≥4 emerald / 3 amber / ≤2 rose), 5 зірок amber-200 on-dark + metric-value; тіло — коментар (Quote) або нота «лише оцінка»; дія = kit Button (primary показати / secondary сховати).
+- **DS-MODAL-02 Materials:** мігровано з голого `vaul Drawer` → kit `Sheet variant=bottom`; **викорінено заборонений `--text-tertiary` (×3)**; компактна обкладинка-намір; steppers збережені; дії → kit Button. Апостроф ʼ (U+02BC) — фікс 2× curly U+2019.
+- **DS-MODAL-07 Overview:** опційна темна hero-обкладинка (коли є `detail.hero`) — metric-value домінанта; калібровані тони рядків (`--success`/`--warning` провалюють 4.5:1 на дрібному) → good `#0B6B2E`/warn `#9A4508`/primary accent; CTA → kit-primary rounded-xl (був rounded-full pill).
+- **DS-MODAL-06:** оцінено як **вже конформний** (kit Sheet, `text-sub`, без банів/emoji) → косметичний ретрофіт заборонено законом, залишено як є.
+- **Own-eyes:** один `ds-preview` роут (10 станів = Flash×3, Broadcast×2, Review×2, Overview×2, Materials mock) × mobile 430 + desktop 1400, Playwright headless, видалено перед commit. Props-only view-екстракти (`FlashDealDetailView`/`BroadcastDetailView`/`ReviewDetailView`/`OverviewDetailBody`, export). TSC:0 · Build:clean. Callers (FlashDealPage, BroadcastHistory, +3) не змінені — сигнатури збережені.
 
 ### DS-DASH-10 — Адаптивна смуга контексту (04.07, ✅ own-eyes, автономна сесія) — ЗАКРИВАЄ P1
 - **Чесна оцінка:** найменш-порушливий віджет P1 — вже редизайнено M-DASH-01 (домінант+secondary, `--text-secondary`, нуль §4-банів). Targeted alignment, НЕ rewrite.

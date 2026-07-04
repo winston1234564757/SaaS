@@ -1,8 +1,8 @@
 # DESIGN-SYSTEM TRACKER — конвергенція на дизайн-мову
 
 > Джерело задач: [DESIGN_SYSTEM_ROLLOUT.md](file:///C:/Users/Vitos/SaaS/XDEV/PLANS/DESIGN_SYSTEM_ROLLOUT.md) · Спека: [DESIGN_LANGUAGE.md](file:///C:/Users/Vitos/SaaS/XDEV/DESIGN_LANGUAGE.md) · Еталон: C-CLI-01
-> Прогрес: **10/23 ✅** · Фундамент ✅ · Активна тема: Frost · **Фаза P1 дашборд ЗАКРИТА (DS-DASH-01..10)**
-> ▶ **NEXT: `DS-MODAL-01`** — Ручний запис (`ManualBookingForm`, Тір 2) — старт Фази P3 модалки
+> Прогрес: **16/23 ✅** · Фундамент ✅ · Активна тема: Frost · **P1 дашборд ЗАКРИТА (DS-DASH-01..10)** · **P3 модалки: 6/7 ✅** (5 редизайн + 06 конформний; 01 відкладено — shared wizard)
+> ▶ **NEXT: `DS-CLIENT-01`** — Публічна сторінка майстра (`PublicMasterPage`, Тір 2) — старт Фази P2. ⚠️ `DS-MODAL-01` (BookingWizard) — окрема присвячена сесія (revenue-critical shared flow, = DS-CLIENT-02)
 
 Легенда: ⬜ не почато · 🔧 в роботі · ✅ здано+founder QA · ↩️ скасовано · тір за WORKFLOW (0 дрібний / 1 середній / 2 повний редизайн).
 
@@ -48,13 +48,16 @@
 
 | ID | Поверхня | Файл | Тір | Статус |
 |----|----------|------|-----|--------|
-| DS-MODAL-01 | Ручний запис | `ManualBookingForm.tsx` | 2 | ⬜ |
-| DS-MODAL-02 | Огляд розхідників при завершенні | `MaterialsReviewSheet.tsx` | 1 | ⬜ |
-| DS-MODAL-03 | Деталь відгуку | `ReviewDetailSheet.tsx` | 1 | ⬜ |
-| DS-MODAL-04 | Деталь флеш-акції | `FlashDealDetailSheet.tsx` | 1 | ⬜ |
-| DS-MODAL-05 | Деталь розсилки | `BroadcastDetailSheet.tsx` | 1 | ⬜ |
-| DS-MODAL-06 | Нова розмова | `NewConversationSheet.tsx` | 1 | ⬜ |
-| DS-MODAL-07 | Деталь-шіт аналітики | `OverviewDetailSheet.tsx` | 1 | ⬜ |
+| DS-MODAL-01 | Ручний запис | `ManualBookingForm.tsx` | 2 | ⏸️ відкладено |
+| DS-MODAL-02 | Огляд розхідників при завершенні | `MaterialsReviewSheet.tsx` | 1 | ✅ |
+| DS-MODAL-03 | Деталь відгуку | `ReviewDetailSheet.tsx` | 1 | ✅ |
+| DS-MODAL-04 | Деталь флеш-акції | `FlashDealDetailSheet.tsx` | 1 | ✅ |
+| DS-MODAL-05 | Деталь розсилки | `BroadcastDetailSheet.tsx` | 1 | ✅ |
+| DS-MODAL-06 | Нова розмова | `NewConversationSheet.tsx` | 1 | ✅ конформний |
+| DS-MODAL-07 | Деталь-шіт аналітики | `OverviewDetailSheet.tsx` | 1 | ✅ |
+
+> **DS-MODAL-01 ⏸️:** `ManualBookingForm` = 92-рядковий врапер над shared `BookingWizard` (448 рядків + 14 sub-компонентів). Редизайн = переписати revenue-critical 6-крок booking flow, спільний із клієнт-зоною = фактично `DS-CLIENT-02`. НЕ автономно — окрема присвячена сесія з founder-in-loop. Об'єднати з DS-CLIENT-02.
+> **DS-MODAL-06 ✅ конформний:** уже на kit `Sheet` + коректні токени (`text-sub`, без банів, без emoji, kit-компоновка). Косметичний ретрофіт заборонено законом → залишено як є, верифіковано.
 
 ---
 
