@@ -1,8 +1,8 @@
 # DESIGN-SYSTEM TRACKER — конвергенція на дизайн-мову
 
 > Джерело задач: [DESIGN_SYSTEM_ROLLOUT.md](file:///C:/Users/Vitos/SaaS/XDEV/PLANS/DESIGN_SYSTEM_ROLLOUT.md) · Спека: [DESIGN_LANGUAGE.md](file:///C:/Users/Vitos/SaaS/XDEV/DESIGN_LANGUAGE.md) · Еталон: C-CLI-01
-> Прогрес: **27/32 ✅** · Фундамент ✅ · Активна тема: Frost · **P1 ЗАКРИТА** · **P3 6/7** · **P2 клієнт-зона ✅** · **Analytics ✅** · **Settings ✅** · **Bookings-list ✅** · **Clients ✅** · **Marketing ✅** · **Billing ✅** · **Revenue/Flash ✅** (контраст+eyebrow conform-серія) (02 BookingWizard — founder-сесія)
-> ▶ **NEXT: P5 лендинг** (`DS-LAND-01` — токени/рамп landing/*). Борг: **DS-BOOK-DASH** (темні Command-Center views ~87 occ, dark-context care). ⚠️ `DS-MODAL-01`+`DS-CLIENT-02` (BookingWizard) — окрема сесія з founder
+> Прогрес: **28/32 ✅** · Фундамент ✅ · Активна тема: Frost · **P1 ЗАКРИТА** · **P3 6/7** · **P2 клієнт-зона ✅** · **Analytics ✅** · **Settings ✅** · **Bookings-list ✅** · **Clients ✅** · **Marketing ✅** · **Billing ✅** · **Revenue/Flash ✅** · **P5 лендинг ✅** (контраст+eyebrow conform-серія) (02 BookingWizard — founder-сесія)
+> ▶ **NEXT: DS-BOOK-DASH** (борг — темні Command-Center bookings-views ~87 occ, per-file light/dark, НЕ sed). ⚠️ `DS-MODAL-01`+`DS-CLIENT-02` (BookingWizard) — окрема сесія з founder. Автономна conform-серія по функц-поверхнях вичерпана.
 
 Легенда: ⬜ не почато · 🔧 в роботі · ✅ здано+founder QA · ↩️ скасовано · тір за WORKFLOW (0 дрібний / 1 середній / 2 повний редизайн).
 
@@ -92,7 +92,7 @@
 
 | ID | Поверхня | Файл | Тір | Статус |
 |----|----------|------|-----|--------|
-| DS-LAND-01 | Узгодження токенів/рампу лендингу | `components/landing/*` + `globals.css .landing-page` | 1 | ⬜ |
+| DS-LAND-01 | Узгодження токенів/рампу лендингу | `components/landing/*` + `globals.css .landing-page` | 1 | ✅ |
 
 ---
 

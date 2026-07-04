@@ -27,8 +27,8 @@
   3. Кожен віджет = домінанта-заголовок (що читається за 3 сек) + виділена «зірка» в даних + за можливості actionable-лінк (напр. пік→«Підняти ціну в пік»→`/dashboard?drawer=dynamic_pricing`). Смарт-drawer на дашборді = `<Link href="/dashboard?drawer=NAME">` (nuqs, див. DashboardDrawers.tsx: flash_deals, dynamic_pricing).
   4. 🔴 КОНТРАСТ НА FROST (DS-DASH-04): токени `--success`/`--warning` провалюють 4.5:1 на дрібному (12px) тексті на periwinkle-картці (≈3.95). `.heading-serif`=weight500 → NIE bold → навіть 19px = normal text (4.5, не 3). Для тексту-статусу юзай калібровані тони good`#0B6B2E`/warn`#9A4508`/bad`--error`. **`--text-tertiary` (2.78:1) = забанене §4 значення → НІКОЛИ для тексту; тільки `--text-primary`/`--text-secondary`. Ієрархію — розміром.**
 
-▶ НАСТУПНА ДІЯ: P5 лендинг — `DS-LAND-01` (`components/landing/*` + `globals.css .landing-page`). Звірити власну `--l-*` систему з мовою (dark-блоки BentoFeatures/FooterCTA вже темні). Тір 1 — узгодження токенів/рампу, не rewrite.
-  Далі: Борг DS-BOOK-DASH (темні bookings-views, окрема сесія — per-file light/dark).
+▶ НАСТУПНА ДІЯ: DS-BOOK-DASH (борг) — темні Command-Center bookings-views (VerticalTimeline dark-блоки, PeriodAnalyticsView, MonthlyAnalyticsView, SmartQueue, OpportunityMenu, BookingDetailsModal dark receipt-cover M-BOOK-05) ~87 occ. НЕ sed — потребує per-file light/dark розрізнення (text-sub на темному = dark-on-dark баг). Окрема присвячена сесія.
+  ⚠️ DS-MODAL-01 + DS-CLIENT-02 (BookingWizard) — revenue-critical shared 6-крок, founder-in-loop. Автономна conform-серія по функц-поверхнях вичерпана (Marketing/Billing/Revenue/Landing закрито).
   ⚠️ DS-MODAL-01 + DS-CLIENT-02 (BookingWizard) — НЕ автономно: revenue-critical shared 6-крок flow. Присвячена сесія з founder-in-loop.
   🔴 УРОК founder (застосовуй усюди): «більше крафту над СВІТЛИМИ блоками» — featured-диференціація + домінантна типографіка (metric-value/heading-serif) + hairline-структура в КОЖНОМУ Section, не лише в темному герої. Світлий блок «служить» ≠ «нудний». Пам'ять: feedback_light_blocks_craft.md.
 
@@ -56,6 +56,12 @@ TRACKER: DS-[ID] ⬜→✅ + оновити ▶ NEXT + прогрес N/23 → �
 ---
 
 ## Нотатки сесій (свіжі зверху)
+
+### DS-LAND-01 — P5 лендинг ramp-reconciliation (04.07, ✅ автономна) — commit 98e371ff
+- **Чесний рефрейм:** лендинг = самодостатня система (19 файлів, власні `--l-*` токени, 0 app-`muted-foreground`). Conform-sweep НЕ застосовний. Токен-рамп УЖЕ узгоджений з мовою — значення дзеркалять design language з WCAG-нотатками: `--l-muted #475569` = `--text-secondary` (ідентично), `--l-muted-on-dark 0.55` = white/55 = 6.0 (точний on-dark мінімум), `--l-indigo #4338CA` 7.08 AAA, `--l-ink #0F172A` = SLATE.
+- **Реальний борг = decorative-only токени просочились у ТЕКСТ** (порушує коментар-контракт «decorative only» у globals.css): `--l-muted-2 #94A3B8` (2.4:1 провал) як текст ×8 (Comparison columnheader+X-icon, Economy eyebrows «Зараз»/«З Bookit», Pricing period/form-labels) → `--l-muted` (5.47 AA); `--l-muted-2-on-dark 0.35` (4.46 провал дрібний) як on-dark текст ×3 (BentoFeatures календар-хедери/час/лейбли, 10-11px) → `--l-muted-on-dark` (6.0). Surgical sed: quoted-form `'var(--l-muted-2)'` anchor не чіпає `-on-dark` варіант ані `color-mix(…12%)` bg-tint.
+- **🔴 Свідомо лишив (anti-sycophancy honest boundary):** (1) uppercase-eyebrows ×28 — це marketing-genre конвенція, НЕ в token/ramp-скоупі DS-LAND-01; масс-strip editorial-ритму маркет-сторінки = founder-direction call, не автономний. Founder на лендинг-eyebrows не скаржився. (2) Hero `<em>` `--l-indigo-glow` #6366F1 — велике H1 (3.6:1 ≥ 3:1 large-AA), навмисний бренд-акцент; darker `--l-indigo` здусив би герой. (3) bg-tint color-mix — декор, не текст.
+- **Own-eyes:** пропущено (мех. token-value swap decorative→AA, 0 layout/structure). Лендинг public-route — можна рендерити якщо треба re-verify. Verify = grep(0 leak) + tsc + build. TSC:0 · Build:clean · encoding чистий · zero copy.
 
 ### DS-REV-CONFORM — Revenue/Flash (04.07, ✅ автономна) — commit cd150094
 - **Скоуп:** revenue-таби = `ExpensesTab` (форма витрат) + `RevenueHubClient` (shell) + `FlashDealPage` (флеш-акції). Усі 3 light-context (grep 0 dark-маркерів). FlashDealDetailSheet вже конформний (DS-MODAL-04).
