@@ -6,13 +6,14 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  CalendarDays, CalendarSearch, Clock, MapPin, Navigation,
+  CalendarDays, CalendarSearch, MapPin, Navigation,
   ShoppingBag, Star, ChevronDown, Package, MessageCircle,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { uk } from 'date-fns/locale';
 import { cancelBooking, submitReview } from '@/app/my/bookings/actions';
 import { Sheet } from '@/components/ui/Sheet';
+import { EditorialCover } from '@/components/ui/EditorialCover';
 import { pluralUk } from '@/lib/utils/pluralUk';
 import { cn } from '@/lib/utils/cn';
 import { Button } from '@/components/ui/Button';
@@ -300,103 +301,101 @@ function HeroCard({ order }: { order: UnifiedOrder }) {
   const extra = services.length - 3;
   const canCancel = ['pending', 'confirmed'].includes(order.status);
 
+  const confirmed = order.status === 'confirmed';
+  const statusTint = confirmed ? '#6EE7B7' : order.status === 'new' ? '#93C5FD' : '#FCD34D';
+  const mapsHref = order.masterLat && order.masterLng
+    ? `https://www.google.com/maps/dir/?api=1&destination=${order.masterLat},${order.masterLng}`
+    : `https://maps.google.com/?q=${encodeURIComponent(order.masterAddress ?? '')}`;
+
   return (
     <>
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={SPRING}
-        className="relative rounded-3xl border border-primary/20 bg-primary/[0.06] p-5 overflow-hidden"
-      >
-        {/* Row 1: avatar + name + today chip + status */}
-        <div className="flex items-center gap-3">
-          <Avatar url={order.masterAvatarUrl} name={order.masterName} size={56} />
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <p className="heading-serif text-lg text-foreground leading-tight">{order.masterName}</p>
-              {isToday && (
-                <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-primary text-primary-foreground whitespace-nowrap">
-                  Сьогодні
+      <EditorialCover glowColor={confirmed ? '#34D399' : '#FBBF24'}>
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={SPRING}
+          className="flex flex-col gap-4"
+        >
+          {/* Майстер + статус */}
+          <div className="flex items-center gap-3">
+            <div className="rounded-full ring-1 ring-white/20 overflow-hidden shrink-0">
+              <Avatar url={order.masterAvatarUrl} name={order.masterName} size={52} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-white/55">
+                Найближчий запис
+              </p>
+              <p className="heading-serif text-xl text-white leading-tight truncate">{order.masterName}</p>
+            </div>
+            <span
+              className="text-[10px] font-bold px-2.5 py-1 rounded-full flex-shrink-0 whitespace-nowrap"
+              style={{ color: statusTint, background: `${statusTint}1f` }}
+            >
+              {getCfg(order.status).label}
+            </span>
+          </div>
+
+          {/* Коли — домінанта */}
+          <div className="flex items-baseline gap-2.5 flex-wrap">
+            <span className="metric-value text-white text-[28px] leading-none">
+              {order.startTime ?? fmtShort(order.date)}
+            </span>
+            <span className="text-white/70 text-sm">
+              {isToday ? 'Сьогодні' : fmtDate(order.date)}
+              {order.startTime && order.endTime ? ` · до ${order.endTime}` : ''}
+            </span>
+          </div>
+
+          {/* Послуги */}
+          {shown.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {shown.map((s, i) => (
+                <span key={i} className="text-xs bg-white/10 rounded-full px-2.5 py-1 text-white/80 whitespace-nowrap">
+                  {s.name}
+                </span>
+              ))}
+              {extra > 0 && (
+                <span className="text-xs bg-white/5 rounded-full px-2.5 py-1 text-white/55 whitespace-nowrap">
+                  +{extra} {pluralUk(extra, 'послуга', 'послуги', 'послуг')}
                 </span>
               )}
             </div>
-          </div>
-          <StatusPill status={order.status} />
-        </div>
-
-        {/* Date + time */}
-        <div className="mt-3 flex flex-col gap-1">
-          <div className="flex items-center gap-1.5">
-            <CalendarDays size={13} className="text-primary flex-shrink-0" />
-            <span className="text-[13px] font-semibold text-foreground">{fmtDate(order.date)}</span>
-          </div>
-          {order.startTime && (
-            <div className="flex items-center gap-1.5">
-              <Clock size={13} className="text-text-sub flex-shrink-0" />
-              <span className="text-xs text-text-sub">
-                {order.startTime}{order.endTime ? ` — ${order.endTime}` : ''}
-              </span>
-            </div>
           )}
-        </div>
 
-        {/* Services as pills */}
-        {shown.length > 0 && (
-          <div className="mt-2.5 flex flex-wrap gap-1.5">
-            {shown.map((s, i) => (
-              <span
-                key={i}
-                className="text-xs bg-background/70 border border-border/60 rounded-full px-2.5 py-1 font-medium text-foreground whitespace-nowrap"
+          {/* Адреса */}
+          {order.masterAddress && (
+            <a
+              href={mapsHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-start gap-2 p-2.5 rounded-2xl bg-white/[0.06] ring-1 ring-white/10 active:scale-[0.99] transition-transform"
+            >
+              <MapPin size={13} className="text-white/55 flex-shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <p className="text-[11px] font-semibold text-white/85 truncate">{order.masterAddress}</p>
+                <span className="inline-flex items-center gap-1 mt-0.5 text-[10px] font-bold text-white/70">
+                  <Navigation size={9} />
+                  Прокласти маршрут
+                </span>
+              </div>
+            </a>
+          )}
+
+          {/* Ціна + скасування */}
+          <div className="flex items-center justify-between pt-0.5">
+            <span className="metric-value text-white text-lg">{fmtPrice(order.totalPrice)}</span>
+            {canCancel && (
+              <button
+                type="button"
+                onClick={() => setCancelOpen(true)}
+                className="min-h-[44px] flex items-center text-xs text-white/55 hover:text-rose-300 transition-colors font-medium"
               >
-                {s.name}
-              </span>
-            ))}
-            {extra > 0 && (
-              <span className="text-xs bg-secondary/50 rounded-full px-2.5 py-1 text-text-sub whitespace-nowrap">
-                +{extra} {pluralUk(extra, 'послуга', 'послуги', 'послуг')}
-              </span>
+                Скасувати запис
+              </button>
             )}
           </div>
-        )}
-
-        {/* Address */}
-        {order.masterAddress && (
-          <div className="mt-3 flex items-start gap-2 p-2.5 rounded-2xl bg-background/60 border border-border">
-            <MapPin size={13} className="text-text-sub flex-shrink-0 mt-0.5" />
-            <div className="flex-1 min-w-0">
-              <p className="text-[11px] font-semibold text-foreground">Де зустрічаємось</p>
-              <p className="text-[11px] text-text-sub truncate mt-0.5">{order.masterAddress}</p>
-              <a
-                href={
-                  order.masterLat && order.masterLng
-                    ? `https://www.google.com/maps/dir/?api=1&destination=${order.masterLat},${order.masterLng}`
-                    : `https://maps.google.com/?q=${encodeURIComponent(order.masterAddress)}`
-                }
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 mt-1 text-[10px] font-bold text-primary"
-              >
-                <Navigation size={9} />
-                Маршрут
-              </a>
-            </div>
-          </div>
-        )}
-
-        {/* Price + cancel */}
-        <div className="mt-4 flex items-center justify-between">
-          <span className="metric-value text-lg text-foreground">{fmtPrice(order.totalPrice)}</span>
-          {canCancel && (
-            <button
-              type="button"
-              onClick={() => setCancelOpen(true)}
-              className="min-h-[44px] flex items-center text-xs text-text-sub hover:text-destructive transition-colors font-medium"
-            >
-              Скасувати запис
-            </button>
-          )}
-        </div>
-      </motion.div>
+        </motion.div>
+      </EditorialCover>
 
       <CancelSheet open={cancelOpen} onOpenChange={setCancelOpen} bookingId={order.id} />
     </>
