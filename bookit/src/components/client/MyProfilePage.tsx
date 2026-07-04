@@ -47,14 +47,14 @@ interface Props {
 
 const inputCls = [
   'w-full px-4 py-3 rounded-2xl bg-secondary border border-border',
-  'text-sm text-foreground placeholder:text-muted-foreground/50',
+  'text-sm text-foreground placeholder:text-text-sub',
   'outline-none focus:border-accent focus:ring-2 focus:ring-accent/20',
   'transition-all min-h-[44px]',
 ].join(' ');
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground/50 px-1 mb-3">
+    <p className="text-[11px] font-semibold uppercase tracking-widest text-text-sub px-1 mb-3">
       {children}
     </p>
   );
@@ -140,7 +140,7 @@ export function MyProfilePage({ profile }: Props) {
   return (
     <div className="flex flex-col gap-6 pt-4 pb-28">
 
-      <div className="bg-surface rounded-3xl p-6 flex flex-col items-center gap-4">
+      <div className="editorial-cover px-6 py-7 flex flex-col items-center gap-4">
         <PhotoUploader
           entity={{ type: 'client-avatar', userId: profile.userId }}
           value={avatarUrl}
@@ -156,7 +156,7 @@ export function MyProfilePage({ profile }: Props) {
                 type="button"
                 onClick={triggerUpload}
                 aria-label="Змінити фото профілю"
-                className="relative size-24 rounded-full overflow-hidden bg-accent/15 flex items-center justify-center cursor-pointer focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+                className="relative size-24 rounded-full overflow-hidden bg-white/10 ring-1 ring-white/15 flex items-center justify-center cursor-pointer focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2"
               >
                 {(preview ?? avatarUrl) ? (
                   <Image
@@ -166,13 +166,13 @@ export function MyProfilePage({ profile }: Props) {
                     className={cn('object-cover transition-opacity duration-200', uploading && 'opacity-40')}
                   />
                 ) : (
-                  <span className="heading-serif text-3xl font-bold text-accent">
+                  <span className="heading-serif text-3xl font-bold text-white">
                     {fullName ? fullName.charAt(0).toUpperCase() : '?'}
                   </span>
                 )}
                 {uploading && (
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <Loader2 size={22} className="animate-spin text-accent" />
+                    <Loader2 size={22} className="animate-spin text-white" />
                   </div>
                 )}
               </button>
@@ -190,18 +190,18 @@ export function MyProfilePage({ profile }: Props) {
         </PhotoUploader>
 
         <div className="text-center space-y-2">
-          <h1 className="heading-serif text-2xl text-foreground leading-tight">
+          <h1 className="heading-serif text-[26px] text-white leading-tight">
             {fullName || 'Мій профіль'}
           </h1>
           <div className="flex items-center justify-center gap-2 flex-wrap">
             {!profile.email.endsWith('@bookit.app') && (
-              <span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground/60 bg-secondary/80 px-2.5 py-1 rounded-full">
+              <span className="inline-flex items-center gap-1.5 text-[11px] text-white/70 bg-white/10 px-2.5 py-1 rounded-full">
                 <Mail size={10} />
                 {profile.email}
               </span>
             )}
             {memberSinceFormatted && (
-              <span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground/60 bg-secondary/80 px-2.5 py-1 rounded-full">
+              <span className="inline-flex items-center gap-1.5 text-[11px] text-white/70 bg-white/10 px-2.5 py-1 rounded-full">
                 <CalendarDays size={10} />
                 з {memberSinceFormatted}
               </span>
@@ -214,7 +214,7 @@ export function MyProfilePage({ profile }: Props) {
         <SectionLabel>Про вас</SectionLabel>
         <div className="flex flex-col gap-3">
           <div>
-            <label htmlFor="profile-fullname" className="text-xs font-medium text-muted-foreground mb-1.5 block">
+            <label htmlFor="profile-fullname" className="text-xs font-medium text-text-sub mb-1.5 block">
               {"Ім'я та прізвище"}
             </label>
             <input
@@ -227,11 +227,11 @@ export function MyProfilePage({ profile }: Props) {
           </div>
 
           <div>
-            <label htmlFor="profile-phone" className="text-xs font-medium text-muted-foreground mb-1.5 block">
+            <label htmlFor="profile-phone" className="text-xs font-medium text-text-sub mb-1.5 block">
               Телефон
             </label>
             <div className="flex items-center rounded-2xl border border-border bg-secondary overflow-hidden focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/20 transition-all min-h-[44px]">
-              <span className="pl-4 pr-2 text-muted-foreground font-medium text-sm select-none shrink-0">+38</span>
+              <span className="pl-4 pr-2 text-text-sub font-medium text-sm select-none shrink-0">+38</span>
               <input
                 id="profile-phone"
                 type="tel"
@@ -239,14 +239,14 @@ export function MyProfilePage({ profile }: Props) {
                 placeholder="0XX XXX XX XX"
                 value={formatPhoneDisplay(phone)}
                 onChange={e => { setPhone(normalizePhoneInput(e.target.value)); setIsDirty(true); }}
-                className="flex-1 py-3 pr-4 text-foreground text-sm bg-transparent outline-none placeholder:text-muted-foreground/50"
+                className="flex-1 py-3 pr-4 text-foreground text-sm bg-transparent outline-none placeholder:text-text-sub"
               />
             </div>
           </div>
 
           {!profile.email.endsWith('@bookit.app') && (
             <div>
-              <label htmlFor="profile-email" className="text-xs font-medium text-muted-foreground mb-1.5 block">
+              <label htmlFor="profile-email" className="text-xs font-medium text-text-sub mb-1.5 block">
                 Email
               </label>
               <input
@@ -255,7 +255,7 @@ export function MyProfilePage({ profile }: Props) {
                 disabled
                 className={cn(inputCls, 'opacity-50 cursor-not-allowed')}
               />
-              <p className="text-[11px] text-muted-foreground/50 mt-1.5 px-1">Email не можна змінити</p>
+              <p className="text-[11px] text-text-sub mt-1.5 px-1">Email не можна змінити</p>
             </div>
           )}
         </div>
@@ -265,37 +265,37 @@ export function MyProfilePage({ profile }: Props) {
         <SectionLabel>Соцмережі</SectionLabel>
         <div className="flex flex-col gap-3">
           <div>
-            <label htmlFor="profile-instagram" className="text-xs font-medium text-muted-foreground mb-1.5 block">
+            <label htmlFor="profile-instagram" className="text-xs font-medium text-text-sub mb-1.5 block">
               Instagram
             </label>
             <div className="flex items-center rounded-2xl border border-border bg-secondary overflow-hidden focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/20 transition-all min-h-[44px]">
               <span className="pl-4 pr-2 flex-shrink-0">
-                <Link2 size={15} className="text-muted-foreground/50" />
+                <Link2 size={15} className="text-text-sub" />
               </span>
               <input
                 id="profile-instagram"
                 value={instagramUrl}
                 onChange={e => { setInstagramUrl(e.target.value); setIsDirty(true); }}
                 placeholder="@нікнейм або посилання"
-                className="flex-1 py-3 pr-4 text-sm text-foreground bg-transparent outline-none placeholder:text-muted-foreground/50"
+                className="flex-1 py-3 pr-4 text-sm text-foreground bg-transparent outline-none placeholder:text-text-sub"
               />
             </div>
           </div>
 
           <div>
-            <label htmlFor="profile-tg-handle" className="text-xs font-medium text-muted-foreground mb-1.5 block">
+            <label htmlFor="profile-tg-handle" className="text-xs font-medium text-text-sub mb-1.5 block">
               Telegram
             </label>
             <div className="flex items-center rounded-2xl border border-border bg-secondary overflow-hidden focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/20 transition-all min-h-[44px]">
               <span className="pl-4 pr-2 flex-shrink-0">
-                <AtSign size={15} className="text-muted-foreground/50" />
+                <AtSign size={15} className="text-text-sub" />
               </span>
               <input
                 id="profile-tg-handle"
                 value={telegramHandle}
                 onChange={e => { setTelegramHandle(e.target.value); setIsDirty(true); }}
                 placeholder="@нікнейм"
-                className="flex-1 py-3 pr-4 text-sm text-foreground bg-transparent outline-none placeholder:text-muted-foreground/50"
+                className="flex-1 py-3 pr-4 text-sm text-foreground bg-transparent outline-none placeholder:text-text-sub"
               />
             </div>
           </div>
@@ -314,7 +314,7 @@ export function MyProfilePage({ profile }: Props) {
               exit={{ opacity: 0 }}
               transition={SPRING}
               onClick={() => setHealthExpanded(true)}
-              className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl border border-dashed border-border text-sm text-muted-foreground hover:border-accent/50 hover:text-foreground transition-colors cursor-pointer min-h-[44px]"
+              className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl border border-dashed border-border text-sm text-text-sub hover:border-accent/50 hover:text-foreground transition-colors cursor-pointer min-h-[44px]"
             >
               <ChevronDown size={15} />
               Додати нотатки
@@ -332,12 +332,12 @@ export function MyProfilePage({ profile }: Props) {
                 <AlertTriangle size={16} className="text-warning flex-shrink-0" />
                 <div>
                   <p className="text-sm font-semibold text-foreground leading-none mb-0.5">{"Здоров'я та безпека"}</p>
-                  <p className="text-[11px] text-muted-foreground/70">Для безпечного візиту</p>
+                  <p className="text-[11px] text-text-sub">Для безпечного візиту</p>
                 </div>
               </div>
 
               <div>
-                <label htmlFor="profile-medical" className="text-xs font-medium text-muted-foreground mb-1.5 block px-1">
+                <label htmlFor="profile-medical" className="text-xs font-medium text-text-sub mb-1.5 block px-1">
                   Алергії та протипоказання
                 </label>
                 <textarea
@@ -348,7 +348,7 @@ export function MyProfilePage({ profile }: Props) {
                   rows={2}
                   className={cn(
                     'w-full px-4 py-3 rounded-2xl bg-secondary border text-sm text-foreground',
-                    'placeholder:text-muted-foreground/50 outline-none transition-all resize-none',
+                    'placeholder:text-text-sub outline-none transition-all resize-none',
                     medicalNotes
                       ? 'border-destructive/30 focus:border-destructive focus:ring-2 focus:ring-destructive/10'
                       : 'border-border focus:border-accent focus:ring-2 focus:ring-accent/20',
@@ -357,7 +357,7 @@ export function MyProfilePage({ profile }: Props) {
               </div>
 
               <div>
-                <label htmlFor="profile-health" className="text-xs font-medium text-muted-foreground mb-1.5 block px-1">
+                <label htmlFor="profile-health" className="text-xs font-medium text-text-sub mb-1.5 block px-1">
                   Загальні нотатки
                 </label>
                 <textarea
@@ -366,11 +366,11 @@ export function MyProfilePage({ profile }: Props) {
                   onChange={e => { setHealthNotes(e.target.value); setIsDirty(true); }}
                   placeholder="Чутлива шкіра, хронічні проблеми..."
                   rows={2}
-                  className="w-full px-4 py-3 rounded-2xl bg-secondary border border-border text-sm text-foreground placeholder:text-muted-foreground/50 outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all resize-none"
+                  className="w-full px-4 py-3 rounded-2xl bg-secondary border border-border text-sm text-foreground placeholder:text-text-sub outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all resize-none"
                 />
               </div>
 
-              <p className="text-[11px] text-muted-foreground/60 px-1">
+              <p className="text-[11px] text-text-sub px-1">
                 Майстер побачить це перед вашим записом
               </p>
             </motion.div>
@@ -401,7 +401,7 @@ export function MyProfilePage({ profile }: Props) {
                 <div className="flex items-center justify-between gap-1">
                   <span className="text-xs font-bold text-foreground leading-none">{theme.label}</span>
                   {theme.wip ? (
-                    <span className="text-[9px] text-muted-foreground bg-secondary px-1.5 py-0.5 rounded-full leading-none">
+                    <span className="text-[9px] text-text-sub bg-secondary px-1.5 py-0.5 rounded-full leading-none">
                       Скоро
                     </span>
                   ) : isSelected ? (
@@ -446,7 +446,7 @@ export function MyProfilePage({ profile }: Props) {
                   Підключити Telegram
                 </a>
               )}
-              <p className="text-[11px] text-muted-foreground/60 mt-2.5">
+              <p className="text-[11px] text-text-sub mt-2.5">
                 Сповіщення про записи приходять у Telegram
               </p>
             </div>
@@ -459,7 +459,7 @@ export function MyProfilePage({ profile }: Props) {
         <SectionLabel>Акаунт</SectionLabel>
         <div className="flex flex-col gap-2">
           <div className="rounded-2xl border border-border bg-secondary/20 p-4">
-            <p className="text-[11px] font-semibold text-muted-foreground/60 uppercase tracking-wide mb-2">
+            <p className="text-[11px] font-semibold text-text-sub uppercase tracking-wide mb-2">
               Юридична інформація
             </p>
             <LegalFooterLinks variant="list" />
