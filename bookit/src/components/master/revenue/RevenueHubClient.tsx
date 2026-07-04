@@ -10,17 +10,17 @@ import { TourBanner, type TourStep } from '@/components/master/onboarding/TourBa
 import { useDestinationTour } from '@/lib/hooks/useDestinationTour';
 
 const FlashDealPage = dynamic(() => import('@/components/master/flash/FlashDealPage').then(m => m.FlashDealPage), {
-  loading: () => <div className="p-8 text-center text-muted-foreground/60 animate-pulse">Завантажуємо бандл...</div>,
+  loading: () => <div className="p-8 text-center text-text-sub animate-pulse">Завантажуємо бандл...</div>,
   ssr: false,
 });
 
 const ExpensesTab = dynamic(() => import('./ExpensesTab').then(m => m.ExpensesTab), {
-  loading: () => <div className="p-8 text-center text-muted-foreground/60 animate-pulse">Завантажуємо...</div>,
+  loading: () => <div className="p-8 text-center text-text-sub animate-pulse">Завантажуємо...</div>,
   ssr: false,
 });
 
 const DynamicPricingPage = dynamic(() => import('@/components/master/pricing/DynamicPricingPage').then(m => m.DynamicPricingPage), {
-  loading: () => <div className="p-8 text-center text-muted-foreground/60 animate-pulse">Завантажуємо бандл...</div>,
+  loading: () => <div className="p-8 text-center text-text-sub animate-pulse">Завантажуємо бандл...</div>,
   ssr: false,
 });
 
@@ -99,7 +99,7 @@ export function RevenueHubClient({ flashData, pricingData }: RevenueHubClientPro
             </div>
             <div className="min-w-0">
               <h1 className="text-base font-semibold text-foreground tracking-tight leading-tight">Revenue Hub</h1>
-              <p className="hidden lg:block text-xs text-muted-foreground mt-0.5">Управління доходами та спецпропозиціями</p>
+              <p className="hidden lg:block text-xs text-text-sub mt-0.5">Управління доходами та спецпропозиціями</p>
             </div>
           </div>
 

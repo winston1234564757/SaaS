@@ -345,7 +345,7 @@ const FlashDealHeader = React.memo(({ activeCount, tier, currentStep, closeTour,
       </div>
       <div className="flex-1 min-w-0">
         <h1 className="heading-serif text-xl text-foreground leading-tight">Вільне вікно? Заповни знижкою.</h1>
-        <p className="text-sm text-muted-foreground mt-0.5">Порожній слот не заробляє. Клієнти побачать акцію одразу.</p>
+        <p className="text-sm text-text-sub mt-0.5">Порожній слот не заробляє. Клієнти побачать акцію одразу.</p>
       </div>
       {tier !== 'starter' && (
         <span className="text-xs bg-primary/10 text-primary border border-primary/20 px-2.5 py-1 rounded-full font-semibold shrink-0">
@@ -382,8 +382,8 @@ const FlashDealStarterProgress = React.memo(({ usedThisMonth, progressPct, barCo
   >
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-1.5">
-        <Sparkles size={13} className="text-muted-foreground" />
-        <span className="text-xs font-semibold text-muted-foreground">Флеш-акції цього місяця</span>
+        <Sparkles size={13} className="text-text-sub" />
+        <span className="text-xs font-semibold text-text-sub">Флеш-акції цього місяця</span>
       </div>
       <span className="text-xs font-bold tabular-nums" style={{ color: barColor }}>
         {usedThisMonth} / {STARTER_LIMIT}
@@ -403,7 +403,7 @@ const FlashDealStarterProgress = React.memo(({ usedThisMonth, progressPct, barCo
         Ліміт вичерпано. Перейдіть на Pro для необмеженого доступу.
       </p>
     ) : (
-      <p className="text-xs text-muted-foreground/70">
+      <p className="text-xs text-text-sub">
         Залишилось {STARTER_LIMIT - usedThisMonth} з {STARTER_LIMIT} акцій на місяць
       </p>
     )}
@@ -422,13 +422,13 @@ const FlashDealPaywall = React.memo(() => (
     </div>
     <div className="flex-1 min-w-0">
       <p className="text-sm font-semibold text-foreground">Ліміт Starter вичерпано</p>
-      <p className="text-xs text-muted-foreground">
+      <p className="text-xs text-text-sub">
         {STARTER_LIMIT} флеш-акцій на місяць. Pro — необмежений доступ і смарт-таргетинг.
       </p>
     </div>
     <Link
       href="/dashboard/billing"
-      className="text-xs font-bold text-warning whitespace-nowrap hover:underline"
+      className="text-xs font-bold text-[#9A4508] whitespace-nowrap hover:underline"
     >
       Pro →
     </Link>
@@ -457,7 +457,7 @@ const AutoFlashSettingsCard = React.memo(({
         </div>
         <div className="min-w-0">
           <p className="text-sm font-semibold text-foreground leading-tight">Авто Flash Deal</p>
-          <p className="text-xs text-muted-foreground/70">При скасуванні запису</p>
+          <p className="text-xs text-text-sub">При скасуванні запису</p>
         </div>
       </div>
 
@@ -490,7 +490,7 @@ const AutoFlashSettingsCard = React.memo(({
           className="overflow-hidden"
         >
           <div className="pt-1 flex flex-col gap-2">
-            <p className="text-xs font-medium text-muted-foreground">Знижка при авто-тригері</p>
+            <p className="text-xs font-medium text-text-sub">Знижка при авто-тригері</p>
             <div className="flex gap-1.5">
               {AUTO_FLASH_DISCOUNT_OPTIONS.map(d => (
                 <button
@@ -501,7 +501,7 @@ const AutoFlashSettingsCard = React.memo(({
                     'flex-1 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer',
                     discountPct === d
                       ? 'bg-primary text-primary-foreground border-transparent'
-                      : 'bg-secondary/60 text-muted-foreground border-border hover:border-accent/40'
+                      : 'bg-secondary/60 text-text-sub border-border hover:border-accent/40'
                   )}
                 >
                   {d}%
@@ -515,8 +515,8 @@ const AutoFlashSettingsCard = React.memo(({
 
     {saving && (
       <div className="flex items-center gap-1.5">
-        <Loader2 size={10} className="animate-spin text-muted-foreground/60" />
-        <span className="text-[10px] text-muted-foreground/60">Зберігається…</span>
+        <Loader2 size={10} className="animate-spin text-text-sub" />
+        <span className="text-[10px] text-text-sub">Зберігається…</span>
       </div>
     )}
   </motion.div>
@@ -581,7 +581,7 @@ const FlashDealForm = React.memo(({
     </div>
 
     <div>
-      <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Послуга</label>
+      <label className="text-xs font-medium text-text-sub mb-1.5 block">Послуга</label>
       <div className="relative">
         <select
           value={serviceId}
@@ -594,12 +594,12 @@ const FlashDealForm = React.memo(({
             <option key={s.id} value={s.id}>{s.name} — {s.price} ₴</option>
           ))}
         </select>
-        <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none" />
+        <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-sub pointer-events-none" />
       </div>
     </div>
 
     <div>
-      <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Дата слоту</label>
+      <label className="text-xs font-medium text-text-sub mb-1.5 block">Дата слоту</label>
       <input
         type="date"
         value={slotDate}
@@ -612,19 +612,19 @@ const FlashDealForm = React.memo(({
     </div>
 
     <div>
-      <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Вільний слот</label>
+      <label className="text-xs font-medium text-text-sub mb-1.5 block">Вільний слот</label>
       <div className="p-3 rounded-2xl bg-secondary/40 border border-border min-h-[52px]">
         {!serviceId ? (
-          <p className="text-xs text-muted-foreground/60 text-center py-3">Спочатку оберіть послугу</p>
+          <p className="text-xs text-text-sub text-center py-3">Спочатку оберіть послугу</p>
         ) : scheduleLoading || availableSlots === null ? (
           <div className="flex items-center justify-center gap-2 py-3">
             <Loader2 size={14} className="text-accent animate-spin" />
-            <span className="text-xs text-muted-foreground/60">Завантаження розкладу…</span>
+            <span className="text-xs text-text-sub">Завантаження розкладу…</span>
           </div>
         ) : availableSlots.length === 0 ? (
           <div className="flex items-center justify-center gap-2 py-3">
-            <CalendarX size={14} className="text-muted-foreground/60" />
-            <span className="text-xs text-muted-foreground/60">Немає вільних слотів</span>
+            <CalendarX size={14} className="text-text-sub" />
+            <span className="text-xs text-text-sub">Немає вільних слотів</span>
           </div>
         ) : (
           <div className="grid grid-cols-4 gap-1.5">
@@ -637,7 +637,7 @@ const FlashDealForm = React.memo(({
                   'py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer',
                   slotTime === slot.time
                     ? 'bg-primary text-primary-foreground border-primary'
-                    : 'bg-secondary/60 text-muted-foreground border-border hover:border-accent/40'
+                    : 'bg-secondary/60 text-text-sub border-border hover:border-accent/40'
                 )}
               >
                 {slot.time}
@@ -651,7 +651,7 @@ const FlashDealForm = React.memo(({
 
     <div className="grid grid-cols-2 gap-3">
       <div>
-        <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Знижка</label>
+        <label className="text-xs font-medium text-text-sub mb-1.5 block">Знижка</label>
         <div className="relative">
           <select
             value={discountPct}
@@ -660,11 +660,11 @@ const FlashDealForm = React.memo(({
           >
             {DISCOUNT_OPTIONS.map(d => <option key={d} value={d}>{d}%</option>)}
           </select>
-          <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none" />
+          <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-sub pointer-events-none" />
         </div>
       </div>
       <div>
-        <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Акція діє</label>
+        <label className="text-xs font-medium text-text-sub mb-1.5 block">Акція діє</label>
         <div className="flex gap-1.5">
           {EXPIRY_OPTIONS.map(opt => (
             <button
@@ -675,7 +675,7 @@ const FlashDealForm = React.memo(({
                 'flex-1 py-2.5 rounded-2xl text-[10px] font-bold border transition-all cursor-pointer',
                 expiresInHours === opt.value
                   ? 'bg-primary text-primary-foreground border-primary'
-                  : 'bg-secondary/60 text-muted-foreground border-border hover:border-accent/40'
+                  : 'bg-secondary/60 text-text-sub border-border hover:border-accent/40'
               )}
             >
               {opt.label}
@@ -696,11 +696,11 @@ const FlashDealForm = React.memo(({
         >
           <div className="flex items-center gap-1.5">
             <TrendingUp size={14} className="text-warning shrink-0" />
-            <span className="text-sm font-bold text-warning tabular-nums">
+            <span className="text-sm font-bold text-[#9A4508] tabular-nums">
               +{discountedPrice} ₴ за слот, що зараз порожній
             </span>
           </div>
-          <span className="text-xs text-muted-foreground tabular-nums">
+          <span className="text-xs text-text-sub tabular-nums">
             Клієнт заплатить {discountedPrice} ₴ замість {originalPrice} ₴
           </span>
         </motion.div>
@@ -729,7 +729,7 @@ const FlashDealForm = React.memo(({
             <div className="flex items-center gap-2 px-3.5 py-2.5 border-b border-border/30">
               <CheckCircle2 size={13} className="text-green-600 shrink-0" />
               <span className="font-semibold text-foreground">Акцію запущено!</span>
-              <div className="ml-auto flex items-center gap-1 text-muted-foreground">
+              <div className="ml-auto flex items-center gap-1 text-text-sub">
                 <Users size={11} />
                 <span>{result.sentTo}</span>
               </div>
@@ -743,7 +743,7 @@ const FlashDealForm = React.memo(({
                   </div>
                 ))
               ) : (
-                <span className="text-muted-foreground/60 py-0.5">Немає клієнтів для сповіщення</span>
+                <span className="text-text-sub py-0.5">Немає клієнтів для сповіщення</span>
               )}
             </div>
           </>
@@ -794,7 +794,7 @@ const ActiveDealsList = React.memo(({ activeDeals, cancellingId, handleCancel, o
                     className="flex-1 min-w-0 text-left rounded-lg hover:opacity-80 active:scale-[0.99] transition-all"
                   >
                     <p className="text-sm font-semibold text-foreground truncate">{deal.service_name}</p>
-                    <p className="text-[11px] text-muted-foreground tabular-nums">
+                    <p className="text-[11px] text-text-sub tabular-nums">
                       {deal.slot_date} о {deal.slot_time.slice(0, 5)} · {discounted} ₴
                     </p>
                   </button>
@@ -802,7 +802,7 @@ const ActiveDealsList = React.memo(({ activeDeals, cancellingId, handleCancel, o
                     className={cn(
                       'flex items-center gap-1 text-[11px] font-semibold tabular-nums shrink-0 px-2 py-1 rounded-lg',
                       expired
-                        ? 'text-muted-foreground/70 bg-secondary/50'
+                        ? 'text-text-sub bg-secondary/50'
                         : 'text-foreground bg-warning/10'
                     )}
                   >
@@ -814,7 +814,7 @@ const ActiveDealsList = React.memo(({ activeDeals, cancellingId, handleCancel, o
                     aria-label="Скасувати акцію"
                     onClick={() => handleCancel(deal.id)}
                     disabled={cancellingId === deal.id}
-                    className="p-2 text-muted-foreground/60 hover:text-destructive transition-colors shrink-0"
+                    className="p-2 text-text-sub hover:text-destructive transition-colors shrink-0"
                   >
                     <X size={14} />
                   </button>
@@ -830,7 +830,7 @@ const ActiveDealsList = React.memo(({ activeDeals, cancellingId, handleCancel, o
           </div>
           <div className="flex flex-col gap-1 max-w-[260px]">
             <p className="text-sm font-bold text-foreground">Ще немає активних акцій</p>
-            <p className="text-xs text-muted-foreground leading-relaxed">
+            <p className="text-xs text-text-sub leading-relaxed">
               Обери вільний слот і запропонуй на нього знижку.
             </p>
           </div>

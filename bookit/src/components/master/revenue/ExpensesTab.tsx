@@ -184,7 +184,7 @@ export function ExpensesTab() {
       ) : filtered.length === 0 ? (
         <div className="bento-card p-10 flex flex-col items-center gap-3 text-center">
           <div className="size-12 rounded-full bg-[var(--accent-light)] flex items-center justify-center">
-            <ReceiptText size={22} className="text-[var(--text-tertiary)]" />
+            <ReceiptText size={22} className="text-[var(--text-secondary)]" />
           </div>
           <div>
             <p className="text-sm font-semibold text-foreground">Витрат ще немає</p>
@@ -209,7 +209,7 @@ export function ExpensesTab() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-foreground truncate">{expense.name}</p>
-                  <p className="text-xs text-[var(--text-tertiary)] mt-0.5">
+                  <p className="text-xs text-[var(--text-secondary)] mt-0.5">
                     {meta.label} · {formatDate(expense.expense_date)}
                   </p>
                 </div>
@@ -220,7 +220,7 @@ export function ExpensesTab() {
                   type="button"
                   aria-label={`Видалити ${expense.name}`}
                   onClick={() => handleDelete(expense.id)}
-                  className="size-10 rounded-full border border-[var(--border)] flex items-center justify-center text-[var(--text-tertiary)] hover:text-destructive hover:border-destructive/30 transition-colors active:scale-[0.88] shrink-0"
+                  className="size-10 rounded-full border border-[var(--border)] flex items-center justify-center text-[var(--text-secondary)] hover:text-destructive hover:border-destructive/30 transition-colors active:scale-[0.88] shrink-0"
                 >
                   <Trash2 size={13} />
                 </button>
@@ -266,21 +266,21 @@ export function ExpensesTab() {
 
               {/* Name */}
               <div>
-                <label className="text-[10px] font-semibold text-[var(--text-tertiary)] uppercase tracking-wider mb-1.5 block">Назва</label>
+                <label className="text-[10px] font-semibold text-[var(--text-secondary)] mb-1.5 block">Назва</label>
                 <input
                   type="text"
                   placeholder="Наприклад: Оренда офісу"
                   value={name}
                   onChange={e => setName(e.target.value)}
                   aria-label="Назва витрати"
-                  className="w-full px-4 py-3 rounded-xl bg-[var(--surface)] border border-[var(--border)] text-sm text-foreground placeholder:text-[var(--text-tertiary)] outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/15 transition-all"
+                  className="w-full px-4 py-3 rounded-xl bg-[var(--surface)] border border-[var(--border)] text-sm text-foreground placeholder:text-[var(--text-secondary)] outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/15 transition-all"
                 />
               </div>
 
               {/* Amount + Date */}
               <div className="flex gap-3">
                 <div className="flex-1">
-                  <label className="text-[10px] font-semibold text-[var(--text-tertiary)] uppercase tracking-wider mb-1.5 block">Сума (₴)</label>
+                  <label className="text-[10px] font-semibold text-[var(--text-secondary)] mb-1.5 block">Сума (₴)</label>
                   <input
                     type="number"
                     inputMode="decimal"
@@ -289,11 +289,11 @@ export function ExpensesTab() {
                     value={amountStr}
                     onChange={e => setAmountStr(e.target.value)}
                     aria-label="Сума витрати"
-                    className="w-full px-4 py-3 rounded-xl bg-[var(--surface)] border border-[var(--border)] text-sm font-bold text-foreground placeholder:text-[var(--text-tertiary)] outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/15 transition-all"
+                    className="w-full px-4 py-3 rounded-xl bg-[var(--surface)] border border-[var(--border)] text-sm font-bold text-foreground placeholder:text-[var(--text-secondary)] outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/15 transition-all"
                   />
                 </div>
                 <div className="flex-1">
-                  <label className="text-[10px] font-semibold text-[var(--text-tertiary)] uppercase tracking-wider mb-1.5 block">Дата</label>
+                  <label className="text-[10px] font-semibold text-[var(--text-secondary)] mb-1.5 block">Дата</label>
                   <input
                     type="date"
                     value={dateStr}
@@ -306,14 +306,14 @@ export function ExpensesTab() {
 
               {/* Note */}
               <div>
-                <label className="text-[10px] font-semibold text-[var(--text-tertiary)] uppercase tracking-wider mb-1.5 block">Примітка (необов&apos;язково)</label>
+                <label className="text-[10px] font-semibold text-[var(--text-secondary)] mb-1.5 block">Примітка (необов&apos;язково)</label>
                 <textarea
                   placeholder="Деталі витрати..."
                   value={note}
                   onChange={e => setNote(e.target.value)}
                   aria-label="Примітка"
                   rows={2}
-                  className="w-full px-4 py-3 rounded-xl bg-[var(--surface)] border border-[var(--border)] text-sm text-foreground placeholder:text-[var(--text-tertiary)] outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/15 transition-all resize-none"
+                  className="w-full px-4 py-3 rounded-xl bg-[var(--surface)] border border-[var(--border)] text-sm text-foreground placeholder:text-[var(--text-secondary)] outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/15 transition-all resize-none"
                 />
               </div>
 
