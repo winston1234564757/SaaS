@@ -17,7 +17,7 @@
 
 ═══ ПОТОЧНИЙ СТАН ═══
 Фундамент ✅ (C-CLI-01, 03.07, founder 10/10): токени --cover-bg / .editorial-cover · примітиви EditorialCover + Section · Button/Badge під мову · BentoCard видалено · Sheet srTitle · DESIGN_LANGUAGE.md.
-Прогрес задач: 21/25 ✅ — **P1 дашборд ЗАКРИТА** · **P3 модалки 6/7** · **P2 клієнт-зона: 01/03/04/05-Explore ✅** · **Analytics ПОВНІСТЮ ✅**. CLIENT-02 (BookingWizard) відкладено — окрема сесія з founder.
+Прогрес задач: 22/26 ✅ — **P1 дашборд ЗАКРИТА** · **P3 модалки 6/7** · **P2 клієнт-зона: 01/03/04/05-Explore ✅** · **Analytics ПОВНІСТЮ ✅** · **Settings ✅**. CLIENT-02 (BookingWizard) відкладено — окрема сесія з founder.
 Кіт: bookit/src/components/ui/ — EditorialCover (темний герой, 1 на поверхню) · Section (білий тіло, hairline) · Button (primary slate / secondary hairline / ghost / danger) · Badge (surface light|dark) · Sheet (srTitle).
 Еталон реалізації: ClientDossierHero + ClientDetailSheet + BookingDetailsModal band (variant cover/inline). Читай BRIEFS/C-CLI-01.md перш ніж робити першу модалку/картку.
 
@@ -27,8 +27,8 @@
   3. Кожен віджет = домінанта-заголовок (що читається за 3 сек) + виділена «зірка» в даних + за можливості actionable-лінк (напр. пік→«Підняти ціну в пік»→`/dashboard?drawer=dynamic_pricing`). Смарт-drawer на дашборді = `<Link href="/dashboard?drawer=NAME">` (nuqs, див. DashboardDrawers.tsx: flash_deals, dynamic_pricing).
   4. 🔴 КОНТРАСТ НА FROST (DS-DASH-04): токени `--success`/`--warning` провалюють 4.5:1 на дрібному (12px) тексті на periwinkle-картці (≈3.95). `.heading-serif`=weight500 → NIE bold → навіть 19px = normal text (4.5, не 3). Для тексту-статусу юзай калібровані тони good`#0B6B2E`/warn`#9A4508`/bad`--error`. **`--text-tertiary` (2.78:1) = забанене §4 значення → НІКОЛИ для тексту; тільки `--text-primary`/`--text-secondary`. Ієрархію — розміром.**
 
-▶ НАСТУПНА ДІЯ: Settings — `master/settings/SettingsPage.tsx` (426, найбільше uppercase-eyebrow за REAUDIT: 11). 10-col editorial grid, 13 секцій. Спочатку grep-аудит banned-токенів/eyebrow (як на Explore/Analytics) — визнач що вже конформне (M-SET-01..05 зроблено!), не переробляй. Ймовірно residual-пас, не rewrite.
-  Далі: Bookings-list → Clients → Marketing → Billing · P5 лендинг (LAND-01).
+▶ НАСТУПНА ДІЯ: Bookings-list — `master/bookings/BookingsPage.tsx` + `BookingCard.tsx` (M-BOOK-редизайн уже частково зроблено: BookingDetailsModal/VerticalTimeline/DashboardWidgets — перевір grep-аудитом що з list-в'ю лишилось). Спочатку grep banned-токенів як на Settings.
+  Далі: Clients (`ClientsPage` 709 + status-hex палітра) → Marketing → Billing · P5 лендинг (LAND-01).
   ⚠️ DS-MODAL-01 + DS-CLIENT-02 (BookingWizard) — НЕ автономно: revenue-critical shared 6-крок flow. Присвячена сесія з founder-in-loop.
   🔴 УРОК founder (застосовуй усюди): «більше крафту над СВІТЛИМИ блоками» — featured-диференціація + домінантна типографіка (metric-value/heading-serif) + hairline-структура в КОЖНОМУ Section, не лише в темному герої. Світлий блок «служить» ≠ «нудний». Пам'ять: feedback_light_blocks_craft.md.
 
@@ -56,6 +56,14 @@ TRACKER: DS-[ID] ⬜→✅ + оновити ▶ NEXT + прогрес N/23 → �
 ---
 
 ## Нотатки сесій (свіжі зверху)
+
+### DS-SET-CONFORM — Settings контраст+eyebrow (04.07, ✅ own-eyes, автономна) — commit 76bb572d
+- **Чесний рефрейм:** Settings НЕ малий residual — майже всі ~14 віджетів досі на до-дизайн-мова вокабулярі (M-SET-01..05 = reorder/логіка/копірайт, НЕ конвертація мови). Founder-вибір через AskUserQuestion: **«Контраст + eyebrows sentence-case»** (не re-layout, не Section-міграція — та важча окремо якщо захоче).
+- **Зроблено (sed, byte-safe для Cyrillic — замінює лише ASCII-байти класів):** `text-text-mute(/NN)?` (=`--text-tertiary` 2.78:1) + `text-muted-foreground(/NN)?` → `text-text-sub` (5.9:1) УСЮДИ. Eyebrow-заголовки: знято `uppercase tracking-widest/wider/wide/tighter/tight` → sentence-case (джерельні JSX-рядки вже в норм регістрі: «Локація»/«Рейтинг»/«Публікація» — CSS uppercase лише візуально капсив).
+- **Калібровані статус-тони на дрібному тексті (не іконки):** `text-success`/`text-warning` (провал 4.5 на 9-11px) → `#0B6B2E`/`#9A4508` inline: ProfileHero Pro-бейдж, PublicStatusWidget статус, ScheduleWidget getBusynessColor, VacationManagerView день-індикатор. Іконки (Star/BadgeCheck/Check) лишив semantic.
+- **Функціональні градієнти ЛИШИВ (не §4-декор):** ProfileHero photo-scrim (dark hero), NavigationStrip scroll-fade, LocationPicker map-bg, LocationWidget card-tint.
+- **Own-eyes:** StatsPulseWidget (pure props, 6 метрик) — eyebrow sentence-case + text-sub контраст читабельні, числа-домінанта. Playwright, видалено. Решта = той самий мех. transform (grep+tsc+build). ProfileHero/PublicStatus/Vacation потребують ToastProvider/складні props → рендер пропущено.
+- **🔧 Урок:** `--color-text-mute`=`--color-muted-foreground`=`--text-tertiary` (2.78:1) — усі три = §4-провал на Frost. Settings-віджети юзали `text-text-mute`+`uppercase tracking-widest` як ВСЮ header-вокабуляр (≈Section-eyebrow але з провальним тоном). Conform = tone-fix + case-fix, structure ок. 13 файлів, TSC:0, Build:clean.
 
 ### DS-ANL-RESIDUAL — Analytics дозакрито (04.07, ✅ own-eyes, автономна) — commit 015da069
 - **Чесний рефрейм:** REAUDIT казав «Analytics найгірший §4, 7 порушень» — це було ДО M-ANL-01..07. Live-grep показав: shell (старі gradient/glow 946/970), 7 табів, OverviewBriefing, SmartPricingOptimizer — УЖЕ конформні. Residual менший, ніж план думав. НЕ переробляв готове.
