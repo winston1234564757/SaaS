@@ -268,7 +268,7 @@ export function BillingPage() {
                     )}
                   >
                     <CreditCard size={12} />
-                    {hasCard ? 'Картку прив’язано' : 'Картку не прив’язано'}
+                    {hasCard ? 'Картку привʼязано' : 'Картку не привʼязано'}
                   </span>
                 </div>
 
@@ -292,7 +292,7 @@ export function BillingPage() {
                       {payingPro ? (
                         <><Loader2 size={15} className="animate-spin" /> Перенаправлення...</>
                       ) : noCard ? (
-                        'Прив’язати картку'
+                        'Привʼязати картку'
                       ) : (
                         'Відновити підписку'
                       )}
@@ -393,7 +393,7 @@ export function BillingPage() {
 
       {/* ── Плани: тихі диференційовані рядки ── */}
       <div className="bento-card p-2 sm:p-3">
-        <p className="text-xs font-semibold text-text-sub uppercase tracking-wide px-3 pt-2 pb-1">
+        <p className="text-xs font-semibold text-text-sub px-3 pt-2 pb-1">
           {isManaged ? 'Інші тарифи' : 'Порівняти тарифи'}
         </p>
         <div className="divide-y divide-border">
@@ -537,7 +537,7 @@ export function BillingPage() {
         title="Скасувати підписку?"
       >
         <div className="p-6">
-          <p className="text-sm text-muted-foreground leading-relaxed mb-8">
+          <p className="text-sm text-text-sub leading-relaxed mb-8">
             Ви зможете користуватися перевагами тарифу <span className="font-semibold text-foreground">{heroPlan.name}</span> до кінця поточного періоду, але наступних автоматичних списань не буде.
           </p>
 
@@ -556,7 +556,7 @@ export function BillingPage() {
             <button type="button"
               disabled={isCanceling}
               onClick={() => setShowCancelModal(false)}
-              className="w-full py-3.5 rounded-2xl bg-secondary text-muted-foreground text-sm font-semibold active:scale-[0.95] transition-all"
+              className="w-full py-3.5 rounded-2xl bg-secondary text-text-sub text-sm font-semibold active:scale-[0.95] transition-all"
             >
               Залишити як є
             </button>
@@ -578,26 +578,26 @@ export function BillingPage() {
               </div>
               <div>
                 <p className="text-base font-bold text-foreground">Заявку отримано</p>
-                <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
+                <p className="text-sm text-text-sub mt-1 leading-relaxed">
                   Ми повідомимо вас, коли Studio відкриється для бета-тесту
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => { setShowBetaSheet(false); setBetaSubmitted(false); }}
-                className="w-full py-3.5 rounded-2xl bg-secondary text-muted-foreground text-sm font-semibold active:scale-[0.95] transition-all"
+                className="w-full py-3.5 rounded-2xl bg-secondary text-text-sub text-sm font-semibold active:scale-[0.95] transition-all"
               >
                 Закрити
               </button>
             </div>
           ) : (
             <div className="flex flex-col gap-5">
-              <p className="text-sm text-muted-foreground leading-relaxed">
+              <p className="text-sm text-text-sub leading-relaxed">
                 Studio ще в розробці — залиште контакт, і ми повідомимо вас першими, як тільки відкриємо бета-тест.
               </p>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                <label className="text-xs font-semibold text-text-sub">
                   Ім'я або назва студії
                 </label>
                 <input
@@ -605,12 +605,12 @@ export function BillingPage() {
                   value={betaName}
                   onChange={(e) => setBetaName(e.target.value)}
                   placeholder="Студія Краси або Марія Іваненко"
-                  className="w-full px-4 py-3 rounded-2xl bg-secondary/60 border border-border text-sm text-foreground placeholder:text-muted-foreground/50 outline-none focus:border-primary/50 transition-colors"
+                  className="w-full px-4 py-3 rounded-2xl bg-secondary/60 border border-border text-sm text-foreground placeholder:text-text-sub outline-none focus:border-primary/50 transition-colors"
                 />
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                <label className="text-xs font-semibold text-text-sub">
                   Телефон
                 </label>
                 <input
@@ -618,12 +618,12 @@ export function BillingPage() {
                   value={betaContact}
                   onChange={(e) => setBetaContact(e.target.value)}
                   placeholder="+380 XX XXX XXXX"
-                  className="w-full px-4 py-3 rounded-2xl bg-secondary/60 border border-border text-sm text-foreground placeholder:text-muted-foreground/50 outline-none focus:border-primary/50 transition-colors"
+                  className="w-full px-4 py-3 rounded-2xl bg-secondary/60 border border-border text-sm text-foreground placeholder:text-text-sub outline-none focus:border-primary/50 transition-colors"
                 />
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                <label className="text-xs font-semibold text-text-sub">
                   Майстрів у студії
                 </label>
                 <div className="flex gap-2">
@@ -635,7 +635,7 @@ export function BillingPage() {
                       className={`flex-1 py-2.5 rounded-2xl border text-xs font-semibold transition-all ${
                         betaSize === key
                           ? 'bg-primary/12 border-primary/40 text-primary/90'
-                          : 'bg-secondary/60 border-border text-muted-foreground hover:bg-secondary/80'
+                          : 'bg-secondary/60 border-border text-text-sub hover:bg-secondary/80'
                       }`}
                     >
                       {label}
