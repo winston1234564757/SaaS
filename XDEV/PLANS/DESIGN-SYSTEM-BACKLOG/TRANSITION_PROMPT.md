@@ -17,7 +17,7 @@
 
 ═══ ПОТОЧНИЙ СТАН ═══
 Фундамент ✅ (C-CLI-01, 03.07, founder 10/10): токени --cover-bg / .editorial-cover · примітиви EditorialCover + Section · Button/Badge під мову · BentoCard видалено · Sheet srTitle · DESIGN_LANGUAGE.md.
-Прогрес задач: 16/23 ✅ — **P1 дашборд ЗАКРИТА** (DS-DASH-01..10) · **P3 модалки 6/7** (DS-MODAL-02..05,07 редизайн + 06 конформний; 01 відкладено — shared BookingWizard, окрема сесія з founder).
+Прогрес задач: 17/23 ✅ — **P1 дашборд ЗАКРИТА** · **P3 модалки 6/7** · **P2 DS-CLIENT-01 ✅** (публічна: hero + services + reviews + графік + shop + products). 01+CLIENT-02 (BookingWizard) відкладено — окрема сесія з founder.
 Кіт: bookit/src/components/ui/ — EditorialCover (темний герой, 1 на поверхню) · Section (білий тіло, hairline) · Button (primary slate / secondary hairline / ghost / danger) · Badge (surface light|dark) · Sheet (srTitle).
 Еталон реалізації: ClientDossierHero + ClientDetailSheet + BookingDetailsModal band (variant cover/inline). Читай BRIEFS/C-CLI-01.md перш ніж робити першу модалку/картку.
 
@@ -27,8 +27,8 @@
   3. Кожен віджет = домінанта-заголовок (що читається за 3 сек) + виділена «зірка» в даних + за можливості actionable-лінк (напр. пік→«Підняти ціну в пік»→`/dashboard?drawer=dynamic_pricing`). Смарт-drawer на дашборді = `<Link href="/dashboard?drawer=NAME">` (nuqs, див. DashboardDrawers.tsx: flash_deals, dynamic_pricing).
   4. 🔴 КОНТРАСТ НА FROST (DS-DASH-04): токени `--success`/`--warning` провалюють 4.5:1 на дрібному (12px) тексті на periwinkle-картці (≈3.95). `.heading-serif`=weight500 → NIE bold → навіть 19px = normal text (4.5, не 3). Для тексту-статусу юзай калібровані тони good`#0B6B2E`/warn`#9A4508`/bad`--error`. **`--text-tertiary` (2.78:1) = забанене §4 значення → НІКОЛИ для тексту; тільки `--text-primary`/`--text-secondary`. Ієрархію — розміром.**
 
-▶ НАСТУПНА ДІЯ: DS-CLIENT-01 ч.2 — решта секцій публічної (графік роботи · shop-банер · products preview · trusted partners · банери рефералів · floating CTA) на кіт-примітиви + крафт світлих блоків. Реюз PublicMasterHero + Services/Reviews патернів ч.1.
-  Далі: DS-CLIENT-03 (Мої записи) · DS-CLIENT-04 (Мій профіль) · P5 лендинг (LAND-01).
+▶ НАСТУПНА ДІЯ: DS-CLIENT-03 — Мої записи (app/my/bookings/*, Тір 2). Клієнт-зона: списки записів (майбутні/минулі) на дизайн-мову. Реюз C-CLI-01 + PublicMasterHero + Services/Reviews-патернів (featured-перший, hairline-рядки, metric-value).
+  Далі: DS-CLIENT-04 (Мій профіль) · P5 лендинг (LAND-01).
   ⚠️ DS-MODAL-01 + DS-CLIENT-02 (BookingWizard) — НЕ автономно: revenue-critical shared 6-крок flow. Присвячена сесія з founder-in-loop.
   🔴 УРОК founder (застосовуй усюди): «більше крафту над СВІТЛИМИ блоками» — featured-диференціація + домінантна типографіка (metric-value/heading-serif) + hairline-структура в КОЖНОМУ Section, не лише в темному герої. Світлий блок «служить» ≠ «нудний». Пам'ять: feedback_light_blocks_craft.md.
 
@@ -56,6 +56,12 @@ TRACKER: DS-[ID] ⬜→✅ + оновити ▶ NEXT + прогрес N/23 → �
 ---
 
 ## Нотатки сесій (свіжі зверху)
+
+### DS-CLIENT-01 ч.2 — графік · shop-банер · товари (04.07, ✅ own-eyes, автономна) — commit 93072d42 — DS-CLIENT-01 ЗАКРИТО
+- **Графік роботи:** 7-cell сітка мала хардкод-hex + `#A8928D` textTertiary (провал контрасту на тексті) → CSS-токени: сьогодні домінанта (`bg-primary/10 ring-primary/25` + primary-лейбл), робочі `bg-secondary/50`, вихідні `bg-secondary/20` + «вих.» text-sub, час tabular-nums.
+- **Shop-банер:** градієнт-фон + декоративний blob + icon box-shadow-glow (§4 бани glassmorphism/gradient/glow) → чистий `bento-card` CTA: accent-tile (ring), bold title, count text-sub, hover-arrow.
+- **Товари:** N однакових `bento-card`/товар → одна картка з hairline-рядками (дзеркало Services); ціна `metric-value` домінанта; out-of-stock destructive; футер «переглянути всі» primary-tint (був accent inline-hex).
+- **Прибрано:** мертвий `textTertiary` (0 usages після фіксу powered-by футера). Own-eyes ds-preview 3 секції Playwright, видалено. **Мок-урок:** ProductIcon кидає на невалідний icon_name (spray/jar) — юзай реальні (bottle/droplets/flask). TSC:0 · Build:clean 59 стор.
 
 ### DS-CLIENT-01 ч.1 — публічна сторінка майстра (04.07, ✅ own-eyes, автономна) — commit ef60dadd — СТАРТ P2
 - **🔴 Фідбек founder перед задачею:** «все ахуєнно, то шо може трішки більше над світлими працюй» → закон білого блоку підняти: featured-диференціація + домінантна типографіка + hairline в КОЖНОМУ Section. Пам'ять feedback_light_blocks_craft.md.
