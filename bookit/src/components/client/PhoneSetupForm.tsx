@@ -3,9 +3,10 @@
 import { useState, useRef, useEffect, KeyboardEvent, ClipboardEvent, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Loader2, Phone, MessageSquare } from 'lucide-react';
+import { ArrowLeft, Phone, MessageSquare } from 'lucide-react';
 import { confirmPhone } from '@/app/my/setup/phone/actions';
 import { formatPhoneDisplay, normalizePhoneInput, toFullPhone } from '@/lib/utils/phone';
+import { Button } from '@/components/ui/Button';
 
 type Step = 'phone' | 'otp';
 
@@ -135,7 +136,7 @@ export function PhoneSetupForm() {
           className="flex flex-col gap-4"
         >
           <div className="text-center mb-2">
-            <div className="inline-flex items-center justify-center size-14 rounded-lg bg-primary/15 mb-4">
+            <div className="inline-flex items-center justify-center size-14 rounded-2xl bg-primary/12 ring-1 ring-primary/15 mb-4">
               <Phone size={24} className="text-primary" />
             </div>
             <h1 className="heading-serif text-2xl text-foreground mb-1.5">
@@ -147,7 +148,7 @@ export function PhoneSetupForm() {
             </p>
           </div>
 
-          <div className="flex items-center rounded-md border border-border bg-secondary overflow-hidden focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+          <div className="flex items-center rounded-xl border border-border bg-secondary overflow-hidden focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all">
             <span className="pl-4 pr-2 text-text-sub font-medium text-base select-none shrink-0">+38</span>
             <input
               type="tel"
@@ -165,15 +166,16 @@ export function PhoneSetupForm() {
 
           {error && <p className="text-sm text-destructive pl-1">{error}</p>}
 
-          <button
-            type="button"
+          <Button
+            variant="primary"
+            size="lg"
+            fullWidth
+            isLoading={isSubmitting}
             onClick={handleSendSms}
-            disabled={isSubmitting || phone.length < 9}
-            className="flex items-center justify-center gap-2 w-full py-4 rounded-lg bg-primary text-primary-foreground text-base font-semibold hover:bg-primary/90 active:scale-[0.95] transition-all shadow-lg shadow-primary/20 disabled:opacity-50 cursor-pointer"
+            disabled={phone.length < 9}
           >
-            {isSubmitting && <Loader2 size={18} className="animate-spin" />}
             {isSubmitting ? 'Відправляємо...' : 'Отримати код'}
-          </button>
+          </Button>
         </motion.div>
       )}
 
@@ -187,7 +189,7 @@ export function PhoneSetupForm() {
           className="flex flex-col gap-4"
         >
           <div className="text-center mb-2">
-            <div className="inline-flex items-center justify-center size-14 rounded-lg bg-primary/15 mb-4">
+            <div className="inline-flex items-center justify-center size-14 rounded-2xl bg-primary/12 ring-1 ring-primary/15 mb-4">
               <MessageSquare size={24} className="text-primary" />
             </div>
             <h1 className="heading-serif text-2xl text-foreground mb-1.5">
@@ -212,22 +214,23 @@ export function PhoneSetupForm() {
                 onPaste={handlePaste}
                 autoFocus={i === 0}
                 aria-label={`Цифра ${i + 1} коду`}
-                className="w-11 h-14 text-center text-xl font-bold text-foreground rounded-md border-2 border-border bg-secondary outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                className="w-11 h-14 text-center metric-value text-xl text-foreground rounded-xl border-2 border-border bg-secondary outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
               />
             ))}
           </div>
 
           {error && <p className="text-sm text-destructive text-center">{error}</p>}
 
-          <button
-            type="button"
+          <Button
+            variant="primary"
+            size="lg"
+            fullWidth
+            isLoading={isPending}
             onClick={() => handleVerify()}
-            disabled={isSubmitting || digits.some(d => !d)}
-            className="flex items-center justify-center gap-2 w-full py-4 rounded-lg bg-primary text-primary-foreground text-base font-semibold hover:bg-primary/90 active:scale-[0.95] transition-all shadow-lg shadow-primary/20 disabled:opacity-50 cursor-pointer"
+            disabled={digits.some(d => !d)}
           >
-            {isPending && <Loader2 size={18} className="animate-spin" />}
             {isPending ? 'Перевіряємо...' : 'Підтвердити'}
-          </button>
+          </Button>
 
           <div className="flex items-center justify-between">
             <button

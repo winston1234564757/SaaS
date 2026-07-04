@@ -13,23 +13,12 @@ export default async function PhoneSetupPage() {
     <div className="flex flex-col items-center justify-center min-h-[80dvh] px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-6">
-          <div className="inline-flex items-center gap-1.5 bg-primary/[0.12] rounded-full px-3 py-1">
-            <span className="text-[10px] font-semibold text-primary uppercase tracking-widest">
-              Один крок до акаунту
-            </span>
-          </div>
+          <span className="inline-flex items-center gap-1.5 bg-primary/[0.10] rounded-full px-3 py-1 text-[10px] font-semibold text-primary uppercase tracking-widest">
+            Один крок до акаунту
+          </span>
         </div>
 
-        <div
-          className="rounded-3xl p-6"
-          style={{
-            background: 'rgba(255,255,255,0.72)',
-            backdropFilter: 'blur(16px)',
-            WebkitBackdropFilter: 'blur(16px)',
-            border: '1px solid rgba(255,255,255,0.9)',
-            boxShadow: '0 4px 32px rgba(44,26,20,0.08)',
-          }}
-        >
+        <div className="bento-card p-6">
           <PhoneSetupForm />
         </div>
       </div>
