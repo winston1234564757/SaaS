@@ -1,8 +1,8 @@
 # DESIGN-SYSTEM TRACKER — конвергенція на дизайн-мову
 
 > Джерело задач: [DESIGN_SYSTEM_ROLLOUT.md](file:///C:/Users/Vitos/SaaS/XDEV/PLANS/DESIGN_SYSTEM_ROLLOUT.md) · Спека: [DESIGN_LANGUAGE.md](file:///C:/Users/Vitos/SaaS/XDEV/DESIGN_LANGUAGE.md) · Еталон: C-CLI-01
-> Прогрес: **26/31 ✅** · Фундамент ✅ · Активна тема: Frost · **P1 ЗАКРИТА** · **P3 6/7** · **P2 клієнт-зона ✅** · **Analytics ✅** · **Settings ✅** · **Bookings-list ✅** · **Clients ✅** · **Marketing ✅** · **Billing ✅** (контраст+eyebrow conform-серія) (02 BookingWizard — founder-сесія)
-> ▶ **NEXT: Revenue-таби** (`master/revenue/*` — flash/pricing), далі: P5 лендинг (LAND-01). Борг: **DS-BOOK-DASH** (темні Command-Center views ~87 occ, dark-context care). ⚠️ `DS-MODAL-01`+`DS-CLIENT-02` (BookingWizard) — окрема сесія з founder
+> Прогрес: **27/32 ✅** · Фундамент ✅ · Активна тема: Frost · **P1 ЗАКРИТА** · **P3 6/7** · **P2 клієнт-зона ✅** · **Analytics ✅** · **Settings ✅** · **Bookings-list ✅** · **Clients ✅** · **Marketing ✅** · **Billing ✅** · **Revenue/Flash ✅** (контраст+eyebrow conform-серія) (02 BookingWizard — founder-сесія)
+> ▶ **NEXT: P5 лендинг** (`DS-LAND-01` — токени/рамп landing/*). Борг: **DS-BOOK-DASH** (темні Command-Center views ~87 occ, dark-context care). ⚠️ `DS-MODAL-01`+`DS-CLIENT-02` (BookingWizard) — окрема сесія з founder
 
 Легенда: ⬜ не почато · 🔧 в роботі · ✅ здано+founder QA · ↩️ скасовано · тір за WORKFLOW (0 дрібний / 1 середній / 2 повний редизайн).
 
@@ -79,6 +79,7 @@
 | DS-CLI-CONFORM | Clients контраст + eyebrows sentence-case | `ClientsPage`/`ClientGridCard`/`ClientListRow`/`ClientWidgets`/`SegmentBuilder` | 2 | ✅ |
 | DS-MKT-CONFORM | Marketing контраст + eyebrows + калібр-тони | `MarketingTabs`/`StoryGenerator`/story steps/`BroadcastEditor`/`BroadcastHistory` (11 файлів) | 2 | ✅ |
 | DS-BILL-CONFORM | Billing sheets контраст + eyebrows + apostrophe | `BillingPage` (light Sheets — dark hero еталон M-BILL не чіпав) | 1 | ✅ |
+| DS-REV-CONFORM | Revenue/Flash контраст + eyebrows + калібр-тони | `ExpensesTab`/`RevenueHubClient`/`FlashDealPage` (усі light) | 2 | ✅ |
 
 > **DS-CLIENT-01 ✅ (04.07, commits ef60dadd + 93072d42):** ч.1 header-герой (центрований bento → темна асиметрична `EditorialCover` = `PublicMasterHero`) + Services + Reviews (featured-крафт). ч.2 графік роботи (сьогодні-домінанта, токени, контраст-фікс) + shop-банер (градієнт/blob → чистий bento-CTA) + товари (N карток → hairline-рядки, metric-value). Фідбек «крафт світлих блоків» застосовано наскрізь. **Не чіпав (окремі компоненти / функц-прийнятні):** банери рефералів, FlashDealsStrip, PublicPortfolioGallery, TrustedPartnersBlock, floating CTA — опортуністична міграція коли чіпаємо ці файли.
 > `/my/messages` (месенджер) уже конвергентний (M-CHAT-01) — опортуністична міграція примітивів, не окрема задача.

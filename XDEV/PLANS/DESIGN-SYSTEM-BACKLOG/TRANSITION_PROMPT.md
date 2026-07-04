@@ -27,8 +27,8 @@
   3. Кожен віджет = домінанта-заголовок (що читається за 3 сек) + виділена «зірка» в даних + за можливості actionable-лінк (напр. пік→«Підняти ціну в пік»→`/dashboard?drawer=dynamic_pricing`). Смарт-drawer на дашборді = `<Link href="/dashboard?drawer=NAME">` (nuqs, див. DashboardDrawers.tsx: flash_deals, dynamic_pricing).
   4. 🔴 КОНТРАСТ НА FROST (DS-DASH-04): токени `--success`/`--warning` провалюють 4.5:1 на дрібному (12px) тексті на periwinkle-картці (≈3.95). `.heading-serif`=weight500 → NIE bold → навіть 19px = normal text (4.5, не 3). Для тексту-статусу юзай калібровані тони good`#0B6B2E`/warn`#9A4508`/bad`--error`. **`--text-tertiary` (2.78:1) = забанене §4 значення → НІКОЛИ для тексту; тільки `--text-primary`/`--text-secondary`. Ієрархію — розміром.**
 
-▶ НАСТУПНА ДІЯ: Revenue-таби — `master/revenue/*` (flash/pricing). Спочатку grep banned-токенів + light/dark-контекст (як усюди). Багато з M-REV вже конформне — чесний residual-скоуп.
-  Далі: Борг DS-BOOK-DASH (темні bookings-views) · P5 лендинг (LAND-01).
+▶ НАСТУПНА ДІЯ: P5 лендинг — `DS-LAND-01` (`components/landing/*` + `globals.css .landing-page`). Звірити власну `--l-*` систему з мовою (dark-блоки BentoFeatures/FooterCTA вже темні). Тір 1 — узгодження токенів/рампу, не rewrite.
+  Далі: Борг DS-BOOK-DASH (темні bookings-views, окрема сесія — per-file light/dark).
   ⚠️ DS-MODAL-01 + DS-CLIENT-02 (BookingWizard) — НЕ автономно: revenue-critical shared 6-крок flow. Присвячена сесія з founder-in-loop.
   🔴 УРОК founder (застосовуй усюди): «більше крафту над СВІТЛИМИ блоками» — featured-диференціація + домінантна типографіка (metric-value/heading-serif) + hairline-структура в КОЖНОМУ Section, не лише в темному герої. Світлий блок «служить» ≠ «нудний». Пам'ять: feedback_light_blocks_craft.md.
 
@@ -56,6 +56,13 @@ TRACKER: DS-[ID] ⬜→✅ + оновити ▶ NEXT + прогрес N/23 → �
 ---
 
 ## Нотатки сесій (свіжі зверху)
+
+### DS-REV-CONFORM — Revenue/Flash (04.07, ✅ автономна) — commit cd150094
+- **Скоуп:** revenue-таби = `ExpensesTab` (форма витрат) + `RevenueHubClient` (shell) + `FlashDealPage` (флеш-акції). Усі 3 light-context (grep 0 dark-маркерів). FlashDealDetailSheet вже конформний (DS-MODAL-04).
+- **Зроблено (sed byte-safe):** ExpensesTab `text-[var(--text-tertiary)]` ×8 (2.78:1 §4-провал) → `text-[var(--text-secondary)]` (текст+плейсхолдери+ReceiptText/delete-іконки) + 4 uppercase-tracked form-labels → sentence-case. RevenueHubClient `text-muted-foreground(/60)` ×4 (3 dynamic-import loading + subtitle) → `text-text-sub`. FlashDealPage `text-muted-foreground(/NN)?` ×30 → `text-text-sub`.
+- **Калібр-тони (FlashDealPage, node-калк):** 2 warning-ТЕКСТ (не іконки) → `#9A4508`: «Pro →» upgrade-лінк (12px bold, 5.83), slot-revenue число «+X ₴ за слот» (14px bold на bg-warning/8, 5.24). Zap/Crown/TrendingUp/Clock `text-warning` = іконки, лишив.
+- **Свідомо лишив (не conform-скоуп, окрема M-FLASH якщо треба):** raw-Tailwind status-палітра FlashDealPage — error-alert `bg-red-50/text-red-600` (self-contained, ~4.8:1 pass), `CheckCircle2 text-green-600` (icon), `bg-green-500/60` status-dot (decor). Off-token але функц-прийнятні, не дизайн-токен-текст.
+- **Own-eyes пропущено:** усі 3 потребують MasterContext/react-query/router; мех. token/label-case пас без layout-змін. Verify = grep(0 muted/tertiary) + tsc + build. TSC:0 · Build:clean · encoding чистий · zero new copy.
 
 ### DS-BILL-CONFORM — Billing (04.07, ✅ автономна) — commit f207c5cf
 - **Чесна оцінка:** `BillingPage` (666 рядків) вже сильно редизайнено під M-BILL — має еталонний dark hero (SLATE `#0F172A`, аврора-glow, Monobank-панель `#0A0A0A` з trust-списком, differentiated plan-rows hairline-divide, калібровані on-dark тони emerald-300/white-55/white-85). НЕ ретрофіть готове — hero не чіпав.
