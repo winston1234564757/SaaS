@@ -27,7 +27,7 @@
   3. Кожен віджет = домінанта-заголовок (що читається за 3 сек) + виділена «зірка» в даних + за можливості actionable-лінк (напр. пік→«Підняти ціну в пік»→`/dashboard?drawer=dynamic_pricing`). Смарт-drawer на дашборді = `<Link href="/dashboard?drawer=NAME">` (nuqs, див. DashboardDrawers.tsx: flash_deals, dynamic_pricing).
   4. 🔴 КОНТРАСТ НА FROST (DS-DASH-04): токени `--success`/`--warning` провалюють 4.5:1 на дрібному (12px) тексті на periwinkle-картці (≈3.95). `.heading-serif`=weight500 → NIE bold → навіть 19px = normal text (4.5, не 3). Для тексту-статусу юзай калібровані тони good`#0B6B2E`/warn`#9A4508`/bad`--error`. **`--text-tertiary` (2.78:1) = забанене §4 значення → НІКОЛИ для тексту; тільки `--text-primary`/`--text-secondary`. Ієрархію — розміром.**
 
-▶ НАСТУПНА ДІЯ: залишився ТІЛЬКИ DS-MODAL-01 + DS-CLIENT-02 (BookingWizard) — revenue-critical shared 6-крок booking flow (448 рядків + 14 sub, спільний майстер↔клієнт-зона). НЕ автономно: присвячена сесія з founder-in-loop. Уся автономна conform-серія по функц-поверхнях ЗАКРИТА (P1 дашборд · P3 модалки · P2 клієнт-зона · Analytics · Settings · Bookings list+dash · Clients · Marketing · Billing · Revenue/Flash · Landing).
+▶ НАСТУПНА ДІЯ: — РОЗКАТ ЗАВЕРШЕНО (31/31). Уся дизайн-мова розкатана по всіх поверхнях застосунку. BookingWizard (останній) закрито founder-in-loop сесією. Далі: опортуністична міграція решти примітивів у межах майбутніх feature-задач (P4 DS-BTN-01 ongoing).
   ⚠️ DS-MODAL-01 + DS-CLIENT-02 (BookingWizard) — НЕ автономно: revenue-critical shared 6-крок flow. Присвячена сесія з founder-in-loop.
   🔴 УРОК founder (застосовуй усюди): «більше крафту над СВІТЛИМИ блоками» — featured-диференціація + домінантна типографіка (metric-value/heading-serif) + hairline-структура в КОЖНОМУ Section, не лише в темному герої. Світлий блок «служить» ≠ «нудний». Пам'ять: feedback_light_blocks_craft.md.
 
@@ -55,6 +55,19 @@ TRACKER: DS-[ID] ⬜→✅ + оновити ▶ NEXT + прогрес N/23 → �
 ---
 
 ## Нотатки сесій (свіжі зверху)
+
+### DS-CLIENT-02 + DS-MODAL-01 — BookingWizard editorial (04.07, ✅ founder-in-loop, поетапно) — commits 8ed977e6→5e0ea535 — РОЗКАТ ЗАВЕРШЕНО 31/31
+- **Природа:** єдиний REDESIGN сесії (не conform). Revenue-critical shared booking flow (services→datetime→products*→details→success), спільний master (`ManualBookingForm`) ↔ client (`[slug]`). Founder обрав через AskUserQuestion «повний editorial одразу, поетапно з рев'ю».
+- **🔑 Ключове відкриття архітектури:** логіка ПОВНІСТЮ відділена у хуки (`useBookingWizardState/Pricing/ScheduleData`) + orchestrator. Візуал живе лише в step-компонентах → презентаційний редизайн НЕ чіпає revenue-логіку/submit/validation/OTP. Це зробило автономний редизайн безпечним (головний ризик знято).
+- **Концепт:** новий `WizardHero` = централізований темний editorial hero-band в orchestrator (один темний герой на поверхню, C-CLI-01). Адаптується під крок: ідентичність + домінанта-намір `heading-serif` + контекст-метрика `metric-value` on-dark (жива сума/тривалість/дата). Sheet `title`→`srTitle`. Кожен step = світле тіло під ним.
+- **5 кроків (кожен: own-eyes ds-preview Playwright + founder QA перед наступним):**
+  - K1 services: `WizardHero`+`StepProgress onDark`; body muted→text-sub, ціни metric-value, «Хіт» featured-піл, CTA→kit Button, «Детальніше» dark-strip→ghost, прибрано дубль-summary-chip (герой володіє сумою).
+  - K2 datetime: контраст (disabled off-days лишив faint), Дата/Час eyebrows→sentence-case, back-chip важкий→тихий, CTA→kit Button. Голос ти-форма наскрізь (Обери/Додай/Твої контакти).
+  - K3 products: featured suggested «Радимо»-піл+ring, ціни/тотал metric-value, hairline-total, kit Buttons, прибрано дубль-заголовок.
+  - K4 details (чек-cover, найважливіший): герой=сума metric-value+дата; форма rounded-[100px]→rounded-2xl (закон: пігулки лишаються чіпам, не інпутам); Підсумок-чек sentence-case; «До сплати» metric-value 2xl; 14 калібр знижка-тонів (#0B6B2E/#9A4508); submit→kit Button isLoading.
+  - K5 success: центрований green-check→темна success-обкладинка (печатка чеку) з emerald-300 on-dark + сума metric-value + emerald-glow (завершення відмінне від indigo-кроків); «Чудово!»→kit «Готово».
+- **🔴 Недоторкано (revenue-safety):** усі хуки/props/submit/createBooking/createPublicOrder/OTP/validation + усі data-testid (service-card/wizard-next-btn/skip-products/submit/name/phone/slots-grid/success) — e2e-цілісність верифіковано grep'ом. TSC:0 · Build:clean наскрізь · ds-preview видалено.
+- **🔧 Урок:** для revenue-critical flow — спершу перевір, чи логіка відділена від presentation. Якщо так (хуки+orchestrator, markup у leaf-компонентах) — presentational редизайн безпечний навіть автономно. Поетапний per-step own-eyes+commit = безпечні точки відкату.
 
 ### DS-BOOK-DASH — Bookings Command-Center (04.07, ✅ автономна) — commit 804b8803 — БОРГ ЗАКРИТО
 - **🔑 Головне відкриття (anti-sycophancy live-grep):** нотатка «темні Command-Center views ~87 occ» була ОБЕРЕЖНИМ over-flagging. Live-grep: 5 dashboard-views (SmartQueue/OpportunityMenu/Period+MonthlyAnalyticsView/VerticalTimeline) НЕ темні — рендеряться на `var(--surface)`/`bg-secondary` (LIGHT), 0 dark-маркерів. Патерн DS-ANL-RESIDUAL: план каже «найгірше», live-код каже light. Реальний occ у скоупі ≈ 59, не 87.

@@ -1,8 +1,8 @@
 # DESIGN-SYSTEM TRACKER — конвергенція на дизайн-мову
 
 > Джерело задач: [DESIGN_SYSTEM_ROLLOUT.md](file:///C:/Users/Vitos/SaaS/XDEV/PLANS/DESIGN_SYSTEM_ROLLOUT.md) · Спека: [DESIGN_LANGUAGE.md](file:///C:/Users/Vitos/SaaS/XDEV/DESIGN_LANGUAGE.md) · Еталон: C-CLI-01
-> Прогрес: **29/32 ✅** · Фундамент ✅ · Активна тема: Frost · **P1 ЗАКРИТА** · **P3 6/7** · **P2 клієнт-зона ✅** · **Analytics ✅** · **Settings ✅** · **Bookings ✅ (list+dash)** · **Clients ✅** · **Marketing ✅** · **Billing ✅** · **Revenue/Flash ✅** · **P5 лендинг ✅** (контраст+eyebrow conform-серія) (02 BookingWizard — founder-сесія)
-> ▶ **NEXT: тільки BookingWizard** — ⚠️ `DS-MODAL-01`+`DS-CLIENT-02` (revenue-critical shared 6-крок) = окрема сесія з founder-in-loop. **Уся автономна conform-серія по функц-поверхнях ЗАКРИТА.**
+> Прогрес: **31/31 ✅ — РОЗКАТ ЗАВЕРШЕНО** · Фундамент ✅ · Активна тема: Frost · **P1 ✅** · **P3 ✅** · **P2 клієнт-зона ✅ (BookingWizard editorial)** · **Analytics/Settings/Bookings/Clients/Marketing/Billing/Revenue/Landing ✅**
+> ▶ **NEXT: —** Уся дизайн-мова розкатана по всіх поверхнях застосунку. Опортуністична міграція решти примітивів — у межах майбутніх feature-задач.
 
 Легенда: ⬜ не почато · 🔧 в роботі · ✅ здано+founder QA · ↩️ скасовано · тір за WORKFLOW (0 дрібний / 1 середній / 2 повний редизайн).
 
@@ -48,7 +48,7 @@
 
 | ID | Поверхня | Файл | Тір | Статус |
 |----|----------|------|-----|--------|
-| DS-MODAL-01 | Ручний запис | `ManualBookingForm.tsx` | 2 | ⏸️ відкладено |
+| DS-MODAL-01 | Ручний запис | `ManualBookingForm.tsx` (=BookingWizard врапер) | 2 | ✅ (через DS-CLIENT-02) |
 | DS-MODAL-02 | Огляд розхідників при завершенні | `MaterialsReviewSheet.tsx` | 1 | ✅ |
 | DS-MODAL-03 | Деталь відгуку | `ReviewDetailSheet.tsx` | 1 | ✅ |
 | DS-MODAL-04 | Деталь флеш-акції | `FlashDealDetailSheet.tsx` | 1 | ✅ |
@@ -56,7 +56,7 @@
 | DS-MODAL-06 | Нова розмова | `NewConversationSheet.tsx` | 1 | ✅ конформний |
 | DS-MODAL-07 | Деталь-шіт аналітики | `OverviewDetailSheet.tsx` | 1 | ✅ |
 
-> **DS-MODAL-01 ⏸️:** `ManualBookingForm` = 92-рядковий врапер над shared `BookingWizard` (448 рядків + 14 sub-компонентів). Редизайн = переписати revenue-critical 6-крок booking flow, спільний із клієнт-зоною = фактично `DS-CLIENT-02`. НЕ автономно — окрема присвячена сесія з founder-in-loop. Об'єднати з DS-CLIENT-02.
+> **DS-MODAL-01 ✅ (через DS-CLIENT-02, 04.07):** `ManualBookingForm` = врапер над shared `BookingWizard`. Editorial-редизайн 5 кроків (services/datetime/products/details/success) через `WizardHero` + kit наскрізь покрив обидва режими (master `ManualBookingForm` ↔ client `[slug]`). Логіка недоторкана. Commits 8ed977e6→5e0ea535.
 > **DS-MODAL-06 ✅ конформний:** уже на kit `Sheet` + коректні токени (`text-sub`, без банів, без emoji, kit-компоновка). Косметичний ретрофіт заборонено законом → залишено як є, верифіковано.
 
 ---
@@ -68,7 +68,7 @@
 | ID | Поверхня | Файл | Тір | Статус |
 |----|----------|------|-----|--------|
 | DS-CLIENT-01 | Публічна сторінка майстра | `public/PublicMasterPage.tsx` | 2 | ✅ |
-| DS-CLIENT-02 | Майстер запису (6 кроків) | `shared/BookingWizard.tsx` | 2 | ⬜ |
+| DS-CLIENT-02 | Майстер запису (5 кроків editorial) | `shared/BookingWizard.tsx` + `wizard/*` + `WizardHero` | 2 | ✅ |
 | DS-CLIENT-03 | Мої записи | `app/my/bookings/*` | 2 | ✅ |
 | DS-CLIENT-04 | Мій профіль | `app/my/profile/*` | 1 | ✅ |
 | DS-CLIENT-05 | Explore (пошук майстрів) | `public/ExplorePage.tsx` + `explore/*` | 2 | ✅ |
