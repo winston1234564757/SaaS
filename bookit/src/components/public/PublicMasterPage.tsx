@@ -447,7 +447,6 @@ export function PublicMasterPage({
   }
 
   const textSecondary = isDark ? 'rgba(240, 230, 210, 0.65)' : '#6B5750';
-  const textTertiary = isDark ? 'rgba(240, 230, 210, 0.40)' : '#A8928D';
   const serviceEmojiCircleBg = isDark ? 'rgba(212, 175, 55, 0.10)' : 'rgba(255, 210, 194, 0.4)';
 
   return (
@@ -602,8 +601,8 @@ export function PublicMasterPage({
             className="bento-card p-4 mb-4"
           >
             <div className="flex items-center gap-2 mb-4">
-              <Clock size={14} style={{ color: theme.accent }} />
-              <h2 className="text-sm font-semibold" style={{ color: theme.textPrimary }}>Графік роботи</h2>
+              <Clock size={14} className="text-primary" />
+              <h2 className="text-sm font-bold text-foreground">Графік роботи</h2>
             </div>
             <div className="grid grid-cols-7 gap-1.5">
               {['mon','tue','wed','thu','fri','sat','sun'].map(day => {
@@ -614,26 +613,19 @@ export function PublicMasterPage({
                 return (
                   <div
                     key={day}
-                    className="flex flex-col items-center gap-1.5 py-3 px-1 rounded-xl text-center"
-                    style={{
-                      background: isToday
-                        ? `${theme.accent}22`
-                        : isWorking ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.03)',
-                      border: isToday ? `1.5px solid ${theme.accent}55` : '1.5px solid transparent',
-                    }}
+                    className={`flex flex-col items-center gap-1.5 py-3 px-1 rounded-xl text-center ${
+                      isToday ? 'bg-primary/10 ring-1 ring-primary/25' : isWorking ? 'bg-secondary/50' : 'bg-secondary/20'
+                    }`}
                   >
-                    <span
-                      className="text-[11px] font-bold"
-                      style={{ color: isToday ? theme.accent : textTertiary }}
-                    >
+                    <span className={`text-[11px] font-bold ${isToday ? 'text-primary' : 'text-text-sub'}`}>
                       {dayLabel[day]}
                     </span>
                     {isWorking && entry ? (
-                      <span className="text-xs leading-tight font-bold text-foreground">
+                      <span className="text-xs leading-tight font-bold text-foreground tabular-nums">
                         {entry.startTime.slice(0,5)}<br />{entry.endTime.slice(0,5)}
                       </span>
                     ) : (
-                      <span className="text-[11px] font-medium" style={{ color: textTertiary }}>вих.</span>
+                      <span className="text-[11px] font-medium text-text-sub">вих.</span>
                     )}
                   </div>
                 );
@@ -663,46 +655,18 @@ export function PublicMasterPage({
           >
             <Link
               href={`/${master.slug}/shop`}
-              className="block relative overflow-hidden rounded-xl border transition-all hover:scale-[1.01] active:scale-[0.95] cursor-pointer"
-              style={{
-                background: isDark
-                  ? `linear-gradient(135deg, rgba(212,175,55,0.15) 0%, rgba(212,175,55,0.05) 100%)`
-                  : `linear-gradient(135deg, ${theme.accent}18 0%, ${theme.gradient[0]}30 100%)`,
-                borderColor: isDark ? 'rgba(212,175,55,0.25)' : `${theme.accent}35`,
-              }}
+              className="bento-card flex items-center gap-4 p-4 group hover:bg-secondary/40 transition-colors active:scale-[0.99] cursor-pointer"
             >
-              {/* Decorative blob */}
-              <div
-                className="absolute -right-8 -top-8 size-32 rounded-full opacity-30"
-                style={{ background: `radial-gradient(circle, ${theme.accent}55, transparent 70%)` }}
-                aria-hidden="true"
-              />
-              <div className="relative flex items-center gap-4 p-5">
-                {/* Icon */}
-                <div
-                  className="size-14 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm"
-                  style={{
-                    background: isDark ? 'rgba(212,175,55,0.2)' : `${theme.accent}25`,
-                    boxShadow: `0 4px 16px ${theme.accent}30`,
-                  }}
-                >
-                  <ShoppingBag size={26} style={{ color: theme.accent }} />
-                </div>
-                {/* Text */}
-                <div className="flex-1 min-w-0">
-                  <p className="text-base font-bold" style={{ color: theme.textPrimary }}>Магазин</p>
-                  <p className="text-xs mt-0.5" style={{ color: textSecondary }}>
-                    {(master.products ?? []).length} {pluralUk((master.products ?? []).length, 'товар', 'товари', 'товарів')} · самовивіз або доставка
-                  </p>
-                </div>
-                {/* Arrow */}
-                <div
-                  className="size-9 rounded-lg flex items-center justify-center flex-shrink-0"
-                  style={{ background: isDark ? 'rgba(255,255,255,0.08)' : `${theme.accent}20` }}
-                >
-                  <ArrowRight size={16} style={{ color: theme.accent }} />
-                </div>
+              <div className="size-12 rounded-xl flex items-center justify-center shrink-0 bg-primary/10 ring-1 ring-primary/15">
+                <ShoppingBag size={22} className="text-primary" />
               </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[15px] font-bold text-foreground">Магазин</p>
+                <p className="text-xs mt-0.5 text-text-sub">
+                  {(master.products ?? []).length} {pluralUk((master.products ?? []).length, 'товар', 'товари', 'товарів')} · самовивіз або доставка
+                </p>
+              </div>
+              <ArrowRight size={18} className="text-text-sub shrink-0 -translate-x-1 opacity-60 group-hover:translate-x-0 group-hover:opacity-100 transition-all" />
             </Link>
           </motion.div>
         )}
@@ -812,7 +776,7 @@ export function PublicMasterPage({
                 Всі товари <ArrowRight size={13} />
               </Link>
             </div>
-            <div className="flex flex-col gap-2">
+            <div className="bento-card p-2">
               {(master.products ?? []).slice(0, 3).map((product, i) => (
                 <motion.div
                   key={product.id}
@@ -822,34 +786,26 @@ export function PublicMasterPage({
                 >
                   <Link
                     href={`/${master.slug}/shop`}
-                    className="bento-card p-4 flex items-center gap-3 group hover:shadow-md transition-all active:scale-[0.95] cursor-pointer block"
-                    style={{ textDecoration: 'none' }}
+                    className={`flex items-center gap-3.5 px-3 py-3 rounded-xl group hover:bg-secondary/60 transition-colors cursor-pointer ${i > 0 ? 'border-t border-border/40' : ''}`}
                   >
                     <div
-                      className="size-11 rounded-lg flex items-center justify-center text-xl flex-shrink-0"
+                      className="size-11 rounded-xl flex items-center justify-center shrink-0"
                       style={{ background: serviceEmojiCircleBg }}
                     >
                       <ProductIcon name={product.icon_name} size={18} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-foreground">{product.name}</p>
+                      <p className="text-sm font-bold text-foreground truncate group-hover:text-primary transition-colors">{product.name}</p>
                       {product.description && (
-                        <p className="text-xs mt-0.5 line-clamp-1" style={{ color: textTertiary }}>
-                          {product.description}
-                        </p>
+                        <p className="text-[11px] mt-0.5 text-text-sub line-clamp-1">{product.description}</p>
                       )}
                       {!product.inStock && (
-                        <span className="text-[10px] font-medium text-destructive">Немає в наявності</span>
+                        <span className="text-[10px] font-bold text-destructive">Немає в наявності</span>
                       )}
                     </div>
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      <p className="text-base font-bold text-foreground">{formatPrice(product.price)}</p>
-                      <div
-                        className="size-7 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                        style={{ background: `${theme.accent}20` }}
-                      >
-                        <ArrowRight size={12} style={{ color: theme.accent }} />
-                      </div>
+                    <div className="shrink-0 flex items-center gap-1.5">
+                      <span className="metric-value text-[15px] text-foreground">{formatPrice(product.price)}</span>
+                      <ArrowRight size={14} className="text-text-sub opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
                     </div>
                   </Link>
                 </motion.div>
@@ -858,8 +814,7 @@ export function PublicMasterPage({
             {(master.products ?? []).length > 3 && (
               <Link
                 href={`/${master.slug}/shop`}
-                className="mt-2 flex items-center justify-center gap-1.5 w-full py-3 rounded-lg text-sm font-semibold transition-all hover:opacity-80 active:scale-[0.95] cursor-pointer"
-                style={{ background: `${theme.accent}15`, color: theme.accent }}
+                className="mt-2 flex items-center justify-center gap-1.5 w-full py-3 rounded-xl text-sm font-bold bg-primary/10 text-primary hover:bg-primary/15 transition-colors active:scale-[0.98] cursor-pointer"
               >
                 <ShoppingBag size={15} />
                 Переглянути всі {(master.products ?? []).length} товарів
@@ -970,9 +925,9 @@ export function PublicMasterPage({
         )}
 
         {master.tier === 'starter' && (
-          <p className="text-center text-[11px] mt-6" style={{ color: textTertiary }}>
+          <p className="text-center text-[11px] mt-6 text-text-sub">
             Powered by{' '}
-            <span className="font-semibold" style={{ color: theme.accent }}>Bookit</span>
+            <span className="font-semibold text-primary">Bookit</span>
           </p>
         )}
       </div>
