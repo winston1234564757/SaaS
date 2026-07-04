@@ -237,7 +237,7 @@ export function BookingsPage() {
             >
               Записи
             </h1>
-            <p className="text-xs lg:text-sm text-muted-foreground/60 ml-2 lg:ml-4 mt-2 lg:mt-4 font-medium">
+            <p className="text-xs lg:text-sm text-text-sub ml-2 lg:ml-4 mt-2 lg:mt-4 font-medium">
               Керування розкладом та аналітика
             </p>
           </div>
@@ -275,10 +275,10 @@ export function BookingsPage() {
                 type="button"
                 aria-pressed={timeRange === r}
                 onClick={() => setUrl({ range: r })}
-                className={`px-3 min-h-[44px] flex items-center justify-center rounded-lg text-[10px] font-bold uppercase tracking-wider active:scale-[0.88] cursor-pointer transition-colors duration-150 ${
+                className={`px-3 min-h-[44px] flex items-center justify-center rounded-lg text-[10px] font-bold active:scale-[0.88] cursor-pointer transition-colors duration-150 ${
                   timeRange === r
                     ? 'bg-foreground text-background shadow-sm'
-                    : 'text-muted-foreground/60'
+                    : 'text-text-sub'
                 }`}
               >
                 {trLabels[r]}
@@ -302,7 +302,7 @@ export function BookingsPage() {
                 aria-label={m.label}
                 onClick={() => setUrl({ view: m.id })}
                 className={`min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg active:scale-[0.88] cursor-pointer transition-colors duration-150 ${
-                  view === m.id ? 'bg-secondary text-primary shadow-sm' : 'text-muted-foreground/60'
+                  view === m.id ? 'bg-secondary text-primary shadow-sm' : 'text-text-sub'
                 }`}
               >
                 {m.icon}
@@ -313,7 +313,7 @@ export function BookingsPage() {
 
         {/* Search input — always visible */}
         <div className="relative">
-          <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/40" />
+          <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-sub" />
           <input
             type="text"
             value={search}
@@ -330,7 +330,7 @@ export function BookingsPage() {
             type="button"
             aria-label={prevNavLabel}
             onClick={() => navigate(-1)}
-            className="min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-secondary rounded-lg text-muted-foreground active:scale-[0.88] cursor-pointer transition-colors duration-150"
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-secondary rounded-lg text-text-sub active:scale-[0.88] cursor-pointer transition-colors duration-150"
           >
             <ChevronLeft size={20} />
           </button>
@@ -339,7 +339,7 @@ export function BookingsPage() {
             type="button"
             aria-label={nextNavLabel}
             onClick={() => navigate(1)}
-            className="min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-secondary rounded-lg text-muted-foreground active:scale-[0.88] cursor-pointer transition-colors duration-150"
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-secondary rounded-lg text-text-sub active:scale-[0.88] cursor-pointer transition-colors duration-150"
           >
             <ChevronRight size={20} />
           </button>
@@ -354,11 +354,11 @@ export function BookingsPage() {
 
           <div className="widget-card p-6 flex flex-col gap-5">
             <div className="flex flex-col gap-2">
-              <p className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest px-1">
+              <p className="text-[10px] font-bold text-text-sub px-1">
                 Пошук клієнта
               </p>
               <div className="relative group">
-                <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/40 group-focus-within:text-primary transition-colors duration-150" />
+                <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-sub group-focus-within:text-primary transition-colors duration-150" />
                 <input
                   type="text"
                   value={search}
@@ -371,7 +371,7 @@ export function BookingsPage() {
             </div>
 
             <div className="flex flex-col gap-2 relative">
-              <p className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest px-1">
+              <p className="text-[10px] font-bold text-text-sub px-1">
                 Статус запису
               </p>
               <DropdownMenu
@@ -385,7 +385,7 @@ export function BookingsPage() {
                        statusFilter === 'confirmed' ? 'Підтверджені'  :
                        statusFilter === 'completed' ? 'Завершені'     : 'Скасовані'}
                     </span>
-                    <ChevronRight size={16} className="rotate-90 text-muted-foreground/40" />
+                    <ChevronRight size={16} className="rotate-90 text-text-sub" />
                   </>
                 }
                 items={[
@@ -425,7 +425,7 @@ export function BookingsPage() {
                   className={`flex-1 lg:flex-none lg:px-6 flex items-center justify-center gap-2 py-2.5 min-h-[44px] rounded-2xl text-xs font-bold active:scale-[0.88] cursor-pointer transition-colors duration-150 ${
                     view === m.id
                       ? 'bg-secondary text-primary shadow-md'
-                      : 'text-muted-foreground/60 hover:text-muted-foreground'
+                      : 'text-text-sub hover:text-text-sub'
                   }`}
                 >
                   <span className="flex items-center gap-2">
@@ -447,10 +447,10 @@ export function BookingsPage() {
                     type="button"
                     aria-pressed={timeRange === r}
                     onClick={() => setUrl({ range: r })}
-                    className={`px-4 min-h-[44px] flex items-center justify-center rounded-2xl text-[10px] font-bold uppercase tracking-widest active:scale-[0.88] cursor-pointer transition-colors duration-150 ${
+                    className={`px-4 min-h-[44px] flex items-center justify-center rounded-2xl text-[10px] font-bold active:scale-[0.88] cursor-pointer transition-colors duration-150 ${
                       timeRange === r
                         ? 'bg-foreground text-background shadow-lg'
-                        : 'text-muted-foreground/40 hover:text-muted-foreground'
+                        : 'text-text-sub hover:text-text-sub'
                     }`}
                   >
                     {trLabelsMobile[r]}
@@ -511,7 +511,7 @@ export function BookingsPage() {
                   </div>
                   <div className="text-center">
                     <p className="text-lg font-bold text-foreground">Записів не знайдено</p>
-                    <p className="text-sm text-muted-foreground/60 mt-1">Спробуйте інший статус або дату</p>
+                    <p className="text-sm text-text-sub mt-1">Спробуйте інший статус або дату</p>
                   </div>
                 </motion.div>
               ) : (
@@ -527,7 +527,7 @@ export function BookingsPage() {
                       {groupedBookings.map(([date, dayBookings]) => (
                         <div key={date} className="flex flex-col gap-5">
                           <div className="flex items-center gap-4 px-2">
-                            <span className="text-[11px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em] whitespace-nowrap">
+                            <span className="text-[11px] font-bold text-text-sub whitespace-nowrap">
                               {format(parseISO(date), 'EEEE d MMMM', { locale: uk })}
                             </span>
                             <div className="h-[0.5px] w-full bg-foreground/5" />

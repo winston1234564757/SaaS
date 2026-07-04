@@ -4,7 +4,7 @@ import { useTransition, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useQueryClient } from '@tanstack/react-query';
-import { Check, X, Loader2, CheckCircle2, UserX } from 'lucide-react';
+import { Check, X, Loader2, CheckCircle2, UserX, AlertTriangle } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { uk } from 'date-fns/locale';
 import { useToast } from '@/lib/toast/context';
@@ -161,7 +161,7 @@ export function BookingCard({
             {!hideTime && (
               <div className="shrink-0 w-[52px] text-center">
                 {showDate && (
-                  <p className="text-[8px] font-bold text-muted-foreground/40 uppercase tabular-nums leading-none mb-0.5">
+                  <p className="text-[8px] font-bold text-text-sub tabular-nums leading-none mb-0.5">
                     {format(parseISO(booking.date), 'd MMM', { locale: uk })}
                   </p>
                 )}
@@ -169,7 +169,7 @@ export function BookingCard({
                   {booking.start_time}
                 </p>
                 {!compact && (
-                  <p className="text-[11px] text-muted-foreground/60 mt-0.5 tabular-nums">
+                  <p className="text-[11px] text-text-sub mt-0.5 tabular-nums">
                     {booking.end_time}
                   </p>
                 )}
@@ -186,7 +186,7 @@ export function BookingCard({
               <p className="font-display text-base lg:text-xl text-foreground truncate font-bold group-hover:text-primary transition-colors">
                 {booking.client_name}
               </p>
-              <p className="text-xs lg:text-sm text-muted-foreground/60 truncate mt-1 font-medium">
+              <p className="text-xs lg:text-sm text-text-sub truncate mt-1 font-medium">
                 {serviceNames}
               </p>
               {(() => {
@@ -197,8 +197,9 @@ export function BookingCard({
                 const isHighRisk = diffDays >= 20 && (booking.status === 'confirmed' || booking.status === 'pending');
                 if (isHighRisk) {
                   return (
-                    <p className="text-[10px] text-destructive font-bold mt-1.5 flex items-center gap-1">
-                      ⚠️ Ризик неявки: запис заздалегідь (+{diffDays} дн.). Підтвердіть візит!
+                    <p className="text-[10px] text-destructive font-bold mt-1.5 flex items-center gap-1.5">
+                      <AlertTriangle size={11} className="shrink-0" aria-hidden="true" />
+                      Ризик неявки: запис за {diffDays} дн. наперед. Підтвердіть візит.
                     </p>
                   );
                 }
@@ -210,7 +211,7 @@ export function BookingCard({
             {!compact && (
               <div className="shrink-0 flex flex-col items-end gap-2 ml-1">
                 <span
-                  className="text-[10px] lg:text-[11px] font-bold px-3 py-1 rounded-full whitespace-nowrap uppercase tracking-wider"
+                  className="text-[10px] lg:text-[11px] font-bold px-3 py-1 rounded-full whitespace-nowrap"
                   style={{ color: cfg.color, background: cfg.bg }}
                 >
                   {cfg.label}
@@ -271,7 +272,7 @@ export function BookingCard({
                   type="button"
                   onClick={handleNoShow}
                   disabled={isAnyPending}
-                  className="flex items-center gap-1.5 px-3 h-11 rounded-full bg-muted-foreground/10 text-muted-foreground/60 hover:bg-muted-foreground/20 text-xs font-semibold transition-colors disabled:opacity-50 active:scale-95 transition-all"
+                  className="flex items-center gap-1.5 px-3 h-11 rounded-full bg-secondary text-text-sub hover:bg-secondary text-xs font-semibold transition-colors disabled:opacity-50 active:scale-95 transition-all"
                 >
                   {isPendingNoShow
                     ? <Loader2 size={11} className="animate-spin" />

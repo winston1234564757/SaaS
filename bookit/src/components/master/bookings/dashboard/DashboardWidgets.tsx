@@ -115,8 +115,8 @@ function WidgetCard({ title, value, label, icon, isLoading, expanded, onClick }:
       className="bento-card p-5 lg:p-7 relative overflow-hidden group text-left w-full transition-transform active:scale-[0.98]"
     >
       <div className="flex items-start justify-between gap-2 mb-3 lg:mb-4">
-        <p className="text-[10px] lg:text-[11px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em] leading-tight">{title}</p>
-        <ChevronRight size={15} className="shrink-0 -mr-1 text-muted-foreground/30 group-hover:text-muted-foreground/60 transition-colors" />
+        <p className="text-[10px] lg:text-[11px] font-bold text-text-sub leading-tight">{title}</p>
+        <ChevronRight size={15} className="shrink-0 -mr-1 text-text-sub group-hover:text-text-sub transition-colors" />
       </div>
 
       <div className="min-h-[58px] lg:min-h-[66px] flex flex-col justify-end">
@@ -128,7 +128,7 @@ function WidgetCard({ title, value, label, icon, isLoading, expanded, onClick }:
         ) : (
           <>
             <h3 className="heading-serif text-3xl lg:text-4xl text-foreground leading-tight">{value}</h3>
-            <p className="text-[11px] lg:text-[13px] text-muted-foreground/70 mt-1.5 lg:mt-2 font-medium line-clamp-1">{label}</p>
+            <p className="text-[11px] lg:text-[13px] text-text-sub mt-1.5 lg:mt-2 font-medium line-clamp-1">{label}</p>
           </>
         )}
       </div>
@@ -146,7 +146,7 @@ function WidgetCard({ title, value, label, icon, isLoading, expanded, onClick }:
 function StatLine({ label, value, accent }: { label: string; value: string; accent?: string }) {
   return (
     <div className="flex items-center justify-between py-2.5">
-      <span className="text-sm font-medium text-muted-foreground/70">{label}</span>
+      <span className="text-sm font-medium text-text-sub">{label}</span>
       <span className="text-sm font-bold tabular-nums" style={accent ? { color: accent } : undefined}>{value}</span>
     </div>
   );
@@ -164,16 +164,16 @@ function NavRow({
       {dot && <span className="size-2 rounded-full shrink-0" style={{ background: dot }} />}
       <div className="flex-1 min-w-0">
         <p className="text-sm font-bold text-foreground truncate">{title}</p>
-        {sub && <p className="text-xs text-muted-foreground/60 truncate mt-0.5">{sub}</p>}
+        {sub && <p className="text-xs text-text-sub truncate mt-0.5">{sub}</p>}
       </div>
       {right}
-      <ChevronRight size={16} className="shrink-0 text-muted-foreground/40" />
+      <ChevronRight size={16} className="shrink-0 text-text-sub" />
     </button>
   );
 }
 
 function EmptyNote({ children }: { children: React.ReactNode }) {
-  return <p className="text-sm text-muted-foreground/60 text-center py-8">{children}</p>;
+  return <p className="text-sm text-text-sub text-center py-8">{children}</p>;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -194,7 +194,7 @@ function OccupancyDetail({ stats }: { stats: DashboardStats }) {
     <div className="px-1 pb-2">
       <div className="flex items-end gap-3 mb-4">
         <span className="heading-serif text-4xl text-foreground leading-none">{pct}%</span>
-        <span className="text-sm text-muted-foreground/60 mb-1">робочого часу зайнято</span>
+        <span className="text-sm text-text-sub mb-1">робочого часу зайнято</span>
       </div>
       <div className="h-2.5 rounded-full bg-secondary/60 overflow-hidden mb-5">
         <div className="h-full rounded-full bg-primary" style={{ width: `${Math.min(100, pct)}%` }} />
@@ -234,7 +234,7 @@ function ForecastDetail({
     <div className="px-1 pb-2">
       <div className="flex items-end gap-3 mb-4">
         <span className="heading-serif text-4xl text-foreground leading-none">{forecast.toLocaleString('uk-UA')} ₴</span>
-        <span className="text-sm text-muted-foreground/60 mb-1">очікуваний дохід</span>
+        <span className="text-sm text-text-sub mb-1">очікуваний дохід</span>
       </div>
       <div className="divide-y divide-border/60 mb-4">
         <StatLine label={`Підтверджено · ${confirmedN}`} value={`${formatPrice(confirmedSum)}`} accent={BOOKING_STATUS_CONFIG.confirmed.color} />
@@ -280,7 +280,7 @@ function RetentionDetail({
     <div className="px-1 pb-2">
       <div className="flex items-end gap-3 mb-4">
         <span className="heading-serif text-4xl text-foreground leading-none">{Math.round(stats.retentionRate)}%</span>
-        <span className="text-sm text-muted-foreground/60 mb-1">клієнтів повертаються</span>
+        <span className="text-sm text-text-sub mb-1">клієнтів повертаються</span>
       </div>
       <div className="divide-y divide-border/60 mb-4">
         <StatLine label="Постійні" value={String(stats.returningClientsCount)} accent="var(--success)" />
@@ -296,7 +296,7 @@ function RetentionDetail({
               onClick={() => onClient(c.phone)}
               title={c.name}
               sub={c.phone}
-              right={<span className="text-xs font-bold text-muted-foreground/70">{c.count} {pluralUk(c.count, 'візит', 'візити', 'візитів')}</span>}
+              right={<span className="text-xs font-bold text-text-sub">{c.count} {pluralUk(c.count, 'візит', 'візити', 'візитів')}</span>}
             />
           ))}
         </div>
@@ -323,7 +323,7 @@ function EfficiencyDetail({
     <div className="px-1 pb-2">
       <div className="flex items-end gap-3 mb-4">
         <span className="heading-serif text-4xl text-foreground leading-none">{Math.round(stats.efficiencyRate)}%</span>
-        <span className="text-sm text-muted-foreground/60 mb-1">часу відпрацьовано без втрат</span>
+        <span className="text-sm text-text-sub mb-1">часу відпрацьовано без втрат</span>
       </div>
       <div className="divide-y divide-border/60 mb-4">
         <StatLine
