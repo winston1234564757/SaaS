@@ -27,10 +27,10 @@
   3. Кожен віджет = домінанта-заголовок (що читається за 3 сек) + виділена «зірка» в даних + за можливості actionable-лінк (напр. пік→«Підняти ціну в пік»→`/dashboard?drawer=dynamic_pricing`). Смарт-drawer на дашборді = `<Link href="/dashboard?drawer=NAME">` (nuqs, див. DashboardDrawers.tsx: flash_deals, dynamic_pricing).
   4. 🔴 КОНТРАСТ НА FROST (DS-DASH-04): токени `--success`/`--warning` провалюють 4.5:1 на дрібному (12px) тексті на periwinkle-картці (≈3.95). `.heading-serif`=weight500 → NIE bold → навіть 19px = normal text (4.5, не 3). Для тексту-статусу юзай калібровані тони good`#0B6B2E`/warn`#9A4508`/bad`--error`. **`--text-tertiary` (2.78:1) = забанене §4 значення → НІКОЛИ для тексту; тільки `--text-primary`/`--text-secondary`. Ієрархію — розміром.**
 
-▶ НАСТУПНА ДІЯ: DS-CLIENT-01 — Публічна сторінка майстра (PublicMasterPage, Тір 2). СТАРТ Фази P2 клієнт-зона.
-  Реюз еталону C-CLI-01 + delivery/detail-патернів P3 (EditorialCover hero + Section body + kit Button/Sheet srTitle).
-  ⚠️ DS-MODAL-01 (BookingWizard) — НЕ автономно: revenue-critical shared 6-крок flow, = DS-CLIENT-02. Об'єднати в присвячену сесію з founder-in-loop.
-  Порядок фаз, що лишився: P2 клієнт-зона (CLIENT-01..04) → P5 лендинг (LAND-01); P4 кнопки опортуністично всередині.
+▶ НАСТУПНА ДІЯ: DS-CLIENT-01 ч.2 — решта секцій публічної (графік роботи · shop-банер · products preview · trusted partners · банери рефералів · floating CTA) на кіт-примітиви + крафт світлих блоків. Реюз PublicMasterHero + Services/Reviews патернів ч.1.
+  Далі: DS-CLIENT-03 (Мої записи) · DS-CLIENT-04 (Мій профіль) · P5 лендинг (LAND-01).
+  ⚠️ DS-MODAL-01 + DS-CLIENT-02 (BookingWizard) — НЕ автономно: revenue-critical shared 6-крок flow. Присвячена сесія з founder-in-loop.
+  🔴 УРОК founder (застосовуй усюди): «більше крафту над СВІТЛИМИ блоками» — featured-диференціація + домінантна типографіка (metric-value/heading-serif) + hairline-структура в КОЖНОМУ Section, не лише в темному герої. Світлий блок «служить» ≠ «нудний». Пам'ять: feedback_light_blocks_craft.md.
 
 ═══ TASK GATE (перед кодом) ═══
 1. mempalace_search теми задачі
@@ -56,6 +56,16 @@ TRACKER: DS-[ID] ⬜→✅ + оновити ▶ NEXT + прогрес N/23 → �
 ---
 
 ## Нотатки сесій (свіжі зверху)
+
+### DS-CLIENT-01 ч.1 — публічна сторінка майстра (04.07, ✅ own-eyes, автономна) — commit ef60dadd — СТАРТ P2
+- **🔴 Фідбек founder перед задачею:** «все ахуєнно, то шо може трішки більше над світлими працюй» → закон білого блоку підняти: featured-диференціація + домінантна типографіка + hairline в КОЖНОМУ Section. Пам'ять feedback_light_blocks_craft.md.
+- **Тема:** публічна юзає `moodThemes` (per-master), але `themeKey` хардкоджено `'frost'` (Frost-only) + `(public)` html має `data-theme=frost` за замовч. → Frost CSS-токени активні, kit-примітиви (EditorialCover/Section/metric-value) працюють. `theme.accent`=#0F172A=`var(--accent)`.
+- **Header (головне):** центрований світлий bento-герой (anti-center + БЕЗ темного блоку) → асиметрична темна `EditorialCover` = `PublicMasterHero.tsx` (props-only, export). Аватар+ім'я домінанта; сателіти диференційовані (доступність emerald-glow при open · рейтинг зірки amber-200+metric-value · завантаженість-смуга · локація); тихий низ (біо white/70 + соцмережі on-dark chips). Мінімальний варіант коректно ховає rating/occupancy/bio при рідких даних. Share on-dark кут.
+- **Services (крафт світлого):** N однакових `bento-card` на послугу (бан рівномірності §4) → ОДНА картка на категорію з hairline-рядками; популярна = featured (accent-ring на іконці + «Хіт»-піл); ціна = `metric-value` домінанта; hover ArrowRight. Тап-рядок → openBooking збережено.
+- **Reviews (крафт світлого):** N однакових карток → featured свіжий відгук (зірки + більший коментар + аватар-ініціал + дата) + компактний hairline-реєстр решти (line-clamp-3). Рейтинг у хедері metric-value. IIFE `[top, ...rest]`.
+- **Прибрано:** мертві vars avatarBg/socialBtnBg/accentBg + невживані іконки (MapPin/Share2/Instagram/Send з PublicMasterPage — тепер у PublicMasterHero).
+- **Свідома межа (ч.2 follow-up):** банери рефералів, графік роботи (7-cell — легітимна сітка), shop-банер, portfolio, products preview, trusted partners, floating CTA — не чіпав (прийнятні, нижчий пріоритет). Логіка/дані/props усі збережені.
+- **Own-eyes:** ds-preview (hero open+full / closed+minimal + Services card + Reviews featured+list) × mobile 440 + desktop 1500, Playwright, видалено. TSC:0 · Build:clean (59 стор.). Апостроф ʼ, нуль curly.
 
 ### DS-MODAL-02..05,07 — 5 P3 модалок одним батчем (04.07, ✅ own-eyes, автономна сесія) — commit e93bdd38
 - **Стратегічна корекція (чесно):** NEXT був DS-MODAL-01, але `ManualBookingForm` = 92-рядковий врапер над shared `BookingWizard` (448 + 14 sub). Редизайн = переписати revenue-critical booking flow, спільний з клієнт-зоною (= DS-CLIENT-02). Автономний rewrite booking flow = найризикованіше → **відкладено в присвячену сесію**. Пересеквенсовано на 5 самодостатніх detail-шторок.

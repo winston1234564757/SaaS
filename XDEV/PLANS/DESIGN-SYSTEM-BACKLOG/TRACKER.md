@@ -2,7 +2,7 @@
 
 > Джерело задач: [DESIGN_SYSTEM_ROLLOUT.md](file:///C:/Users/Vitos/SaaS/XDEV/PLANS/DESIGN_SYSTEM_ROLLOUT.md) · Спека: [DESIGN_LANGUAGE.md](file:///C:/Users/Vitos/SaaS/XDEV/DESIGN_LANGUAGE.md) · Еталон: C-CLI-01
 > Прогрес: **16/23 ✅** · Фундамент ✅ · Активна тема: Frost · **P1 дашборд ЗАКРИТА (DS-DASH-01..10)** · **P3 модалки: 6/7 ✅** (5 редизайн + 06 конформний; 01 відкладено — shared wizard)
-> ▶ **NEXT: `DS-CLIENT-01`** — Публічна сторінка майстра (`PublicMasterPage`, Тір 2) — старт Фази P2. ⚠️ `DS-MODAL-01` (BookingWizard) — окрема присвячена сесія (revenue-critical shared flow, = DS-CLIENT-02)
+> ▶ **NEXT: `DS-CLIENT-01` ч.2** — решта секцій публічної (графік · shop-банер · products · partners · банери рефералів · floating CTA). Далі DS-CLIENT-03/04. ⚠️ `DS-MODAL-01`+`DS-CLIENT-02` (BookingWizard) — окрема присвячена сесія (revenue-critical shared flow)
 
 Легенда: ⬜ не почато · 🔧 в роботі · ✅ здано+founder QA · ↩️ скасовано · тір за WORKFLOW (0 дрібний / 1 середній / 2 повний редизайн).
 
@@ -67,11 +67,12 @@
 
 | ID | Поверхня | Файл | Тір | Статус |
 |----|----------|------|-----|--------|
-| DS-CLIENT-01 | Публічна сторінка майстра | `public/PublicMasterPage.tsx` | 2 | ⬜ |
+| DS-CLIENT-01 | Публічна сторінка майстра | `public/PublicMasterPage.tsx` | 2 | 🔧 ч.1 |
 | DS-CLIENT-02 | Майстер запису (6 кроків) | `shared/BookingWizard.tsx` | 2 | ⬜ |
 | DS-CLIENT-03 | Мої записи | `app/my/bookings/*` | 2 | ⬜ |
 | DS-CLIENT-04 | Мій профіль | `app/my/profile/*` | 1 | ⬜ |
 
+> **DS-CLIENT-01 🔧 ч.1 (04.07, commit ef60dadd):** header-герой (центрований світлий bento → асиметрична темна `EditorialCover` = `PublicMasterHero`, props-only) + Services (N карток → одна картка/категорія з hairline-рядками, featured «Хіт», ціна metric-value) + Reviews (N карток → featured свіжий + компактний реєстр). Фідбек founder «більше крафту над світлими блоками» застосовано. **Лишок ч.2:** банери рефералів · графік · shop-банер · portfolio · products preview · trusted partners · floating CTA (уже прийнятні, нижчий пріоритет).
 > `/my/messages` (месенджер) уже конвергентний (M-CHAT-01) — опортуністична міграція примітивів, не окрема задача.
 
 ---
