@@ -65,14 +65,15 @@ interface MasterGroupData {
   bookings: UnifiedOrder[];
 }
 
+// Тони калібровані під дрібний (10px) текст пілів на Frost-тінтах: good/warn ≥4.9:1.
 const STATUS_CFG: Record<string, { label: string; color: string; bg: string }> = {
-  pending:   { label: 'Очікує',       color: 'var(--warning, #b45309)',   bg: 'color-mix(in srgb, var(--warning, #b45309) 12%, transparent)' },
-  confirmed: { label: 'Підтверджено', color: 'var(--success, #047857)',   bg: 'color-mix(in srgb, var(--success, #047857) 12%, transparent)' },
-  completed: { label: 'Завершено',    color: 'var(--muted-foreground)',    bg: 'color-mix(in srgb, var(--muted-foreground) 12%, transparent)' },
-  cancelled: { label: 'Скасовано',    color: 'var(--destructive)',         bg: 'color-mix(in srgb, var(--destructive) 12%, transparent)' },
-  no_show:   { label: 'Не прийшов',  color: 'var(--muted-foreground)',    bg: 'color-mix(in srgb, var(--muted-foreground) 8%, transparent)' },
-  shipped:   { label: 'Відправлено', color: 'var(--primary)',              bg: 'color-mix(in srgb, var(--primary) 12%, transparent)' },
-  new:       { label: 'Нове',        color: 'var(--primary)',              bg: 'color-mix(in srgb, var(--primary) 12%, transparent)' },
+  pending:   { label: 'Очікує',       color: '#9A4508',            bg: 'color-mix(in srgb, #9A4508 12%, transparent)' },
+  confirmed: { label: 'Підтверджено', color: '#0B6B2E',            bg: 'color-mix(in srgb, #0B6B2E 12%, transparent)' },
+  completed: { label: 'Завершено',    color: '#475569',            bg: 'color-mix(in srgb, #475569 12%, transparent)' },
+  cancelled: { label: 'Скасовано',    color: 'var(--destructive)', bg: 'color-mix(in srgb, var(--destructive) 12%, transparent)' },
+  no_show:   { label: 'Не прийшов',  color: '#9A4508',            bg: 'color-mix(in srgb, #9A4508 10%, transparent)' },
+  shipped:   { label: 'Відправлено', color: 'var(--primary)',     bg: 'color-mix(in srgb, var(--primary) 12%, transparent)' },
+  new:       { label: 'Нове',        color: 'var(--primary)',     bg: 'color-mix(in srgb, var(--primary) 12%, transparent)' },
 };
 
 function getToday() {
@@ -159,7 +160,7 @@ function CancelSheet({
   return (
     <Sheet open={open} onOpenChange={onOpenChange} variant="bottom" title="Скасувати запис?">
       <div className="flex flex-col gap-4 pb-2">
-        <p className="text-sm text-muted-foreground leading-relaxed">
+        <p className="text-sm text-text-sub leading-relaxed">
           Майстра повідомлять про скасування.
         </p>
         <button
@@ -222,7 +223,7 @@ function ReviewSheet({
   return (
     <Sheet open={open} onOpenChange={handleClose} variant="bottom" title="Як пройшов візит?">
       <div className="flex flex-col gap-6 pb-2">
-        <p className="text-sm text-muted-foreground">Ваш відгук допоможе іншим клієнтам</p>
+        <p className="text-sm text-text-sub">Ваш відгук допоможе іншим клієнтам</p>
 
         <div className="flex items-center justify-center gap-2">
           {[1, 2, 3, 4, 5].map(n => (
@@ -242,7 +243,7 @@ function ReviewSheet({
                 size={38}
                 className={cn(
                   'transition-colors duration-150',
-                  n <= (hover || rating) ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground/25'
+                  n <= (hover || rating) ? 'fill-amber-400 text-amber-400' : 'text-border'
                 )}
               />
             </motion.button>
@@ -254,14 +255,14 @@ function ReviewSheet({
           onChange={e => setComment(e.target.value)}
           rows={3}
           placeholder="Розкажіть детальніше — необов'язково"
-          className="w-full px-4 py-3 rounded-2xl bg-secondary border border-border text-sm text-foreground placeholder:text-muted-foreground/50 outline-none resize-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+          className="w-full px-4 py-3 rounded-2xl bg-secondary border border-border text-sm text-foreground placeholder:text-text-sub outline-none resize-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
         />
 
         <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={() => handleClose(false)}
-            className="min-h-[44px] flex items-center text-sm text-muted-foreground font-medium active:opacity-60 transition-opacity"
+            className="min-h-[44px] flex items-center text-sm text-text-sub font-medium active:opacity-60 transition-opacity"
           >
             Не зараз
           </button>
@@ -328,8 +329,8 @@ function HeroCard({ order }: { order: UnifiedOrder }) {
           </div>
           {order.startTime && (
             <div className="flex items-center gap-1.5">
-              <Clock size={13} className="text-muted-foreground flex-shrink-0" />
-              <span className="text-xs text-muted-foreground">
+              <Clock size={13} className="text-text-sub flex-shrink-0" />
+              <span className="text-xs text-text-sub">
                 {order.startTime}{order.endTime ? ` — ${order.endTime}` : ''}
               </span>
             </div>
@@ -348,7 +349,7 @@ function HeroCard({ order }: { order: UnifiedOrder }) {
               </span>
             ))}
             {extra > 0 && (
-              <span className="text-xs bg-secondary/50 rounded-full px-2.5 py-1 text-muted-foreground/60 whitespace-nowrap">
+              <span className="text-xs bg-secondary/50 rounded-full px-2.5 py-1 text-text-sub whitespace-nowrap">
                 +{extra} {pluralUk(extra, 'послуга', 'послуги', 'послуг')}
               </span>
             )}
@@ -358,10 +359,10 @@ function HeroCard({ order }: { order: UnifiedOrder }) {
         {/* Address */}
         {order.masterAddress && (
           <div className="mt-3 flex items-start gap-2 p-2.5 rounded-2xl bg-background/60 border border-border">
-            <MapPin size={13} className="text-muted-foreground flex-shrink-0 mt-0.5" />
+            <MapPin size={13} className="text-text-sub flex-shrink-0 mt-0.5" />
             <div className="flex-1 min-w-0">
               <p className="text-[11px] font-semibold text-foreground">Де зустрічаємось</p>
-              <p className="text-[11px] text-muted-foreground truncate mt-0.5">{order.masterAddress}</p>
+              <p className="text-[11px] text-text-sub truncate mt-0.5">{order.masterAddress}</p>
               <a
                 href={
                   order.masterLat && order.masterLng
@@ -381,12 +382,12 @@ function HeroCard({ order }: { order: UnifiedOrder }) {
 
         {/* Price + cancel */}
         <div className="mt-4 flex items-center justify-between">
-          <span className="text-base font-bold text-foreground">{fmtPrice(order.totalPrice)}</span>
+          <span className="metric-value text-lg text-foreground">{fmtPrice(order.totalPrice)}</span>
           {canCancel && (
             <button
               type="button"
               onClick={() => setCancelOpen(true)}
-              className="min-h-[44px] flex items-center text-xs text-muted-foreground/60 hover:text-destructive transition-colors font-medium"
+              className="min-h-[44px] flex items-center text-xs text-text-sub hover:text-destructive transition-colors font-medium"
             >
               Скасувати запис
             </button>
@@ -410,7 +411,7 @@ function CompactUpcomingRow({ order, index }: { order: UnifiedOrder; index: numb
       <Avatar url={order.masterAvatarUrl} name={order.masterName} size={40} />
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold text-foreground truncate">{order.masterName}</p>
-        <p className="text-xs text-muted-foreground mt-0.5">
+        <p className="text-xs text-text-sub mt-0.5">
           {fmtShort(order.date)}{order.startTime ? ` · ${order.startTime}` : ''}
         </p>
       </div>
@@ -435,14 +436,14 @@ function CompactBookingRow({ order }: { order: UnifiedOrder }) {
       <div className="flex flex-col gap-2 py-3 border-t border-border/40 first:border-t-0 first:pt-0">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0 flex-1 overflow-hidden">
-            <span className="text-xs text-muted-foreground font-medium flex-shrink-0">{fmtShort(order.date)}</span>
+            <span className="text-xs text-text-sub font-medium flex-shrink-0">{fmtShort(order.date)}</span>
             {first && (
               <span className="text-xs bg-secondary rounded-full px-2 py-0.5 font-medium text-foreground max-w-[130px] truncate flex-shrink-0">
                 {first.name}
               </span>
             )}
             {extra > 0 && (
-              <span className="text-xs text-muted-foreground/50 flex-shrink-0">+{extra}</span>
+              <span className="text-xs text-text-sub flex-shrink-0">+{extra}</span>
             )}
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
@@ -466,11 +467,11 @@ function CompactBookingRow({ order }: { order: UnifiedOrder }) {
           <div className="flex items-center gap-1.5">
             {submitted ? (
               <>
-                <span className="text-[11px] text-muted-foreground">Ваша оцінка:</span>
+                <span className="text-[11px] text-text-sub">Ваша оцінка:</span>
                 <StarRow rating={submittedRating} />
               </>
             ) : (
-              <span className="text-[11px] text-muted-foreground">Ви вже залишили відгук</span>
+              <span className="text-[11px] text-text-sub">Ви вже залишили відгук</span>
             )}
           </div>
         )}
@@ -512,7 +513,7 @@ function MasterGroup({ group, index }: { group: MasterGroupData; index: number }
           <Avatar url={group.masterAvatarUrl} name={group.masterName} size={44} />
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-foreground">{group.masterName}</p>
-            <p className="text-xs text-muted-foreground mt-0.5">
+            <p className="text-xs text-text-sub mt-0.5">
               {group.bookings.length} {pluralUk(group.bookings.length, 'візит', 'візити', 'візитів')}
             </p>
           </div>
@@ -589,7 +590,7 @@ function ShopOrderCard({ order, index }: { order: UnifiedOrder; index: number })
             <Avatar url={order.masterAvatarUrl} name={order.masterName} size={40} />
             <div className="min-w-0">
               <p className="text-sm font-semibold text-foreground truncate">{order.masterName}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">{fmtShort(order.date)}</p>
+              <p className="text-xs text-text-sub mt-0.5">{fmtShort(order.date)}</p>
             </div>
           </div>
           <div className="flex flex-col items-end gap-1 flex-shrink-0">
@@ -602,15 +603,15 @@ function ShopOrderCard({ order, index }: { order: UnifiedOrder; index: number })
           <div className="mt-3 flex flex-col gap-1.5 border-t border-border/40 pt-3">
             {shown.map((p, i) => (
               <div key={i} className="flex justify-between items-center gap-2">
-                <span className="text-xs text-muted-foreground truncate">
+                <span className="text-xs text-text-sub truncate">
                   {p.name}
-                  <span className="ml-1 text-muted-foreground/50">×{p.qty}</span>
+                  <span className="ml-1 text-text-sub">×{p.qty}</span>
                 </span>
-                <span className="text-xs text-muted-foreground/70 flex-shrink-0">{fmtPrice(p.price * p.qty)}</span>
+                <span className="text-xs text-text-sub flex-shrink-0">{fmtPrice(p.price * p.qty)}</span>
               </div>
             ))}
             {extra > 0 && (
-              <p className="text-xs text-muted-foreground/50">
+              <p className="text-xs text-text-sub">
                 і ще {extra} {pluralUk(extra, 'товар', 'товари', 'товарів')}
               </p>
             )}
@@ -618,7 +619,7 @@ function ShopOrderCard({ order, index }: { order: UnifiedOrder; index: number })
         )}
 
         {order.deliveryType === 'pickup' && order.pickupAt && (
-          <div className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground">
+          <div className="mt-3 flex items-center gap-1.5 text-xs text-text-sub">
             <Package size={12} className="flex-shrink-0" />
             <span>Самовивіз: {fmtShort(order.pickupAt.split('T')[0])}</span>
           </div>
@@ -639,11 +640,11 @@ function ShopOrderCard({ order, index }: { order: UnifiedOrder; index: number })
           <div className="mt-2 flex items-center gap-1.5">
             {submitted ? (
               <>
-                <span className="text-[11px] text-muted-foreground">Ваша оцінка:</span>
+                <span className="text-[11px] text-text-sub">Ваша оцінка:</span>
                 <StarRow rating={submittedRating} />
               </>
             ) : (
-              <span className="text-[11px] text-muted-foreground">Ви вже залишили відгук</span>
+              <span className="text-[11px] text-text-sub">Ви вже залишили відгук</span>
             )}
           </div>
         )}
@@ -669,11 +670,11 @@ function UpcomingEmpty() {
       className="rounded-3xl border border-dashed border-border bg-secondary/30 p-8 flex flex-col items-center gap-3 text-center"
     >
       <div className="size-12 rounded-2xl bg-secondary flex items-center justify-center">
-        <CalendarSearch size={22} className="text-muted-foreground" />
+        <CalendarSearch size={22} className="text-text-sub" />
       </div>
       <div>
         <p className="text-sm font-semibold text-foreground">Поки нічого не заплановано</p>
-        <p className="text-xs text-muted-foreground mt-1">Оберіть майстра і заплануйте наступний візит</p>
+        <p className="text-xs text-text-sub mt-1">Оберіть майстра і заплануйте наступний візит</p>
       </div>
       <Link
         href="/explore"
@@ -734,7 +735,7 @@ export function MyBookingsPage({ bookings }: { bookings: UnifiedOrder[] }) {
               'flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-xs font-bold transition-all active:scale-[0.97]',
               tab === 'bookings'
                 ? 'bg-background text-foreground shadow-sm'
-                : 'text-muted-foreground'
+                : 'text-text-sub'
             )}
           >
             <CalendarDays size={13} />
@@ -748,7 +749,7 @@ export function MyBookingsPage({ bookings }: { bookings: UnifiedOrder[] }) {
               'flex-1 relative flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-xs font-bold transition-all active:scale-[0.97]',
               tab === 'shop'
                 ? 'bg-background text-foreground shadow-sm'
-                : 'text-muted-foreground'
+                : 'text-text-sub'
             )}
           >
             <ShoppingBag size={13} />
@@ -779,7 +780,7 @@ export function MyBookingsPage({ bookings }: { bookings: UnifiedOrder[] }) {
                     <HeroCard order={heroCard} />
                     {extraUpcoming.length > 0 && (
                       <div className="flex flex-col gap-2">
-                        <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest px-1">
+                        <p className="text-[10px] font-bold text-text-sub uppercase tracking-widest px-1">
                           Майбутні візити
                         </p>
                         {extraUpcoming.map((b, i) => (
@@ -795,7 +796,7 @@ export function MyBookingsPage({ bookings }: { bookings: UnifiedOrder[] }) {
 
               {masterGroups.length > 0 && (
                 <section className="flex flex-col gap-3">
-                  <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest px-1">
+                  <p className="text-[10px] font-bold text-text-sub uppercase tracking-widest px-1">
                     Раніше
                   </p>
                   {masterGroups.map((g, i) => (
@@ -807,11 +808,11 @@ export function MyBookingsPage({ bookings }: { bookings: UnifiedOrder[] }) {
               {bookingItems.length === 0 && (
                 <div className="flex flex-col items-center gap-4 py-16 text-center">
                   <div className="size-16 rounded-3xl bg-secondary/60 flex items-center justify-center">
-                    <CalendarSearch size={28} className="text-muted-foreground/40" />
+                    <CalendarSearch size={28} className="text-text-sub" />
                   </div>
                   <div>
                     <p className="text-base font-semibold text-foreground">Тут поки порожньо</p>
-                    <p className="text-sm text-muted-foreground mt-1">Ваша історія візитів з'явиться тут</p>
+                    <p className="text-sm text-text-sub mt-1">Ваша історія візитів з'явиться тут</p>
                   </div>
                   <Link
                     href="/explore"
@@ -838,11 +839,11 @@ export function MyBookingsPage({ bookings }: { bookings: UnifiedOrder[] }) {
               ) : (
                 <div className="flex flex-col items-center gap-4 py-16 text-center">
                   <div className="size-16 rounded-3xl bg-secondary/60 flex items-center justify-center">
-                    <ShoppingBag size={28} className="text-muted-foreground/40" />
+                    <ShoppingBag size={28} className="text-text-sub" />
                   </div>
                   <div>
                     <p className="text-base font-semibold text-foreground">Замовлень ще немає</p>
-                    <p className="text-sm text-muted-foreground mt-1">Ваша історія замовлень з'явиться тут</p>
+                    <p className="text-sm text-text-sub mt-1">Ваша історія замовлень з'явиться тут</p>
                   </div>
                   <Link
                     href="/explore"
