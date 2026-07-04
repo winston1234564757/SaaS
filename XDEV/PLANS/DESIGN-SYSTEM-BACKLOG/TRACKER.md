@@ -1,8 +1,8 @@
 # DESIGN-SYSTEM TRACKER — конвергенція на дизайн-мову
 
 > Джерело задач: [DESIGN_SYSTEM_ROLLOUT.md](file:///C:/Users/Vitos/SaaS/XDEV/PLANS/DESIGN_SYSTEM_ROLLOUT.md) · Спека: [DESIGN_LANGUAGE.md](file:///C:/Users/Vitos/SaaS/XDEV/DESIGN_LANGUAGE.md) · Еталон: C-CLI-01
-> Прогрес: **28/32 ✅** · Фундамент ✅ · Активна тема: Frost · **P1 ЗАКРИТА** · **P3 6/7** · **P2 клієнт-зона ✅** · **Analytics ✅** · **Settings ✅** · **Bookings-list ✅** · **Clients ✅** · **Marketing ✅** · **Billing ✅** · **Revenue/Flash ✅** · **P5 лендинг ✅** (контраст+eyebrow conform-серія) (02 BookingWizard — founder-сесія)
-> ▶ **NEXT: DS-BOOK-DASH** (борг — темні Command-Center bookings-views ~87 occ, per-file light/dark, НЕ sed). ⚠️ `DS-MODAL-01`+`DS-CLIENT-02` (BookingWizard) — окрема сесія з founder. Автономна conform-серія по функц-поверхнях вичерпана.
+> Прогрес: **29/32 ✅** · Фундамент ✅ · Активна тема: Frost · **P1 ЗАКРИТА** · **P3 6/7** · **P2 клієнт-зона ✅** · **Analytics ✅** · **Settings ✅** · **Bookings ✅ (list+dash)** · **Clients ✅** · **Marketing ✅** · **Billing ✅** · **Revenue/Flash ✅** · **P5 лендинг ✅** (контраст+eyebrow conform-серія) (02 BookingWizard — founder-сесія)
+> ▶ **NEXT: тільки BookingWizard** — ⚠️ `DS-MODAL-01`+`DS-CLIENT-02` (revenue-critical shared 6-крок) = окрема сесія з founder-in-loop. **Уся автономна conform-серія по функц-поверхнях ЗАКРИТА.**
 
 Легенда: ⬜ не почато · 🔧 в роботі · ✅ здано+founder QA · ↩️ скасовано · тір за WORKFLOW (0 дрібний / 1 середній / 2 повний редизайн).
 
@@ -75,7 +75,7 @@
 | DS-ANL-RESIDUAL | Analytics residual + purge (post M-ANL) | `analytics/sections/*` + `charts/*` + `primitives/*` | 2 | ✅ |
 | DS-SET-CONFORM | Settings контраст + eyebrows sentence-case | `master/settings/*` (13 файлів) | 2 | ✅ |
 | DS-BOOK-LIST | Bookings список контраст+eyebrow+emoji | `BookingsPage` · `BookingCard` · `DashboardWidgets` | 2 | ✅ |
-| DS-BOOK-DASH | Bookings Command-Center dark views | `dashboard/*` + `BookingDetailsModal` (dark, ~87 occ) | 2 | ⬜ |
+| DS-BOOK-DASH | Bookings Command-Center views | `dashboard/*` (5 light views) + `BookingDetailsModal` (dark cover + light body) | 2 | ✅ |
 | DS-CLI-CONFORM | Clients контраст + eyebrows sentence-case | `ClientsPage`/`ClientGridCard`/`ClientListRow`/`ClientWidgets`/`SegmentBuilder` | 2 | ✅ |
 | DS-MKT-CONFORM | Marketing контраст + eyebrows + калібр-тони | `MarketingTabs`/`StoryGenerator`/story steps/`BroadcastEditor`/`BroadcastHistory` (11 файлів) | 2 | ✅ |
 | DS-BILL-CONFORM | Billing sheets контраст + eyebrows + apostrophe | `BillingPage` (light Sheets — dark hero еталон M-BILL не чіпав) | 1 | ✅ |
