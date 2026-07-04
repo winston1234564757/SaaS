@@ -64,7 +64,7 @@ export const ClientGridCard = React.memo(function ClientGridCard({
       animate={{ opacity: 1, scale: 1 }}
       transition={CARD_SPRING}
       className="bento-card p-4 flex flex-col gap-3 relative h-full"
-      style={{ backgroundImage: retentionGlow(ret.color) }}
+      style={{ backgroundImage: retentionGlow(ret.color), backgroundColor: 'rgba(255,255,255,0.72)' }}
     >
       <ClientIconStack client={client} />
 
@@ -87,7 +87,7 @@ export const ClientGridCard = React.memo(function ClientGridCard({
               {ret.label}
             </span>
             {client.is_vip && (
-              <span className="text-[11px] font-bold text-warning border border-[var(--accent-on)]/30 px-1.5 py-1 rounded-lg flex-shrink-0">
+              <span className="text-[11px] font-bold text-[#9A4508] bg-warning/10 px-2 py-1 rounded-full flex-shrink-0">
                 VIP
               </span>
             )}
@@ -143,12 +143,12 @@ export const ClientGridCard = React.memo(function ClientGridCard({
         <div className="grid grid-cols-2 gap-2 pt-2 mt-auto border-t border-secondary/60">
           <div>
             <p className="text-[10px] text-text-sub font-bold">Візитів</p>
-            <p className="text-xl font-bold text-foreground leading-none mt-1">{client.total_visits}</p>
+            <p className="metric-value text-xl text-foreground leading-none mt-1">{client.total_visits}</p>
           </div>
           <div className="text-right">
             <p className="text-[10px] text-text-sub font-bold">Витрачено</p>
-            <p className="text-xl font-bold text-foreground leading-none mt-1">
-              {formatPrice(client.total_spent).replace('₴', '')}
+            <p className="metric-value text-xl text-foreground leading-none mt-1">
+              {formatPrice(client.total_spent).replace(' грн', '')}
               <span className="text-xs font-normal text-text-sub ml-0.5">₴</span>
             </p>
           </div>

@@ -54,7 +54,7 @@ export const ClientListRow = React.memo(function ClientListRow({
       animate={{ opacity: 1 }}
       transition={{ duration: 0.15 }}
       className="bento-card p-4 relative group"
-      style={{ backgroundImage: retentionGlow(ret.color) }}
+      style={{ backgroundImage: retentionGlow(ret.color), backgroundColor: 'rgba(255,255,255,0.72)' }}
     >
       {/* Main info row — opens detail sheet */}
       <button
@@ -84,7 +84,7 @@ export const ClientListRow = React.memo(function ClientListRow({
                 {ret.label}
               </span>
               {client.is_vip && (
-                <span className="text-[11px] font-bold text-warning border border-[var(--accent-on)]/30 px-1.5 py-1 rounded-lg">
+                <span className="text-[11px] font-bold text-[#9A4508] bg-warning/10 px-2 py-1 rounded-full">
                   VIP
                 </span>
               )}
@@ -104,7 +104,7 @@ export const ClientListRow = React.memo(function ClientListRow({
         {/* Revenue — hidden on hover (desktop) */}
         {!editing && (
           <div className="text-right flex-shrink-0 flex flex-col items-end gap-1 sm:group-hover:hidden">
-            <p className="text-sm font-bold text-foreground">{formatPrice(client.total_spent)}</p>
+            <p className="metric-value text-sm text-foreground">{formatPrice(client.total_spent)}</p>
             <div className="flex items-center gap-1">
               <Calendar size={10} className="text-text-sub" />
               <span className="text-[11px] text-text-sub">{client.total_visits}</span>
