@@ -27,8 +27,8 @@
   3. Кожен віджет = домінанта-заголовок (що читається за 3 сек) + виділена «зірка» в даних + за можливості actionable-лінк (напр. пік→«Підняти ціну в пік»→`/dashboard?drawer=dynamic_pricing`). Смарт-drawer на дашборді = `<Link href="/dashboard?drawer=NAME">` (nuqs, див. DashboardDrawers.tsx: flash_deals, dynamic_pricing).
   4. 🔴 КОНТРАСТ НА FROST (DS-DASH-04): токени `--success`/`--warning` провалюють 4.5:1 на дрібному (12px) тексті на periwinkle-картці (≈3.95). `.heading-serif`=weight500 → NIE bold → навіть 19px = normal text (4.5, не 3). Для тексту-статусу юзай калібровані тони good`#0B6B2E`/warn`#9A4508`/bad`--error`. **`--text-tertiary` (2.78:1) = забанене §4 значення → НІКОЛИ для тексту; тільки `--text-primary`/`--text-secondary`. Ієрархію — розміром.**
 
-▶ НАСТУПНА ДІЯ: Marketing — `master/marketing/*` (сторіс/розсилки) або revenue-таби (flash/pricing). Спочатку grep banned-токенів + light/dark-контекст (як усюди). Ймовірно conform-пас.
-  Далі: Billing · Борг DS-BOOK-DASH (темні bookings-views) · P5 лендинг (LAND-01).
+▶ НАСТУПНА ДІЯ: Billing — `master/billing/*`. Спочатку grep banned-токенів + light/dark-контекст (як усюди). Ймовірно conform-пас.
+  Далі: Revenue-таби (flash/pricing) · Борг DS-BOOK-DASH (темні bookings-views) · P5 лендинг (LAND-01).
   ⚠️ DS-MODAL-01 + DS-CLIENT-02 (BookingWizard) — НЕ автономно: revenue-critical shared 6-крок flow. Присвячена сесія з founder-in-loop.
   🔴 УРОК founder (застосовуй усюди): «більше крафту над СВІТЛИМИ блоками» — featured-диференціація + домінантна типографіка (metric-value/heading-serif) + hairline-структура в КОЖНОМУ Section, не лише в темному герої. Світлий блок «служить» ≠ «нудний». Пам'ять: feedback_light_blocks_craft.md.
 
@@ -56,6 +56,13 @@ TRACKER: DS-[ID] ⬜→✅ + оновити ▶ NEXT + прогрес N/23 → �
 ---
 
 ## Нотатки сесій (свіжі зверху)
+
+### DS-MKT-CONFORM — Marketing (04.07, ✅ автономна) — commit 695b35da
+- **Скоуп:** поверхня маркетингу = 2 таби (Сторіс `StoryGenerator`+story-wizard · Розсилки `BroadcastEditor`+`BroadcastHistory`+`BroadcastsTab`) + shell `MarketingTabs`. 11 light-chrome файлів. Той самий conform-пас (contrast+eyebrow+калібр-тон), НЕ rewrite — поверхня функціонально сильна (wizard+form+list), її layout (nav-rail + content) не кличе темний editorial-герой як detail/dashboard.
+- **Зроблено (sed byte-safe + точкові Edit):** `text-muted-foreground(/NN)?` ×67 + inline `var(--muted-foreground)` ×3 (inactive segment/chip **текст**, 2.78:1 §4-провал) → `text-text-sub` / `var(--text-secondary)` (5.9:1). Eyebrows uppercase tracking → sentence-case (StoryGenerator «Попередній перегляд» ×2, BroadcastHistory «Повідомлення»). `bg-muted-foreground/25` toggle-off tracks → `bg-secondary`.
+- **Калібр-тони на дрібному тексті (рахував node-скриптом, a11y MCP down):** `text-warning`/`text-success` (провал 4.5 на 9-11px) → `#9A4508` / `#0B6B2E`: VIP-бейдж (5.24 на bg-warning/8), PRO-бейдж (4.77 на bg-warning/15), «Шаблон для тегу»-піл (5.83), slots-хелпер «N вільних вікон» (5.96). Zap-іконка (BroadcastsTab) лишив semantic.
+- **🚫 Свідомо НЕ чіпав:** емодзі ✨🎁💝💎 в `TEMPLATES` (це БОДІ outgoing broadcast-повідомлень, які майстер шле клієнтам — контент/копірайт, НЕ UI-chrome; No-Emoji таргетить декор інтерфейсу) · `StoryCanvas` dark-градієнт (генерований Instagram-story OUTPUT = продукт-surface, кольори=дані) · `deliveryReportKit --text-tertiary` (size-1 status-dot bg, не текст) · `BroadcastDetailSheet` (вже конформний DS-MODAL-05).
+- **Own-eyes:** пропущено — той самий випадок Settings/Bookings-list: усі віджети потребують MasterContext+supabase+QueryClient+router+Toast, мех. token/eyebrow/tone-пас без layout-змін. Verify = grep(0 muted) + tsc + build + ручний контраст-калк. TSC:0 · Build:clean 59 стор. · encoding чистий · 0 curly-quote · zero new copy (humanizer не потрібен).
 
 ### DS-CLI-CONFORM — Clients CRM (04.07, ✅ автономна) — commit 0e7ff013
 - **Скоуп:** 5 light файлів — `ClientsPage` · `ClientGridCard` · `ClientListRow` · `ClientWidgets` · `SegmentBuilder`. Той самий conform-пас.
