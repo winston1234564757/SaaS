@@ -507,7 +507,7 @@ export function PublicMasterPage({
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-foreground">У тебе є реферальний бонус</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-text-sub">
                     -{c2cReferrerBalance}% на наступний запис — за приведених подруг
                   </p>
                 </div>

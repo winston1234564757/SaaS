@@ -44,7 +44,7 @@ export function WidgetLibraryModal({ isOpen, onClose }: { isOpen: boolean; onClo
             <div className="flex justify-between items-center mb-8">
               <div>
                 <h3 className="heading-serif text-2xl text-foreground">Бібліотека віджетів</h3>
-                <p className="text-sm text-muted-foreground">Оберіть блоки для свого ідеального дашборду</p>
+                <p className="text-sm text-text-sub">Оберіть блоки для свого ідеального дашборду</p>
               </div>
               <button type="button" onClick={onClose} aria-label="Закрити" className="size-11 rounded-full bg-secondary/60 flex items-center justify-center hover:bg-secondary transition-colors">
                 <X size={20} />
@@ -67,7 +67,7 @@ export function WidgetLibraryModal({ isOpen, onClose }: { isOpen: boolean; onClo
                       </div>
                       <div className="flex-1">
                         <p className="text-sm font-bold text-foreground">{info.label}</p>
-                        <p className="text-xs text-muted-foreground">{info.desc}</p>
+                        <p className="text-xs text-text-sub">{info.desc}</p>
                       </div>
                       <Plus size={20} className="text-primary/40 group-hover:text-primary transition-colors" />
                     </button>

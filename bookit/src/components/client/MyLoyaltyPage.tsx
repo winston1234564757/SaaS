@@ -87,7 +87,7 @@ export function MyLoyaltyPage({ programs, c2cCode, c2bCode, totalMastersInvited,
           onClick={() => setActiveTab('loyalty')}
           className={cn(
             "flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-bold rounded-lg transition-all active:scale-[0.97] cursor-pointer",
-            activeTab === 'loyalty' ? "bg-background text-foreground shadow-sm" : "text-muted-foreground/60"
+            activeTab === 'loyalty' ? "bg-background text-foreground shadow-sm" : "text-text-sub"
           )}
         >
           <Gift size={14} />
@@ -99,7 +99,7 @@ export function MyLoyaltyPage({ programs, c2cCode, c2bCode, totalMastersInvited,
           onClick={() => setActiveTab('referral')}
           className={cn(
             "flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-bold rounded-lg transition-all active:scale-[0.97] cursor-pointer",
-            activeTab === 'referral' ? "bg-background text-foreground shadow-sm" : "text-muted-foreground/60"
+            activeTab === 'referral' ? "bg-background text-foreground shadow-sm" : "text-text-sub"
           )}
         >
           <Users size={14} />
@@ -118,7 +118,7 @@ export function MyLoyaltyPage({ programs, c2cCode, c2bCode, totalMastersInvited,
           >
             <div className="bento-card p-5">
               <h1 className="heading-serif text-xl text-foreground mb-0.5">Лояльність</h1>
-              <p className="text-sm text-muted-foreground/60">
+              <p className="text-sm text-text-sub">
                 {programs.length > 0
                   ? pluralUk(programs.length, 'активна програма', 'активні програми', 'активних програм')
                   : 'Програми лояльності від майстрів'}
@@ -127,10 +127,10 @@ export function MyLoyaltyPage({ programs, c2cCode, c2bCode, totalMastersInvited,
 
             {programs.length === 0 ? (
               <div className="bento-card p-10 text-center flex flex-col items-center gap-3">
-                <Gift size={40} className="text-muted-foreground/30" />
+                <Gift size={40} className="text-text-sub" />
                 <div>
                   <p className="text-sm font-semibold text-foreground">Поки що програм лояльності немає</p>
-                  <p className="text-xs text-muted-foreground/60 mt-1">Більше записів — більше бонусів!</p>
+                  <p className="text-xs text-text-sub mt-1">Більше записів — більше бонусів!</p>
                 </div>
                 <Link
                   href="/my/masters"
@@ -163,7 +163,7 @@ export function MyLoyaltyPage({ programs, c2cCode, c2bCode, totalMastersInvited,
                 onClick={() => setReferralSubTab('c2c')}
                 className={cn(
                   "flex-1 flex items-center justify-center gap-1.5 py-2 text-[11px] font-bold rounded-lg transition-all active:scale-[0.97] cursor-pointer",
-                  referralSubTab === 'c2c' ? "bg-background text-foreground shadow-sm" : "text-muted-foreground/60"
+                  referralSubTab === 'c2c' ? "bg-background text-foreground shadow-sm" : "text-text-sub"
                 )}
               >
                 <Heart size={12} /> Для подруг
@@ -174,7 +174,7 @@ export function MyLoyaltyPage({ programs, c2cCode, c2bCode, totalMastersInvited,
                 onClick={() => setReferralSubTab('c2b')}
                 className={cn(
                   "flex-1 flex items-center justify-center gap-1.5 py-2 text-[11px] font-bold rounded-lg transition-all active:scale-[0.97] cursor-pointer",
-                  referralSubTab === 'c2b' ? "bg-background text-foreground shadow-sm" : "text-muted-foreground/60"
+                  referralSubTab === 'c2b' ? "bg-background text-foreground shadow-sm" : "text-text-sub"
                 )}
               >
                 <Users size={12} /> Запросити майстра
@@ -186,17 +186,17 @@ export function MyLoyaltyPage({ programs, c2cCode, c2bCode, totalMastersInvited,
                 <motion.div key="c2c" initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 8 }} className="flex flex-col gap-3">
                   <div className="bento-card p-4 bg-secondary/40 border border-secondary/20">
                     <p className="text-xs font-semibold text-foreground">Як це працює</p>
-                    <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                    <p className="text-xs text-text-sub mt-1 leading-relaxed">
                       Поділись посиланням на майстра. Подруга отримає знижку на перший візит, а ти накопиш бонус на свій наступний запис.
                     </p>
                   </div>
 
                   {c2cMasters.length === 0 ? (
                     <div className="bento-card p-10 text-center flex flex-col items-center gap-3">
-                      <Share2 size={32} className="text-muted-foreground/60" />
+                      <Share2 size={32} className="text-text-sub" />
                       <div>
                         <p className="text-sm font-semibold text-foreground">Поки що немає рефералів</p>
-                        <p className="text-xs text-muted-foreground/60 mt-1">Поділись посиланням на майстра з подругою</p>
+                        <p className="text-xs text-text-sub mt-1">Поділись посиланням на майстра з подругою</p>
                       </div>
                     </div>
                   ) : (
@@ -218,7 +218,7 @@ export function MyLoyaltyPage({ programs, c2cCode, c2bCode, totalMastersInvited,
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-semibold text-foreground">{m.masterName}</p>
-                            <p className="text-xs text-muted-foreground/60">
+                            <p className="text-xs text-text-sub">
                               Запрошено: {m.invited} · Завершили: {m.completed} · Отримано: {m.completed * m.c2cDiscountPct}% · Баланс: {m.balance}%
                             </p>
                           </div>
@@ -239,7 +239,7 @@ export function MyLoyaltyPage({ programs, c2cCode, c2bCode, totalMastersInvited,
                           <button
                             type="button"
                             onClick={() => copyToClipboard(m.shareLink, m.masterId)}
-                            className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-secondary/80 border border-border text-xs font-medium text-muted-foreground hover:bg-secondary active:scale-[0.97] cursor-pointer transition-all"
+                            className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-secondary/80 border border-border text-xs font-medium text-text-sub hover:bg-secondary active:scale-[0.97] cursor-pointer transition-all"
                           >
                             {copied === m.masterId ? <><Check size={12} /> Скопійовано</> : <><Copy size={12} /> Копіювати</>}
                           </button>
@@ -283,12 +283,12 @@ export function MyLoyaltyPage({ programs, c2cCode, c2bCode, totalMastersInvited,
                     </div>
                     <div className="p-5 bg-secondary/60 backdrop-blur-sm flex items-center justify-around border-t border-border/30">
                       <div className="text-center">
-                        <p className="text-[10px] text-muted-foreground/60 font-bold uppercase tracking-wider mb-1">Запрошено</p>
+                        <p className="text-[10px] text-text-sub font-bold uppercase tracking-wider mb-1">Запрошено</p>
                         <p className="text-xl font-bold text-foreground">{totalMastersInvited}</p>
                       </div>
                       <div className="w-px h-10 bg-border/40" />
                       <div className="text-center">
-                        <p className="text-[10px] text-muted-foreground/60 font-bold uppercase tracking-wider mb-1">Бонусів</p>
+                        <p className="text-[10px] text-text-sub font-bold uppercase tracking-wider mb-1">Бонусів</p>
                         <p className="text-xl font-bold text-foreground">{promocodes.length}</p>
                       </div>
                     </div>
@@ -302,9 +302,9 @@ export function MyLoyaltyPage({ programs, c2cCode, c2bCode, totalMastersInvited,
                     {promocodes.length === 0 ? (
                       <div className="bento-card p-10 border-dashed border-2 border-border/40 bg-secondary/20 text-center flex flex-col items-center gap-3">
                         <div className="size-12 rounded-full bg-secondary/20 flex items-center justify-center">
-                          <Ticket size={24} className="text-muted-foreground/60" />
+                          <Ticket size={24} className="text-text-sub" />
                         </div>
-                        <p className="text-sm font-medium text-muted-foreground/60">Ще немає отриманих знижок</p>
+                        <p className="text-sm font-medium text-text-sub">Ще немає отриманих знижок</p>
                       </div>
                     ) : (
                       promocodes.map((pc, i) => (
@@ -328,13 +328,13 @@ export function MyLoyaltyPage({ programs, c2cCode, c2bCode, totalMastersInvited,
                             </div>
                             <div>
                               <p className="text-sm font-bold text-foreground">{pc.masterName}</p>
-                              <p className="text-[10px] text-muted-foreground/60 font-medium">Бонус за рекомендацію • {pc.discount}%</p>
+                              <p className="text-[10px] text-text-sub font-medium">Бонус за рекомендацію • {pc.discount}%</p>
                             </div>
                           </div>
                           <div className="flex flex-col items-end gap-1.5">
                             <div className={cn(
                               "px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 shadow-sm",
-                              pc.isUsed ? "bg-secondary text-muted-foreground" : "bg-accent/15 text-accent"
+                              pc.isUsed ? "bg-secondary text-text-sub" : "bg-accent/15 text-accent"
                             )}>
                               {pc.isUsed ? (
                                 <>Використано</>
@@ -410,12 +410,12 @@ function LoyaltyCard({ program: p, index }: { program: LoyaltyProgram; index: nu
         </div>
 
         {/* Program name */}
-        <p className="text-xs text-muted-foreground mb-3 leading-snug">{p.name}</p>
+        <p className="text-xs text-text-sub mb-3 leading-snug">{p.name}</p>
 
         {/* Visit counter */}
         <div className="flex items-baseline gap-1 mb-2">
           <span className="text-2xl font-bold text-foreground tabular-nums">{p.currentVisits}</span>
-          <span className="text-sm text-muted-foreground/60">/ {p.targetVisits} візитів</span>
+          <span className="text-sm text-text-sub">/ {p.targetVisits} візитів</span>
         </div>
 
         {/* Progress bar */}

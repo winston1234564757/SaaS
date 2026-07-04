@@ -51,7 +51,7 @@ export function StudioBetaCard() {
     <>
       <div className="bento-card p-5">
         <p className="text-base font-bold text-foreground mb-1.5">Беремо перших</p>
-        <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+        <p className="text-sm text-text-sub leading-relaxed mb-4">
           Шукаємо 10–15 команд для закритого тесту. Хто потрапить — отримає доступ раніше всіх і вплине на те, яким вийде продукт. Я сам переглядаю заявки.
         </p>
         <button
@@ -76,14 +76,14 @@ export function StudioBetaCard() {
               </div>
               <div>
                 <p className="text-base font-bold text-foreground">Заявку отримано</p>
-                <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
+                <p className="text-sm text-text-sub mt-1 leading-relaxed">
                   Якщо підійдете — напишу особисто.
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => { setOpen(false); setSubmitted(false); }}
-                className="w-full py-3 rounded-2xl text-sm font-semibold bg-secondary text-muted-foreground active:scale-[0.98] transition-all"
+                className="w-full py-3 rounded-2xl text-sm font-semibold bg-secondary text-text-sub active:scale-[0.98] transition-all"
               >
                 Закрити
               </button>
@@ -95,31 +95,31 @@ export function StudioBetaCard() {
               )}
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-muted-foreground">
+                <label className="text-xs font-semibold text-text-sub">
                   Ваше ім&apos;я або назва студії
                 </label>
                 <input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Glow Studio"
-                  className="w-full px-4 py-3 rounded-xl bg-secondary/60 border border-border text-sm outline-none focus:border-accent/40 transition-colors placeholder:text-muted-foreground/40"
+                  className="w-full px-4 py-3 rounded-xl bg-secondary/60 border border-border text-sm outline-none focus:border-accent/40 transition-colors placeholder:text-text-sub"
                 />
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-muted-foreground">
+                <label className="text-xs font-semibold text-text-sub">
                   Telegram або телефон
                 </label>
                 <input
                   value={contact}
                   onChange={(e) => setContact(e.target.value)}
                   placeholder="@username або +380..."
-                  className="w-full px-4 py-3 rounded-xl bg-secondary/60 border border-border text-sm outline-none focus:border-accent/40 transition-colors placeholder:text-muted-foreground/40"
+                  className="w-full px-4 py-3 rounded-xl bg-secondary/60 border border-border text-sm outline-none focus:border-accent/40 transition-colors placeholder:text-text-sub"
                 />
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-muted-foreground">
+                <label className="text-xs font-semibold text-text-sub">
                   Скільки майстрів?
                 </label>
                 <div className="flex gap-2">
@@ -133,7 +133,7 @@ export function StudioBetaCard() {
                         'flex-1 py-2.5 rounded-xl border text-xs font-semibold transition-all active:scale-[0.95]',
                         size === s.key
                           ? 'text-white border-transparent'
-                          : 'bg-secondary/60 border-border text-muted-foreground'
+                          : 'bg-secondary/60 border-border text-text-sub'
                       )}
                       style={size === s.key ? { background: STUDIO_COLOR } : {}}
                     >

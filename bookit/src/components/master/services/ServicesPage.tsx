@@ -208,7 +208,7 @@ export function ServicesPage({ initialServicesData }: ServicesPageProps) {
         <div className="widget-card p-4 md:p-5 mt-4 lg:mt-0 flex flex-col gap-3 lg:gap-4" data-tour-key="svc-sidebar">
           <div>
             <h1 className="heading-serif text-xl text-foreground mb-0.5">Послуги</h1>
-            <p className="text-sm text-muted-foreground/60">
+            <p className="text-sm text-text-sub">
               {activeServices > 0
                 ? `${activeServices} активних послуг`
                 : 'Додайте послуги для публічної сторінки'}
@@ -234,7 +234,7 @@ export function ServicesPage({ initialServicesData }: ServicesPageProps) {
                 aria-pressed={view === 'grid'}
                 className={cn(
                   "size-9 flex items-center justify-center rounded-lg transition-colors",
-                  view === 'grid' ? "bg-background text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"
+                  view === 'grid' ? "bg-background text-primary shadow-sm" : "text-text-sub hover:text-foreground"
                 )}
               >
                 <LayoutGrid size={16} />
@@ -246,7 +246,7 @@ export function ServicesPage({ initialServicesData }: ServicesPageProps) {
                 aria-pressed={view === 'list'}
                 className={cn(
                   "size-9 flex items-center justify-center rounded-lg transition-colors",
-                  view === 'list' ? "bg-background text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"
+                  view === 'list' ? "bg-background text-primary shadow-sm" : "text-text-sub hover:text-foreground"
                 )}
               >
                 <List size={16} />
@@ -269,7 +269,7 @@ export function ServicesPage({ initialServicesData }: ServicesPageProps) {
             <LoadingState />
           ) : services.length === 0 ? (
             <EmptyState
-              icon={<Scissors size={28} className="text-muted-foreground/60" />}
+              icon={<Scissors size={28} className="text-text-sub" />}
               text="Додайте першу послугу"
               sub="Вона з'явиться на вашій публічній сторінці"
             />
@@ -299,8 +299,8 @@ export function ServicesPage({ initialServicesData }: ServicesPageProps) {
 function CategoryHeader({ name, count }: { name: string; count: number }) {
   return (
     <div className="flex items-center gap-2 px-1 mb-2">
-      <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground/50">{name}</span>
-      <span className="text-[11px] text-muted-foreground/30">{count}</span>
+      <span className="text-[11px] font-semibold uppercase tracking-widest text-text-sub">{name}</span>
+      <span className="text-[11px] text-text-sub">{count}</span>
     </div>
   );
 }
@@ -343,7 +343,7 @@ function ErrorBanner({ message }: { message: string }) {
       <div className="mt-0.5 text-warning">
         <AlertTriangle size={16} />
       </div>
-      <div className="text-xs text-muted-foreground">
+      <div className="text-xs text-text-sub">
         <p className="font-semibold">Проблема з завантаженням даних.</p>
         <p className="mt-0.5">{message}</p>
       </div>
@@ -358,7 +358,7 @@ function EmptyState({ icon, text, sub }: { icon: React.ReactNode; text: string; 
         {icon}
       </div>
       <p className="text-sm font-semibold text-foreground">{text}</p>
-      <p className="text-xs text-muted-foreground/60">{sub}</p>
+      <p className="text-xs text-text-sub">{sub}</p>
     </div>
   );
 }

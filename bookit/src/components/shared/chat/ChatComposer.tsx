@@ -60,7 +60,7 @@ export function ChatComposer({
                 type="button"
                 onClick={() => fileRef.current?.click()}
                 aria-label="Додати зображення"
-                className="flex size-11 shrink-0 items-center justify-center rounded-full bg-secondary text-muted-foreground hover:text-foreground border border-border transition active:scale-[0.90] cursor-pointer"
+                className="flex size-11 shrink-0 items-center justify-center rounded-full bg-secondary text-text-sub hover:text-foreground border border-border transition active:scale-[0.90] cursor-pointer"
               >
                 <ImageIcon className="size-5" />
               </button>

@@ -28,7 +28,7 @@ export function TrustedPartnersBlock({ partners }: Props) {
         </div>
         <div>
           <h3 className="text-sm font-semibold text-foreground">Перевірені партнери</h3>
-          <p className="text-xs text-muted-foreground/60">Майстри з цієї ж мережі довіри</p>
+          <p className="text-xs text-text-sub">Майстри з цієї ж мережі довіри</p>
         </div>
       </div>
 
@@ -48,7 +48,7 @@ export function TrustedPartnersBlock({ partners }: Props) {
             </span>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-foreground truncate">{p.name}</p>
-              <p className="text-xs text-muted-foreground/60 truncate">{p.specialty}</p>
+              <p className="text-xs text-text-sub truncate">{p.specialty}</p>
             </div>
             <span className="text-xs text-primary font-medium flex-shrink-0">Записатись →</span>
           </Link>

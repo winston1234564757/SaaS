@@ -279,7 +279,7 @@ export function ServiceEditor({ id }: Props) {
             type="button"
             onClick={() => router.back()}
             aria-label="Назад"
-            className="size-10 rounded-full bg-secondary/60 border border-border flex items-center justify-center text-muted-foreground hover:bg-secondary/80 hover:text-primary transition-all active:scale-[0.88] cursor-pointer"
+            className="size-10 rounded-full bg-secondary/60 border border-border flex items-center justify-center text-text-sub hover:bg-secondary/80 hover:text-primary transition-all active:scale-[0.88] cursor-pointer"
           >
             <ChevronLeft size={20} />
           </button>
@@ -287,7 +287,7 @@ export function ServiceEditor({ id }: Props) {
             <h1 className="heading-serif text-xl text-foreground">
               {id ? 'Редагування послуги' : 'Нова послуга'}
             </h1>
-            <p className="text-xs text-muted-foreground/60">
+            <p className="text-xs text-text-sub">
               {id ? form.name : 'Створення нової послуги'}
             </p>
           </div>
@@ -320,7 +320,7 @@ export function ServiceEditor({ id }: Props) {
                 <ServiceIcon name={form.icon_name} size={34} />
               </div>
               <div className="flex-1 min-w-0">
-                <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-[0.08em] mb-1 block ml-1">
+                <label className="text-[11px] font-medium text-text-sub uppercase tracking-[0.08em] mb-1 block ml-1">
                   Назва послуги
                 </label>
                 <input
@@ -342,7 +342,7 @@ export function ServiceEditor({ id }: Props) {
             </div>
 
             <div>
-              <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-[0.08em] mb-2 block ml-1">
+              <label className="text-[11px] font-medium text-text-sub uppercase tracking-[0.08em] mb-2 block ml-1">
                 Категорія
               </label>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -355,7 +355,7 @@ export function ServiceEditor({ id }: Props) {
                       'flex items-center justify-between px-3 py-3 rounded-xl text-xs font-semibold transition-all border active:scale-[0.95] cursor-pointer',
                       form.category === cat
                         ? 'bg-primary text-primary-foreground border-transparent shadow-md shadow-primary/10'
-                        : 'bg-secondary/40 border-border text-muted-foreground hover:bg-secondary/80'
+                        : 'bg-secondary/40 border-border text-text-sub hover:bg-secondary/80'
                     )}
                   >
                     <span className="truncate">{cat}</span>
@@ -366,7 +366,7 @@ export function ServiceEditor({ id }: Props) {
             </div>
 
             <div>
-              <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-[0.08em] block ml-1 mb-2">
+              <label className="text-[11px] font-medium text-text-sub uppercase tracking-[0.08em] block ml-1 mb-2">
                 Опис послуги
               </label>
               <textarea
@@ -379,7 +379,7 @@ export function ServiceEditor({ id }: Props) {
             </div>
 
             <div>
-              <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-[0.08em] mb-3 block ml-1">
+              <label className="text-[11px] font-medium text-text-sub uppercase tracking-[0.08em] mb-3 block ml-1">
                 Іконка
               </label>
               <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-2 max-h-48 overflow-y-auto pr-1">
@@ -392,7 +392,7 @@ export function ServiceEditor({ id }: Props) {
                       'flex items-center gap-2 px-3 py-2 rounded-xl border text-left transition-all active:scale-[0.95] cursor-pointer',
                       form.icon_name === opt.name
                         ? 'bg-primary text-primary-foreground border-transparent shadow-md shadow-primary/20'
-                        : 'bg-secondary/40 border-border text-muted-foreground hover:bg-secondary/80'
+                        : 'bg-secondary/40 border-border text-text-sub hover:bg-secondary/80'
                     )}
                   >
                     <ServiceIcon name={opt.name} size={14} className="shrink-0" />
@@ -410,10 +410,10 @@ export function ServiceEditor({ id }: Props) {
           )}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5">
-                <FlaskConical size={13} className="text-muted-foreground/60" />
-                <p className="text-xs font-semibold text-muted-foreground/80">Розхідники</p>
+                <FlaskConical size={13} className="text-text-sub" />
+                <p className="text-xs font-semibold text-text-sub">Розхідники</p>
                 {linkedConsumables.length > 0 && (
-                  <span className="text-[10px] font-bold text-muted-foreground/50 bg-secondary/60 px-1.5 py-0.5 rounded-full">
+                  <span className="text-[10px] font-bold text-text-sub bg-secondary/60 px-1.5 py-0.5 rounded-full">
                     {linkedConsumables.length}
                   </span>
                 )}
@@ -436,7 +436,7 @@ export function ServiceEditor({ id }: Props) {
             </div>
 
             {linkedConsumables.length === 0 ? (
-              <p className="text-[10px] text-muted-foreground/40 leading-relaxed pb-0.5">
+              <p className="text-[10px] text-text-sub leading-relaxed pb-0.5">
                 Матеріали не налаштовано — списуються зі складу при завершенні запису
               </p>
             ) : (
@@ -447,7 +447,7 @@ export function ServiceEditor({ id }: Props) {
                     className="flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 rounded-full bg-secondary/50 border border-border/60"
                   >
                     <span className="text-xs font-medium text-foreground truncate max-w-[120px]">{c.name}</span>
-                    <span className="text-[10px] font-bold text-muted-foreground/60 shrink-0">
+                    <span className="text-[10px] font-bold text-text-sub shrink-0">
                       {c.quantity}&thinsp;{UNIT_LABEL[c.unit]}
                     </span>
                     <button
@@ -468,7 +468,7 @@ export function ServiceEditor({ id }: Props) {
         {/* Column 2: Media + Prices */}
         <div className="lg:col-span-4 flex flex-col gap-6">
           <div className="widget-card p-6 flex flex-col gap-4 border border-border rounded-[24px] bg-card">
-            <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-[0.08em] block ml-1">
+            <label className="text-[11px] font-medium text-text-sub uppercase tracking-[0.08em] block ml-1">
               Фото послуги
             </label>
             <div className="min-h-[160px]">
@@ -485,7 +485,7 @@ export function ServiceEditor({ id }: Props) {
 
             <div className="space-y-4">
               <div>
-                <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-[0.08em] mb-2 block ml-1">
+                <label className="text-[11px] font-medium text-text-sub uppercase tracking-[0.08em] mb-2 block ml-1">
                   Ціна (грн)
                 </label>
                 <input
@@ -506,7 +506,7 @@ export function ServiceEditor({ id }: Props) {
               </div>
 
               <div>
-                <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-[0.08em] mb-2 block ml-1">
+                <label className="text-[11px] font-medium text-text-sub uppercase tracking-[0.08em] mb-2 block ml-1">
                   Тривалість (хв)
                 </label>
                 <div className="flex gap-2">
@@ -521,7 +521,7 @@ export function ServiceEditor({ id }: Props) {
                     aria-label="Тривалість у хвилинах"
                     className="w-full px-4 py-3 rounded-xl bg-background border text-base font-bold outline-none transition-all focus:border-primary focus:ring-1 focus:ring-primary/20 border-border"
                   />
-                  <div className="flex-shrink-0 flex items-center px-4 bg-secondary/20 rounded-xl text-xs font-semibold text-muted-foreground border border-border">
+                  <div className="flex-shrink-0 flex items-center px-4 bg-secondary/20 rounded-xl text-xs font-semibold text-text-sub border border-border">
                     {formatDuration(form.duration)}
                   </div>
                 </div>
@@ -540,7 +540,7 @@ export function ServiceEditor({ id }: Props) {
                       'px-3 py-1.5 rounded-xl text-[10px] font-bold transition-all border active:scale-[0.95] cursor-pointer',
                       form.duration === d && !customDurationStr
                         ? 'bg-primary text-primary-foreground border-transparent shadow-md shadow-primary/20 scale-105'
-                        : 'bg-secondary/40 border-border text-muted-foreground hover:bg-secondary/80'
+                        : 'bg-secondary/40 border-border text-text-sub hover:bg-secondary/80'
                     )}
                   >
                     {formatDuration(d)}
@@ -552,7 +552,7 @@ export function ServiceEditor({ id }: Props) {
             <div className="h-px bg-border" />
 
             <div className="flex flex-col gap-2.5">
-              <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-[0.08em] ml-1">
+              <label className="text-[11px] font-medium text-text-sub uppercase tracking-[0.08em] ml-1">
                 Налаштування відображення
               </label>
 
@@ -570,7 +570,7 @@ export function ServiceEditor({ id }: Props) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-bold text-foreground leading-tight">{form.active ? 'Активна' : 'Прихована'}</p>
-                  <p className="text-xs text-muted-foreground/60 mt-0.5">Показувати клієнтам у каталозі</p>
+                  <p className="text-xs text-text-sub mt-0.5">Показувати клієнтам у каталозі</p>
                 </div>
               </button>
 
@@ -583,12 +583,12 @@ export function ServiceEditor({ id }: Props) {
                   form.popular ? 'bg-warning/10 border-warning/30' : 'bg-secondary/50 border-border'
                 )}
               >
-                <div className={cn('size-9 rounded-lg flex items-center justify-center shrink-0', form.popular ? 'bg-warning/20 text-warning' : 'bg-muted/20 text-muted-foreground')}>
+                <div className={cn('size-9 rounded-lg flex items-center justify-center shrink-0', form.popular ? 'bg-warning/20 text-warning' : 'bg-muted/20 text-text-sub')}>
                   <Star size={18} className={form.popular ? 'fill-warning' : ''} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-bold text-foreground leading-tight">Популярна</p>
-                  <p className="text-xs text-muted-foreground/60 mt-0.5">Виділити позначкою &quot;ТОП&quot;</p>
+                  <p className="text-xs text-text-sub mt-0.5">Виділити позначкою &quot;ТОП&quot;</p>
                 </div>
               </button>
             </div>
@@ -602,36 +602,36 @@ export function ServiceEditor({ id }: Props) {
                       <div className="grid grid-cols-3 gap-2 text-center">
                         <div>
                           <p className="text-sm font-bold text-foreground tabular-nums leading-tight">{stats.completedCount}</p>
-                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground/50 mt-0.5">Записів</p>
+                          <p className="text-[10px] uppercase tracking-wider text-text-sub mt-0.5">Записів</p>
                         </div>
                         <div>
                           <p className="text-sm font-bold text-foreground tabular-nums leading-tight">{formatPrice(stats.revenue)}</p>
-                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground/50 mt-0.5">Виручка</p>
+                          <p className="text-[10px] uppercase tracking-wider text-text-sub mt-0.5">Виручка</p>
                         </div>
                         <div>
                           <p className="text-sm font-bold text-foreground tabular-nums leading-tight">{formatPrice(stats.avgCheck)}</p>
-                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground/50 mt-0.5">Сер. чек</p>
+                          <p className="text-[10px] uppercase tracking-wider text-text-sub mt-0.5">Сер. чек</p>
                         </div>
                       </div>
-                      <div className="flex items-center justify-between gap-2 mt-3 pt-3 border-t border-border/60 text-xs text-muted-foreground/70">
+                      <div className="flex items-center justify-between gap-2 mt-3 pt-3 border-t border-border/60 text-xs text-text-sub">
                         <span>Частка <b className="font-bold text-foreground">{stats.sharePct}%</b></span>
                         {stats.lastDate && <span>Останній запис {relDate(stats.lastDate)}</span>}
                       </div>
                       {stats.plannedCount > 0 && (
-                        <p className="text-xs text-muted-foreground/60 text-center mt-2">
+                        <p className="text-xs text-text-sub text-center mt-2">
                           Попереду ще {stats.plannedCount} {pluralUk(stats.plannedCount, 'запис', 'записи', 'записів')}
                         </p>
                       )}
                     </div>
                   ) : statsLoading ? (
                     <div className="bg-secondary/20 border border-dashed border-border p-4 rounded-xl text-center">
-                      <p className="text-xs font-semibold text-muted-foreground/60">Рахуємо статистику…</p>
+                      <p className="text-xs font-semibold text-text-sub">Рахуємо статистику…</p>
                     </div>
                   ) : (
                     <div className="bg-secondary/20 border border-dashed border-border p-4 rounded-xl text-center">
-                      <p className="text-xs font-semibold text-muted-foreground/60">Статистика з&apos;явиться після перших записів</p>
+                      <p className="text-xs font-semibold text-text-sub">Статистика з&apos;явиться після перших записів</p>
                       {stats && stats.plannedCount > 0 && (
-                        <p className="text-xs text-muted-foreground/50 mt-1">Попереду {stats.plannedCount} {pluralUk(stats.plannedCount, 'запис', 'записи', 'записів')}</p>
+                        <p className="text-xs text-text-sub mt-1">Попереду {stats.plannedCount} {pluralUk(stats.plannedCount, 'запис', 'записи', 'записів')}</p>
                       )}
                     </div>
                   )}
@@ -641,7 +641,7 @@ export function ServiceEditor({ id }: Props) {
                     </div>
                     <div>
                       <p className="text-xs font-bold text-foreground leading-tight">Пряме посилання</p>
-                      <p className="text-xs text-muted-foreground/60 mt-0.5 leading-relaxed">Клієнт одразу потрапить на запис цієї послуги</p>
+                      <p className="text-xs text-text-sub mt-0.5 leading-relaxed">Клієнт одразу потрапить на запис цієї послуги</p>
                     </div>
                     <button
                       type="button"
@@ -670,7 +670,7 @@ export function ServiceEditor({ id }: Props) {
               <Trash2 size={32} />
             </div>
             <h3 className="heading-serif text-xl text-foreground mb-2">Видалити послугу?</h3>
-            <p className="text-sm text-muted-foreground mb-6">
+            <p className="text-sm text-text-sub mb-6">
               Послуга зникне з каталогу. Відновити можна буде в будь-який момент.
             </p>
             <div className="flex gap-3">
@@ -713,9 +713,9 @@ export function ServiceEditor({ id }: Props) {
 
               {allConsumables.length === 0 ? (
                 <div className="py-8 text-center">
-                  <FlaskConical size={32} className="text-muted-foreground/20 mx-auto mb-3" />
-                  <p className="text-sm text-muted-foreground/60">Немає розхідників</p>
-                  <p className="text-xs text-muted-foreground/40 mt-1">Спочатку додайте матеріали у розділі товарів</p>
+                  <FlaskConical size={32} className="text-text-sub mx-auto mb-3" />
+                  <p className="text-sm text-text-sub">Немає розхідників</p>
+                  <p className="text-xs text-text-sub mt-1">Спочатку додайте матеріали у розділі товарів</p>
                 </div>
               ) : (
                 <div className="flex flex-col divide-y divide-border/10">
@@ -735,7 +735,7 @@ export function ServiceEditor({ id }: Props) {
                         </button>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-foreground truncate">{c.name}</p>
-                          <p className="text-[10px] text-muted-foreground/60">{UNIT_LABEL[c.unit]}</p>
+                          <p className="text-[10px] text-text-sub">{UNIT_LABEL[c.unit]}</p>
                         </div>
                         {isSelected && (
                           <div className="relative shrink-0">

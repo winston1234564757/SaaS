@@ -88,14 +88,14 @@ export function ClientCombobox({ errors, watchName, watchPhone, setValue, onClie
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-foreground truncate">{watchName}</p>
             {watchPhone && (
-              <p className="text-[11px] text-muted-foreground/60 leading-none mt-0.5">{watchPhone}</p>
+              <p className="text-[11px] text-text-sub leading-none mt-0.5">{watchPhone}</p>
             )}
           </div>
           <button
             type="button"
             onClick={clearPreSelected}
             aria-label="Змінити клієнта"
-            className="p-1 rounded-[100px] hover:bg-accent-on/6 text-muted-foreground/60 hover:text-foreground transition-colors shrink-0"
+            className="p-1 rounded-[100px] hover:bg-accent-on/6 text-text-sub hover:text-foreground transition-colors shrink-0"
           >
             <X size={14} />
           </button>
@@ -103,7 +103,7 @@ export function ClientCombobox({ errors, watchName, watchPhone, setValue, onClie
       ) : (
         /* Search input */
         <div className="relative">
-          <Search size={13} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none" aria-hidden="true" />
+          <Search size={13} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-sub pointer-events-none" aria-hidden="true" />
           <input
             data-testid="wizard-name-input"
             type="text"
@@ -118,7 +118,7 @@ export function ClientCombobox({ errors, watchName, watchPhone, setValue, onClie
             onChange={e => handleChange(e.target.value)}
             onFocus={() => setOpen(true)}
             placeholder="Олена Петрова або +380..."
-            className={`w-full h-12 pl-9 pr-4 rounded-[100px] bg-secondary/75 border text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none transition-all ${
+            className={`w-full h-12 pl-9 pr-4 rounded-2xl bg-secondary/75 border text-sm text-foreground placeholder:text-text-sub focus:outline-none transition-all ${
               errors.clientName
                 ? 'border-destructive focus:ring-destructive/20'
                 : 'border-border focus:border-primary focus:ring-2 focus:ring-primary/20'
@@ -151,7 +151,7 @@ export function ClientCombobox({ errors, watchName, watchPhone, setValue, onClie
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-semibold text-foreground truncate">{c.client_name}</p>
-                <p className="text-[11px] text-muted-foreground/60">{c.client_phone}</p>
+                <p className="text-[11px] text-text-sub">{c.client_phone}</p>
               </div>
               {c.is_vip && (
                 <span className="text-[10px] font-bold text-warning bg-warning/10 px-1.5 py-0.5 rounded-full shrink-0">
@@ -161,7 +161,7 @@ export function ClientCombobox({ errors, watchName, watchPhone, setValue, onClie
             </button>
           ))}
           {filtered.length === 0 && query.trim().length >= 2 && (
-            <div className="px-4 py-3 text-xs text-muted-foreground/60">
+            <div className="px-4 py-3 text-xs text-text-sub">
               Клієнта не знайдено
             </div>
           )}

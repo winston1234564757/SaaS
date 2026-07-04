@@ -55,9 +55,9 @@ export function StatsStrip() {
         <div className="flex flex-col gap-1 min-w-[150px]">
           <p className="text-xs font-bold text-foreground">Записи сьогодні</p>
           <div className="h-px bg-secondary" />
-          <div className="flex justify-between gap-4"><span className="text-[11px] text-muted-foreground">Підтверджено</span><span className="text-[11px] font-semibold text-success">{s.todayConfirmed}</span></div>
-          <div className="flex justify-between gap-4"><span className="text-[11px] text-muted-foreground">Очікують</span><span className="text-[11px] font-semibold text-warning">{s.todayPending}</span></div>
-          <div className="flex justify-between gap-4"><span className="text-[11px] text-muted-foreground">Завершено</span><span className="text-[11px] font-semibold text-muted-foreground/60">{s.todayCompleted}</span></div>
+          <div className="flex justify-between gap-4"><span className="text-[11px] text-text-sub">Підтверджено</span><span className="text-[11px] font-semibold text-success">{s.todayConfirmed}</span></div>
+          <div className="flex justify-between gap-4"><span className="text-[11px] text-text-sub">Очікують</span><span className="text-[11px] font-semibold text-warning">{s.todayPending}</span></div>
+          <div className="flex justify-between gap-4"><span className="text-[11px] text-text-sub">Завершено</span><span className="text-[11px] font-semibold text-text-sub">{s.todayCompleted}</span></div>
         </div>
       ),
     },
@@ -73,8 +73,8 @@ export function StatsStrip() {
         <div className="flex flex-col gap-1 min-w-[150px]">
           <p className="text-xs font-bold text-foreground">Виручка сьогодні</p>
           <div className="h-px bg-secondary" />
-          <div className="flex justify-between gap-4"><span className="text-[11px] text-muted-foreground">З завершених</span><span className="text-[11px] font-semibold text-foreground">{fmt(s.todayRevenue)}</span></div>
-          <div className="flex justify-between gap-4"><span className="text-[11px] text-muted-foreground">Записів завершено</span><span className="text-[11px] font-semibold text-primary">{s.todayCompleted}</span></div>
+          <div className="flex justify-between gap-4"><span className="text-[11px] text-text-sub">З завершених</span><span className="text-[11px] font-semibold text-foreground">{fmt(s.todayRevenue)}</span></div>
+          <div className="flex justify-between gap-4"><span className="text-[11px] text-text-sub">Записів завершено</span><span className="text-[11px] font-semibold text-primary">{s.todayCompleted}</span></div>
         </div>
       ),
     },
@@ -90,8 +90,8 @@ export function StatsStrip() {
         <div className="flex flex-col gap-1 min-w-[150px]">
           <p className="text-xs font-bold text-foreground">Клієнти цього тижня</p>
           <div className="h-px bg-secondary" />
-          <div className="flex justify-between gap-4"><span className="text-[11px] text-muted-foreground">Унікальних</span><span className="text-[11px] font-semibold text-warning">{s.weekClients}</span></div>
-          <p className="text-[10px] text-muted-foreground/60 mt-0.5">з підтверджених та завершених</p>
+          <div className="flex justify-between gap-4"><span className="text-[11px] text-text-sub">Унікальних</span><span className="text-[11px] font-semibold text-warning">{s.weekClients}</span></div>
+          <p className="text-[10px] text-text-sub mt-0.5">з підтверджених та завершених</p>
         </div>
       ),
     },
@@ -117,7 +117,7 @@ export function StatsStrip() {
                 </div>
                 <div>
                   <p className="text-xl font-bold text-foreground leading-none">{stat.value}</p>
-                  <p className="text-xs text-muted-foreground/60 mt-1.5 leading-tight">{stat.label}</p>
+                  <p className="text-xs text-text-sub mt-1.5 leading-tight">{stat.label}</p>
                 </div>
                 <p className="text-xs font-semibold" style={{ color: stat.subPositive ? 'var(--success)' : 'var(--text-tertiary)' }}>
                   {stat.sub}
@@ -148,7 +148,7 @@ export function StatsStrip() {
               style={{ width: `${dpPct}%`, background: 'var(--accent)' }}
             />
           </div>
-          <p className="text-[11px] text-muted-foreground mt-1.5">
+          <p className="text-[11px] text-text-sub mt-1.5">
             Залишилось {dpLimitUah - dpEarnedUah} ₴ до кінця тріалу → перейдіть на Pro
           </p>
         </Link>
@@ -164,7 +164,7 @@ export function StatsStrip() {
         <div className="size-8 rounded-xl bg-primary/15 flex items-center justify-center flex-shrink-0">
           <Zap size={14} className="text-primary" />
         </div>
-        <p className="text-xs text-muted-foreground flex-1 leading-relaxed">
+        <p className="text-xs text-text-sub flex-1 leading-relaxed">
           Ви вже активний майстер — <span className="font-semibold text-foreground">Pro</span> розблокує аналітику, CRM та автоматичні нагадування
         </p>
         <Link href="/dashboard/billing?plan=pro"

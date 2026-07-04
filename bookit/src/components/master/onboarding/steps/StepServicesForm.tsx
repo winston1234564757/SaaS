@@ -138,7 +138,7 @@ export function StepServicesForm({
         <button
           type="button"
           onClick={onBack}
-          className="flex items-center gap-1.5 text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors mb-5 cursor-pointer active:scale-95 transition-all"
+          className="flex items-center gap-1.5 text-xs text-text-sub hover:text-text-sub transition-colors mb-5 cursor-pointer active:scale-95 transition-all"
         >
           <ArrowLeft size={13} /> Назад
         </button>
@@ -146,7 +146,7 @@ export function StepServicesForm({
         <h2 className="font-display text-2xl font-semibold text-foreground leading-tight mb-1">
           Сфера діяльності
         </h2>
-        <p className="text-sm text-muted-foreground/60">
+        <p className="text-sm text-text-sub">
           Оберіть напрямок — ми згенеруємо базовий прайс
         </p>
       </div>
@@ -303,7 +303,7 @@ export function StepServicesForm({
           >
             <div className="flex items-center gap-3 px-6 mb-5">
               <div className="flex-1 h-px bg-secondary/80" />
-              <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground/60">
+              <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-text-sub">
                 Ціноутворення
               </span>
               <div className="flex-1 h-px bg-secondary/80" />
@@ -311,7 +311,7 @@ export function StepServicesForm({
 
             <div className="px-6 pb-6 flex flex-col gap-4">
               <div>
-                <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">
+                <label className="text-xs font-semibold text-text-sub mb-1.5 block">
                   Ціна за{' '}
                   <span className="text-foreground">{template.baseName.toLowerCase()}</span>
                   {' '}(грн)
@@ -325,7 +325,7 @@ export function StepServicesForm({
                   aria-label="Ціна за послугу в гривнях"
                   className={inputCls}
                 />
-                <p className="text-[10px] text-muted-foreground/60 mt-1">
+                <p className="text-[10px] text-text-sub mt-1">
                   Стандартна процедура — Базовий і Преміум розраховуються автоматично
                 </p>
               </div>
@@ -339,7 +339,7 @@ export function StepServicesForm({
                     transition={{ duration: 0.22 }}
                     className="flex flex-col gap-2.5"
                   >
-                    <p className="text-xs font-semibold text-muted-foreground">
+                    <p className="text-xs font-semibold text-text-sub">
                       Ваш прайс-лист — вимкніть зайве:
                     </p>
 
@@ -382,7 +382,7 @@ export function StepServicesForm({
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-semibold text-foreground leading-snug">{def.name}</p>
                               <div className="flex items-center gap-2 mt-0.5">
-                                <span className="text-[11px] text-muted-foreground/60">{timeStr}</span>
+                                <span className="text-[11px] text-text-sub">{timeStr}</span>
                                 <span
                                   className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full"
                                   style={{ color: cfg.accent, background: cfg.barColor }}
@@ -425,7 +425,7 @@ export function StepServicesForm({
           type="button"
           onClick={onBack}
           disabled={saving}
-          className="w-full py-2 text-sm text-muted-foreground/60 hover:text-primary transition-colors cursor-pointer active:scale-95 transition-all"
+          className="w-full py-2 text-sm text-text-sub hover:text-primary transition-colors cursor-pointer active:scale-95 transition-all"
         >
           Скасувати
         </button>

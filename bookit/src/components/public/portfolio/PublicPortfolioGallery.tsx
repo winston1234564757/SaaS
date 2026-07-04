@@ -57,7 +57,7 @@ export function PublicPortfolioGallery({ items, masterSlug }: Props) {
                     <Image src={item.cover_url} alt={item.title} fill className="object-cover" sizes="176px" />
                   ) : (
                     <div className="flex items-center justify-center h-full">
-                      <Scissors size={24} className="text-muted-foreground" />
+                      <Scissors size={24} className="text-text-sub" />
                     </div>
                   )}
                   {item.photo_count > 1 && (
@@ -72,10 +72,10 @@ export function PublicPortfolioGallery({ items, masterSlug }: Props) {
                   <p className="text-xs font-semibold text-foreground leading-snug line-clamp-2">{item.title}</p>
                   <div className="flex items-center gap-2 flex-wrap">
                     {item.service_name && (
-                      <span className="text-[10px] font-medium text-muted-foreground/60">{item.service_name}</span>
+                      <span className="text-[10px] font-medium text-text-sub">{item.service_name}</span>
                     )}
                     {item.review_count > 0 && (
-                      <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground/60">
+                      <span className="flex items-center gap-0.5 text-[10px] text-text-sub">
                         <Star size={9} /> {item.review_count}
                       </span>
                     )}

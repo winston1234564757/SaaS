@@ -256,7 +256,7 @@ export function DashboardTopBar() {
                 <button type="button"
                   onClick={() => setActiveGroup('none')}
                   aria-label="Назад"
-                  className="size-9 rounded-xl flex items-center justify-center bg-secondary/50 border border-border text-muted-foreground hover:text-foreground hover:bg-secondary active:scale-[0.9] transition-all cursor-pointer shrink-0"
+                  className="size-9 rounded-xl flex items-center justify-center bg-secondary/50 border border-border text-text-sub hover:text-foreground hover:bg-secondary active:scale-[0.9] transition-all cursor-pointer shrink-0"
                 >
                   <ArrowLeft size={16} strokeWidth={2.5} />
                 </button>

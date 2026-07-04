@@ -22,7 +22,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         )}
         <div className="relative flex items-center">
           {prefix && (
-            <div className="absolute left-3.5 text-muted-foreground pointer-events-none">
+            <div className="absolute left-3.5 text-text-sub pointer-events-none">
               {prefix}
             </div>
           )}
@@ -30,7 +30,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             id={inputId}
             className={cn(
-              'w-full h-12 px-4 rounded-xl text-base text-foreground placeholder:text-muted-foreground',
+              'w-full h-12 px-4 rounded-xl text-base text-foreground placeholder:text-text-sub',
               'bg-secondary/70 border border-border backdrop-blur-sm',
               'transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed',
               'focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20',
@@ -44,13 +44,13 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             {...props}
           />
           {suffix && (
-            <div className="absolute right-3.5 text-muted-foreground">
+            <div className="absolute right-3.5 text-text-sub">
               {suffix}
             </div>
           )}
         </div>
         {error && <p id={`${inputId}-error`} className="text-xs text-destructive">{error}</p>}
-        {hint && !error && <p id={`${inputId}-hint`} className="text-xs text-muted-foreground">{hint}</p>}
+        {hint && !error && <p id={`${inputId}-hint`} className="text-xs text-text-sub">{hint}</p>}
       </div>
     );
   }

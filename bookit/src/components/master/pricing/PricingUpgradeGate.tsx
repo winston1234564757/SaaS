@@ -68,7 +68,7 @@ function QuietHoursWidget({ insight }: { insight: QuietHoursInsight }) {
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-xs font-bold text-foreground mb-0.5">Тихий час приносить клієнтів</p>
-        <p className="text-xs text-muted-foreground leading-relaxed">
+        <p className="text-xs text-text-sub leading-relaxed">
           Завдяки знижкам у тихий час ви отримали{' '}
           <span className="font-bold text-foreground">{insight.count} {label}</span>{' '}
           на суму{' '}
@@ -116,7 +116,7 @@ function TrialActiveView({
               </div>
               <div>
                 <p className="text-sm font-bold text-foreground leading-tight">Пробний режим</p>
-                <p className="text-[11px] text-muted-foreground/60">Динамічне ціноутворення</p>
+                <p className="text-[11px] text-text-sub">Динамічне ціноутворення</p>
               </div>
             </div>
             <span className="text-[11px] font-bold px-2.5 py-1 rounded-lg text-foreground" style={{ background: tint(COOL, 14) }}>
@@ -127,19 +127,19 @@ function TrialActiveView({
           {/* Картки earned / limit */}
           <div className="grid grid-cols-2 gap-2.5 mb-4">
             <div className="rounded-xl px-3 py-2.5" style={{ background: 'var(--surface)' }}>
-              <p className="text-[10px] text-muted-foreground/60 mb-0.5 font-medium uppercase tracking-wide">Зароблено</p>
+              <p className="text-[10px] text-text-sub mb-0.5 font-medium uppercase tracking-wide">Зароблено</p>
               <p className="text-base font-bold text-foreground">{earnedUah} ₴</p>
             </div>
             <div className="rounded-xl px-3 py-2.5" style={{ background: 'var(--surface)' }}>
-              <p className="text-[10px] text-muted-foreground/60 mb-0.5 font-medium uppercase tracking-wide">Ліміт</p>
-              <p className="text-base font-bold text-muted-foreground">{limitUah} ₴</p>
+              <p className="text-[10px] text-text-sub mb-0.5 font-medium uppercase tracking-wide">Ліміт</p>
+              <p className="text-base font-bold text-text-sub">{limitUah} ₴</p>
             </div>
           </div>
 
           {/* Прогрес-бар */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <span className="text-[11px] text-muted-foreground">Використано ліміту</span>
+              <span className="text-[11px] text-text-sub">Використано ліміту</span>
               <span className="text-[11px] font-bold text-foreground">{pct}%</span>
             </div>
             <div className="h-2.5 rounded-full overflow-hidden" style={{ background: tint(color, 16) }}>
@@ -156,7 +156,7 @@ function TrialActiveView({
 
         {/* Нижня зона */}
         <div className="px-5 pb-4 pt-3.5">
-          <p className="text-xs text-muted-foreground leading-relaxed mb-3">
+          <p className="text-xs text-text-sub leading-relaxed mb-3">
             Фіча працює <strong className="text-foreground">безкоштовно</strong>.
             Коли ліміт вичерпається — клієнти побачать базові ціни.
           </p>
@@ -212,7 +212,7 @@ function TrialExhaustedView({
           </div>
           <div>
             <h2 className="heading-serif text-lg text-foreground mb-1">Пробний ліміт вичерпано</h2>
-            <p className="text-sm text-muted-foreground text-balance leading-relaxed max-w-xs mx-auto">
+            <p className="text-sm text-text-sub text-balance leading-relaxed max-w-xs mx-auto">
               Ви використали всі <strong>{limitUah} ₴</strong> екстра-прибутку.
               Фіча тимчасово вимкнена — клієнти бачать базові ціни.
             </p>
@@ -222,7 +222,7 @@ function TrialExhaustedView({
             <div className="h-2.5 rounded-full overflow-hidden" style={{ background: tint(STOP, 12) }}>
               <div className="h-full w-full rounded-full" style={{ background: STOP }} />
             </div>
-            <p className="text-[11px] text-muted-foreground/60 mt-1.5 text-center">
+            <p className="text-[11px] text-text-sub mt-1.5 text-center">
               {kopToUah(trial.earned)} ₴ з {limitUah} ₴ — 100%
             </p>
           </div>
@@ -275,7 +275,7 @@ function ProGateView({ onUpgrade, isDrawer }: { onUpgrade: () => void; isDrawer?
         </div>
         <div className="relative z-10">
           <h1 className="heading-serif text-xl text-foreground mb-1">Ціни, що працюють без тебе</h1>
-          <p className="text-sm text-muted-foreground text-balance leading-relaxed max-w-xs mx-auto">
+          <p className="text-sm text-text-sub text-balance leading-relaxed max-w-xs mx-auto">
             Автоматично підвищуйте ціни в пікові години та давайте знижки в тихі,
             щоб завжди мати повний розклад.
           </p>
@@ -300,7 +300,7 @@ function ProGateView({ onUpgrade, isDrawer }: { onUpgrade: () => void; isDrawer?
             </div>
             <div className="min-w-0">
               <p className="text-sm font-semibold text-foreground">{label}</p>
-              <p className="text-xs text-muted-foreground/60 mt-0.5">{description}</p>
+              <p className="text-xs text-text-sub mt-0.5">{description}</p>
             </div>
           </motion.div>
         ))}

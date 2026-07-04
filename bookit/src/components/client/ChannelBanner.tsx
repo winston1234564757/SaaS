@@ -56,7 +56,7 @@ export function ChannelBanner({ userId, hasTelegram, hasPush, botName }: Props) 
           className="w-full bg-secondary/85 backdrop-blur border-b border-border"
         >
           <div className="max-w-lg mx-auto px-4 py-3 flex items-start gap-3">
-            <Bell size={20} className="text-muted-foreground shrink-0 mt-0.5" />
+            <Bell size={20} className="text-text-sub shrink-0 mt-0.5" />
             <div className="flex-1 min-w-0">
               <p className="text-xs font-semibold text-foreground mb-1.5">
                 {allConnected ? 'Сповіщення підключено!' : 'Підключи сповіщення'}
@@ -99,7 +99,7 @@ export function ChannelBanner({ userId, hasTelegram, hasPush, botName }: Props) 
                 localStorage.setItem('bookit_channel_banner_dismissed', '1');
                 setDismissed(true);
               }}
-              className="shrink-0 p-1 rounded-lg text-muted-foreground/40 hover:text-muted-foreground/70 transition-colors"
+              className="shrink-0 p-1 rounded-lg text-text-sub hover:text-text-sub transition-colors"
             >
               <X size={14} />
             </button>

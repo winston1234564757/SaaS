@@ -85,7 +85,7 @@ export function DropdownMenu({
         aria-expanded={open}
         className={
           triggerClassName ??
-          'flex items-center justify-center size-11 rounded-xl text-muted-foreground hover:bg-secondary/80 hover:text-foreground transition-all active:scale-95 disabled:opacity-40 shrink-0'
+          'flex items-center justify-center size-11 rounded-xl text-text-sub hover:bg-secondary/80 hover:text-foreground transition-all active:scale-95 disabled:opacity-40 shrink-0'
         }
       >
         {trigger}

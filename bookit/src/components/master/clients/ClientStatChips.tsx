@@ -28,7 +28,7 @@ export function ClientStatChips({ chips, className }: { chips: StatChip[]; class
             <c.icon size={15} strokeWidth={2} />
           </span>
           <p className="text-[15px] font-bold leading-none text-foreground">{c.value}</p>
-          <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/70">{c.label}</p>
+          <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-text-sub">{c.label}</p>
         </div>
       ))}
     </div>

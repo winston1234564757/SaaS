@@ -63,7 +63,7 @@ export function UpgradePromptModal({ isOpen, onClose, feature, description, sour
             <button type="button"
               onClick={onClose}
               aria-label="Закрити"
-              className="absolute top-4 right-4 size-8 flex items-center justify-center rounded-xl text-muted-foreground/60 hover:text-foreground hover:bg-secondary transition-colors active:scale-95 transition-all"
+              className="absolute top-4 right-4 size-8 flex items-center justify-center rounded-xl text-text-sub hover:text-foreground hover:bg-secondary transition-colors active:scale-95 transition-all"
             >
               <X size={16} />
             </button>
@@ -84,7 +84,7 @@ export function UpgradePromptModal({ isOpen, onClose, feature, description, sour
                   : feature ? `«${feature}» — функція Pro` : 'Ця функція доступна в Pro'
                 }
               </h2>
-              <p className="text-sm text-muted-foreground text-balance leading-relaxed">
+              <p className="text-sm text-text-sub text-balance leading-relaxed">
                 {isMarketing
                   ? (description ?? 'Ваші відгуки — це ваша найкраща реклама. Переходьте на PRO, щоб створювати професійний контент за 2 кліки.')
                   : (description ?? 'Оновіть тариф, щоб розблокувати цю та інші просунуті функції.')
@@ -94,7 +94,7 @@ export function UpgradePromptModal({ isOpen, onClose, feature, description, sour
 
             <ul className="flex flex-col gap-2">
               {(isMarketing ? MARKETING_PERKS : PRO_PERKS).map((perk) => (
-                <li key={perk} className="flex items-start gap-2.5 text-sm text-muted-foreground">
+                <li key={perk} className="flex items-start gap-2.5 text-sm text-text-sub">
                   <Check
                     size={14}
                     className={isMarketing ? 'text-warning mt-0.5 flex-shrink-0' : 'text-primary mt-0.5 flex-shrink-0'}
@@ -104,7 +104,7 @@ export function UpgradePromptModal({ isOpen, onClose, feature, description, sour
               ))}
             </ul>
 
-            <p className="text-center text-xs text-muted-foreground/60">
+            <p className="text-center text-xs text-text-sub">
               700 ₴/місяць · Скасування будь-коли
             </p>
 
@@ -122,7 +122,7 @@ export function UpgradePromptModal({ isOpen, onClose, feature, description, sour
               </button>
               <button type="button"
                 onClick={onClose}
-                className="w-full h-10 rounded-2xl text-muted-foreground/60 text-sm hover:text-muted-foreground transition-colors active:scale-95 transition-all"
+                className="w-full h-10 rounded-2xl text-text-sub text-sm hover:text-text-sub transition-colors active:scale-95 transition-all"
               >
                 Пізніше
               </button>

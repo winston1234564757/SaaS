@@ -28,7 +28,7 @@ export async function PublicNavbar({ notifBell }: { notifBell?: React.ReactNode 
           {/* Nav links */}
           <Link
             href="/explore"
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[13px] font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/50 active:scale-[0.95] transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[13px] font-medium text-text-sub hover:text-foreground hover:bg-secondary/50 active:scale-[0.95] transition-all cursor-pointer"
           >
             <Search size={13} strokeWidth={2} />
             Каталог
@@ -38,14 +38,14 @@ export async function PublicNavbar({ notifBell }: { notifBell?: React.ReactNode 
             <>
               <Link
                 href="/my/masters"
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[13px] font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/50 active:scale-[0.95] transition-all cursor-pointer"
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[13px] font-medium text-text-sub hover:text-foreground hover:bg-secondary/50 active:scale-[0.95] transition-all cursor-pointer"
               >
                 <Users size={13} strokeWidth={2} />
                 Майстри
               </Link>
               <Link
                 href="/my/loyalty"
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[13px] font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/50 active:scale-[0.95] transition-all cursor-pointer"
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[13px] font-medium text-text-sub hover:text-foreground hover:bg-secondary/50 active:scale-[0.95] transition-all cursor-pointer"
               >
                 <Gift size={13} strokeWidth={2} />
                 Бонуси
@@ -61,7 +61,7 @@ export async function PublicNavbar({ notifBell }: { notifBell?: React.ReactNode 
             <>
               <Link
                 href="/my/bookings"
-                className="px-3.5 py-2 rounded-lg text-[13px] font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/50 active:scale-[0.95] transition-all cursor-pointer"
+                className="px-3.5 py-2 rounded-lg text-[13px] font-medium text-text-sub hover:text-foreground hover:bg-secondary/50 active:scale-[0.95] transition-all cursor-pointer"
               >
                 Мої записи
               </Link>
@@ -80,7 +80,7 @@ export async function PublicNavbar({ notifBell }: { notifBell?: React.ReactNode 
             <>
               <Link
                 href="/login"
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[13px] font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/50 active:scale-[0.95] transition-all cursor-pointer"
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[13px] font-medium text-text-sub hover:text-foreground hover:bg-secondary/50 active:scale-[0.95] transition-all cursor-pointer"
               >
                 <LogIn size={13} strokeWidth={2} />
                 Увійти

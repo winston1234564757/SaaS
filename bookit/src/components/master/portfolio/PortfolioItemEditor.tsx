@@ -194,7 +194,7 @@ export function PortfolioItemEditor({
                     "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors disabled:opacity-60 active:scale-[0.95] cursor-pointer transition-all",
                     isPublished
                       ? "border-success/30 text-success bg-success/10 hover:bg-success/15"
-                      : "border-border text-muted-foreground bg-transparent hover:bg-secondary/40"
+                      : "border-border text-text-sub bg-transparent hover:bg-secondary/40"
                   )}
                 >
                   {isPublished ? <Eye size={13} /> : <EyeOff size={13} />}
@@ -205,7 +205,7 @@ export function PortfolioItemEditor({
                 onClick={handleClose}
                 disabled={closingAndSaving}
                 aria-label="Закрити"
-                className="size-8 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground/60 active:scale-[0.88] cursor-pointer transition-all"
+                className="size-8 rounded-xl bg-secondary flex items-center justify-center text-text-sub active:scale-[0.88] cursor-pointer transition-all"
               >
                 {closingAndSaving ? <Loader2 size={14} className="animate-spin" /> : <X size={16} />}
               </button>
@@ -222,33 +222,33 @@ export function PortfolioItemEditor({
 
               {/* Title */}
               <div>
-                <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Назва роботи*</label>
+                <label className="block text-xs font-semibold text-text-sub mb-1.5">Назва роботи*</label>
                 <input
                   value={title}
                   onChange={e => setTitle(e.target.value)}
                   maxLength={120}
                   placeholder="Наприклад: Весільний образ Марини"
                   aria-label="Назва роботи"
-                  className="w-full rounded-xl border border-border bg-secondary/40 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
+                  className="w-full rounded-xl border border-border bg-secondary/40 px-4 py-3 text-sm text-foreground placeholder:text-text-sub focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
                 />
               </div>
 
               {/* Description */}
               <div>
-                <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Опис</label>
+                <label className="block text-xs font-semibold text-text-sub mb-1.5">Опис</label>
                 <textarea
                   value={description}
                   onChange={e => setDescription(e.target.value)}
                   maxLength={1000}
                   rows={3}
                   placeholder="Розкажіть про цю роботу..."
-                  className="w-full rounded-xl border border-border bg-secondary/40 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary resize-none"
+                  className="w-full rounded-xl border border-border bg-secondary/40 px-4 py-3 text-sm text-foreground placeholder:text-text-sub focus:outline-none focus:border-primary resize-none"
                 />
               </div>
 
               {/* Service */}
               <div>
-                <label className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground mb-1.5">
+                <label className="flex items-center gap-1.5 text-xs font-semibold text-text-sub mb-1.5">
                   <Scissors size={13} /> Послуга
                 </label>
                 <div className="relative">
@@ -260,7 +260,7 @@ export function PortfolioItemEditor({
                     <option value="">Не вказано</option>
                     {services.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                   </select>
-                  <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none" />
+                  <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-sub pointer-events-none" />
                 </div>
               </div>
 
@@ -268,7 +268,7 @@ export function PortfolioItemEditor({
 
               {/* Photos */}
               <div className="space-y-3">
-                <label className="block text-xs font-semibold text-muted-foreground">Фотографії</label>
+                <label className="block text-xs font-semibold text-text-sub">Фотографії</label>
                 <PortfolioPhotoUploader
                   itemId={itemId ?? ''}
                   masterId={masterId}
@@ -282,7 +282,7 @@ export function PortfolioItemEditor({
 
               {/* Client tagging */}
               <div className="space-y-3">
-                <label className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
+                <label className="flex items-center gap-1.5 text-xs font-semibold text-text-sub">
                   <User size={13} /> Клієнт
                 </label>
 
@@ -316,7 +316,7 @@ export function PortfolioItemEditor({
                         </option>
                         {clients.map(c => <option key={c.id} value={c.id}>{c.full_name}</option>)}
                       </select>
-                      <ChevronDown size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none" />
+                      <ChevronDown size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-sub pointer-events-none" />
                     </div>
                     <button
                       type="button"
@@ -328,13 +328,13 @@ export function PortfolioItemEditor({
                     </button>
                   </div>
                 )}
-                <p className="text-[11px] text-muted-foreground/60">
+                <p className="text-[11px] text-text-sub">
                   Клієнт отримає сповіщення і має підтвердити участь
                 </p>
                 {!(consentStatus !== null || taggedClientName) && (
-                  <p className="text-[11px] text-muted-foreground/60 bg-secondary/40 border border-border rounded-xl px-3 py-2 leading-relaxed">
+                  <p className="text-[11px] text-text-sub bg-secondary/40 border border-border rounded-xl px-3 py-2 leading-relaxed">
                     Не знаходите потрібного клієнта? Попросіть їх зареєструватися на{' '}
-                    <span className="font-semibold text-muted-foreground">BOOKIT</span> — після цього вони з&apos;являться у списку.
+                    <span className="font-semibold text-text-sub">BOOKIT</span> — після цього вони з&apos;являться у списку.
                   </p>
                 )}
               </div>
@@ -344,7 +344,7 @@ export function PortfolioItemEditor({
                 <>
                   <div className="h-px bg-border" />
                   <div className="space-y-3">
-                    <label className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
+                    <label className="flex items-center gap-1.5 text-xs font-semibold text-text-sub">
                       <Star size={13} /> Відгуки
                     </label>
                     <div className="space-y-2 max-h-48 overflow-y-auto">
@@ -381,7 +381,7 @@ export function PortfolioItemEditor({
                                 {'★'.repeat(r.rating)} {r.client_name ?? 'Клієнт'}
                               </p>
                               {r.comment && (
-                                <p className="text-xs text-muted-foreground truncate mt-0.5">{r.comment}</p>
+                                <p className="text-xs text-text-sub truncate mt-0.5">{r.comment}</p>
                               )}
                             </div>
                           </button>

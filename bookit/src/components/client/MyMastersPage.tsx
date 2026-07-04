@@ -44,7 +44,7 @@ export function MyMastersPage({ masters }: { masters: Master[] }) {
     <div className="flex flex-col gap-4">
       <div className="bento-card p-5">
         <h1 className="heading-serif text-xl text-foreground mb-0.5">Мої майстри</h1>
-        <p className="text-sm text-muted-foreground/60">
+        <p className="text-sm text-text-sub">
           {masters.length > 0
             ? `${masters.length} ${pluralUk(masters.length, 'майстер', 'майстри', 'майстрів')}`
             : 'Ще немає майстрів'}
@@ -61,7 +61,7 @@ export function MyMastersPage({ masters }: { masters: Master[] }) {
           <p className="text-sm font-semibold text-foreground">
             Ти ще не записувалась до жодного майстра
           </p>
-          <p className="text-xs text-muted-foreground/60">
+          <p className="text-xs text-text-sub">
             Знайди майстра і запишись — це просто
           </p>
           <Link
@@ -83,7 +83,7 @@ export function MyMastersPage({ masters }: { masters: Master[] }) {
 
           <Link
             href="/explore"
-            className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-secondary/50 text-muted-foreground font-semibold hover:bg-secondary active:scale-[0.97] transition-all border border-border text-sm"
+            className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-secondary/50 text-text-sub font-semibold hover:bg-secondary active:scale-[0.97] transition-all border border-border text-sm"
           >
             <Search size={15} />
             Знайти нових майстрів
@@ -138,7 +138,7 @@ function MasterCard({ master, index }: { master: Master; index: number }) {
               {master.categories.slice(0, 2).map((cat) => (
                 <span
                   key={cat}
-                  className="text-[10px] font-medium text-muted-foreground/70 border border-border/60 px-1.5 py-0.5 rounded-full"
+                  className="text-[10px] font-medium text-text-sub border border-border/60 px-1.5 py-0.5 rounded-full"
                 >
                   {cat}
                 </span>

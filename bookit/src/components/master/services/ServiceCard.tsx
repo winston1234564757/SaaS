@@ -40,7 +40,7 @@ export function ServiceCard({ service, onEdit, onDelete, onToggle, onPreview, dr
           type="button"
           onClick={(e) => { e.stopPropagation(); onEdit(service); }}
           aria-label="Редагувати послугу"
-          className="size-11 flex items-center justify-center rounded-full bg-secondary/60 border border-border text-muted-foreground hover:bg-secondary hover:text-primary transition-colors"
+          className="size-11 flex items-center justify-center rounded-full bg-secondary/60 border border-border text-text-sub hover:bg-secondary hover:text-primary transition-colors"
         >
           <Pencil size={14} />
         </button>
@@ -55,7 +55,7 @@ export function ServiceCard({ service, onEdit, onDelete, onToggle, onPreview, dr
             exit={{ opacity: 0, width: 0 }}
             className="flex items-center gap-1 overflow-hidden"
           >
-            <span className="text-xs text-muted-foreground/70 whitespace-nowrap ml-1">Заховати послугу?</span>
+            <span className="text-xs text-text-sub whitespace-nowrap ml-1">Заховати послугу?</span>
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); onDelete(service.id); }}
@@ -66,7 +66,7 @@ export function ServiceCard({ service, onEdit, onDelete, onToggle, onPreview, dr
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); setConfirmDelete(false); }}
-              className="px-2.5 h-8 rounded-full bg-secondary/60 border border-border text-xs font-medium text-muted-foreground hover:bg-secondary transition-colors"
+              className="px-2.5 h-8 rounded-full bg-secondary/60 border border-border text-xs font-medium text-text-sub hover:bg-secondary transition-colors"
             >
               Ні
             </button>
@@ -77,7 +77,7 @@ export function ServiceCard({ service, onEdit, onDelete, onToggle, onPreview, dr
               type="button"
               onClick={(e) => { e.stopPropagation(); setConfirmDelete(true); }}
               aria-label="Видалити послугу"
-              className="size-11 flex items-center justify-center rounded-full bg-secondary/60 border border-border text-muted-foreground hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 transition-colors"
+              className="size-11 flex items-center justify-center rounded-full bg-secondary/60 border border-border text-text-sub hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 transition-colors"
             >
               <Trash2 size={14} />
             </button>
@@ -116,7 +116,7 @@ export function ServiceCard({ service, onEdit, onDelete, onToggle, onPreview, dr
         type="button"
         onClick={(e) => { e.stopPropagation(); onPreview(service); }}
         aria-label="Переглянути як бачить клієнт"
-        className="size-11 flex items-center justify-center rounded-full bg-secondary/60 border border-border text-muted-foreground hover:bg-secondary hover:text-primary transition-colors"
+        className="size-11 flex items-center justify-center rounded-full bg-secondary/60 border border-border text-text-sub hover:bg-secondary hover:text-primary transition-colors"
       >
         <Eye size={14} />
       </button>
@@ -172,7 +172,7 @@ export function ServiceCard({ service, onEdit, onDelete, onToggle, onPreview, dr
             <span className="text-[10px] uppercase tracking-wider font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded-full">
               {service.category}
             </span>
-            <span className="text-xs text-muted-foreground/60">{formatDuration(service.duration)}</span>
+            <span className="text-xs text-text-sub">{formatDuration(service.duration)}</span>
           </div>
         </button>
 
@@ -238,14 +238,14 @@ export function ServiceCard({ service, onEdit, onDelete, onToggle, onPreview, dr
         <p className="text-[15px] font-semibold text-foreground leading-snug line-clamp-2">{service.name}</p>
 
         {service.description && (
-          <p className="text-xs text-muted-foreground/70 leading-snug line-clamp-1">{service.description}</p>
+          <p className="text-xs text-text-sub leading-snug line-clamp-1">{service.description}</p>
         )}
 
         <div className="flex items-center gap-2 pt-0.5 flex-wrap">
           <span className="text-[10px] uppercase tracking-wider font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded-full">
             {service.category}
           </span>
-          <span className="text-xs text-muted-foreground/60">{formatDuration(service.duration)}</span>
+          <span className="text-xs text-text-sub">{formatDuration(service.duration)}</span>
         </div>
 
         <p className="metric-value text-lg text-foreground leading-none pt-0.5">{formatPrice(service.price)}</p>

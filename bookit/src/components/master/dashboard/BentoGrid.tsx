@@ -108,7 +108,7 @@ export function BentoGrid() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h2 className="heading-serif text-3xl text-foreground">Ваш Дашборд</h2>
-          <p className="text-sm text-muted-foreground mt-1">Керуйте своїм бізнесом в один клік</p>
+          <p className="text-sm text-text-sub mt-1">Керуйте своїм бізнесом в один клік</p>
         </div>
         
         <div className="flex items-center gap-3">

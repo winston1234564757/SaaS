@@ -74,7 +74,7 @@ export function StepBasic({
       className="bento-card p-6"
     >
       <h2 className="heading-serif text-xl text-foreground mb-0.5">Обличчя бренду</h2>
-      <p className="text-sm text-muted-foreground/60 mb-6">Як тебе побачать клієнти</p>
+      <p className="text-sm text-text-sub mb-6">Як тебе побачать клієнти</p>
 
       {/* Avatar */}
       <div className="flex flex-col items-center mb-6">
@@ -88,20 +88,20 @@ export function StepBasic({
             // eslint-disable-next-line @next/next/no-img-element
             <img src={avatarPreview} alt="Аватар" className="w-full h-full object-cover" />
           ) : (
-            <User size={36} className="text-muted-foreground/60" />
+            <User size={36} className="text-text-sub" />
           )}
           <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-full">
             <Camera size={20} className="text-white" />
           </div>
         </button>
         <input ref={fileInputRef} type="file" accept="image/*" className="hidden" aria-hidden="true" tabIndex={-1} onChange={onAvatarChange} />
-        <p className="text-xs text-muted-foreground/60 mt-2">Натисни щоб додати фото</p>
+        <p className="text-xs text-text-sub mt-2">Натисни щоб додати фото</p>
       </div>
 
       <div className="flex flex-col gap-4">
         {/* Name */}
         <div>
-          <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{"Ім'я та прізвище"}</label>
+          <label className="text-xs font-medium text-text-sub mb-1.5 block">{"Ім'я та прізвище"}</label>
           <input
             ref={firstInputRef}
             value={fullName}
@@ -122,9 +122,9 @@ export function StepBasic({
         {/* Phone */}
         {!hasPhone && (
           <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Мобільний телефон</label>
+            <label className="text-xs font-medium text-text-sub mb-1.5 block">Мобільний телефон</label>
             <div className="flex items-center rounded-md border border-border bg-secondary/70 overflow-hidden focus-within:border-primary focus-within:ring-2 focus-within:ring-sage/20 transition-all">
-              <span className="pl-4 pr-2 text-muted-foreground font-medium text-sm select-none shrink-0">+38</span>
+              <span className="pl-4 pr-2 text-text-sub font-medium text-sm select-none shrink-0">+38</span>
               <input
                 type="tel"
                 inputMode="numeric"
@@ -133,7 +133,7 @@ export function StepBasic({
                 onChange={e => { onPhoneChange(normalizePhoneInput(e.target.value)); setShowErrors(false); }}
                 aria-label="Мобільний телефон"
                 aria-invalid={showErrors && phone.replace(/\D/g, '').length < 9}
-                className="flex-1 py-3 pr-4 text-foreground text-sm bg-transparent outline-none placeholder:text-muted-foreground/60"
+                className="flex-1 py-3 pr-4 text-foreground text-sm bg-transparent outline-none placeholder:text-text-sub"
               />
             </div>
             {showErrors && phone.replace(/\D/g, '').length < 9 && (
@@ -146,7 +146,7 @@ export function StepBasic({
 
         {/* Categories Multi-select */}
         <div>
-          <label className="text-xs font-medium text-muted-foreground mb-3 block">Твоя спеціалізація (можна кілька)</label>
+          <label className="text-xs font-medium text-text-sub mb-3 block">Твоя спеціалізація (можна кілька)</label>
           <div className="flex flex-wrap gap-2">
             {serviceCategories.map(cat => {
               const isSelected = selectedCategories.includes(cat.id);
@@ -165,7 +165,7 @@ export function StepBasic({
                     "flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all border",
                     isSelected 
                       ? "bg-primary/15 border-primary text-primary" 
-                      : "bg-secondary/50 border-border text-muted-foreground hover:border-primary/30"
+                      : "bg-secondary/50 border-border text-text-sub hover:border-primary/30"
                   )}
                 >
                   {getCatIcon(cat.id)}

@@ -56,13 +56,13 @@ export function StepScheduleForm({
       <button
         type="button"
         onClick={onBack}
-        className="flex items-center gap-1.5 text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors mb-4 active:scale-95 transition-all"
+        className="flex items-center gap-1.5 text-xs text-text-sub hover:text-text-sub transition-colors mb-4 active:scale-95 transition-all"
       >
         <ArrowLeft size={13} /> Назад
       </button>
 
       <h2 className="heading-serif text-xl text-foreground mb-0.5">Твій час</h2>
-      <p className="text-sm text-muted-foreground/60 mb-4">Коли ти приймаєш клієнтів</p>
+      <p className="text-sm text-text-sub mb-4">Коли ти приймаєш клієнтів</p>
 
       {/* Quick template */}
       <button
@@ -72,7 +72,7 @@ export function StepScheduleForm({
       >
         <div className="text-left">
           <p className="text-xs font-semibold text-primary">Шаблон: Пн–Пт, 10:00–19:00</p>
-          <p className="text-[10px] text-muted-foreground/60 mt-0.5">Один клік — і розклад готовий</p>
+          <p className="text-[10px] text-text-sub mt-0.5">Один клік — і розклад готовий</p>
         </div>
         <span className="text-[10px] font-semibold text-primary bg-primary/10 px-2.5 py-1 rounded-xl flex-shrink-0">
           Застосувати
@@ -106,7 +106,7 @@ export function StepScheduleForm({
                   aria-label={`Початок роботи — ${DAYS_UA[day]}`}
                   className="flex-1 px-2 py-1.5 rounded-md bg-secondary/70 border border-border text-xs text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                 />
-                <span className="text-xs text-muted-foreground/60">—</span>
+                <span className="text-xs text-text-sub">—</span>
                 <input
                   type="time"
                   value={schedule[day].end_time}
@@ -116,7 +116,7 @@ export function StepScheduleForm({
                 />
               </div>
             ) : (
-              <span className="text-xs text-muted-foreground/60">Вихідний</span>
+              <span className="text-xs text-text-sub">Вихідний</span>
             )}
           </div>
         ))}
@@ -124,7 +124,7 @@ export function StepScheduleForm({
 
       {/* Buffer */}
       <div className="mb-4">
-        <p className="text-xs font-semibold text-muted-foreground mb-2">Буфер між записами</p>
+        <p className="text-xs font-semibold text-text-sub mb-2">Буфер між записами</p>
         <div className="grid grid-cols-3 gap-1.5">
           {BUFFER_PRESETS.map(min => (
             <button
@@ -132,7 +132,7 @@ export function StepScheduleForm({
               type="button"
               onClick={() => onBufferChange(min)}
               className={`py-2 rounded-xl text-xs font-medium transition-all ${
-                bufferTime === min ? 'bg-primary text-white' : 'bg-secondary/70 border border-border text-muted-foreground hover:bg-secondary'
+                bufferTime === min ? 'bg-primary text-white' : 'bg-secondary/70 border border-border text-text-sub hover:bg-secondary'
               }`}
             >
               {min === 0 ? 'Без буферу' : `${min} хв`}
@@ -144,21 +144,21 @@ export function StepScheduleForm({
       {/* Breaks */}
       <div className="mb-5">
         <div className="flex items-center justify-between mb-2">
-          <p className="text-xs font-semibold text-muted-foreground">Перерви</p>
+          <p className="text-xs font-semibold text-text-sub">Перерви</p>
           <button type="button" onClick={onAddBreak} className="flex items-center gap-1 text-xs text-primary font-medium hover:text-primary/90 transition-colors active:scale-95 transition-all">
             <Plus size={12} /> Додати
           </button>
         </div>
         {breaks.length === 0 ? (
-          <p className="text-xs text-muted-foreground/60 py-1">Немає перерв — весь робочий час доступний</p>
+          <p className="text-xs text-text-sub py-1">Немає перерв — весь робочий час доступний</p>
         ) : (
           <div className="flex flex-col gap-2">
             {breaks.map((b, i) => (
               <div key={i} className="flex items-center gap-2">
                 <input type="time" value={b.start} onChange={e => onBreakFieldChange(i, 'start', e.target.value)} aria-label={`Початок перерви ${i + 1}`} className="flex-1 px-2 py-1.5 rounded-md bg-secondary/70 border border-border text-xs text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" />
-                <span className="text-xs text-muted-foreground/60">—</span>
+                <span className="text-xs text-text-sub">—</span>
                 <input type="time" value={b.end} onChange={e => onBreakFieldChange(i, 'end', e.target.value)} aria-label={`Кінець перерви ${i + 1}`} className="flex-1 px-2 py-1.5 rounded-md bg-secondary/70 border border-border text-xs text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" />
-                <button type="button" onClick={() => onRemoveBreak(i)} aria-label="Видалити перерву" className="text-muted-foreground/60 hover:text-destructive transition-colors flex-shrink-0">
+                <button type="button" onClick={() => onRemoveBreak(i)} aria-label="Видалити перерву" className="text-text-sub hover:text-destructive transition-colors flex-shrink-0">
                   <X size={14} />
                 </button>
               </div>

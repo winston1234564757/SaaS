@@ -296,7 +296,7 @@ export function TelegramWelcome({ onSuccess }: TelegramWelcomeProps) {
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.3 }}
-          className="text-muted-foreground mb-10 max-w-[280px] text-sm leading-relaxed"
+          className="text-text-sub mb-10 max-w-[280px] text-sm leading-relaxed"
         >
           Оберіть вашу роль для налаштування персонального кабінету
         </motion.p>
@@ -313,7 +313,7 @@ export function TelegramWelcome({ onSuccess }: TelegramWelcomeProps) {
             </div>
             <div className="text-left">
               <h3 className="text-lg font-bold text-sage leading-tight">Я Майстер</h3>
-              <p className="text-[11px] text-muted-foreground/80 mt-0.5">Керування графіком та клієнтами</p>
+              <p className="text-[11px] text-text-sub mt-0.5">Керування графіком та клієнтами</p>
             </div>
           </motion.button>
 
@@ -328,11 +328,11 @@ export function TelegramWelcome({ onSuccess }: TelegramWelcomeProps) {
             </div>
             <div className="text-left">
               <h3 className="text-lg font-bold text-foreground leading-tight">Я Клієнт</h3>
-              <p className="text-[11px] text-muted-foreground/80 mt-0.5">Запис до улюблених майстрів</p>
+              <p className="text-[11px] text-text-sub mt-0.5">Запис до улюблених майстрів</p>
             </div>
           </motion.button>
 
-          <p className="text-[10px] text-muted-foreground/60 mt-6 uppercase tracking-[0.2em] font-bold">
+          <p className="text-[10px] text-text-sub mt-6 uppercase tracking-[0.2em] font-bold">
             Ви зможете змінити роль пізніше
           </p>
         </div>
@@ -358,7 +358,7 @@ export function TelegramWelcome({ onSuccess }: TelegramWelcomeProps) {
           <h2 className="heading-serif text-2xl text-foreground mb-2">
             Підтвердіть номер
           </h2>
-          <p className="text-muted-foreground mb-10 text-sm leading-relaxed px-4">
+          <p className="text-text-sub mb-10 text-sm leading-relaxed px-4">
             Telegram надішле ваш контакт боту BookIT. Ви побачите нативне підтвердження.
           </p>
 
@@ -429,7 +429,7 @@ export function TelegramWelcome({ onSuccess }: TelegramWelcomeProps) {
             </AnimatePresence>
           </div>
 
-          <div className="flex items-center justify-center gap-2 text-[10px] text-muted-foreground/70 mt-12 uppercase tracking-widest font-bold">
+          <div className="flex items-center justify-center gap-2 text-[10px] text-text-sub mt-12 uppercase tracking-widest font-bold">
             <ShieldCheck size={12} />
             <span>Захищено Telegram</span>
           </div>

@@ -110,7 +110,7 @@ export function ServiceDetailSheet({
         <div className="flex items-baseline gap-2.5">
           <span className="metric-value text-[32px] leading-none text-foreground">{formatPrice(finalPrice)}</span>
           {hasDiscount && (
-            <span className="metric-value text-base text-muted-foreground/45 line-through leading-none">
+            <span className="metric-value text-base text-text-sub line-through leading-none">
               {formatPrice(service.price)}
             </span>
           )}
@@ -136,7 +136,7 @@ export function ServiceDetailSheet({
               <span className="flex items-center gap-1.5 text-foreground">
                 <Stars value={average} size={13} className="text-warning" />
                 <span className="metric-value text-sm">{average.toFixed(1)}</span>
-                <span className="text-xs text-muted-foreground/60 font-medium">· {count}</span>
+                <span className="text-xs text-text-sub font-medium">· {count}</span>
               </span>
             )}
           </div>
@@ -148,7 +148,7 @@ export function ServiceDetailSheet({
               ))}
             </div>
           ) : count === 0 ? (
-            <p className="text-sm text-muted-foreground/60 py-1.5">Відгуків поки немає</p>
+            <p className="text-sm text-text-sub py-1.5">Відгуків поки немає</p>
           ) : (
             <ul className="flex flex-col gap-2.5 list-none m-0 p-0">
               {reviews.map(r => (
@@ -158,7 +158,7 @@ export function ServiceDetailSheet({
                     <span className="flex items-center gap-2 shrink-0">
                       <Stars value={r.rating} size={11} className="text-warning" />
                       <span className="sr-only">{r.rating} з 5</span>
-                      <span className="text-[11px] text-muted-foreground/50 tabular-nums">{timeAgo(r.created_at)}</span>
+                      <span className="text-[11px] text-text-sub tabular-nums">{timeAgo(r.created_at)}</span>
                     </span>
                   </div>
                   {r.comment && (

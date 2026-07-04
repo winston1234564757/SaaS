@@ -27,7 +27,7 @@ export function MarketingWidget() {
         <h3 className="font-display text-xl font-bold text-foreground leading-tight">
           {needsPromo ? 'Час наповнити графік!' : 'Ваш стиль — ваш бренд'}
         </h3>
-        <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
+        <p className="text-xs text-text-sub mt-2 leading-relaxed">
           {needsPromo 
             ? 'Створіть "вікно" в сторіз прямо зараз, щоб отримати нові записи на сьогодні.'
             : 'Поділіться своїми успіхами з підписниками через люксові сторіз.'}

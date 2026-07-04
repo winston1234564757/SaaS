@@ -218,7 +218,7 @@ export function SupportChatPage({ user, userRole, initialTicketId }: SupportChat
                 aria-label="Історія розмов"
                 className="flex items-center justify-center size-11 shrink-0 rounded-full border border-border hover:bg-secondary active:scale-[0.95] transition-all cursor-pointer"
               >
-                <History className="size-5 text-muted-foreground" />
+                <History className="size-5 text-text-sub" />
               </button>
             </div>
           }
@@ -261,7 +261,7 @@ export function SupportChatPage({ user, userRole, initialTicketId }: SupportChat
                 type="button"
                 onClick={removeFile}
                 aria-label="Видалити файл"
-                className="absolute right-2.5 size-6 flex items-center justify-center rounded-full bg-background text-muted-foreground hover:bg-secondary active:scale-[0.90] cursor-pointer"
+                className="absolute right-2.5 size-6 flex items-center justify-center rounded-full bg-background text-text-sub hover:bg-secondary active:scale-[0.90] cursor-pointer"
               >
                 <X className="size-3" />
               </button>
@@ -288,7 +288,7 @@ export function SupportChatPage({ user, userRole, initialTicketId }: SupportChat
               aria-label="Закрити"
               className="flex items-center justify-center size-11 rounded-full border border-border hover:bg-secondary active:scale-[0.95] transition-all cursor-pointer"
             >
-              <X className="size-5 text-muted-foreground" />
+              <X className="size-5 text-text-sub" />
             </button>
           </div>
           <div className="flex-1 overflow-y-auto p-4 space-y-2 max-w-2xl mx-auto w-full">

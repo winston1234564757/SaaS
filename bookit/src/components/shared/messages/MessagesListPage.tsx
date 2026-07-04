@@ -69,7 +69,7 @@ export function MessagesListPage({
           <p className="text-sm font-semibold text-foreground">
             {userRole === 'client' ? 'Поки що жодних розмов' : 'Клієнти ще не написали'}
           </p>
-          <p className="text-xs text-muted-foreground/60 max-w-[220px]">
+          <p className="text-xs text-text-sub max-w-[220px]">
             {userRole === 'client'
               ? 'Запишіться до майстра і почніть спілкування'
               : 'Ваші розмови з клієнтами з\'являться тут'}

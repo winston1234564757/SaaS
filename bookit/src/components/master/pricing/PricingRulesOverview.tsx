@@ -71,10 +71,10 @@ export function PricingRulesOverview({ data, onOpenRule }: Props) {
                 <span className="text-sm text-foreground truncate">{meta.title}</span>
               </div>
               <div className="flex items-center gap-1 shrink-0">
-                <span className={`text-sm font-semibold tabular-nums ${zero ? 'text-muted-foreground' : 'text-foreground'}`}>
+                <span className={`text-sm font-semibold tabular-nums ${zero ? 'text-text-sub' : 'text-foreground'}`}>
                   {metric}
                 </span>
-                <ChevronRight size={15} className="text-muted-foreground/40" />
+                <ChevronRight size={15} className="text-text-sub" />
               </div>
             </button>
           );

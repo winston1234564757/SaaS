@@ -64,7 +64,7 @@ export function PushPrompt() {
           <CheckCircle2 size={16} className="text-success shrink-0" />
           <div>
             <p className="text-xs font-semibold text-success">Сповіщення підключені</p>
-            <p className="text-[11px] text-muted-foreground/60 mt-0.5">Отримуватимеш Push про статус запису</p>
+            <p className="text-[11px] text-text-sub mt-0.5">Отримуватимеш Push про статус запису</p>
           </div>
         </motion.div>
       ) : (
@@ -78,7 +78,7 @@ export function PushPrompt() {
           <Bell size={18} className="text-primary flex-shrink-0 mt-0.5" />
           <div className="flex-1">
             <p className="text-xs font-semibold text-foreground">Сповіщення про статус запису</p>
-            <p className="text-[11px] text-muted-foreground/60 mt-0.5">Дізнайся першою, коли майстер підтвердить запис</p>
+            <p className="text-[11px] text-text-sub mt-0.5">Дізнайся першою, коли майстер підтвердить запис</p>
             <div className="flex gap-2 mt-2">
               <button type="button"
                 onClick={handleAllow}
@@ -93,7 +93,7 @@ export function PushPrompt() {
               {state !== 'loading' && (
                 <button type="button"
                   onClick={handleDismiss}
-                  className="flex items-center gap-1 px-3 py-1 text-muted-foreground/60 text-[11px] active:scale-[0.95] transition-all cursor-pointer"
+                  className="flex items-center gap-1 px-3 py-1 text-text-sub text-[11px] active:scale-[0.95] transition-all cursor-pointer"
                 >
                   <BellOff size={11} /> Ні, дякую
                 </button>

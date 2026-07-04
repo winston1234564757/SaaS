@@ -218,7 +218,7 @@ export function ProductFormDrawer({ open, initial, onClose }: Props) {
               <h2 className="text-base font-bold text-foreground">
                 {isEdit ? 'Редагувати товар' : 'Новий товар'}
               </h2>
-              <button type="button" onClick={handleClose} aria-label="Закрити" className="size-11 rounded-full bg-secondary flex items-center justify-center text-muted-foreground active:scale-[0.88] cursor-pointer transition-all">
+              <button type="button" onClick={handleClose} aria-label="Закрити" className="size-11 rounded-full bg-secondary flex items-center justify-center text-text-sub active:scale-[0.88] cursor-pointer transition-all">
                 <X size={16} />
               </button>
             </div>
@@ -228,7 +228,7 @@ export function ProductFormDrawer({ open, initial, onClose }: Props) {
 
               {/* Photos */}
               <div>
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">
+                <label className="text-xs font-semibold text-text-sub uppercase tracking-wider mb-2 block">
                   Фото ({photos.length}/5)
                 </label>
                 <div className="flex gap-2 flex-wrap">
@@ -254,7 +254,7 @@ export function ProductFormDrawer({ open, initial, onClose }: Props) {
                     <button type="button"
                       onClick={() => fileRef.current?.click()}
                       disabled={uploading}
-                      className="size-20 rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center gap-1 text-muted-foreground/60 hover:border-primary hover:text-primary cursor-pointer transition-colors"
+                      className="size-20 rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center gap-1 text-text-sub hover:border-primary hover:text-primary cursor-pointer transition-colors"
                     >
                       {uploading ? <Loader2 size={18} className="animate-spin" /> : <ImagePlus size={18} />}
                       <span className="text-[9px]">Додати</span>
@@ -294,7 +294,7 @@ export function ProductFormDrawer({ open, initial, onClose }: Props) {
                       className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
                         category === c.value
                           ? 'bg-primary text-white'
-                          : 'bg-secondary/60 text-muted-foreground border border-border hover:bg-secondary'
+                          : 'bg-secondary/60 text-text-sub border border-border hover:bg-secondary'
                       }`}
                     >
                       {c.label}
@@ -351,7 +351,7 @@ export function ProductFormDrawer({ open, initial, onClose }: Props) {
                     <Link2 size={15} className="text-primary shrink-0" />
                     <div>
                       <p className="text-sm font-semibold text-foreground">Рекомендувати при будь-якому записі</p>
-                      <p className="text-xs text-muted-foreground/60">Пропонувати товар незалежно від послуги</p>
+                      <p className="text-xs text-text-sub">Пропонувати товар незалежно від послуги</p>
                     </div>
                   </div>
                   <button
@@ -384,11 +384,11 @@ export function ProductFormDrawer({ open, initial, onClose }: Props) {
                       transition={{ duration: 0.18 }}
                       className="overflow-hidden"
                     >
-                      <p className="text-xs text-muted-foreground mb-2 font-medium">
+                      <p className="text-xs text-text-sub mb-2 font-medium">
                         Оберіть послуги, до яких рекомендувати цей товар:
                       </p>
                       {activeServices.length === 0 ? (
-                        <p className="text-xs text-muted-foreground/60">У вас ще немає активних послуг</p>
+                        <p className="text-xs text-text-sub">У вас ще немає активних послуг</p>
                       ) : (
                         <div className="flex gap-2 flex-wrap">
                           {activeServices.map(s => (
@@ -399,7 +399,7 @@ export function ProductFormDrawer({ open, initial, onClose }: Props) {
                               className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
                                 linkedServiceIds.includes(s.id)
                                   ? 'bg-primary text-white'
-                                  : 'bg-secondary text-muted-foreground hover:bg-muted/80'
+                                  : 'bg-secondary text-text-sub hover:bg-muted/80'
                               }`}
                             >
                               <span className="flex items-center gap-2">
@@ -446,7 +446,7 @@ export function ProductFormDrawer({ open, initial, onClose }: Props) {
                     <div className="flex gap-2">
                       <button type="button"
                         onClick={() => setShowDelete(false)}
-                        className="flex-1 py-3 rounded-lg text-xs font-medium text-muted-foreground bg-secondary/60 hover:bg-secondary/80 cursor-pointer transition-colors"
+                        className="flex-1 py-3 rounded-lg text-xs font-medium text-text-sub bg-secondary/60 hover:bg-secondary/80 cursor-pointer transition-colors"
                       >
                         Скасувати
                       </button>
@@ -493,12 +493,12 @@ export function ProductFormDrawer({ open, initial, onClose }: Props) {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-const INPUT_CLS = 'w-full px-4 py-3 rounded-lg bg-secondary/60 border border-border text-sm text-foreground placeholder:text-muted-foreground/60 outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-colors';
+const INPUT_CLS = 'w-full px-4 py-3 rounded-lg bg-secondary/60 border border-border text-sm text-foreground placeholder:text-text-sub outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-colors';
 
 function Field({ label, children, className }: { label: string; children: React.ReactNode; className?: string }) {
   return (
     <div className={className}>
-      <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">{label}</label>
+      <label className="text-xs font-semibold text-text-sub uppercase tracking-wider mb-1.5 block">{label}</label>
       {children}
     </div>
   );

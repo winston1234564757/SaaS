@@ -71,7 +71,7 @@ export function PortfolioPage({ initialItems, tier, masterSlug }: Props) {
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Портфоліо</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
+          <p className="text-sm text-text-sub mt-0.5">
             {publishedCount} {pluralUk(publishedCount, 'робота', 'роботи', 'робіт')}
             {isStarter && ` · ${STARTER_LIMIT} макс.`}
           </p>
@@ -83,7 +83,7 @@ export function PortfolioPage({ initialItems, tier, masterSlug }: Props) {
           <button
             type="button"
             onClick={handleOpenStories}
-            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-3 rounded-2xl text-sm font-semibold text-muted-foreground border border-border bg-secondary/60 hover:bg-secondary transition-all active:scale-95"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-3 rounded-2xl text-sm font-semibold text-text-sub border border-border bg-secondary/60 hover:bg-secondary transition-all active:scale-95"
           >
             <Sparkles size={15} /> Сторіс
           </button>
@@ -92,7 +92,7 @@ export function PortfolioPage({ initialItems, tier, masterSlug }: Props) {
               href={`/${masterSlug}/portfolio`}
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden xs:flex flex-1 sm:flex-none items-center justify-center gap-2 px-5 py-3 rounded-2xl text-sm font-semibold text-muted-foreground border border-border bg-secondary/60 hover:bg-secondary transition-all"
+              className="hidden xs:flex flex-1 sm:flex-none items-center justify-center gap-2 px-5 py-3 rounded-2xl text-sm font-semibold text-text-sub border border-border bg-secondary/60 hover:bg-secondary transition-all"
             >
               <ExternalLink size={15} /> Перегляд
             </a>
@@ -121,7 +121,7 @@ export function PortfolioPage({ initialItems, tier, masterSlug }: Props) {
           </div>
           <div className="flex-1">
             <p className="text-sm font-bold text-foreground">Ліміт Starter: {STARTER_LIMIT} робіт</p>
-            <p className="text-xs text-muted-foreground mt-0.5">
+            <p className="text-xs text-text-sub mt-0.5">
               Перейдіть на Pro — необмежена кількість робіт, більше фото та повний доступ до аналітики.
             </p>
             <a
@@ -146,7 +146,7 @@ export function PortfolioPage({ initialItems, tier, masterSlug }: Props) {
           </div>
           <div>
             <p className="text-base font-bold text-foreground">Портфоліо порожнє</p>
-            <p className="text-sm text-muted-foreground mt-1 max-w-xs mx-auto">
+            <p className="text-sm text-text-sub mt-1 max-w-xs mx-auto">
               Додайте свої роботи, щоб клієнти бачили ваш стиль і рівень
             </p>
           </div>

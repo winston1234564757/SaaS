@@ -370,7 +370,7 @@ export function ClientDetailSheet({ client, onClose }: ClientDetailSheetProps) {
                   onClick={addCustomTag}
                   disabled={!customTag.trim()}
                   aria-label="Додати мітку"
-                  className="size-9 flex items-center justify-center rounded-xl bg-secondary/60 border border-border text-muted-foreground hover:text-foreground active:scale-[0.92] transition-all disabled:opacity-40"
+                  className="size-9 flex items-center justify-center rounded-xl bg-secondary/60 border border-border text-text-sub hover:text-foreground active:scale-[0.92] transition-all disabled:opacity-40"
                 >
                   <Plus size={16} />
                 </button>
@@ -517,7 +517,7 @@ export function ClientDetailSheet({ client, onClose }: ClientDetailSheetProps) {
                 'flex items-center justify-center gap-2 w-full py-4 rounded-xl text-sm font-bold transition-all active:scale-[0.97] disabled:opacity-60',
                 client.is_vip
                   ? 'bg-warning/12 text-warning hover:bg-warning/20'
-                  : 'bg-secondary/60 border border-border text-muted-foreground hover:bg-secondary',
+                  : 'bg-secondary/60 border border-border text-text-sub hover:bg-secondary',
               )}
             >
               <Crown size={16} />
@@ -555,7 +555,7 @@ export function ClientDetailSheet({ client, onClose }: ClientDetailSheetProps) {
               <button
                 type="button"
                 onClick={() => setArchiveConfirmStep(false)}
-                className="px-6 py-4 rounded-xl text-sm font-bold bg-secondary/40 text-muted-foreground hover:bg-secondary/60 active:scale-[0.97] transition-all"
+                className="px-6 py-4 rounded-xl text-sm font-bold bg-secondary/40 text-text-sub hover:bg-secondary/60 active:scale-[0.97] transition-all"
               >
                 Скасувати
               </button>
@@ -565,7 +565,7 @@ export function ClientDetailSheet({ client, onClose }: ClientDetailSheetProps) {
               type="button"
               onClick={() => setArchiveConfirmStep(true)}
               disabled={!client?.client_id}
-              className="flex items-center justify-center gap-2 w-full py-4 rounded-xl text-sm font-bold bg-secondary/40 text-muted-foreground hover:bg-secondary/60 active:scale-[0.97] transition-all disabled:opacity-40"
+              className="flex items-center justify-center gap-2 w-full py-4 rounded-xl text-sm font-bold bg-secondary/40 text-text-sub hover:bg-secondary/60 active:scale-[0.97] transition-all disabled:opacity-40"
             >
               Архівувати клієнта
             </button>

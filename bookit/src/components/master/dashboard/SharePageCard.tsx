@@ -35,11 +35,11 @@ export function SharePageCard() {
   return (
     <div className="bento-card p-4" data-tour-step="act-1">
       <div className="flex items-center justify-between mb-3">
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Моя публічна сторінка</p>
+        <p className="text-xs font-semibold text-text-sub uppercase tracking-wide">Моя публічна сторінка</p>
         <Link
           href={`/${slug}`}
           target="_blank"
-          className="text-muted-foreground/60 hover:text-primary transition-colors"
+          className="text-text-sub hover:text-primary transition-colors"
         >
           <ExternalLink size={14} />
         </Link>
@@ -62,7 +62,7 @@ export function SharePageCard() {
         </button>
         <button type="button"
           onClick={handleShare}
-          className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold bg-secondary/60 text-muted-foreground hover:bg-secondary/80 transition-all active:scale-95 transition-all"
+          className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold bg-secondary/60 text-text-sub hover:bg-secondary/80 transition-all active:scale-95 transition-all"
         >
           <Share2 size={13} />
           Поділитись
@@ -70,7 +70,7 @@ export function SharePageCard() {
         <button type="button"
           onClick={() => setQrOpen(true)}
           aria-label="Показати QR-код"
-          className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-secondary/60 text-muted-foreground hover:bg-secondary/80 transition-all"
+          className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-secondary/60 text-text-sub hover:bg-secondary/80 transition-all"
         >
           <QrCode size={13} />
         </button>
@@ -110,7 +110,7 @@ export function SharePageCard() {
                   <button type="button"
                     onClick={() => setQrOpen(false)}
                   aria-label="Закрити"
-                  className="size-7 flex items-center justify-center rounded-xl bg-secondary/60 border border-border text-muted-foreground/60 hover:text-muted-foreground transition-colors"
+                  className="size-7 flex items-center justify-center rounded-xl bg-secondary/60 border border-border text-text-sub hover:text-text-sub transition-colors"
                   >
                     <X size={13} />
                   </button>
@@ -127,7 +127,7 @@ export function SharePageCard() {
                   />
                 </div>
 
-                <p className="text-xs text-muted-foreground/60 text-center font-mono">{displayUrl}</p>
+                <p className="text-xs text-text-sub text-center font-mono">{displayUrl}</p>
 
                 <a
                   href={`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(url)}&bgcolor=ffffff&color=2c1a14&margin=10`}

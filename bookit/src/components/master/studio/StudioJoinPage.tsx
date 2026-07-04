@@ -54,7 +54,7 @@ export function StudioJoinPage({ studio, token }: Props) {
             </div>
             <div>
               <p className="text-lg font-bold text-foreground mb-1">Ви у команді!</p>
-              <p className="text-sm text-muted-foreground/60">Переходимо до кабінету студії...</p>
+              <p className="text-sm text-text-sub">Переходимо до кабінету студії...</p>
             </div>
           </>
         ) : !studio ? (
@@ -64,7 +64,7 @@ export function StudioJoinPage({ studio, token }: Props) {
             </div>
             <div>
               <p className="text-base font-semibold text-foreground mb-1">Посилання недійсне</p>
-              <p className="text-sm text-muted-foreground/60">Студія не знайдена або посилання застаріло</p>
+              <p className="text-sm text-text-sub">Студія не знайдена або посилання застаріло</p>
             </div>
             <Link href="/dashboard" className="text-sm text-primary font-medium hover:underline">
               До кабінету →
@@ -76,9 +76,9 @@ export function StudioJoinPage({ studio, token }: Props) {
               <Building2 size={28} className="text-success" />
             </div>
             <div>
-              <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wide mb-1">Запрошення до студії</p>
+              <p className="text-xs font-semibold text-text-sub uppercase tracking-wide mb-1">Запрошення до студії</p>
               <p className="text-xl font-bold text-foreground mb-1">{studio.name}</p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-text-sub">
                 Після приєднання ви отримаєте доступ до всіх Pro функцій у складі команди
               </p>
             </div>
@@ -98,7 +98,7 @@ export function StudioJoinPage({ studio, token }: Props) {
               {isPending ? 'Приєднуємось...' : 'Приєднатися до студії →'}
             </button>
 
-            <Link href="/dashboard" className="text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors">
+            <Link href="/dashboard" className="text-xs text-text-sub hover:text-text-sub transition-colors">
               Скасувати
             </Link>
           </>

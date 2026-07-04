@@ -96,7 +96,7 @@ function TemplateCard({
 
       {/* Body */}
       <div className="px-4 pb-3">
-        <p className="text-[11px] text-muted-foreground leading-relaxed whitespace-pre-line">
+        <p className="text-[11px] text-text-sub leading-relaxed whitespace-pre-line">
           {text}
         </p>
       </div>
@@ -200,7 +200,7 @@ export function StepSuccess({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.32 }}
-            className="text-sm text-muted-foreground/60"
+            className="text-sm text-text-sub"
           >
             Клієнти вже можуть записуватись — ділись посиланням
           </motion.p>
@@ -214,7 +214,7 @@ export function StepSuccess({
           className="mx-6 mb-4 rounded-xl px-4 py-3.5 bg-secondary/80 border border-border"
           style={{ boxShadow: '0 2px 12px rgba(44,26,20,0.06)' }}
         >
-          <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider mb-1.5">Твоя публічна сторінка</p>
+          <p className="text-[10px] font-semibold text-text-sub uppercase tracking-wider mb-1.5">Твоя публічна сторінка</p>
           <p className="text-sm font-mono font-semibold text-foreground mb-3 truncate">{shortUrl}</p>
           <div className="flex gap-2">
             <button
@@ -233,7 +233,7 @@ export function StepSuccess({
               href={`/${savedSlug}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-secondary/60 text-muted-foreground hover:bg-secondary/80 transition-all"
+              className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-secondary/60 text-text-sub hover:bg-secondary/80 transition-all"
             >
               <ExternalLink size={12} />
             </a>
@@ -245,7 +245,7 @@ export function StepSuccess({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.52 }}
-          className="px-6 text-[11px] font-semibold text-muted-foreground/60 uppercase tracking-wider mb-2.5"
+          className="px-6 text-[11px] font-semibold text-text-sub uppercase tracking-wider mb-2.5"
         >
           Готові шаблони для постів
         </motion.p>
@@ -302,7 +302,7 @@ export function StepSuccess({
             whileTap={{ scale: 0.98 }}
             type="button"
             onClick={onComplete}
-            className="w-full py-2.5 text-sm font-medium text-muted-foreground/60 hover:text-primary transition-colors cursor-pointer"
+            className="w-full py-2.5 text-sm font-medium text-text-sub hover:text-primary transition-colors cursor-pointer"
           >
             Перейти в Dashboard <ArrowRight size={13} className="inline" />
           </motion.button>

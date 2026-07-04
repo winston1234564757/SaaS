@@ -57,7 +57,7 @@ export function BottomNav() {
                 href={href}
                 className={cn(
                   'flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl flex-1 transition-all duration-150',
-                  isActive ? 'text-primary' : 'text-muted-foreground/60'
+                  isActive ? 'text-primary' : 'text-text-sub'
                 )}
               >
                 <div className="relative">
@@ -79,7 +79,7 @@ export function BottomNav() {
             onClick={() => setMoreOpen(true)}
             className={cn(
               'flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl flex-1 transition-all duration-150',
-              isMoreActive || moreOpen ? 'text-primary' : 'text-muted-foreground/60'
+              isMoreActive || moreOpen ? 'text-primary' : 'text-text-sub'
             )}
           >
             <MoreHorizontal size={22} strokeWidth={isMoreActive || moreOpen ? 2.5 : 2} />
@@ -122,7 +122,7 @@ export function BottomNav() {
                 <button type="button"
                   onClick={() => setMoreOpen(false)}
                   aria-label="Закрити"
-                  className="size-8 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground/60"
+                  className="size-8 rounded-xl bg-secondary flex items-center justify-center text-text-sub"
                 >
                   <X size={15} />
                 </button>
@@ -140,7 +140,7 @@ export function BottomNav() {
                         'flex flex-col items-center gap-1.5 p-3 rounded-lg transition-all',
                         isActive
                           ? 'bg-primary/12 text-primary/90'
-                          : 'text-muted-foreground active:bg-secondary'
+                          : 'text-text-sub active:bg-secondary'
                       )}
                     >
                       <div className={cn(

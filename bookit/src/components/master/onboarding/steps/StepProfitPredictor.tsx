@@ -80,7 +80,7 @@ export function StepProfitPredictor({
         <button
           type="button"
           onClick={onBack}
-          className="flex items-center gap-1.5 text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors mb-5 cursor-pointer active:scale-95 transition-all"
+          className="flex items-center gap-1.5 text-xs text-text-sub hover:text-text-sub transition-colors mb-5 cursor-pointer active:scale-95 transition-all"
         >
           <ArrowLeft size={13} /> Назад
         </button>
@@ -88,7 +88,7 @@ export function StepProfitPredictor({
         <h2 className="font-display text-2xl font-semibold text-foreground leading-tight mb-1">
           Порахуємо приховані гроші
         </h2>
-        <p className="text-sm text-muted-foreground/60">
+        <p className="text-sm text-text-sub">
           Скільки пустих вікон у тебе буває на тиждень?
         </p>
       </div>
@@ -96,12 +96,12 @@ export function StepProfitPredictor({
       {/* ── Slider ── */}
       <div className="px-6 pb-4">
         <div className="flex justify-between items-end mb-3">
-          <span className="text-xs text-muted-foreground/60">1 вікно</span>
+          <span className="text-xs text-text-sub">1 вікно</span>
           <div className="text-center">
             <span className="font-display text-4xl font-bold text-foreground">{emptySlots}</span>
-            <p className="text-[10px] text-muted-foreground/60 mt-0.5">вікон/тиждень</p>
+            <p className="text-[10px] text-text-sub mt-0.5">вікон/тиждень</p>
           </div>
-          <span className="text-xs text-muted-foreground/60">15 вікон</span>
+          <span className="text-xs text-text-sub">15 вікон</span>
         </div>
 
         {/* Custom slider */}
@@ -279,7 +279,7 @@ export function StepProfitPredictor({
           type="button"
           onClick={onBack}
           disabled={saving}
-          className="w-full py-2 text-sm text-muted-foreground/60 hover:text-primary transition-colors cursor-pointer active:scale-95 transition-all"
+          className="w-full py-2 text-sm text-text-sub hover:text-primary transition-colors cursor-pointer active:scale-95 transition-all"
         >
           Назад
         </button>

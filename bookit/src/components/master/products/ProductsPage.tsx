@@ -163,7 +163,7 @@ export function ProductsPage() {
           <div className="flex items-start justify-between mb-3">
             <div>
               <h1 className="heading-serif text-xl text-foreground">Магазин</h1>
-              <p className="text-sm text-muted-foreground/60 mt-0.5">Товари та замовлення</p>
+              <p className="text-sm text-text-sub mt-0.5">Товари та замовлення</p>
             </div>
             {newOrders > 0 && (
               <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-warning/12 text-warning">
@@ -316,7 +316,7 @@ export function ProductsPage() {
                         className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
                           orderFilter === f.value
                             ? 'bg-primary text-white'
-                            : 'bg-secondary/60 text-muted-foreground hover:bg-secondary/80'
+                            : 'bg-secondary/60 text-text-sub hover:bg-secondary/80'
                         }`}
                       >
                         {f.label}
@@ -377,11 +377,11 @@ export function ProductsPage() {
                   </div>
                 )}
                 {consumables.length === 0 ? (
-                  <div className="bento-card p-8 text-center text-muted-foreground/60 text-sm">
+                  <div className="bento-card p-8 text-center text-text-sub text-sm">
                     Додайте перший розхідник — оберіть &quot;Розхідник&quot; при створенні товару
                   </div>
                 ) : filteredConsumables.length === 0 ? (
-                  <div className="bento-card p-6 text-center text-muted-foreground/60 text-sm">
+                  <div className="bento-card p-6 text-center text-text-sub text-sm">
                     Нічого не знайдено
                   </div>
                 ) : (
@@ -443,7 +443,7 @@ function StatChip({ label, value, warn }: { label: string; value: number | strin
   return (
     <div className={`flex-1 px-3 py-2 rounded-xl text-center ${warn ? 'bg-warning/10' : 'bg-secondary'}`}>
       <p className={`text-base font-bold ${warn ? 'text-warning' : 'text-foreground'}`}>{value}</p>
-      <p className={`text-[10px] ${warn ? 'text-warning' : 'text-muted-foreground/60'}`}>{label}</p>
+      <p className={`text-[10px] ${warn ? 'text-warning' : 'text-text-sub'}`}>{label}</p>
     </div>
   );
 }
@@ -456,7 +456,7 @@ function ViewBtn({ active, onClick, label, children }: { active: boolean; onClic
       aria-label={label}
       onClick={onClick}
       className={`flex-1 flex items-center justify-center gap-1.5 h-9 rounded-full text-xs font-semibold transition-all ${
-        active ? 'bg-background text-primary shadow-sm' : 'text-muted-foreground hover:text-foreground'
+        active ? 'bg-background text-primary shadow-sm' : 'text-text-sub hover:text-foreground'
       }`}
     >
       {children}
@@ -472,7 +472,7 @@ function TabBtn({ active, onClick, children }: { active: boolean; onClick: () =>
       aria-pressed={active}
       onClick={onClick}
       className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-medium transition-all lg:flex-none lg:w-full lg:justify-start lg:px-4 ${
-        active ? 'bg-accent text-accent-foreground shadow-sm' : 'border border-border bg-transparent text-muted-foreground hover:bg-secondary/40'
+        active ? 'bg-accent text-accent-foreground shadow-sm' : 'border border-border bg-transparent text-text-sub hover:bg-secondary/40'
       } active:scale-95`}
     >
       {children}
@@ -484,11 +484,11 @@ function EmptyProducts({ onAdd }: { onAdd: () => void }) {
   return (
     <div className="bento-card p-10 flex flex-col items-center gap-3 text-center">
       <div className="size-14 rounded-full bg-secondary flex items-center justify-center">
-        <Package size={28} className="text-muted-foreground/60" />
+        <Package size={28} className="text-text-sub" />
       </div>
       <div>
         <p className="text-sm font-semibold text-foreground">Товарів ще немає</p>
-        <p className="text-xs text-muted-foreground/60 mt-1">Додайте перший продукт для продажу</p>
+        <p className="text-xs text-text-sub mt-1">Додайте перший продукт для продажу</p>
       </div>
       <button
         type="button"
@@ -505,10 +505,10 @@ function EmptyOrders() {
   return (
     <div className="bento-card p-10 flex flex-col items-center gap-3 text-center">
       <div className="size-14 rounded-full bg-secondary flex items-center justify-center">
-        <ShoppingBag size={28} className="text-muted-foreground/60" />
+        <ShoppingBag size={28} className="text-text-sub" />
       </div>
       <p className="text-sm font-semibold text-foreground">Замовлень поки немає</p>
-      <p className="text-xs text-muted-foreground/60">Вони з&apos;являться тут після перших покупок</p>
+      <p className="text-xs text-text-sub">Вони з&apos;являться тут після перших покупок</p>
     </div>
   );
 }

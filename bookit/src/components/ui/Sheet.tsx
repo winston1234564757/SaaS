@@ -76,7 +76,7 @@ function DialogVariant({ open, onOpenChange, title, srTitle, children, maxWidth 
                         aria-label="Закрити"
                         className="size-10 rounded-lg flex items-center justify-center bg-secondary/50 border border-border hover:bg-secondary/80 hover:text-foreground transition-all shadow-sm cursor-pointer active:scale-[0.88] group"
                       >
-                        <X size={22} className="text-muted-foreground group-hover:text-foreground transition-colors" />
+                        <X size={22} className="text-text-sub group-hover:text-foreground transition-colors" />
                       </button>
                     </Dialog.Close>
                   </div>
@@ -129,7 +129,7 @@ function BottomVariant({ open, onOpenChange, title, srTitle, children, className
                 type="button"
                 onClick={() => onOpenChange(false)}
                 aria-label="Закрити"
-                className="size-9 flex items-center justify-center rounded-lg bg-secondary/50 text-muted-foreground hover:bg-secondary/80 hover:text-foreground active:scale-[0.88] transition-all cursor-pointer border border-border"
+                className="size-9 flex items-center justify-center rounded-lg bg-secondary/50 text-text-sub hover:bg-secondary/80 hover:text-foreground active:scale-[0.88] transition-all cursor-pointer border border-border"
               >
                 <X size={18} />
               </button>

@@ -143,12 +143,12 @@ export function PartnersPage({ partners, inviteLink, alliances = [], isDrawer }:
                 <Users size={16} />
               </div>
               <div>
-                <p className="text-[10px] text-muted-foreground/60 uppercase tracking-wider">У твоїй мережі</p>
+                <p className="text-[10px] text-text-sub uppercase tracking-wider">У твоїй мережі</p>
                 <p className="text-sm font-bold text-foreground">{activePartners.length + alliances.length}</p>
               </div>
             </div>
             <div className="w-px h-8 bg-border" />
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-[11px] text-text-sub">
               *Партнери з увімкненою видимістю з'являться на вашій публічній сторінці.
             </p>
           </div>
@@ -163,12 +163,12 @@ export function PartnersPage({ partners, inviteLink, alliances = [], isDrawer }:
 
         {connections.length === 0 ? (
           <div className="bento-card p-12 border-dashed border-2 border-border bg-transparent text-center flex flex-col items-center gap-4">
-            <div className="size-16 rounded-full bg-secondary flex items-center justify-center text-muted-foreground">
-              <Users size={32} className="text-muted-foreground/40" />
+            <div className="size-16 rounded-full bg-secondary flex items-center justify-center text-text-sub">
+              <Users size={32} className="text-text-sub" />
             </div>
             <div>
               <p className="text-sm font-bold text-foreground">Поки що мережа порожня</p>
-              <p className="text-xs text-muted-foreground/60 mt-1 italic">Поділися лінком вище з майстрами-знайомими</p>
+              <p className="text-xs text-text-sub mt-1 italic">Поділися лінком вище з майстрами-знайомими</p>
             </div>
           </div>
         ) : (
@@ -182,7 +182,7 @@ export function PartnersPage({ partners, inviteLink, alliances = [], isDrawer }:
                 className="bento-card p-4 flex items-center justify-between gap-4"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="size-12 rounded-2xl bg-secondary flex items-center justify-center text-muted-foreground shrink-0 font-bold text-sm">
+                  <div className="size-12 rounded-2xl bg-secondary flex items-center justify-center text-text-sub shrink-0 font-bold text-sm">
                     {c.name.slice(0, 2).toUpperCase()}
                   </div>
                   <div className="min-w-0">
@@ -216,7 +216,7 @@ export function PartnersPage({ partners, inviteLink, alliances = [], isDrawer }:
                       'flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-colors duration-150 active:scale-[0.95]',
                       c.isVisible
                         ? 'bg-primary/12 text-[#3F5C5B] hover:bg-primary/20'
-                        : 'bg-secondary text-muted-foreground/60 hover:bg-secondary/80',
+                        : 'bg-secondary text-text-sub hover:bg-secondary/80',
                       togglingId === c.rowId && 'opacity-50 pointer-events-none',
                     )}
                   >
@@ -259,7 +259,7 @@ export function PartnersPage({ partners, inviteLink, alliances = [], isDrawer }:
               </span>
               <div>
                 <p className="text-xs font-bold text-foreground">{item.t}</p>
-                <p className="text-[11px] text-muted-foreground/60 leading-relaxed">{item.d}</p>
+                <p className="text-[11px] text-text-sub leading-relaxed">{item.d}</p>
               </div>
             </li>
           ))}

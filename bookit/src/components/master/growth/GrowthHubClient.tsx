@@ -11,17 +11,17 @@ import { TourBanner, type TourStep } from '@/components/master/onboarding/TourBa
 import { useDestinationTour } from '@/lib/hooks/useDestinationTour';
 
 const LoyaltyPage = dynamic(() => import('@/components/master/loyalty/LoyaltyPage').then(m => m.LoyaltyPage), {
-  loading: () => <div className="p-8 text-center text-muted-foreground/60 animate-pulse">Завантаження...</div>,
+  loading: () => <div className="p-8 text-center text-text-sub animate-pulse">Завантаження...</div>,
   ssr: false,
 });
 
 const ReferralPage = dynamic(() => import('@/components/master/referral/ReferralPage').then(m => m.ReferralPage), {
-  loading: () => <div className="p-8 text-center text-muted-foreground/60 animate-pulse">Завантаження...</div>,
+  loading: () => <div className="p-8 text-center text-text-sub animate-pulse">Завантаження...</div>,
   ssr: false,
 });
 
 const PartnersPage = dynamic(() => import('@/components/master/partners/PartnersPage').then(m => m.PartnersPage), {
-  loading: () => <div className="p-8 text-center text-muted-foreground/60 animate-pulse">Завантаження...</div>,
+  loading: () => <div className="p-8 text-center text-text-sub animate-pulse">Завантаження...</div>,
   ssr: false,
 });
 
@@ -110,7 +110,7 @@ export function GrowthHubClient({ loyaltyData, referralData, partnersData }: Gro
         <div className="bento-card p-5 flex flex-col gap-4" data-tour-key="grw-sidebar">
           <div>
             <h1 className="display-md text-foreground">Growth Hub</h1>
-            <p className="text-sm text-muted-foreground">Інструменти залучення та утримання клієнтів</p>
+            <p className="text-sm text-text-sub">Інструменти залучення та утримання клієнтів</p>
           </div>
 
           {/* Tabs: widget blocks (mobile) / vertical nav (desktop) */}
@@ -133,7 +133,7 @@ export function GrowthHubClient({ loyaltyData, referralData, partnersData }: Gro
                     !isActive && 'bg-surface/60 border border-border/40 lg:bg-transparent lg:border-0',
                     isActive
                       ? 'text-[var(--accent-on)]'
-                      : 'text-muted-foreground hover:text-foreground'
+                      : 'text-text-sub hover:text-foreground'
                   )}
                 >
                   {isActive && (
@@ -171,7 +171,7 @@ export function GrowthHubClient({ loyaltyData, referralData, partnersData }: Gro
                   exit={{ opacity: 0 }}
                   transition={{ type: 'spring' as const, duration: 0.3, bounce: 0 }}
                 >
-                  <Suspense fallback={<div className="p-8 text-center text-muted-foreground/60 animate-pulse">Завантаження...</div>}>
+                  <Suspense fallback={<div className="p-8 text-center text-text-sub animate-pulse">Завантаження...</div>}>
                     <LoyaltyPage isDrawer={false} />
                   </Suspense>
                 </motion.div>
@@ -185,7 +185,7 @@ export function GrowthHubClient({ loyaltyData, referralData, partnersData }: Gro
                   exit={{ opacity: 0 }}
                   transition={{ type: 'spring' as const, duration: 0.3, bounce: 0 }}
                 >
-                  <Suspense fallback={<div className="p-8 text-center text-muted-foreground/60 animate-pulse">Завантаження...</div>}>
+                  <Suspense fallback={<div className="p-8 text-center text-text-sub animate-pulse">Завантаження...</div>}>
                     <ReferralPage
                       masterId={referralData.masterId}
                       referralCode={referralData.code}
@@ -211,7 +211,7 @@ export function GrowthHubClient({ loyaltyData, referralData, partnersData }: Gro
                   exit={{ opacity: 0 }}
                   transition={{ type: 'spring' as const, duration: 0.3, bounce: 0 }}
                 >
-                  <Suspense fallback={<div className="p-8 text-center text-muted-foreground/60 animate-pulse">Завантаження...</div>}>
+                  <Suspense fallback={<div className="p-8 text-center text-text-sub animate-pulse">Завантаження...</div>}>
                     <PartnersPage
                       partners={partnersData.partners}
                       inviteLink={partnersData.inviteLink}

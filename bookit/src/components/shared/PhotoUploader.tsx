@@ -106,9 +106,9 @@ export function PhotoUploader({
               type="button"
               onClick={triggerUpload}
               disabled={uploading}
-              className="w-full h-24 rounded-xl border-2 border-dashed border-border text-muted-foreground text-sm flex flex-col items-center justify-center gap-1 hover:bg-muted/40 transition-colors disabled:opacity-60"
+              className="w-full h-24 rounded-xl border-2 border-dashed border-border text-text-sub text-sm flex flex-col items-center justify-center gap-1 hover:bg-muted/40 transition-colors disabled:opacity-60"
             >
-              <ImageIcon size={24} className="text-muted-foreground/60" />
+              <ImageIcon size={24} className="text-text-sub" />
               <span>{uploading ? 'Завантаження…' : 'Додати фото'}</span>
             </button>
           )}

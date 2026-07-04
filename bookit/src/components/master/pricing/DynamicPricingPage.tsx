@@ -63,7 +63,7 @@ const DaysToggle = React.memo(({ value, onChange, activeColor }: {
           'min-w-[36px] min-h-[36px] px-2.5 py-1.5 rounded-xl text-xs font-semibold border transition-all duration-200 cursor-pointer active:scale-[0.88] transform-gpu',
           value.includes(d.key)
             ? 'text-white shadow-sm'
-            : 'bg-secondary/40 text-muted-foreground border-border hover:bg-secondary/60'
+            : 'bg-secondary/40 text-text-sub border-border hover:bg-secondary/60'
         )}
         style={value.includes(d.key) ? { background: activeColor, borderColor: activeColor } : {}}
       >
@@ -332,12 +332,12 @@ const PricingHero = React.memo(({ currentStep, closeTour, nextStep, enabledCount
           </div>
           <div className="min-w-0">
             <h1 className="heading-serif text-xl text-foreground leading-tight text-balance">Ціни, що працюють без тебе</h1>
-            <p className="text-[13px] text-muted-foreground/70 mt-1 leading-snug text-pretty">
+            <p className="text-[13px] text-text-sub mt-1 leading-snug text-pretty">
               Знижки заповнюють тихі вікна, надбавки додають у пік, поки ти зайнятий клієнтом.
             </p>
           </div>
         </div>
-        <span className={cn('shrink-0 text-xs font-bold px-2.5 py-1 rounded-full whitespace-nowrap', enabledCount > 0 ? 'bg-primary/12 text-primary' : 'bg-secondary text-muted-foreground/60')}>
+        <span className={cn('shrink-0 text-xs font-bold px-2.5 py-1 rounded-full whitespace-nowrap', enabledCount > 0 ? 'bg-primary/12 text-primary' : 'bg-secondary text-text-sub')}>
           {enabledCount > 0 ? `${enabledCount} ${pluralUk(enabledCount, 'активне', 'активних', 'активних')}` : 'Вимкнено'}
         </span>
       </div>
@@ -352,7 +352,7 @@ const PricingHero = React.memo(({ currentStep, closeTour, nextStep, enabledCount
             {showEarned && (
               <>Динамічні ціни вже додали <span className="font-bold text-foreground">+{kopToUah(extraEarned)} ₴</span></>
             )}
-            {showEarned && showSlots && <span className="text-muted-foreground/50"> · </span>}
+            {showEarned && showSlots && <span className="text-text-sub"> · </span>}
             {showSlots && (
               <>{showEarned ? 'врятували' : 'Динамічні ціни врятували'} <span className="font-bold text-foreground">{savedSlots} {pluralUk(savedSlots, 'слот', 'слоти', 'слотів')}</span></>
             )}
@@ -361,7 +361,7 @@ const PricingHero = React.memo(({ currentStep, closeTour, nextStep, enabledCount
       )}
 
       <div className="mt-4 pt-3 border-t border-border/60 flex items-center gap-2">
-        <Layers size={13} className="text-muted-foreground shrink-0" aria-hidden="true" />
+        <Layers size={13} className="text-text-sub shrink-0" aria-hidden="true" />
         <p className="text-[11px] leading-snug text-pretty" style={{ color: 'var(--text-secondary)' }}>
           Правила складаються, але ціна тримається в межах{' '}
           <span className="font-semibold tabular-nums text-foreground">від -30% до +50%</span>.
@@ -383,9 +383,9 @@ const PreviewRow = ({ tone, adj }: { tone: 'warm' | 'cool'; adj: number }) => {
   const color = tone === 'warm' ? WARM : COOL;
   return (
     <div className="flex items-center justify-between rounded-xl px-3.5 py-2.5 mx-0.5" style={{ background: tint(color, 8) }}>
-      <span className="text-[11px] text-muted-foreground">приклад</span>
+      <span className="text-[11px] text-text-sub">приклад</span>
       <span className="text-xs font-semibold text-foreground tabular-nums">
-        {PREVIEW_BASE} ₴ <span className="text-muted-foreground/45 mx-0.5">→</span> <span className="font-bold text-foreground">{adj} ₴</span>
+        {PREVIEW_BASE} ₴ <span className="text-text-sub mx-0.5">→</span> <span className="font-bold text-foreground">{adj} ₴</span>
       </span>
     </div>
   );
@@ -416,14 +416,14 @@ const PricingRuleCard = React.memo(({ icon: Icon, tone, title, hint, isEnabled, 
                 </span>
               )}
             </div>
-            <p className="text-xs text-muted-foreground/60 truncate">{hint}</p>
+            <p className="text-xs text-text-sub truncate">{hint}</p>
           </div>
         </button>
         <button
           type="button"
           onClick={onStats}
           aria-label={`Статистика: ${title}`}
-          className="size-9 rounded-xl flex items-center justify-center shrink-0 bg-secondary/50 text-muted-foreground hover:text-foreground active:scale-95 transition-all"
+          className="size-9 rounded-xl flex items-center justify-center shrink-0 bg-secondary/50 text-text-sub hover:text-foreground active:scale-95 transition-all"
         >
           <BarChart3 size={16} />
         </button>
@@ -454,7 +454,7 @@ PricingRuleCard.displayName = 'PricingRuleCard';
 
 const RuleInput = ({ label, value, onChange }: any) => (
   <div>
-    <p className="text-[10px] font-medium text-muted-foreground mb-1">{label}</p>
+    <p className="text-[10px] font-medium text-text-sub mb-1">{label}</p>
     <input
       type="number"
       value={value}

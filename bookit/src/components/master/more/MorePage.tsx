@@ -103,7 +103,7 @@ export function MorePage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="heading-serif text-xl text-foreground">Ще</h1>
-            <p className="text-sm text-muted-foreground/60 mt-0.5">Інструменти для зростання вашого бізнесу</p>
+            <p className="text-sm text-text-sub mt-0.5">Інструменти для зростання вашого бізнесу</p>
           </div>
           <span className="text-xs font-semibold text-primary bg-primary/10 px-2.5 py-1 rounded-full">
             {tierLabel}
@@ -146,7 +146,7 @@ export function MorePage() {
                   {/* Text */}
                   <div className="flex-1">
                     <p className="text-sm font-bold text-foreground mb-1">{item.label}</p>
-                    <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">{item.desc}</p>
+                    <p className="text-xs text-text-sub leading-relaxed line-clamp-3">{item.desc}</p>
                   </div>
 
                   {/* Arrow */}

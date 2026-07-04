@@ -29,7 +29,7 @@ const BENEFITS = [
   { icon: Gift,         text: 'Бонуси та програми лояльності' },
 ];
 
-const inputCls = 'w-full h-12 px-4 rounded-md bg-secondary/75 border border-border text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all';
+const inputCls = 'w-full h-12 px-4 rounded-md bg-secondary/75 border border-border text-sm text-foreground placeholder:text-text-sub focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all';
 
 type Mode = 'main' | 'email';
 
@@ -101,14 +101,14 @@ export function ClientAuthSheet({ bookingId, onSkip }: Props) {
         </div>
         <div>
           <p className="text-base font-semibold text-foreground">Перевір пошту</p>
-          <p className="text-sm text-muted-foreground mt-1 leading-relaxed max-w-xs">
+          <p className="text-sm text-text-sub mt-1 leading-relaxed max-w-xs">
             Надіслали листа на <strong>{email}</strong>.{' '}
             Натисни посилання — і всі записи з'являться у твоєму акаунті.
           </p>
         </div>
         <button type="button"
           onClick={onSkip}
-          className="text-sm text-muted-foreground/60 underline underline-offset-4 mt-1 active:scale-95 transition-all cursor-pointer"
+          className="text-sm text-text-sub underline underline-offset-4 mt-1 active:scale-95 transition-all cursor-pointer"
         >
           Зрозуміло, закрити
         </button>
@@ -137,7 +137,7 @@ export function ClientAuthSheet({ bookingId, onSkip }: Props) {
               </span>
             </div>
             <p className="text-base font-bold text-foreground">Збережи запис у свій акаунт</p>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-sm text-text-sub mt-1">
               Реєстрація займе 10 секунд — і всі бонуси твої
             </p>
           </div>
@@ -173,7 +173,7 @@ export function ClientAuthSheet({ bookingId, onSkip }: Props) {
           {/* Divider */}
           <div className="flex items-center gap-3">
             <div className="flex-1 h-px bg-secondary/80" />
-            <span className="text-xs text-muted-foreground/60">або</span>
+            <span className="text-xs text-text-sub">або</span>
             <div className="flex-1 h-px bg-secondary/80" />
           </div>
 
@@ -190,7 +190,7 @@ export function ClientAuthSheet({ bookingId, onSkip }: Props) {
           {/* Skip */}
           <button type="button"
             onClick={onSkip}
-            className="text-sm text-muted-foreground/60 text-center py-1 hover:text-muted-foreground transition-colors active:scale-95 transition-all cursor-pointer"
+            className="text-sm text-text-sub text-center py-1 hover:text-text-sub transition-colors active:scale-95 transition-all cursor-pointer"
           >
             Пізніше
           </button>
@@ -210,7 +210,7 @@ export function ClientAuthSheet({ bookingId, onSkip }: Props) {
           {/* Back */}
           <button type="button"
             onClick={() => { setMode('main'); setError(''); }}
-            className="flex items-center gap-1.5 text-sm text-muted-foreground w-fit cursor-pointer"
+            className="flex items-center gap-1.5 text-sm text-text-sub w-fit cursor-pointer"
           >
             <ChevronLeft size={15} />
             Назад
@@ -218,13 +218,13 @@ export function ClientAuthSheet({ bookingId, onSkip }: Props) {
 
           <div>
             <p className="text-base font-bold text-foreground">Реєстрація</p>
-            <p className="text-sm text-muted-foreground/60 mt-0.5">Безкоштовно, без зайвого</p>
+            <p className="text-sm text-text-sub mt-0.5">Безкоштовно, без зайвого</p>
           </div>
 
           {/* Inputs */}
           <div className="flex flex-col gap-3">
             <div className="relative">
-              <User size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60" />
+              <User size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-sub" />
               <input
                 type="text"
                 placeholder="Твоє ім'я"
@@ -235,7 +235,7 @@ export function ClientAuthSheet({ bookingId, onSkip }: Props) {
               />
             </div>
             <div className="relative">
-              <Mail size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60" />
+              <Mail size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-sub" />
               <input
                 type="email"
                 placeholder="Email"
@@ -246,7 +246,7 @@ export function ClientAuthSheet({ bookingId, onSkip }: Props) {
               />
             </div>
             <div className="relative">
-              <Lock size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60" />
+              <Lock size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-sub" />
               <input
                 type="password"
                 placeholder="Пароль (мін. 6 symbols)"
@@ -274,7 +274,7 @@ export function ClientAuthSheet({ bookingId, onSkip }: Props) {
             )}
           </button>
 
-          <button type="button" onClick={onSkip} className="text-sm text-muted-foreground/60 text-center active:scale-95 transition-all">
+          <button type="button" onClick={onSkip} className="text-sm text-text-sub text-center active:scale-95 transition-all">
             Пізніше
           </button>
         </motion.div>

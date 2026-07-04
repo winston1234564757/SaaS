@@ -29,7 +29,7 @@ export function ActivityWidget() {
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center gap-2">
           <Bell size={18} className="text-primary" />
-          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Активність</h3>
+          <h3 className="text-sm font-semibold text-text-sub uppercase tracking-wider">Активність</h3>
         </div>
         {unreadCount > 0 && (
           <span className="bg-primary text-white text-[10px] font-bold px-2 py-0.5 rounded-full ring-4 ring-primary/10">
@@ -42,7 +42,7 @@ export function ActivityWidget() {
         <AnimatePresence mode="popLayout">
           {recent.length > 0 ? (
             recent.map((n, i) => {
-              const cfg = ICON_MAP[n.type] || { icon: Calendar, color: 'text-muted-foreground', bg: 'bg-secondary/40' };
+              const cfg = ICON_MAP[n.type] || { icon: Calendar, color: 'text-text-sub', bg: 'bg-secondary/40' };
               const Icon = cfg.icon;
               
               return (
@@ -59,8 +59,8 @@ export function ActivityWidget() {
                   <div className="flex-1 min-w-0 border-b border-secondary/30 pb-3 group-last:border-0">
                     <p className="text-xs font-bold text-foreground truncate">{n.title}</p>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <p className="text-[10px] text-muted-foreground truncate flex-1">{n.body}</p>
-                      <span className="text-[9px] text-muted-foreground/40 whitespace-nowrap">
+                      <p className="text-[10px] text-text-sub truncate flex-1">{n.body}</p>
+                      <span className="text-[9px] text-text-sub whitespace-nowrap">
                         {formatDistanceToNow(new Date(n.createdAt), { addSuffix: true, locale: uk })}
                       </span>
                     </div>

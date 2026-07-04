@@ -33,7 +33,7 @@ interface NavItemProps {
 
 /** A single quiet nav slot. Owns its shared active-pill via layoutId. */
 function NavItem({ href, icon: Icon, label, active = false, badge = 0, onClick }: NavItemProps) {
-  const tone = active ? 'text-foreground' : 'text-muted-foreground/50';
+  const tone = active ? 'text-foreground' : 'text-text-sub';
   const inner = (
     <>
       {active && (

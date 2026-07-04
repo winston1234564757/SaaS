@@ -112,11 +112,11 @@ export function PromoTemplates({ slug, defaultOpen = false, plan, onUpgrade }: P
         onClick={() => setOpen(o => !o)}
         className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-secondary/40 hover:bg-secondary/60 transition-all cursor-pointer group"
       >
-        <span className="text-xs font-semibold text-muted-foreground group-hover:text-foreground transition-colors">
+        <span className="text-xs font-semibold text-text-sub group-hover:text-foreground transition-colors">
           Шаблони для постів
         </span>
         <motion.span animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }}>
-          <ChevronDown size={13} className="text-muted-foreground/60" />
+          <ChevronDown size={13} className="text-text-sub" />
         </motion.span>
       </button>
 
@@ -143,7 +143,7 @@ export function PromoTemplates({ slug, defaultOpen = false, plan, onUpgrade }: P
                   >
                     <div className="flex items-center justify-between px-3 pt-2.5 pb-1.5">
                       <div className="flex items-center gap-1.5">
-                        <span className={`text-[11px] font-bold ${locked ? 'text-muted-foreground/60' : 'text-foreground'}`}>
+                        <span className={`text-[11px] font-bold ${locked ? 'text-text-sub' : 'text-foreground'}`}>
                           {t.label}
                         </span>
                         <span
@@ -167,11 +167,11 @@ export function PromoTemplates({ slug, defaultOpen = false, plan, onUpgrade }: P
                       }
                     </div>
                     {locked && t.proDesc ? (
-                      <p className="px-3 pb-2.5 text-[11px] text-muted-foreground/60 leading-relaxed italic">
+                      <p className="px-3 pb-2.5 text-[11px] text-text-sub leading-relaxed italic">
                         {t.proDesc}
                       </p>
                     ) : (
-                      <p className="px-3 pb-2.5 text-[11px] text-muted-foreground leading-relaxed whitespace-pre-line">
+                      <p className="px-3 pb-2.5 text-[11px] text-text-sub leading-relaxed whitespace-pre-line">
                         {t.text}
                       </p>
                     )}

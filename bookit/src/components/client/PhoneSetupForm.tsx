@@ -141,14 +141,14 @@ export function PhoneSetupForm() {
             <h1 className="heading-serif text-2xl text-foreground mb-1.5">
               Підтвердіть номер
             </h1>
-            <p className="text-sm text-muted-foreground/60 leading-relaxed">
+            <p className="text-sm text-text-sub leading-relaxed">
               Номер телефону — обов&apos;язкова умова.<br />
               Він потрібен для доступу до ваших записів.
             </p>
           </div>
 
           <div className="flex items-center rounded-md border border-border bg-secondary overflow-hidden focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all">
-            <span className="pl-4 pr-2 text-muted-foreground font-medium text-base select-none shrink-0">+38</span>
+            <span className="pl-4 pr-2 text-text-sub font-medium text-base select-none shrink-0">+38</span>
             <input
               type="tel"
               inputMode="numeric"
@@ -159,7 +159,7 @@ export function PhoneSetupForm() {
               autoFocus
               autoComplete="tel-national"
               aria-label="Номер телефону"
-              className="flex-1 py-4 pr-4 text-foreground text-base bg-transparent outline-none placeholder:text-muted-foreground/60"
+              className="flex-1 py-4 pr-4 text-foreground text-base bg-transparent outline-none placeholder:text-text-sub"
             />
           </div>
 
@@ -193,7 +193,7 @@ export function PhoneSetupForm() {
             <h1 className="heading-serif text-2xl text-foreground mb-1.5">
               Введіть код
             </h1>
-            <p className="text-sm text-muted-foreground/60">
+            <p className="text-sm text-text-sub">
               Код надіслано на +38 {formatPhoneDisplay(phone)}
             </p>
           </div>
@@ -233,7 +233,7 @@ export function PhoneSetupForm() {
             <button
               type="button"
               onClick={() => { setStep('phone'); setDigits(['', '', '', '', '', '']); setError(''); }}
-              className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 text-sm text-text-sub hover:text-foreground transition-colors cursor-pointer"
             >
               <ArrowLeft size={15} /> Змінити номер
             </button>
@@ -241,7 +241,7 @@ export function PhoneSetupForm() {
               type="button"
               onClick={handleResend}
               disabled={resendCooldown > 0}
-              className="text-sm text-primary font-medium disabled:text-muted-foreground/60 disabled:cursor-default hover:underline cursor-pointer"
+              className="text-sm text-primary font-medium disabled:text-text-sub disabled:cursor-default hover:underline cursor-pointer"
             >
               {resendCooldown > 0 ? `Через ${resendCooldown}с` : 'Надіслати знову'}
             </button>

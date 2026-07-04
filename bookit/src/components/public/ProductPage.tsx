@@ -30,13 +30,13 @@ export function ProductPage({ product: p, masterId, masterSlug, masterName, ship
       {!inCart ? (
         <>
           <div className="flex items-center gap-3">
-            <p className="text-xs font-semibold text-muted-foreground">Кількість</p>
+            <p className="text-xs font-semibold text-text-sub">Кількість</p>
             <div className="flex items-center rounded-md overflow-hidden border" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
               <button
                 type="button"
                 aria-label="Зменшити кількість"
                 onClick={() => setLocalQty(q => Math.max(1, q - 1))}
-                className="size-10 flex items-center justify-center text-muted-foreground active:bg-secondary/80 transition-all cursor-pointer active:scale-[0.95]"
+                className="size-10 flex items-center justify-center text-text-sub active:bg-secondary/80 transition-all cursor-pointer active:scale-[0.95]"
               >
                 <Minus size={15} />
               </button>
@@ -51,7 +51,7 @@ export function ProductPage({ product: p, masterId, masterSlug, masterName, ship
                 <Plus size={15} />
               </button>
             </div>
-            <p className="text-xs text-muted-foreground/60 ml-auto tabular-nums">{((p.price_kopecks * localQty) / 100).toFixed(0)} ₴</p>
+            <p className="text-xs text-text-sub ml-auto tabular-nums">{((p.price_kopecks * localQty) / 100).toFixed(0)} ₴</p>
           </div>
           <motion.button
             type="button"
@@ -73,7 +73,7 @@ export function ProductPage({ product: p, masterId, masterSlug, masterName, ship
                 type="button"
                 aria-label="Зменшити кількість"
                 onClick={() => setQty(p.id, qty - 1)}
-                className="size-10 flex items-center justify-center text-muted-foreground active:bg-secondary/80 transition-all cursor-pointer active:scale-[0.95]"
+                className="size-10 flex items-center justify-center text-text-sub active:bg-secondary/80 transition-all cursor-pointer active:scale-[0.95]"
               >
                 <Minus size={15} />
               </button>
@@ -108,12 +108,12 @@ export function ProductPage({ product: p, masterId, masterSlug, masterName, ship
         <Link
           href={`/${masterSlug}/shop`}
           aria-label="Назад до магазину"
-          className="size-9 rounded-lg bg-secondary/70 border border-border flex items-center justify-center text-muted-foreground hover:bg-secondary active:scale-[0.95] transition-all cursor-pointer shrink-0"
+          className="size-9 rounded-lg bg-secondary/70 border border-border flex items-center justify-center text-text-sub hover:bg-secondary active:scale-[0.95] transition-all cursor-pointer shrink-0"
         >
           <ArrowLeft size={18} />
         </Link>
         <div className="flex-1 min-w-0">
-          <p className="text-xs text-muted-foreground/60 truncate">Магазин · {masterName}</p>
+          <p className="text-xs text-text-sub truncate">Магазин · {masterName}</p>
         </div>
       </div>
 

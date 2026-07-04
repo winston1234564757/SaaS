@@ -88,7 +88,7 @@ function DateSeparator({ label }: { label: string }) {
   return (
     <div className="flex items-center gap-3 my-1" aria-hidden="true">
       <div className="h-px flex-1 bg-border/50" />
-      <span className="text-[10px] font-medium text-muted-foreground/50 uppercase tracking-wide">{label}</span>
+      <span className="text-[10px] font-medium text-text-sub uppercase tracking-wide">{label}</span>
       <div className="h-px flex-1 bg-border/50" />
     </div>
   );
@@ -127,10 +127,10 @@ export function ClientNotificationsPage({ notifications, portfolioConsents }: Pr
       {isEmpty && (
         <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
           <div className="size-16 rounded-xl bg-secondary flex items-center justify-center">
-            <Bell size={28} className="text-muted-foreground/40" />
+            <Bell size={28} className="text-text-sub" />
           </div>
           <p className="text-base font-bold text-foreground">Поки порожньо</p>
-          <p className="text-sm text-muted-foreground">Тут з'являться сповіщення про записи та інші події</p>
+          <p className="text-sm text-text-sub">Тут з'являться сповіщення про записи та інші події</p>
         </div>
       )}
 
@@ -163,9 +163,9 @@ export function ClientNotificationsPage({ notifications, portfolioConsents }: Pr
                       {item.master_name} відмітив вас у портфоліо
                     </p>
                     {!item.cover_url && (
-                      <p className="text-xs text-muted-foreground mt-0.5">«{item.title}»</p>
+                      <p className="text-xs text-text-sub mt-0.5">«{item.title}»</p>
                     )}
-                    <p className="text-xs text-muted-foreground/60 mt-0.5">Підтвердіть або відхиліть участь</p>
+                    <p className="text-xs text-text-sub mt-0.5">Підтвердіть або відхиліть участь</p>
                   </div>
                 </div>
                 <div className="flex gap-2">
@@ -237,7 +237,7 @@ export function ClientNotificationsPage({ notifications, portfolioConsents }: Pr
                       </div>
 
                       {/* Icon */}
-                      <div className={`size-9 rounded-lg flex items-center justify-center shrink-0 ${isBroadcast ? 'bg-accent/12 text-accent' : 'bg-secondary/60 text-muted-foreground'}`}>
+                      <div className={`size-9 rounded-lg flex items-center justify-center shrink-0 ${isBroadcast ? 'bg-accent/12 text-accent' : 'bg-secondary/60 text-text-sub'}`}>
                         <Icon size={16} />
                       </div>
 
@@ -249,7 +249,7 @@ export function ClientNotificationsPage({ notifications, portfolioConsents }: Pr
                         {isBroadcast && broadcast ? (
                           <>
                             {broadcast.text && (
-                              <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{broadcast.text}</p>
+                              <p className="text-xs text-text-sub mt-0.5 leading-relaxed">{broadcast.text}</p>
                             )}
                             {broadcast.url && (
                               <a
@@ -263,11 +263,11 @@ export function ClientNotificationsPage({ notifications, portfolioConsents }: Pr
                           </>
                         ) : (
                           notif.body && (
-                            <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{notif.body}</p>
+                            <p className="text-xs text-text-sub mt-0.5 leading-relaxed">{notif.body}</p>
                           )
                         )}
 
-                        <p className="text-[10px] text-muted-foreground/50 mt-1">{timeAgo(notif.createdAt)}</p>
+                        <p className="text-[10px] text-text-sub mt-1">{timeAgo(notif.createdAt)}</p>
                       </div>
                     </motion.button>
                   );

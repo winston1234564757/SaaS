@@ -156,7 +156,7 @@ export function StepProfile({
                 onChange={e => { onPhoneChange(normalizePhoneInput(e.target.value)); setShowErrors(false); }}
                 aria-label="Мобільний телефон"
                 aria-invalid={showErrors && phone.replace(/\D/g, '').length < 9}
-                className="flex-1 py-3 pr-4 text-foreground text-sm bg-transparent outline-none placeholder:text-muted-foreground/60"
+                className="flex-1 py-3 pr-4 text-foreground text-sm bg-transparent outline-none placeholder:text-text-sub"
               />
             </div>
             {showErrors && phone.replace(/\D/g, '').length < 9 && (

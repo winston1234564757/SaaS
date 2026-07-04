@@ -346,13 +346,13 @@ export function ProductEditor({ id }: Props) {
             type="button"
             onClick={() => router.back()}
             aria-label="Назад"
-            className="size-10 rounded-full bg-secondary/60 border border-border flex items-center justify-center text-muted-foreground hover:bg-secondary/80 hover:text-primary transition-all active:scale-[0.88] cursor-pointer"
+            className="size-10 rounded-full bg-secondary/60 border border-border flex items-center justify-center text-text-sub hover:bg-secondary/80 hover:text-primary transition-all active:scale-[0.88] cursor-pointer"
           >
             <ChevronLeft size={20} />
           </button>
           <div className="min-w-0">
             <h1 className="heading-serif text-xl text-foreground truncate">{pageTitle}</h1>
-            <p className="text-xs text-muted-foreground/60 truncate">
+            <p className="text-xs text-text-sub truncate">
               {id ? (name || (isConsumable ? 'Поточний розхідник' : 'Поточний товар')) : (isConsumable ? 'Налаштування матеріалу для послуг' : 'Створення нового товару')}
             </p>
           </div>
@@ -386,7 +386,7 @@ export function ProductEditor({ id }: Props) {
                 <ProductIcon name={iconName} size={28} />
               </div>
               <div className="flex-1 min-w-0">
-                <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-[0.08em] mb-1 block ml-1">
+                <label className="text-[11px] font-medium text-text-sub uppercase tracking-[0.08em] mb-1 block ml-1">
                   {isConsumable ? 'Назва матеріалу' : 'Назва товару'}
                 </label>
                 <input
@@ -402,7 +402,7 @@ export function ProductEditor({ id }: Props) {
 
             {!isConsumable && (
               <div>
-                <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-[0.08em] block ml-1 mb-2">Опис товару</label>
+                <label className="text-[11px] font-medium text-text-sub uppercase tracking-[0.08em] block ml-1 mb-2">Опис товару</label>
                 <textarea
                   rows={5}
                   value={description}
@@ -414,7 +414,7 @@ export function ProductEditor({ id }: Props) {
             )}
 
             <div>
-              <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-[0.08em] mb-2 block ml-1">Категорія</label>
+              <label className="text-[11px] font-medium text-text-sub uppercase tracking-[0.08em] mb-2 block ml-1">Категорія</label>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {CATEGORIES.map(cat => (
                   <button
@@ -424,7 +424,7 @@ export function ProductEditor({ id }: Props) {
                     className={`flex items-center justify-between px-3 py-3 rounded-xl text-xs font-semibold transition-all border active:scale-[0.95] cursor-pointer ${
                       category === cat.value
                         ? 'bg-primary text-primary-foreground border-transparent'
-                        : 'bg-secondary/40 border-border text-muted-foreground hover:bg-secondary/80'
+                        : 'bg-secondary/40 border-border text-text-sub hover:bg-secondary/80'
                     }`}
                   >
                     <span>{cat.label}</span>
@@ -435,7 +435,7 @@ export function ProductEditor({ id }: Props) {
             </div>
 
             <div>
-              <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-[0.08em] mb-2 block ml-1">Іконка</label>
+              <label className="text-[11px] font-medium text-text-sub uppercase tracking-[0.08em] mb-2 block ml-1">Іконка</label>
               <div className="flex flex-wrap gap-1.5">
                 {PRODUCT_ICON_OPTIONS.map(opt => (
                   <button
@@ -460,7 +460,7 @@ export function ProductEditor({ id }: Props) {
         <div className="lg:col-span-4 flex flex-col gap-6">
           {!isConsumable && (
             <div className="widget-card p-6 flex flex-col gap-4 border border-border rounded-[24px] bg-card">
-              <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-[0.08em] block ml-1">Фото товару (до 5)</label>
+              <label className="text-[11px] font-medium text-text-sub uppercase tracking-[0.08em] block ml-1">Фото товару (до 5)</label>
               <div className="flex gap-2 flex-wrap">
                 {photos.map(url => (
                   <div key={url} className="relative size-20 rounded-xl overflow-hidden bg-secondary border border-border shrink-0">
@@ -480,7 +480,7 @@ export function ProductEditor({ id }: Props) {
                     type="button"
                     onClick={() => fileRef.current?.click()}
                     disabled={uploading}
-                    className="size-20 rounded-xl border-2 border-dashed border-border flex flex-col items-center justify-center gap-1 text-muted-foreground/60 hover:border-primary hover:text-primary cursor-pointer transition-all"
+                    className="size-20 rounded-xl border-2 border-dashed border-border flex flex-col items-center justify-center gap-1 text-text-sub hover:border-primary hover:text-primary cursor-pointer transition-all"
                   >
                     {uploading ? <Loader2 size={16} className="animate-spin" /> : <ImagePlus size={16} />}
                     <span className="text-xs">Додати</span>
@@ -498,7 +498,7 @@ export function ProductEditor({ id }: Props) {
             {/* Retail price */}
             {!isConsumable && (
               <div>
-                <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-[0.08em] mb-2 block ml-1">Ціна (₴)</label>
+                <label className="text-[11px] font-medium text-text-sub uppercase tracking-[0.08em] mb-2 block ml-1">Ціна (₴)</label>
                 <input
                   type="number"
                   value={priceStr}
@@ -517,7 +517,7 @@ export function ProductEditor({ id }: Props) {
 
                 {/* 1. Unit selector */}
                 <div>
-                  <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider mb-2">Одиниця витрати</p>
+                  <p className="text-[10px] font-semibold text-text-sub uppercase tracking-wider mb-2">Одиниця витрати</p>
                   <div className="flex gap-2">
                     {([['pcs', 'шт'], ['ml', 'мл'], ['g', 'г']] as const).map(([val, label]) => (
                       <button
@@ -528,7 +528,7 @@ export function ProductEditor({ id }: Props) {
                         className={`flex-1 py-2.5 rounded-xl border text-xs font-bold transition-all active:scale-[0.95] cursor-pointer ${
                           unit === val
                             ? 'bg-primary text-primary-foreground border-transparent shadow-md shadow-primary/10'
-                            : 'bg-secondary/40 border-border text-muted-foreground hover:bg-secondary/80'
+                            : 'bg-secondary/40 border-border text-text-sub hover:bg-secondary/80'
                         }`}
                       >
                         {label}
@@ -539,10 +539,10 @@ export function ProductEditor({ id }: Props) {
 
                 {/* 2. Bulk pricing */}
                 <div>
-                  <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider mb-2">Закупівля</p>
+                  <p className="text-[10px] font-semibold text-text-sub uppercase tracking-wider mb-2">Закупівля</p>
                   <div className="flex flex-col gap-2.5">
                     <div>
-                      <p className="text-[10px] text-muted-foreground/50 mb-1.5">Одиниця упаковки</p>
+                      <p className="text-[10px] text-text-sub mb-1.5">Одиниця упаковки</p>
                       <div className="grid grid-cols-5 gap-1">
                         {PURCHASE_UNITS.map(([val, label]) => (
                           <button
@@ -553,7 +553,7 @@ export function ProductEditor({ id }: Props) {
                             className={`py-2 rounded-lg border text-[10px] font-bold transition-all active:scale-[0.95] cursor-pointer ${
                               purchaseUnitStr === val
                                 ? 'bg-primary text-primary-foreground border-transparent'
-                                : 'bg-secondary/40 border-border text-muted-foreground hover:bg-secondary/80'
+                                : 'bg-secondary/40 border-border text-text-sub hover:bg-secondary/80'
                             }`}
                           >
                             {label}
@@ -564,7 +564,7 @@ export function ProductEditor({ id }: Props) {
 
                     <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <label className="text-[10px] text-muted-foreground/50 mb-1 block">
+                        <label className="text-[10px] text-text-sub mb-1 block">
                           Кількість в упаковці ({PURCHASE_UNIT_LABEL[purchaseUnitStr]})
                         </label>
                         <input
@@ -578,7 +578,7 @@ export function ProductEditor({ id }: Props) {
                         />
                       </div>
                       <div>
-                        <label className="text-[10px] text-muted-foreground/50 mb-1 block">Ціна закупки (₴)</label>
+                        <label className="text-[10px] text-text-sub mb-1 block">Ціна закупки (₴)</label>
                         <input
                           type="number"
                           value={purchasePriceStr}
@@ -616,7 +616,7 @@ export function ProductEditor({ id }: Props) {
                 {/* 3. Собівартість (auto-filled or manual) */}
                 <div className="flex gap-2">
                   <div className="flex-1">
-                    <label className="text-[10px] font-semibold text-muted-foreground/60 mb-1.5 block ml-1">
+                    <label className="text-[10px] font-semibold text-text-sub mb-1.5 block ml-1">
                       Собівартість / {UNIT_LABEL[unit]} (₴)
                     </label>
                     <input
@@ -629,7 +629,7 @@ export function ProductEditor({ id }: Props) {
                     />
                   </div>
                   <div className="flex-1">
-                    <label className="text-[10px] font-semibold text-muted-foreground/60 mb-1.5 block ml-1">Ціна продажу (₴)</label>
+                    <label className="text-[10px] font-semibold text-text-sub mb-1.5 block ml-1">Ціна продажу (₴)</label>
                     <input
                       type="number"
                       value={priceStr}
@@ -650,14 +650,14 @@ export function ProductEditor({ id }: Props) {
                     autoDeduct ? 'bg-success/10 border-success/20' : 'bg-secondary/40 border-border'
                   }`}
                 >
-                  <div className={`size-9 rounded-lg flex items-center justify-center shrink-0 ${autoDeduct ? 'bg-success/20 text-success' : 'bg-muted/40 text-muted-foreground'}`}>
+                  <div className={`size-9 rounded-lg flex items-center justify-center shrink-0 ${autoDeduct ? 'bg-success/20 text-success' : 'bg-muted/40 text-text-sub'}`}>
                     {autoDeduct ? <Zap size={18} /> : <ZapOff size={18} />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-bold text-foreground leading-tight">
                       {autoDeduct ? 'Автосписання увімкнено' : 'Автосписання вимкнено'}
                     </p>
-                    <p className="text-xs text-muted-foreground/60 mt-0.5">
+                    <p className="text-xs text-text-sub mt-0.5">
                       {autoDeduct ? 'Списується при завершенні запису' : 'Склад не змінюється автоматично'}
                     </p>
                   </div>
@@ -665,7 +665,7 @@ export function ProductEditor({ id }: Props) {
 
                 {/* 5. Stock alert threshold */}
                 <div>
-                  <label className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                  <label className="text-[10px] font-semibold text-text-sub uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
                     <Bell size={10} />
                     Сповіщати, коли залишиться
                   </label>
@@ -679,11 +679,11 @@ export function ProductEditor({ id }: Props) {
                       aria-label="Поріг сповіщення"
                       className="w-full px-4 py-3 rounded-xl bg-secondary/40 border border-border text-sm font-bold outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 pr-12"
                     />
-                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground/50 pointer-events-none">
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-text-sub pointer-events-none">
                       {UNIT_LABEL[unit]}
                     </span>
                   </div>
-                  <p className="text-[10px] text-muted-foreground/50 mt-1 ml-1">Надішлемо сповіщення, коли запаси закінчуються</p>
+                  <p className="text-[10px] text-text-sub mt-1 ml-1">Надішлемо сповіщення, коли запаси закінчуються</p>
                 </div>
               </div>
             )}
@@ -692,7 +692,7 @@ export function ProductEditor({ id }: Props) {
 
             {/* Stock */}
             <div className="flex flex-col gap-3">
-              <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-[0.08em] mb-1 block ml-1">Наявність на складі</label>
+              <label className="text-[11px] font-medium text-text-sub uppercase tracking-[0.08em] mb-1 block ml-1">Наявність на складі</label>
               <button
                 type="button"
                 aria-pressed={showStockLimit}
@@ -704,7 +704,7 @@ export function ProductEditor({ id }: Props) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-bold text-foreground leading-tight">{showStockLimit ? 'Обмежений склад' : 'Безлімітний склад'}</p>
-                  <p className="text-xs text-muted-foreground/60 mt-0.5">Відстеження товарних залишків</p>
+                  <p className="text-xs text-text-sub mt-0.5">Відстеження товарних залишків</p>
                 </div>
               </button>
 
@@ -720,7 +720,7 @@ export function ProductEditor({ id }: Props) {
                     className="w-full px-4 py-3 rounded-xl bg-secondary/40 border border-border text-sm text-foreground outline-none transition-all focus:bg-secondary focus:border-primary font-bold pr-12"
                   />
                   {isConsumable && (
-                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground/50 pointer-events-none select-none">
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-text-sub pointer-events-none select-none">
                       {UNIT_LABEL[unit]}
                     </span>
                   )}
@@ -733,7 +733,7 @@ export function ProductEditor({ id }: Props) {
               <>
                 <div className="h-px bg-border" />
                 <div className="flex flex-col gap-3">
-                  <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-[0.08em] mb-1 block ml-1">Рекомендації клієнтам</label>
+                  <label className="text-[11px] font-medium text-text-sub uppercase tracking-[0.08em] mb-1 block ml-1">Рекомендації клієнтам</label>
                   <button
                     type="button"
                     aria-pressed={recommendAlways}
@@ -747,15 +747,15 @@ export function ProductEditor({ id }: Props) {
                       <p className="text-xs font-bold text-foreground leading-tight">
                         {recommendAlways ? 'Рекомендується завжди' : 'Рекомендувати вибірково'}
                       </p>
-                      <p className="text-xs text-muted-foreground/60 mt-0.5">Показ товару в кошику при записі</p>
+                      <p className="text-xs text-text-sub mt-0.5">Показ товару в кошику при записі</p>
                     </div>
                   </button>
 
                   {!recommendAlways && (
                     <div className="flex flex-col gap-2.5 bg-secondary/20 p-3 rounded-xl border border-border mt-1">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80">Рекомендувати з послугами:</p>
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-text-sub">Рекомендувати з послугами:</p>
                       {activeServices.length === 0 ? (
-                        <p className="text-xs text-muted-foreground/60 pl-1">Немає активних послуг</p>
+                        <p className="text-xs text-text-sub pl-1">Немає активних послуг</p>
                       ) : (
                         <div className="flex gap-1.5 flex-wrap">
                           {activeServices.map(s => (
@@ -766,7 +766,7 @@ export function ProductEditor({ id }: Props) {
                               className={`px-2.5 py-1.5 rounded-lg text-[10px] font-semibold transition-all cursor-pointer ${
                                 linkedServiceIds.includes(s.id)
                                   ? 'bg-primary text-white'
-                                  : 'bg-secondary text-muted-foreground hover:bg-muted/80'
+                                  : 'bg-secondary text-text-sub hover:bg-muted/80'
                               }`}
                             >
                               {s.name}
@@ -785,7 +785,7 @@ export function ProductEditor({ id }: Props) {
               <>
                 <div className="h-px bg-border" />
                 <div className="flex flex-col gap-2">
-                  <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-[0.08em] block ml-1">Аналітика продажів</label>
+                  <label className="text-[11px] font-medium text-text-sub uppercase tracking-[0.08em] block ml-1">Аналітика продажів</label>
                   <ProductStatsPanel stats={stats} loading={statsLoading} />
                 </div>
               </>
@@ -801,7 +801,7 @@ export function ProductEditor({ id }: Props) {
                   </div>
                   <div>
                     <p className="text-xs font-bold text-foreground leading-tight">Пряме посилання</p>
-                    <p className="text-xs text-muted-foreground/60 mt-0.5 leading-relaxed">Клієнт зможе переглянути товар у магазині</p>
+                    <p className="text-xs text-text-sub mt-0.5 leading-relaxed">Клієнт зможе переглянути товар у магазині</p>
                   </div>
                   <button
                     type="button"
@@ -827,7 +827,7 @@ export function ProductEditor({ id }: Props) {
               </div>
               <div>
                 <p className="text-sm font-bold text-foreground">Прив&apos;язка до послуг</p>
-                <p className="text-[11px] text-muted-foreground/60">Для яких послуг використовується цей матеріал?</p>
+                <p className="text-[11px] text-text-sub">Для яких послуг використовується цей матеріал?</p>
               </div>
             </div>
             {!recommendAlways && linkedServiceIds.length > 0 && (
@@ -852,7 +852,7 @@ export function ProductEditor({ id }: Props) {
               <p className="text-xs font-bold text-foreground leading-tight">
                 {recommendAlways ? 'До всіх послуг' : 'Конкретні послуги'}
               </p>
-              <p className="text-xs text-muted-foreground/60 mt-0.5">
+              <p className="text-xs text-text-sub mt-0.5">
                 {recommendAlways
                   ? 'Списується при завершенні будь-якого запису'
                   : 'Прив\'язано до конкретних послуг'}
@@ -863,7 +863,7 @@ export function ProductEditor({ id }: Props) {
           {!recommendAlways && (
             <div className="flex flex-col gap-3">
               {activeServices.length === 0 ? (
-                <p className="text-xs text-muted-foreground/60">Немає активних послуг. Додайте послуги спочатку.</p>
+                <p className="text-xs text-text-sub">Немає активних послуг. Додайте послуги спочатку.</p>
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
                   {activeServices.map(s => (
@@ -874,7 +874,7 @@ export function ProductEditor({ id }: Props) {
                         className={`w-full px-3 py-2.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer text-left ${
                           linkedServiceIds.includes(s.id)
                             ? 'bg-primary text-white border-transparent shadow-md shadow-primary/10'
-                            : 'bg-secondary/40 border-border text-muted-foreground hover:bg-secondary/80'
+                            : 'bg-secondary/40 border-border text-text-sub hover:bg-secondary/80'
                         }`}
                       >
                         <span className="truncate block">{s.name}</span>
@@ -917,7 +917,7 @@ export function ProductEditor({ id }: Props) {
             <h3 className="heading-serif text-xl text-foreground mb-2">
               {isConsumable ? 'Видалити розхідник?' : 'Видалити товар?'}
             </h3>
-            <p className="text-sm text-muted-foreground/70 mb-6">
+            <p className="text-sm text-text-sub mb-6">
               {isConsumable ? 'Матеріал сховається з dashboard і не буде доступний у записах.' : 'Товар сховається з dashboard і не буде доступний клієнтам.'}
             </p>
             <div className="flex gap-3">

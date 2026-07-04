@@ -31,7 +31,7 @@ export function QuickActions() {
 
         {/* ── Маркетинг ── */}
         <div className="mb-3">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60 mb-2">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-text-sub mb-2">
             Маркетинг
           </p>
           <div className="grid grid-cols-3 gap-2">
@@ -49,7 +49,7 @@ export function QuickActions() {
                 <div className="size-11 rounded-xl flex items-center justify-center bg-warning shadow-lg">
                   <Zap size={18} className="text-white" />
                 </div>
-                <span className="text-[10px] font-medium text-muted-foreground text-center leading-tight">
+                <span className="text-[10px] font-medium text-text-sub text-center leading-tight">
                   Флеш-акція
                 </span>
               </motion.button>
@@ -69,7 +69,7 @@ export function QuickActions() {
 <div className="size-11 rounded-xl flex items-center justify-center bg-primary shadow-lg shadow-primary/30">
                   <TrendingUp size={18} className="text-white" />
                 </div>
-                <span className="text-[10px] font-medium text-muted-foreground text-center leading-tight">
+                <span className="text-[10px] font-medium text-text-sub text-center leading-tight">
                   Ціноутворення
                 </span>
               </motion.button>
@@ -86,7 +86,7 @@ export function QuickActions() {
                   <div className="size-11 rounded-xl flex items-center justify-center bg-text-main shadow-lg shadow-text-main/20">
                     <Sparkles size={18} className="text-peach" />
                   </div>
-                  <span className="text-[10px] font-medium text-muted-foreground text-center leading-tight">
+                  <span className="text-[10px] font-medium text-text-sub text-center leading-tight">
                     Маркетинг
                   </span>
                 </Link>
@@ -110,7 +110,7 @@ export function QuickActions() {
               <div className="size-11 rounded-xl flex items-center justify-center bg-primary shadow-[0_4px_14px_rgba(120,154,153,0.38)]">
                 <Plus size={18} className="text-white" />
               </div>
-              <span className="text-[10px] font-medium text-muted-foreground text-center leading-tight">Новий запис</span>
+              <span className="text-[10px] font-medium text-text-sub text-center leading-tight">Новий запис</span>
             </motion.button>
           </Tooltip>
 
@@ -120,9 +120,9 @@ export function QuickActions() {
               <Link href="/dashboard/analytics"
                 className="flex flex-col items-center gap-2 py-3 px-1 rounded-xl transition-all hover:bg-secondary/50 w-full cursor-pointer">
                 <div className="size-11 rounded-xl flex items-center justify-center bg-secondary/60 border border-border">
-                  <BarChart2 size={18} className="text-muted-foreground" />
+                  <BarChart2 size={18} className="text-text-sub" />
                 </div>
-                <span className="text-[10px] font-medium text-muted-foreground text-center leading-tight">Аналітика</span>
+                <span className="text-[10px] font-medium text-text-sub text-center leading-tight">Аналітика</span>
               </Link>
             </motion.div>
           </Tooltip>
@@ -133,9 +133,9 @@ export function QuickActions() {
               <Link href="/dashboard/settings"
                 className="flex flex-col items-center gap-2 py-3 px-1 rounded-xl transition-all hover:bg-secondary/50 w-full cursor-pointer">
                 <div className="size-11 rounded-xl flex items-center justify-center bg-secondary/60 border border-border">
-                  <Settings size={18} className="text-muted-foreground" />
+                  <Settings size={18} className="text-text-sub" />
                 </div>
-                <span className="text-[10px] font-medium text-muted-foreground text-center leading-tight">Налаштування</span>
+                <span className="text-[10px] font-medium text-text-sub text-center leading-tight">Налаштування</span>
               </Link>
             </motion.div>
           </Tooltip>
@@ -146,9 +146,9 @@ export function QuickActions() {
               <Link href="/dashboard/services"
                 className="flex flex-col items-center gap-2 py-3 px-1 rounded-xl transition-all hover:bg-secondary/50 w-full cursor-pointer">
                 <div className="size-11 rounded-xl flex items-center justify-center bg-secondary/60 border border-border">
-                  <Scissors size={18} className="text-muted-foreground" />
+                  <Scissors size={18} className="text-text-sub" />
                 </div>
-                <span className="text-[10px] font-medium text-muted-foreground text-center leading-tight">Послуги</span>
+                <span className="text-[10px] font-medium text-text-sub text-center leading-tight">Послуги</span>
               </Link>
             </motion.div>
           </Tooltip>
@@ -159,9 +159,9 @@ export function QuickActions() {
               <Link href="/dashboard/clients"
                 className="flex flex-col items-center gap-2 py-3 px-1 rounded-xl transition-all hover:bg-secondary/50 w-full cursor-pointer">
                 <div className="size-11 rounded-xl flex items-center justify-center bg-secondary/60 border border-border">
-                  <Users size={18} className="text-muted-foreground" />
+                  <Users size={18} className="text-text-sub" />
                 </div>
-                <span className="text-[10px] font-medium text-muted-foreground text-center leading-tight">Клієнти</span>
+                <span className="text-[10px] font-medium text-text-sub text-center leading-tight">Клієнти</span>
               </Link>
             </motion.div>
           </Tooltip>
@@ -172,9 +172,9 @@ export function QuickActions() {
               <Link href="/dashboard/bookings"
                 className="flex flex-col items-center gap-2 py-3 px-1 rounded-xl transition-all hover:bg-secondary/50 w-full cursor-pointer">
                 <div className="size-11 rounded-xl flex items-center justify-center bg-secondary/60 border border-border">
-                  <CalendarDays size={18} className="text-muted-foreground" />
+                  <CalendarDays size={18} className="text-text-sub" />
                 </div>
-                <span className="text-[10px] font-medium text-muted-foreground text-center leading-tight">Записи</span>
+                <span className="text-[10px] font-medium text-text-sub text-center leading-tight">Записи</span>
               </Link>
             </motion.div>
           </Tooltip>

@@ -99,7 +99,7 @@ function PhotoItem({
           onClick={onMoveLeft}
           disabled={index === 0}
           aria-label="Перемістити вліво"
-          className="size-6 rounded-md flex items-center justify-center text-muted-foreground bg-secondary disabled:opacity-25 active:scale-95 transition-transform"
+          className="size-6 rounded-md flex items-center justify-center text-text-sub bg-secondary disabled:opacity-25 active:scale-95 transition-transform"
         >
           <ChevronLeft size={13} />
         </button>
@@ -108,7 +108,7 @@ function PhotoItem({
           onClick={onMoveRight}
           disabled={index === total - 1}
           aria-label="Перемістити вправо"
-          className="size-6 rounded-md flex items-center justify-center text-muted-foreground bg-secondary disabled:opacity-25 active:scale-95 transition-transform"
+          className="size-6 rounded-md flex items-center justify-center text-text-sub bg-secondary disabled:opacity-25 active:scale-95 transition-transform"
         >
           <ChevronRight size={13} />
         </button>
@@ -262,7 +262,7 @@ export function PortfolioPhotoUploader({ itemId, masterId, photos, onPhotosChang
             type="button"
             onClick={() => fileRef.current?.click()}
             disabled={uploading || disabled}
-            className="size-28 rounded-2xl border-2 border-dashed border-border flex flex-col items-center justify-center gap-1 text-muted-foreground/60 hover:border-accent hover:text-accent transition-colors shrink-0 self-start"
+            className="size-28 rounded-2xl border-2 border-dashed border-border flex flex-col items-center justify-center gap-1 text-text-sub hover:border-accent hover:text-accent transition-colors shrink-0 self-start"
           >
             {uploading
               ? <Loader2 size={20} className="animate-spin" />
@@ -272,7 +272,7 @@ export function PortfolioPhotoUploader({ itemId, masterId, photos, onPhotosChang
         )}
       </div>
 
-      <p className="text-xs text-muted-foreground/60">
+      <p className="text-xs text-text-sub">
         {photos.length} / {MAX_PHOTOS} · Торкніться фото для дій
       </p>
 

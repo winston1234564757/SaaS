@@ -146,7 +146,7 @@ export function ReferralPage({
             onPrimaryClick={nextStep}
           />
           <h1 className="heading-serif text-xl text-foreground mb-0.5">Реферальна програма</h1>
-          <p className="text-sm text-muted-foreground/60">Запрошуй колег — отримуй знижки на Pro</p>
+          <p className="text-sm text-text-sub">Запрошуй колег — отримуй знижки на Pro</p>
         </div>
       )}
 
@@ -163,7 +163,7 @@ export function ReferralPage({
           </div>
           <div>
             <p className="text-sm font-semibold text-foreground">Твоє реферальне посилання</p>
-            <p className="text-xs text-muted-foreground/60">Запрошений отримує 14 днів Pro trial</p>
+            <p className="text-xs text-text-sub">Запрошений отримує 14 днів Pro trial</p>
           </div>
         </div>
 
@@ -216,14 +216,14 @@ export function ReferralPage({
         className="grid grid-cols-3 gap-3"
       >
         {[
-          { label: 'Запрошено', value: referralCount,                  icon: <Users size={15} className="text-muted-foreground" /> },
+          { label: 'Запрошено', value: referralCount,                  icon: <Users size={15} className="text-text-sub" /> },
           { label: 'Активних',  value: activeReferralCount,            icon: <Check size={15} className="text-success" /> },
           { label: 'Запас %',   value: `${reservePct}%`,              icon: <Zap size={15} className="text-warning" /> },
         ].map(({ label, value, icon }) => (
           <div key={label} className="bento-card p-4 flex flex-col items-center gap-1 shadow-sm">
             {icon}
             <p className="text-2xl font-bold text-foreground leading-none mt-1">{value}</p>
-            <p className="text-[9px] font-semibold text-muted-foreground/60 uppercase tracking-wider text-center pt-0.5">{label}</p>
+            <p className="text-[9px] font-semibold text-text-sub uppercase tracking-wider text-center pt-0.5">{label}</p>
           </div>
         ))}
       </motion.div>
@@ -245,7 +245,7 @@ export function ReferralPage({
               'flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-[0.88] cursor-pointer',
               tab === t
                 ? 'bg-background text-foreground shadow-sm'
-                : 'text-muted-foreground/60 hover:text-muted-foreground'
+                : 'text-text-sub hover:text-text-sub'
             )}
           >
             {t === 'overview' ? 'Огляд' : `Історія${history.length > 0 ? ` (${history.length})` : ''}`}
@@ -275,11 +275,11 @@ export function ReferralPage({
                   'size-9 rounded-xl flex items-center justify-center flex-shrink-0',
                   reservePct > 0 ? 'bg-warning/15' : 'bg-secondary/60'
                 )}>
-                  <Zap size={16} className={reservePct > 0 ? 'text-warning' : 'text-muted-foreground/60'} />
+                  <Zap size={16} className={reservePct > 0 ? 'text-warning' : 'text-text-sub'} />
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-foreground">Банк знижок</p>
-                  <p className="text-xs text-muted-foreground/60">Bounties (+10% за першу оплату партнера) + залишок з минулого місяця</p>
+                  <p className="text-xs text-text-sub">Bounties (+10% за першу оплату партнера) + залишок з минулого місяця</p>
                 </div>
               </div>
 
@@ -287,7 +287,7 @@ export function ReferralPage({
                 <div className="flex items-center justify-between mt-1">
                   <div>
                     <p className="text-2xl font-bold text-warning">−{reservePct}%</p>
-                    <p className="text-xs text-muted-foreground/60 mt-0.5">
+                    <p className="text-xs text-text-sub mt-0.5">
                       Накопичено у вашому резерві
                     </p>
                   </div>
@@ -296,7 +296,7 @@ export function ReferralPage({
                   </div>
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground/60">
+                <p className="text-sm text-text-sub">
                   Резерв порожній. Запрошуй майстрів — кожен перший платіж реферала додає +10% до банку.
                 </p>
               )}
@@ -309,18 +309,18 @@ export function ReferralPage({
                   'size-9 rounded-xl flex items-center justify-center flex-shrink-0',
                   currentLTDisc > 0 ? 'bg-primary/15' : 'bg-secondary/60'
                 )}>
-                  <Crown size={16} className={currentLTDisc > 0 ? 'text-primary' : 'text-muted-foreground/60'} />
+                  <Crown size={16} className={currentLTDisc > 0 ? 'text-primary' : 'text-text-sub'} />
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-foreground">Твій постійний статус</p>
-                  <p className="text-xs text-muted-foreground/60">Залежить від кількості активних партнерів</p>
+                  <p className="text-xs text-text-sub">Залежить від кількості активних партнерів</p>
                 </div>
               </div>
 
               {currentLTDisc > 0 && (
                 <div className="mb-3 flex items-center gap-2">
                   <span className="text-2xl font-bold text-primary">−{lifetimePct}%</span>
-                  <span className="text-xs text-muted-foreground/60">постійно за {activeReferralCount} активних</span>
+                  <span className="text-xs text-text-sub">постійно за {activeReferralCount} активних</span>
                 </div>
               )}
 
@@ -331,7 +331,7 @@ export function ReferralPage({
                 </div>
               ) : tierProgress ? (
                 <>
-                  <div className="flex justify-between text-xs text-muted-foreground/60 mb-2">
+                  <div className="flex justify-between text-xs text-text-sub mb-2">
                     <span>
                       {activeReferralCount} / {tierProgress.nextTierRefs} —{' '}
                       ще {tierProgress.refsNeeded}{' '}
@@ -374,15 +374,15 @@ export function ReferralPage({
                     >
                       {reached
                         ? <Check size={11} className="text-primary" />
-                        : <Lock  size={11} className="text-muted-foreground/60" />
+                        : <Lock  size={11} className="text-text-sub" />
                       }
                       <p className={cn(
                         'text-[10px] font-bold leading-tight',
-                        reached ? 'text-primary' : 'text-muted-foreground/60'
+                        reached ? 'text-primary' : 'text-text-sub'
                       )}>
                         {tier.pct}
                       </p>
-                      <p className="text-[9px] text-muted-foreground/60">{tier.refs} реф.</p>
+                      <p className="text-[9px] text-text-sub">{tier.refs} реф.</p>
                     </div>
                   );
                 })}
@@ -398,13 +398,13 @@ export function ReferralPage({
                     <Sparkles className="text-success" size={16} />
                     <p className="text-sm font-bold text-success">Наступний місяць безкоштовний!</p>
                   </div>
-                  <p className="text-xs text-muted-foreground mb-3">
+                  <p className="text-xs text-text-sub mb-3">
                     Загальна знижка {totalPct}% ≥ 100% — Monobank не списуватиме.
                     Підписка продовжується автоматично.
                   </p>
                   {newReservePct > 0 && (
                     <div className="flex items-center justify-between text-xs pt-2 border-t border-success/20">
-                      <span className="text-muted-foreground/60">Залишок буде збережено у запасі</span>
+                      <span className="text-text-sub">Залишок буде збережено у запасі</span>
                       <span className="font-bold text-primary">+{newReservePct}%</span>
                     </div>
                   )}
@@ -412,13 +412,13 @@ export function ReferralPage({
                   <div className="mt-3 flex flex-col gap-1 pt-2 border-t border-success/15">
                     {lifetimePct > 0 && (
                       <div className="flex justify-between text-xs">
-                        <span className="text-muted-foreground/60">Статус Альянсу</span>
+                        <span className="text-text-sub">Статус Альянсу</span>
                         <span className="text-primary font-semibold">+{lifetimePct}%</span>
                       </div>
                     )}
                     {reservePct > 0 && (
                       <div className="flex justify-between text-xs">
-                        <span className="text-muted-foreground/60">Банк знижок (bounties + залишок)</span>
+                        <span className="text-text-sub">Банк знижок (bounties + залишок)</span>
                         <span className="text-warning font-semibold">+{reservePct}%</span>
                       </div>
                     )}
@@ -430,14 +430,14 @@ export function ReferralPage({
                   'bento-card p-5 border',
                   discountPct > 0 ? 'bg-success/5 border-success/20' : 'border-border'
                 )}>
-                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3 opacity-60">
+                  <p className="text-xs font-bold text-text-sub uppercase tracking-widest mb-3 opacity-60">
                     Наступний платіж
                   </p>
 
                   {/* Free month progress bar */}
                   {discountPct > 0 && discountPct < 100 && (
                     <div className="mb-3">
-                      <div className="flex justify-between text-xs text-muted-foreground/60 mb-1">
+                      <div className="flex justify-between text-xs text-text-sub mb-1">
                         <span>До безкоштовного місяця</span>
                         <span className="font-semibold text-foreground">{discountPct}%</span>
                       </div>
@@ -456,7 +456,7 @@ export function ReferralPage({
                     <p className="text-3xl font-bold text-foreground">{nextMonthUah} ₴</p>
                     {discountPct > 0 && (
                       <>
-                        <p className="text-sm text-muted-foreground/60 line-through mb-1">700 ₴</p>
+                        <p className="text-sm text-text-sub line-through mb-1">700 ₴</p>
                         <span className="text-xs font-bold text-success bg-success/10 px-2 py-0.5 rounded-full mb-1">
                           -{discountPct}%
                         </span>
@@ -467,13 +467,13 @@ export function ReferralPage({
                     <div className="flex flex-col gap-1 pt-2 border-t border-border/60">
                       {lifetimePct > 0 && (
                         <div className="flex justify-between text-xs">
-                          <span className="text-muted-foreground/60">Статус Альянсу</span>
+                          <span className="text-text-sub">Статус Альянсу</span>
                           <span className="text-primary font-semibold">−{lifetimePct}%</span>
                         </div>
                       )}
                       {reservePct > 0 && (
                         <div className="flex justify-between text-xs">
-                          <span className="text-muted-foreground/60">Банк знижок (bounties + залишок)</span>
+                          <span className="text-text-sub">Банк знижок (bounties + залишок)</span>
                           <span className="text-warning font-semibold">−{reservePct}%</span>
                         </div>
                       )}
@@ -487,7 +487,7 @@ export function ReferralPage({
             {isPro && trialLeft !== null && trialLeft > 0 && (
               <div className="bento-card p-4 flex items-center gap-3 border border-warning/20 bg-warning/5">
                 <Clock size={16} className="text-warning flex-shrink-0" />
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-text-sub">
                   Pro trial: залишилось{' '}
                   <span className="font-semibold text-foreground">
                     {trialLeft} {pluralUk(trialLeft, 'день', 'дні', 'днів')}
@@ -497,7 +497,7 @@ export function ReferralPage({
             )}
 
             {/* Hard cap notice */}
-            <div className="flex items-start gap-2 text-xs text-muted-foreground/60 px-1">
+            <div className="flex items-start gap-2 text-xs text-text-sub px-1">
               <AlertCircle size={12} className="mt-0.5 flex-shrink-0" />
               <span>
                 Максимум {MAX_REFS_COUNTED} рефералів зараховується для Lifetime Status.
@@ -517,9 +517,9 @@ export function ReferralPage({
           >
             {history.length === 0 ? (
               <div className="bento-card p-8 flex flex-col items-center gap-3 text-center">
-                <Users size={32} className="text-muted-foreground/40" />
-                <p className="text-sm font-semibold text-muted-foreground">Ще нікого немає</p>
-                <p className="text-xs text-muted-foreground/60">
+                <Users size={32} className="text-text-sub" />
+                <p className="text-sm font-semibold text-text-sub">Ще нікого немає</p>
+                <p className="text-xs text-text-sub">
                   Поділись посиланням з колегами — тут з'явиться список тих, хто приєднався
                 </p>
               </div>
@@ -535,12 +535,12 @@ export function ReferralPage({
                   )}>
                     {item.isFirstPaymentMade
                       ? <Zap size={15} className="text-success" />
-                      : <Clock size={15} className="text-muted-foreground/60" />
+                      : <Clock size={15} className="text-text-sub" />
                     }
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-foreground truncate">{item.refereeName}</p>
-                    <p className="text-xs text-muted-foreground/60">
+                    <p className="text-xs text-text-sub">
                       Приєднався {new Date(item.joinedAt).toLocaleDateString('uk-UA', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </p>
                   </div>
@@ -550,7 +550,7 @@ export function ReferralPage({
                         Bounty нараховано
                       </span>
                     ) : (
-                      <span className="text-xs text-muted-foreground/60 bg-secondary/80 px-2 py-0.5 rounded-full">
+                      <span className="text-xs text-text-sub bg-secondary/80 px-2 py-0.5 rounded-full">
                         Trial
                       </span>
                     )}

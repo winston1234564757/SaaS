@@ -89,7 +89,7 @@ export function InboxNavButton({ href, variant = 'icon', label = 'Повідом
       aria-label={label}
       className={`relative flex items-center justify-center size-9 rounded-xl hover:bg-secondary/60 active:scale-[0.95] transition-all ${className}`}
     >
-      <MessageCircle size={18} className="text-muted-foreground" />
+      <MessageCircle size={18} className="text-text-sub" />
       {badge && (
         <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-[var(--accent)] text-[var(--accent-on)] text-[9px] font-bold flex items-center justify-center ring-2 ring-[var(--surface)]">
           {badge}

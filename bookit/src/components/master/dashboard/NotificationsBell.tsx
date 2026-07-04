@@ -128,7 +128,7 @@ export function NotificationsBell({ mobileNav = false, fab = false }: { mobileNa
           onClick={handleOpen}
           className={cn(
             'relative size-9 flex items-center justify-center rounded-xl bg-secondary/60 border border-border hover:bg-secondary transition-colors duration-150 active:scale-95',
-            unreadCount > 0 ? 'text-accent' : 'text-muted-foreground',
+            unreadCount > 0 ? 'text-accent' : 'text-text-sub',
           )}
         >
           {bellIcon}
@@ -176,7 +176,7 @@ export function NotificationsBell({ mobileNav = false, fab = false }: { mobileNa
                 type="button"
                 onClick={() => { markAllRead(); setOpen(false); }}
                 aria-label="Закрити"
-                className="size-8 flex items-center justify-center rounded-full bg-secondary text-muted-foreground hover:bg-secondary/60 transition-colors duration-150"
+                className="size-8 flex items-center justify-center rounded-full bg-secondary text-text-sub hover:bg-secondary/60 transition-colors duration-150"
               >
                 <X size={15} />
               </button>
@@ -188,7 +188,7 @@ export function NotificationsBell({ mobileNav = false, fab = false }: { mobileNa
                 <div className="text-center py-12">
                   <Bell size={32} className="mx-auto text-secondary/80 mb-3" />
                   <p className="text-sm font-semibold text-foreground">Сповіщень поки немає</p>
-                  <p className="text-xs text-muted-foreground/60 mt-1">Тут з'являться нові записи та відгуки</p>
+                  <p className="text-xs text-text-sub mt-1">Тут з'являться нові записи та відгуки</p>
                 </div>
               ) : (
                 <div className="flex flex-col gap-2">
@@ -220,14 +220,14 @@ export function NotificationsBell({ mobileNav = false, fab = false }: { mobileNa
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-start justify-between gap-1">
-                              <p className={cn('text-sm font-semibold truncate', n.isRead ? 'text-muted-foreground' : 'text-foreground')}>
+                              <p className={cn('text-sm font-semibold truncate', n.isRead ? 'text-text-sub' : 'text-foreground')}>
                                 {n.title}
                               </p>
-                              <p className="text-[10px] text-muted-foreground/60 flex-shrink-0 mt-0.5">
+                              <p className="text-[10px] text-text-sub flex-shrink-0 mt-0.5">
                                 {timeAgo(n.createdAt)}
                               </p>
                             </div>
-                            <p className={cn('text-xs leading-tight mt-0.5', n.isRead ? 'text-muted-foreground/50' : 'text-muted-foreground')}>
+                            <p className={cn('text-xs leading-tight mt-0.5', n.isRead ? 'text-text-sub' : 'text-text-sub')}>
                               {n.body}
                             </p>
                           </div>

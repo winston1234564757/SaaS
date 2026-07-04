@@ -22,7 +22,7 @@ function GoogleIcon() {
 }
 
 const inputCls =
-  'w-full h-12 px-4 rounded-md bg-secondary/75 border border-border text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all';
+  'w-full h-12 px-4 rounded-md bg-secondary/75 border border-border text-sm text-foreground placeholder:text-text-sub focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all';
 
 export function NavLoginSheet({ open, onClose }: Props) {
   const [email, setEmail] = useState('');
@@ -79,11 +79,11 @@ export function NavLoginSheet({ open, onClose }: Props) {
             <div className="flex items-start justify-between mb-5">
               <div>
                 <h2 className="text-lg font-bold text-foreground">Увійти до Bookit</h2>
-                <p className="text-sm text-muted-foreground mt-0.5">Всі записи в одному місці</p>
+                <p className="text-sm text-text-sub mt-0.5">Всі записи в одному місці</p>
               </div>
               <button type="button"
                 onClick={onClose}
-                className="size-8 rounded-lg flex items-center justify-center text-muted-foreground/60 hover:bg-black/5 transition-colors flex-shrink-0 active:scale-[0.95] transition-all cursor-pointer"
+                className="size-8 rounded-lg flex items-center justify-center text-text-sub hover:bg-black/5 transition-colors flex-shrink-0 active:scale-[0.95] transition-all cursor-pointer"
                 aria-label="Закрити"
               >
                 <X size={16} />
@@ -102,14 +102,14 @@ export function NavLoginSheet({ open, onClose }: Props) {
 
             <div className="flex items-center gap-3 mb-4">
               <div className="flex-1 h-px bg-secondary/80" />
-              <span className="text-xs text-muted-foreground/60">або</span>
+              <span className="text-xs text-text-sub">або</span>
               <div className="flex-1 h-px bg-secondary/80" />
             </div>
 
             {/* Email + Password */}
             <form onSubmit={handleEmail} className="flex flex-col gap-3">
               <div className="relative">
-                <Mail size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none" />
+                <Mail size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-sub pointer-events-none" />
                 <input
                   type="email"
                   placeholder="Email"
@@ -121,7 +121,7 @@ export function NavLoginSheet({ open, onClose }: Props) {
                 />
               </div>
               <div className="relative">
-                <Lock size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none" />
+                <Lock size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-sub pointer-events-none" />
                 <input
                   type="password"
                   placeholder="Пароль"
@@ -146,7 +146,7 @@ export function NavLoginSheet({ open, onClose }: Props) {
               </button>
             </form>
 
-            <p className="text-xs text-center text-muted-foreground/60 mt-4">
+            <p className="text-xs text-center text-text-sub mt-4">
               Ще немає акаунту?{' '}
               <a href="/register" className="text-primary font-medium underline underline-offset-4">
                 Зареєструватись

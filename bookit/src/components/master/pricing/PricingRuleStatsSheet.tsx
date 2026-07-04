@@ -59,7 +59,7 @@ export function PricingRuleStatsSheet({ rule, onClose }: Props) {
           </div>
           <div className="min-w-0">
             <p className="text-base font-semibold text-foreground truncate">{rule?.title}</p>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-text-sub">
               {isWarm ? 'Надбавка до ціни' : 'Знижка для заповнення вікон'}
             </p>
           </div>
@@ -78,7 +78,7 @@ export function PricingRuleStatsSheet({ rule, onClose }: Props) {
               <BarChart3 size={22} style={{ color }} />
             </div>
             <p className="text-sm font-medium text-foreground">Це правило ще не спрацьовувало</p>
-            <p className="text-xs text-muted-foreground max-w-xs text-balance">
+            <p className="text-xs text-text-sub max-w-xs text-balance">
               Щойно клієнт забронює слот за цим правилом — тут зʼявиться статистика.
             </p>
           </div>
@@ -88,12 +88,12 @@ export function PricingRuleStatsSheet({ rule, onClose }: Props) {
           <>
             {/* Primary stat */}
             <div className="rounded-2xl px-4 py-4" style={{ background: tint(color, 9) }}>
-              <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground mb-1">
+              <p className="text-[11px] font-medium uppercase tracking-wide text-text-sub mb-1">
                 {isWarm ? 'Спрацювало' : 'Врятувало вікон'}
               </p>
               <p className="text-2xl font-bold text-foreground tabular-nums">
                 {count}{' '}
-                <span className="text-sm font-semibold text-muted-foreground">
+                <span className="text-sm font-semibold text-text-sub">
                   {isWarm ? pluralUk(count, 'раз', 'рази', 'разів') : pluralUk(count, 'слот', 'слоти', 'слотів')}
                 </span>
               </p>
@@ -105,7 +105,7 @@ export function PricingRuleStatsSheet({ rule, onClose }: Props) {
                 <div className="rounded-2xl bg-secondary/50 px-3.5 py-3">
                   <div className="flex items-center gap-1.5 mb-1">
                     <TrendingUp size={13} style={{ color }} />
-                    <span className="text-[11px] text-muted-foreground">Додано</span>
+                    <span className="text-[11px] text-text-sub">Додано</span>
                   </div>
                   <p className="text-base font-bold text-foreground tabular-nums">+{kopToUah(stats.earned_kopecks)} ₴</p>
                 </div>
@@ -114,7 +114,7 @@ export function PricingRuleStatsSheet({ rule, onClose }: Props) {
                 <div className="rounded-2xl bg-secondary/50 px-3.5 py-3">
                   <div className="flex items-center gap-1.5 mb-1">
                     <Percent size={13} style={{ color }} />
-                    <span className="text-[11px] text-muted-foreground">{isWarm ? 'Середня надбавка' : 'Середня знижка'}</span>
+                    <span className="text-[11px] text-text-sub">{isWarm ? 'Середня надбавка' : 'Середня знижка'}</span>
                   </div>
                   <p className="text-base font-bold text-foreground tabular-nums">{isWarm ? '+' : '−'}{stats.avg_pct}%</p>
                 </div>
@@ -122,7 +122,7 @@ export function PricingRuleStatsSheet({ rule, onClose }: Props) {
               <div className="rounded-2xl bg-secondary/50 px-3.5 py-3">
                 <div className="flex items-center gap-1.5 mb-1">
                   <CalendarClock size={13} style={{ color }} />
-                  <span className="text-[11px] text-muted-foreground">Востаннє</span>
+                  <span className="text-[11px] text-text-sub">Востаннє</span>
                 </div>
                 <p className="text-base font-bold text-foreground tabular-nums">{formatDate(stats.last_date)}</p>
               </div>
@@ -131,14 +131,14 @@ export function PricingRuleStatsSheet({ rule, onClose }: Props) {
             {/* Recent bookings */}
             {stats.recent.length > 0 && (
               <div>
-                <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground mb-2 px-1">
+                <p className="text-[11px] font-medium uppercase tracking-wide text-text-sub mb-2 px-1">
                   Останні записи
                 </p>
                 <div className="flex flex-col gap-1.5">
                   {stats.recent.map((b, i) => (
                     <div key={i} className="flex items-center justify-between rounded-xl bg-secondary/40 px-3.5 py-2.5">
                       <span className="text-sm text-foreground truncate">{b.client_name || 'Клієнт'}</span>
-                      <span className="text-xs text-muted-foreground tabular-nums shrink-0 ml-3">{formatDate(b.date)}</span>
+                      <span className="text-xs text-text-sub tabular-nums shrink-0 ml-3">{formatDate(b.date)}</span>
                     </div>
                   ))}
                 </div>

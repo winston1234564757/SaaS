@@ -48,7 +48,7 @@ function ProgramForm({
     >
       <div className="flex flex-col gap-3">
         <div>
-          <label className="text-xs font-medium text-muted-foreground mb-1 block">Назва програми</label>
+          <label className="text-xs font-medium text-text-sub mb-1 block">Назва програми</label>
           <input
             value={name}
             onChange={e => setName(e.target.value)}
@@ -60,7 +60,7 @@ function ProgramForm({
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1 block">Після скільки візитів</label>
+            <label className="text-xs font-medium text-text-sub mb-1 block">Після скільки візитів</label>
             <input
               type="number"
               min="1"
@@ -71,7 +71,7 @@ function ProgramForm({
             />
           </div>
           <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1 block">Знижка (%)</label>
+            <label className="text-xs font-medium text-text-sub mb-1 block">Знижка (%)</label>
             <input
               type="number"
               min="1"
@@ -88,7 +88,7 @@ function ProgramForm({
           <button
             type="button"
             onClick={onCancel}
-            className="flex-1 py-2.5 rounded-xl bg-secondary/70 border border-border text-sm font-medium text-muted-foreground hover:bg-secondary transition-colors active:scale-95"
+            className="flex-1 py-2.5 rounded-xl bg-secondary/70 border border-border text-sm font-medium text-text-sub hover:bg-secondary transition-colors active:scale-95"
           >
             Скасувати
           </button>
@@ -123,7 +123,7 @@ function OverviewCard({
   onNavigate: (params: string) => void;
 }) {
   const segments: { key: string; value: number; label: string; icon: typeof Users; tint: string; chip: string; href: string | null }[] = [
-    { key: 'progress', value: inProgress, label: 'у прогресі', icon: TrendingUp, tint: 'text-foreground', chip: 'bg-secondary text-muted-foreground', href: 'loyaltyMin=1' },
+    { key: 'progress', value: inProgress, label: 'у прогресі', icon: TrendingUp, tint: 'text-foreground', chip: 'bg-secondary text-text-sub', href: 'loyaltyMin=1' },
     { key: 'ready', value: ready, label: 'готові', icon: Check, tint: 'text-success', chip: 'bg-success/12 text-success', href: minTarget > 0 ? `loyaltyMin=${minTarget}` : null },
     { key: 'step', value: oneStep, label: 'за крок', icon: Flame, tint: 'text-amber-700', chip: 'bg-amber-500/12 text-amber-700', href: minTarget > 1 ? `loyaltyExact=${minTarget - 1}` : null },
   ];
@@ -144,7 +144,7 @@ function OverviewCard({
                 <Icon size={14} />
               </span>
               <span className={cn('text-2xl font-semibold tabular-nums leading-none', s.tint)}>{s.value}</span>
-              <span className="text-[11px] text-muted-foreground">{s.label}</span>
+              <span className="text-[11px] text-text-sub">{s.label}</span>
             </>
           );
           const cls = cn(
@@ -170,7 +170,7 @@ function OverviewCard({
       {/* Impact-смуга (forward-only) */}
       <div className="flex items-center gap-2 pt-1 border-t border-secondary/60">
         {impact && impact.redemptions > 0 ? (
-          <p className="text-xs text-muted-foreground pt-2">
+          <p className="text-xs text-text-sub pt-2">
             За 30 днів:{' '}
             <span className="font-semibold text-foreground tabular-nums">{impact.given_hryvnia.toLocaleString('uk-UA')} ₴</span>{' '}
             віддано ·{' '}
@@ -178,7 +178,7 @@ function OverviewCard({
             {impact.redemptions === 1 ? 'раз' : 'разів'}
           </p>
         ) : (
-          <p className="text-xs text-muted-foreground/60 pt-2">Поки порожньо. Перша надана знижка зʼявиться тут</p>
+          <p className="text-xs text-text-sub pt-2">Поки порожньо. Перша надана знижка зʼявиться тут</p>
         )}
       </div>
     </div>
@@ -202,7 +202,7 @@ function ProgramProgress({
   const total = onTrack + reached;
 
   if (total === 0) {
-    return <p className="text-xs text-muted-foreground/60 mt-3">Ще немає клієнтів на цій програмі</p>;
+    return <p className="text-xs text-text-sub mt-3">Ще немає клієнтів на цій програмі</p>;
   }
 
   const reachedPct = (reached / total) * 100;
@@ -224,7 +224,7 @@ function ProgramProgress({
           transition={{ duration: 0.6, ease: 'easeOut', delay: 0.05 }}
         />
       </div>
-      <p className="text-xs text-muted-foreground">
+      <p className="text-xs text-text-sub">
         <span className="tabular-nums">{onTrack}</span> на шляху ·{' '}
         {reached > 0 ? (
           <button
@@ -395,7 +395,7 @@ export function LoyaltyPage({ isDrawer }: { isDrawer?: boolean }) {
             onPrimaryClick={nextStep}
           />
           <h1 className="heading-serif text-xl text-foreground mb-0.5">Програми лояльності</h1>
-          <p className="text-sm text-muted-foreground/60">Знижки для постійних клієнтів</p>
+          <p className="text-sm text-text-sub">Знижки для постійних клієнтів</p>
         </div>
       )}
 
@@ -417,7 +417,7 @@ export function LoyaltyPage({ isDrawer }: { isDrawer?: boolean }) {
           <Gift size={16} className="text-primary shrink-0 mt-0.5" />
           <div>
             <p className="text-xs font-semibold text-foreground">Як це працює</p>
-            <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+            <p className="text-xs text-text-sub mt-0.5 leading-relaxed">
               Коли клієнт досягає потрібної кількості візитів, він автоматично отримує знижку при наступному записі через публічну сторінку.
             </p>
           </div>
@@ -464,15 +464,15 @@ export function LoyaltyPage({ isDrawer }: { isDrawer?: boolean }) {
       {isLoading ? (
         <div className="flex items-center justify-center py-10 gap-2">
           <Loader2 size={20} className="text-primary animate-spin" />
-          <span className="text-sm text-muted-foreground/60">Завантаження...</span>
+          <span className="text-sm text-text-sub">Завантаження...</span>
         </div>
       ) : programs.length === 0 && !showForm ? (
         <div className="bento-card p-8 flex flex-col items-center gap-3 text-center">
           <div className="size-14 rounded-full bg-secondary flex items-center justify-center">
-            <Users size={26} className="text-muted-foreground/60" />
+            <Users size={26} className="text-text-sub" />
           </div>
           <p className="text-sm font-semibold text-foreground">Програм лояльності ще немає</p>
-          <p className="text-xs text-muted-foreground/60">Створіть першу знижку для постійних клієнтів</p>
+          <p className="text-xs text-text-sub">Створіть першу знижку для постійних клієнтів</p>
         </div>
       ) : (
         <div className="flex flex-col gap-3">
@@ -501,12 +501,12 @@ export function LoyaltyPage({ isDrawer }: { isDrawer?: boolean }) {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold text-foreground">{p.name}</p>
-                        <p className="text-xs text-muted-foreground/60">
+                        <p className="text-xs text-text-sub">
                           Після {p.targetVisits} візитів · знижка {p.rewardValue}%
                         </p>
                       </div>
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                        p.isActive ? 'bg-success/15 text-success' : 'bg-secondary/80 text-muted-foreground/60'
+                        p.isActive ? 'bg-success/15 text-success' : 'bg-secondary/80 text-text-sub'
                       }`}>
                         {p.isActive ? 'Активна' : 'Вимкнена'}
                       </span>
@@ -528,7 +528,7 @@ export function LoyaltyPage({ isDrawer }: { isDrawer?: boolean }) {
                           type="button"
                           aria-label="Редагувати"
                           onClick={() => setEditingId(p.id)}
-                          className="size-8 flex items-center justify-center rounded-xl bg-secondary/70 border border-border text-muted-foreground hover:bg-secondary hover:text-primary transition-colors"
+                          className="size-8 flex items-center justify-center rounded-xl bg-secondary/70 border border-border text-text-sub hover:bg-secondary hover:text-primary transition-colors"
                         >
                           <Pencil size={14} />
                         </button>
@@ -557,7 +557,7 @@ export function LoyaltyPage({ isDrawer }: { isDrawer?: boolean }) {
                               <button
                                 type="button"
                                 onClick={() => setConfirmDelete(null)}
-                                className="px-2.5 h-7 rounded-lg bg-secondary/70 border border-border text-xs font-medium text-muted-foreground hover:bg-secondary transition-colors"
+                                className="px-2.5 h-7 rounded-lg bg-secondary/70 border border-border text-xs font-medium text-text-sub hover:bg-secondary transition-colors"
                               >
                                 Ні
                               </button>
@@ -567,7 +567,7 @@ export function LoyaltyPage({ isDrawer }: { isDrawer?: boolean }) {
                               type="button"
                               aria-label="Видалити програму"
                               onClick={() => setConfirmDelete(p.id)}
-                              className="size-8 flex items-center justify-center rounded-xl bg-secondary/70 border border-border text-muted-foreground hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 transition-colors"
+                              className="size-8 flex items-center justify-center rounded-xl bg-secondary/70 border border-border text-text-sub hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 transition-colors"
                             >
                               <Trash2 size={14} />
                             </button>
@@ -606,7 +606,7 @@ export function LoyaltyPage({ isDrawer }: { isDrawer?: boolean }) {
           </div>
           <div className="flex-1">
             <p className="text-sm font-semibold text-foreground">Реферальна програма клієнтів</p>
-            <p className="text-xs text-muted-foreground/60">Клієнти діляться посиланням — подруга отримує знижку</p>
+            <p className="text-xs text-text-sub">Клієнти діляться посиланням — подруга отримує знижку</p>
           </div>
           <button
             type="button"
@@ -633,7 +633,7 @@ export function LoyaltyPage({ isDrawer }: { isDrawer?: boolean }) {
               className="overflow-hidden flex flex-col gap-3"
             >
               <div>
-                <label className="text-xs font-medium text-muted-foreground mb-1 block">
+                <label className="text-xs font-medium text-text-sub mb-1 block">
                   Знижка % (1–50)
                 </label>
                 <input
@@ -645,7 +645,7 @@ export function LoyaltyPage({ isDrawer }: { isDrawer?: boolean }) {
                   aria-label="Знижка для реферала у відсотках"
                   className="w-full px-3 py-2.5 rounded-xl bg-secondary/80 border border-border text-sm text-foreground outline-none focus:border-primary transition-colors"
                 />
-                <p className="text-xs text-muted-foreground/60 mt-1">
+                <p className="text-xs text-text-sub mt-1">
                   Подруга отримає −{c2cDiscount}% на перший візит · Клієнт накопить +{c2cDiscount}% бонус за кожну подругу
                 </p>
               </div>
@@ -685,7 +685,7 @@ export function LoyaltyPage({ isDrawer }: { isDrawer?: boolean }) {
               "w-full py-2 rounded-xl text-xs font-medium transition-all flex items-center justify-center gap-1",
               showSaved
                 ? "bg-success/10 text-success border border-success/20"
-                : "bg-secondary/70 border border-border text-muted-foreground hover:bg-secondary",
+                : "bg-secondary/70 border border-border text-text-sub hover:bg-secondary",
               c2cSaving && "opacity-50"
             )}
           >

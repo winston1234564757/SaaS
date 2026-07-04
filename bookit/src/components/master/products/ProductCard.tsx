@@ -227,7 +227,7 @@ function ActionBtn({ onClick, label, children }: { onClick: () => void; label: s
       type="button"
       onClick={(e) => { e.stopPropagation(); onClick(); }}
       aria-label={label}
-      className="size-11 flex items-center justify-center rounded-full bg-secondary/60 border border-border text-muted-foreground hover:bg-secondary hover:text-primary transition-colors active:scale-95"
+      className="size-11 flex items-center justify-center rounded-full bg-secondary/60 border border-border text-text-sub hover:bg-secondary hover:text-primary transition-colors active:scale-95"
     >
       {children}
     </button>

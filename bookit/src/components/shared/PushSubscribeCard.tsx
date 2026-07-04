@@ -187,7 +187,7 @@ export function PushSubscribeCard({ userRole = 'master' }: Props) {
             <p className={`text-sm font-semibold ${state === 'subscribed' ? 'text-success' : 'text-foreground'}`}>
               {state === 'subscribed' ? 'Сповіщення підключені' : 'Увімкнути сповіщення'}
             </p>
-            <p className="text-xs text-muted-foreground/60 mt-0.5">
+            <p className="text-xs text-text-sub mt-0.5">
               {state === 'subscribing'
                 ? 'Підключаємо...'
                 : isMaster
@@ -211,7 +211,7 @@ export function PushSubscribeCard({ userRole = 'master' }: Props) {
           </div>
           <div className="flex-1">
             <p className="text-sm font-semibold text-foreground">Сповіщення заблоковані</p>
-            <p className="text-xs text-muted-foreground/60 mt-0.5 leading-relaxed">
+            <p className="text-xs text-text-sub mt-0.5 leading-relaxed">
               Відкрий <span className="font-medium text-foreground">Налаштування браузера → Сайти → Сповіщення</span> і дозволь для bookit.com.ua
             </p>
             <button
@@ -235,7 +235,7 @@ export function PushSubscribeCard({ userRole = 'master' }: Props) {
           </div>
           <div>
             <p className="text-sm font-semibold text-foreground">Додай BookIT на головний екран</p>
-            <p className="text-xs text-muted-foreground/60 mt-0.5 leading-relaxed">
+            <p className="text-xs text-text-sub mt-0.5 leading-relaxed">
               Натисни <span className="font-medium text-foreground">⎋ → «На початковий екран»</span> — після цього Push-сповіщення запрацюють
             </p>
           </div>
@@ -252,7 +252,7 @@ export function PushSubscribeCard({ userRole = 'master' }: Props) {
           </div>
           <div>
             <p className="text-sm font-semibold text-foreground">Оновіть браузер для сповіщень</p>
-            <p className="text-xs text-muted-foreground/60 mt-0.5">
+            <p className="text-xs text-text-sub mt-0.5">
               Використай Chrome або Firefox — вони підтримують Push-сповіщення
             </p>
           </div>

@@ -32,7 +32,7 @@ function formatReward(tier: LoyaltyTier): string {
 /**
  * DS-CLIENT-01 — програма лояльності клієнта на публічній сторінці. Дизайн-мова: світлий
  * `Section` з домінантою (поточна знижка / прогрес), а не рівний bento з вимитими токенами.
- * Викорінено `text-muted-foreground` + warning/success на дрібному тексті (провал 4.5:1).
+ * Викорінено `text-text-sub` + warning/success на дрібному тексті (провал 4.5:1).
  */
 export function LoyaltyWidget({ masterId, serverIsAuth, serverCurrentVisits, tiers, onBook }: Props) {
   const { data: clientAuth } = useQuery({

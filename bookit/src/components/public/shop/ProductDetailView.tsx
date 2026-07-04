@@ -82,7 +82,7 @@ export function ProductDetailView({ product: p, mode = 'client', actions }: Prop
           </motion.div>
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <ProductIcon name={p.icon_name} size={56} className="text-muted-foreground" />
+            <ProductIcon name={p.icon_name} size={56} className="text-text-sub" />
           </div>
         )}
 
@@ -167,13 +167,13 @@ export function ProductDetailView({ product: p, mode = 'client', actions }: Prop
         {/* Description — or master nudge when empty */}
         {p.description?.trim() ? (
           <div>
-            <p className="text-xs font-bold text-muted-foreground/60 uppercase tracking-wider mb-1.5">Про товар</p>
-            <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">{p.description}</p>
+            <p className="text-xs font-bold text-text-sub uppercase tracking-wider mb-1.5">Про товар</p>
+            <p className="text-sm text-text-sub leading-relaxed whitespace-pre-line">{p.description}</p>
           </div>
         ) : mode === 'master' ? (
           <div className="flex items-start gap-2.5 rounded-2xl bg-primary/8 border border-primary/15 px-4 py-3.5">
             <PencilLine size={16} className="text-primary mt-0.5 shrink-0" />
-            <p className="text-[13px] text-muted-foreground leading-snug">Додайте опис, щоб клієнтам було легше обрати</p>
+            <p className="text-[13px] text-text-sub leading-snug">Додайте опис, щоб клієнтам було легше обрати</p>
           </div>
         ) : null}
 
@@ -183,12 +183,12 @@ export function ProductDetailView({ product: p, mode = 'client', actions }: Prop
         {/* Reviews — derived per-product via order_items (M-SHOP-03b) */}
         <div className="flex flex-col gap-3.5 border-t border-border pt-5 mt-1">
           <div className="flex items-center justify-between">
-            <h2 className="text-[11px] font-bold text-muted-foreground/70 uppercase tracking-[0.14em] m-0">Відгуки</h2>
+            <h2 className="text-[11px] font-bold text-text-sub uppercase tracking-[0.14em] m-0">Відгуки</h2>
             {count > 0 && (
               <span className="flex items-center gap-1.5 text-foreground">
                 <Stars value={average} size={13} />
                 <span className="text-sm font-bold tabular-nums">{average.toFixed(1)}</span>
-                <span className="text-xs text-muted-foreground/60 font-medium">· {count}</span>
+                <span className="text-xs text-text-sub font-medium">· {count}</span>
               </span>
             )}
           </div>
@@ -198,7 +198,7 @@ export function ProductDetailView({ product: p, mode = 'client', actions }: Prop
               {[0, 1].map(i => <div key={i} className="h-[68px] rounded-2xl bg-muted/12 animate-pulse" />)}
             </div>
           ) : count === 0 ? (
-            <p className="text-sm text-muted-foreground/60 py-1.5">Відгуків поки немає</p>
+            <p className="text-sm text-text-sub py-1.5">Відгуків поки немає</p>
           ) : (
             <ul className="flex flex-col gap-2.5 list-none m-0 p-0">
               {reviews.map(r => (
@@ -208,7 +208,7 @@ export function ProductDetailView({ product: p, mode = 'client', actions }: Prop
                     <span className="flex items-center gap-2 shrink-0">
                       <Stars value={r.rating} size={11} />
                       <span className="sr-only">{r.rating} з 5</span>
-                      <span className="text-[11px] text-muted-foreground/50 tabular-nums">{timeAgo(r.created_at)}</span>
+                      <span className="text-[11px] text-text-sub tabular-nums">{timeAgo(r.created_at)}</span>
                     </span>
                   </div>
                   {r.comment && <p className="text-sm text-foreground/75 leading-snug mt-2">{r.comment}</p>}

@@ -117,7 +117,7 @@ export function ReviewsPage() {
               onPrimaryClick={nextStep}
             />
             <h1 className="heading-serif text-xl text-foreground mb-0.5">Відгуки</h1>
-            <p className="text-sm text-muted-foreground/60">Керуйте відгуками клієнтів</p>
+            <p className="text-sm text-text-sub">Керуйте відгуками клієнтів</p>
           </div>
 
           {/* Hero rating + distribution-as-filter */}
@@ -216,7 +216,7 @@ export function ReviewsPage() {
                       'text-[10px] font-bold px-1.5 py-0.5 rounded-lg tabular-nums',
                       publishFilter === pill.key
                         ? 'bg-[var(--accent-on)]/20 text-[var(--accent-on)]'
-                        : 'bg-secondary text-muted-foreground/60'
+                        : 'bg-secondary text-text-sub'
                     )}>
                       {pill.count}
                     </span>
@@ -252,7 +252,7 @@ export function ReviewsPage() {
                       <option key={o.key} value={o.key}>{o.label}</option>
                     ))}
                   </select>
-                  <ChevronDown size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none" />
+                  <ChevronDown size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-sub pointer-events-none" />
                 </div>
               </div>
 
@@ -273,7 +273,7 @@ export function ReviewsPage() {
           {isStarter && reviews.length > 0 && (
             <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-primary/8 border border-primary/20">
               <Star size={16} className="text-primary flex-shrink-0" />
-              <p className="text-xs text-muted-foreground flex-1 leading-relaxed">
+              <p className="text-xs text-text-sub flex-1 leading-relaxed">
                 З <span className="font-semibold text-foreground">Pro</span> — автоматичні нагадування клієнтам залишити відгук після завершення запису
               </p>
               <Link href="/dashboard/billing?plan=pro"
@@ -289,21 +289,21 @@ export function ReviewsPage() {
           {isLoading ? (
             <div className="bento-card p-10 flex flex-col items-center gap-3">
               <Loader2 size={24} className="text-primary animate-spin" />
-              <p className="text-sm text-muted-foreground/60">Завантаження відгуків...</p>
+              <p className="text-sm text-text-sub">Завантаження відгуків...</p>
             </div>
           ) : reviews.length === 0 ? (
             <div className="bento-card p-10 flex flex-col items-center gap-3 text-center">
               <div className="size-14 rounded-full bg-secondary flex items-center justify-center">
-                <MessageSquare size={26} className="text-muted-foreground/60" />
+                <MessageSquare size={26} className="text-text-sub" />
               </div>
               <p className="text-sm font-semibold text-foreground">Відгуків ще немає</p>
-              <p className="text-xs text-muted-foreground/60">Клієнти зможуть залишати відгуки після завершених записів</p>
+              <p className="text-xs text-text-sub">Клієнти зможуть залишати відгуки після завершених записів</p>
             </div>
           ) : visible.length === 0 ? (
             <div className="bento-card p-8 flex flex-col items-center gap-2 text-center">
-              <MessageSquare size={22} className="text-muted-foreground/60" />
+              <MessageSquare size={22} className="text-text-sub" />
               <p className="text-sm font-semibold text-foreground">Нічого не знайдено</p>
-              <p className="text-xs text-muted-foreground/60">Спробуйте змінити або скинути фільтри</p>
+              <p className="text-xs text-text-sub">Спробуйте змінити або скинути фільтри</p>
               <button
                 type="button"
                 onClick={resetFilters}
@@ -344,12 +344,12 @@ export function ReviewsPage() {
                             <div className="flex items-center gap-1.5">
                               <p className="text-sm font-semibold text-foreground">{r.client_name}</p>
                               {!r.is_published && (
-                                <span className="text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-md bg-secondary text-muted-foreground/60">
+                                <span className="text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-md bg-secondary text-text-sub">
                                   прихований
                                 </span>
                               )}
                             </div>
-                            <p className="text-[10px] text-muted-foreground/60">
+                            <p className="text-[10px] text-text-sub">
                               {formatDateFull(r.booking_date ?? r.created_at)}
                             </p>
                           </div>
@@ -365,7 +365,7 @@ export function ReviewsPage() {
                             'pointer-events-auto relative z-10 flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[11px] font-semibold transition-all active:scale-[0.88] disabled:opacity-50 cursor-pointer',
                             r.is_published
                               ? 'bg-success/12 text-success hover:bg-destructive/10 hover:text-destructive'
-                              : 'bg-secondary text-muted-foreground/60 hover:bg-success/12 hover:text-success'
+                              : 'bg-secondary text-text-sub hover:bg-success/12 hover:text-success'
                           )}
                         >
                           {isToggling === r.id ? (
@@ -394,7 +394,7 @@ export function ReviewsPage() {
                       {r.comment && (
                         <p className={cn(
                           'text-sm mt-2 leading-relaxed line-clamp-3',
-                          r.is_published ? 'text-text-sub' : 'text-muted-foreground'
+                          r.is_published ? 'text-text-sub' : 'text-text-sub'
                         )}>
                           {r.comment}
                         </p>

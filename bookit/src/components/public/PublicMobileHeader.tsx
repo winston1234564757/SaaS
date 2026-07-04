@@ -36,7 +36,7 @@ export async function PublicMobileHeader() {
             <Link
               href="/login"
               aria-label="Увійти"
-              className="size-9 rounded-xl flex items-center justify-center text-muted-foreground hover:bg-black/5 transition-colors"
+              className="size-9 rounded-xl flex items-center justify-center text-text-sub hover:bg-black/5 transition-colors"
             >
               <LogIn size={17} strokeWidth={2} />
             </Link>

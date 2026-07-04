@@ -30,21 +30,21 @@ function BarTooltipContent({ dayFull, bookings, revenue, isToday, isPast }: {
       </p>
       <div className="h-px bg-secondary" />
       {bookings === 0 ? (
-        <p className="text-[11px] text-muted-foreground/60">Записів немає</p>
+        <p className="text-[11px] text-text-sub">Записів немає</p>
       ) : (
         <>
           <div className="flex items-center justify-between gap-4">
-            <span className="text-[11px] text-muted-foreground">Записів</span>
+            <span className="text-[11px] text-text-sub">Записів</span>
             <span className="text-[11px] font-semibold text-foreground">{bookings}</span>
           </div>
           <div className="flex items-center justify-between gap-4">
-            <span className="text-[11px] text-muted-foreground">Виручка</span>
+            <span className="text-[11px] text-text-sub">Виручка</span>
             <span className="text-[11px] font-semibold text-primary">
               {revenue > 0 ? revenue.toLocaleString('uk-UA') + ' ₴' : '—'}
             </span>
           </div>
           {isPast && !isToday && (
-            <p className="text-[10px] text-muted-foreground/60">Завершений день</p>
+            <p className="text-[10px] text-text-sub">Завершений день</p>
           )}
         </>
       )}
@@ -88,7 +88,7 @@ export function WeeklyOverview() {
     >
       <div className="flex items-center justify-between mb-5">
         <h2 className="heading-serif text-base text-foreground">Цей тиждень</h2>
-        <span className="text-xs text-muted-foreground/60">{totalBookings} записів</span>
+        <span className="text-xs text-text-sub">{totalBookings} записів</span>
       </div>
 
       {/* Bar chart */}
@@ -176,7 +176,7 @@ export function WeeklyOverview() {
         {DAYS_SHORT.map((day, i) => (
           <div key={day} className="flex-1 text-center">
             <span className={`text-[11px] font-medium ${
-              i === todayIdx ? 'text-primary font-bold' : 'text-muted-foreground/60'
+              i === todayIdx ? 'text-primary font-bold' : 'text-text-sub'
             }`}>
               {day}
             </span>
@@ -185,7 +185,7 @@ export function WeeklyOverview() {
       </div>
 
       <div className="mt-4 pt-4 border-t border-secondary/60 flex items-center justify-between">
-        <span className="text-xs text-muted-foreground/60">Виручка за тиждень</span>
+        <span className="text-xs text-text-sub">Виручка за тиждень</span>
         <span className="text-sm font-bold text-foreground">
           {totalRevenue.toLocaleString('uk-UA')} ₴
         </span>
