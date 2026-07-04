@@ -25,7 +25,7 @@ export function StepStyle({ state, set }: StepStyleProps) {
     <div className="space-y-5">
       {/* Образи */}
       <div>
-        <p className="text-xs font-semibold text-muted-foreground mb-2">Образ</p>
+        <p className="text-xs font-semibold text-text-sub mb-2">Образ</p>
         <div className="grid grid-cols-2 gap-2.5">
           {STYLE_PRESETS.map(p => {
             const active = p.id === styleId;
@@ -70,12 +70,12 @@ export function StepStyle({ state, set }: StepStyleProps) {
 
       {/* Розмір тексту */}
       <div>
-        <p className="text-xs font-semibold text-muted-foreground mb-2">Розмір тексту</p>
+        <p className="text-xs font-semibold text-text-sub mb-2">Розмір тексту</p>
         <div className="flex bg-secondary/40 rounded-xl p-0.5 border border-border">
           {SIZES.map(sz => (
             <button key={sz.id} type="button" aria-pressed={textSize === sz.id} onClick={() => set.setTextSize(sz.id)}
               className={cn('flex-1 py-2 text-xs font-bold rounded-lg transition-colors duration-150 active:scale-[0.95] cursor-pointer',
-                textSize === sz.id ? 'bg-surface shadow-sm text-foreground' : 'text-muted-foreground/60 hover:text-muted-foreground')}>
+                textSize === sz.id ? 'bg-surface shadow-sm text-foreground' : 'text-text-sub hover:text-text-sub')}>
               {sz.label}
             </button>
           ))}
@@ -84,16 +84,16 @@ export function StepStyle({ state, set }: StepStyleProps) {
 
       {/* Елементи кадру */}
       <div>
-        <p className="text-xs font-semibold text-muted-foreground mb-2">Елементи кадру</p>
+        <p className="text-xs font-semibold text-text-sub mb-2">Елементи кадру</p>
         <div className="space-y-2.5">
           <button type="button" role="switch" aria-checked={showAvatar}
             onClick={() => set.setShowAvatar(v => !v)}
             className="w-full flex items-center justify-between px-3.5 py-3 rounded-xl bg-secondary/70 border border-border cursor-pointer active:scale-[0.99] transition-colors duration-150">
             <div className="min-w-0 text-left">
               <p className="text-sm font-semibold text-foreground">Аватар та ім&apos;я</p>
-              <p className="text-[11px] text-muted-foreground/60">Фото й назва зверху сторіс</p>
+              <p className="text-[11px] text-text-sub">Фото й назва зверху сторіс</p>
             </div>
-            <span className={`relative ml-2 w-11 h-6 rounded-full shrink-0 transition-colors duration-200 ${showAvatar ? 'bg-accent' : 'bg-muted-foreground/25'}`}>
+            <span className={`relative ml-2 w-11 h-6 rounded-full shrink-0 transition-colors duration-200 ${showAvatar ? 'bg-accent' : 'bg-secondary'}`}>
               <motion.div animate={{ x: showAvatar ? 26 : 2 }} transition={TOGGLE_SPRING} className="absolute top-1 size-4 rounded-full bg-white shadow-sm" />
             </span>
           </button>
@@ -103,9 +103,9 @@ export function StepStyle({ state, set }: StepStyleProps) {
             className="w-full flex items-center justify-between px-3.5 py-3 rounded-xl bg-secondary/70 border border-border cursor-pointer active:scale-[0.99] transition-colors duration-150">
             <div className="min-w-0 text-left">
               <p className="text-sm font-semibold text-foreground">Місце для посилання</p>
-              <p className="text-[11px] text-muted-foreground/60">Постав туди кнопку запису просто в Instagram</p>
+              <p className="text-[11px] text-text-sub">Постав туди кнопку запису просто в Instagram</p>
             </div>
-            <span className={`relative ml-2 w-11 h-6 rounded-full shrink-0 transition-colors duration-200 ${showLinkZone ? 'bg-accent' : 'bg-muted-foreground/25'}`}>
+            <span className={`relative ml-2 w-11 h-6 rounded-full shrink-0 transition-colors duration-200 ${showLinkZone ? 'bg-accent' : 'bg-secondary'}`}>
               <motion.div animate={{ x: showLinkZone ? 26 : 2 }} transition={TOGGLE_SPRING} className="absolute top-1 size-4 rounded-full bg-white shadow-sm" />
             </span>
           </button>

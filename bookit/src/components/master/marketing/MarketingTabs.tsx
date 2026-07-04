@@ -81,7 +81,7 @@ export function MarketingTabs({ initialTab, initialMode, initialPortfolioId, isS
             </div>
             <div>
               <h1 className="heading-serif text-xl text-foreground">Маркетинг</h1>
-              <p className="text-sm text-muted-foreground/60">Сторіс та розсилки для клієнтів</p>
+              <p className="text-sm text-text-sub">Сторіс та розсилки для клієнтів</p>
             </div>
           </div>
 

@@ -171,7 +171,7 @@ export function StoryGenerator(props: StoryGeneratorProps = {}) {
           )}
         </AnimatePresence>
       </motion.button>
-      <p className="text-[10px] text-muted-foreground/60 text-center -mt-1">
+      <p className="text-[10px] text-text-sub text-center -mt-1">
         {isPremiumLocked ? 'Шаблон PRO · Оновіть тариф для збереження' : '1080×1920 px · ідеально для Instagram Stories'}
       </p>
     </>
@@ -218,7 +218,7 @@ export function StoryGenerator(props: StoryGeneratorProps = {}) {
           onClick={() => setShowUpgradeModal(true)}>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-bold text-foreground">{upgradeCopy.teaserTitle}</p>
-            <p className="text-[11px] text-muted-foreground leading-snug truncate">{upgradeCopy.teaserDesc}</p>
+            <p className="text-[11px] text-text-sub leading-snug truncate">{upgradeCopy.teaserDesc}</p>
           </div>
           <span className="shrink-0 text-[10px] font-bold px-2 py-1 rounded-xl" style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}>PRO</span>
         </motion.button>
@@ -275,7 +275,7 @@ export function StoryGenerator(props: StoryGeneratorProps = {}) {
           {stepPanel}
         </div>
         <div className="px-4 pt-2 pb-8">
-          <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider mb-3 text-center">Попередній перегляд</p>
+          <p className="text-[11px] font-semibold text-text-sub mb-3 text-center">Попередній перегляд</p>
           {previewBlock(mobilePreviewPanelRef, mobileScale)}
         </div>
       </div>
@@ -291,7 +291,7 @@ export function StoryGenerator(props: StoryGeneratorProps = {}) {
           style={{ background: 'color-mix(in srgb, var(--secondary) 25%, transparent)' }}
         >
           <div className="flex flex-col items-center gap-4">
-            <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">Попередній перегляд</p>
+            <p className="text-[11px] font-semibold text-text-sub">Попередній перегляд</p>
             <StoryPreview
               canvasProps={canvasSharedProps}
               scale={desktopScale}
@@ -329,7 +329,7 @@ export function StoryGenerator(props: StoryGeneratorProps = {}) {
               </div>
               <div className="space-y-2">
                 <h3 className="font-display text-xl font-bold text-foreground">Створюємо магію...</h3>
-                <p className="text-sm text-muted-foreground/60 max-w-[240px]">
+                <p className="text-sm text-text-sub max-w-[240px]">
                   {isTMA ? 'Готуємо Ultra-HD файл для вашого Telegram' : 'Готуємо преміум-зображення для вашої галереї'}
                 </p>
               </div>

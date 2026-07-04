@@ -246,7 +246,7 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
               {step === 'confirm' ? 'Підтвердження розсилки' : 'Нова розсилка'}
             </h2>
             {isStarter && (
-              <p className="text-xs text-muted-foreground/60 mt-0.5">
+              <p className="text-xs text-text-sub mt-0.5">
                 Використано {broadcastsUsed} / 3 безкоштовних
               </p>
             )}
@@ -257,7 +257,7 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
             aria-label="Закрити"
             className="p-2 rounded-full hover:bg-secondary transition-colors duration-150 active:scale-[0.95] cursor-pointer"
           >
-            <X size={18} className="text-muted-foreground" />
+            <X size={18} className="text-text-sub" />
           </button>
         </div>
 
@@ -300,7 +300,7 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
                 <button
                   type="button"
                   onClick={() => setStep('edit')}
-                  className="flex-1 py-3 rounded-2xl border border-border text-sm text-muted-foreground font-medium transition-colors duration-150 hover:bg-secondary/40 active:scale-[0.95] cursor-pointer"
+                  className="flex-1 py-3 rounded-2xl border border-border text-sm text-text-sub font-medium transition-colors duration-150 hover:bg-secondary/40 active:scale-[0.95] cursor-pointer"
                 >
                   Назад
                 </button>
@@ -324,14 +324,14 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
             >
               {/* Title */}
               <div>
-                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Назва (для вас)</label>
+                <label className="text-xs font-medium text-text-sub mb-1.5 block">Назва (для вас)</label>
                 <input
                   value={title}
                   onChange={e => setTitle(e.target.value)}
                   data-testid="broadcast-title-input"
                   placeholder="Напр. «Повернення сплячих клієнтів»"
                   aria-label="Назва розсилки"
-                  className="w-full px-4 py-3 rounded-2xl text-sm text-foreground placeholder:text-muted-foreground/60 outline-none border border-border focus:border-primary transition-colors"
+                  className="w-full px-4 py-3 rounded-2xl text-sm text-foreground placeholder:text-text-sub outline-none border border-border focus:border-primary transition-colors"
                   style={{ background: 'var(--surface)' }}
                 />
               </div>
@@ -339,7 +339,7 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
               {/* Audience */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                  <label className="text-xs font-medium text-text-sub flex items-center gap-1.5">
                     <Users size={13} />
                     Аудиторія
                     {currentCount > 0 && (
@@ -355,7 +355,7 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
                         className="px-3 py-1.5 transition-colors duration-150 cursor-pointer"
                         style={targetMode === mode
                           ? { background: 'var(--btn-primary-bg)', color: 'var(--accent-on)' }
-                          : { background: 'var(--background)', color: 'var(--muted-foreground)' }}
+                          : { background: 'var(--background)', color: 'var(--text-secondary)' }}
                       >
                         {mode === 'tags' ? 'За тегом' : 'Клієнти'}
                       </button>
@@ -379,13 +379,13 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
                             className="text-xs font-bold px-3 py-1.5 rounded-full border transition-colors duration-150 cursor-pointer"
                             style={tags.includes(tag.value)
                               ? { color: tag.color, background: tag.bg, borderColor: tag.color + '40' }
-                              : { color: 'var(--muted-foreground)', background: 'var(--background)', borderColor: 'var(--border)' }}
+                              : { color: 'var(--text-secondary)', background: 'var(--background)', borderColor: 'var(--border)' }}
                           >
                             {tag.label}
                           </button>
                         ))}
                         {tags.length === 0 && (
-                          <span className="text-xs text-muted-foreground/60 self-center">Без фільтру — всі клієнти</span>
+                          <span className="text-xs text-text-sub self-center">Без фільтру — всі клієнти</span>
                         )}
                       </div>
 
@@ -394,7 +394,7 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
                         <div className="rounded-2xl overflow-hidden border border-border"
                           style={{ background: 'var(--background)' }}>
                           <div className="px-3 py-2 border-b border-secondary flex items-center justify-between">
-                            <span className="text-[11px] text-muted-foreground/60">
+                            <span className="text-[11px] text-text-sub">
                               Клієнти за фільтром · {tagPreview?.count ?? 0}
                             </span>
                             {excludedIds.size > 0 && (
@@ -439,13 +439,13 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
                     >
                       {/* Search */}
                       <div className="relative">
-                        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/60" />
+                        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-sub" />
                         <input
                           value={searchInput}
                           onChange={e => handleSearchInput(e.target.value)}
                           placeholder="Пошук за ім'ям або телефоном"
                           aria-label="Пошук клієнта за ім'ям або телефоном"
-                          className="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm text-foreground placeholder:text-muted-foreground/60 outline-none border border-border focus:border-primary"
+                          className="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm text-foreground placeholder:text-text-sub outline-none border border-border focus:border-primary"
                           style={{ background: 'var(--surface)' }}
                         />
                       </div>
@@ -494,7 +494,7 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
                       )}
 
                       {pickerClients.length === 0 && search && (
-                        <p className="text-xs text-muted-foreground/60 text-center py-3">Клієнтів не знайдено</p>
+                        <p className="text-xs text-text-sub text-center py-3">Клієнтів не знайдено</p>
                       )}
                     </motion.div>
                   )}
@@ -503,7 +503,7 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
 
               {/* Channels */}
               <div>
-                <label className="text-xs font-medium text-muted-foreground mb-2 block">Канали</label>
+                <label className="text-xs font-medium text-text-sub mb-2 block">Канали</label>
                 <div className="flex gap-2">
                   {CHANNEL_OPTIONS.map(ch => (
                     <button type="button"
@@ -512,7 +512,7 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
                       className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-2xl text-xs font-medium border transition-colors duration-150 cursor-pointer"
                       style={channels.includes(ch.value)
                         ? { background: 'var(--btn-primary-bg)', color: 'var(--accent-on)', borderColor: 'var(--btn-primary-bg)' }
-                        : { background: 'var(--background)', color: 'var(--muted-foreground)', borderColor: 'var(--border)' }}
+                        : { background: 'var(--background)', color: 'var(--text-secondary)', borderColor: 'var(--border)' }}
                     >
                       {ch.icon}{ch.label}
                     </button>
@@ -522,7 +522,7 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
 
               {/* Message */}
               <div>
-                <label className="text-xs font-medium text-muted-foreground mb-1.5 flex items-center gap-1.5">
+                <label className="text-xs font-medium text-text-sub mb-1.5 flex items-center gap-1.5">
                   <MessageSquare size={13} />
                   Повідомлення
                 </label>
@@ -532,11 +532,11 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
                   data-testid="broadcast-message-textarea"
                   rows={4}
                   placeholder="Напишіть повідомлення або оберіть тег — ми підкажемо шаблон"
-                  className="w-full px-4 py-3 rounded-2xl text-sm text-foreground placeholder:text-muted-foreground/60 outline-none border border-border focus:border-primary transition-colors resize-none"
+                  className="w-full px-4 py-3 rounded-2xl text-sm text-foreground placeholder:text-text-sub outline-none border border-border focus:border-primary transition-colors resize-none"
                   style={{ background: 'var(--surface)' }}
                 />
                 <div className="flex flex-wrap gap-1.5 mt-2">
-                  <span className="text-[10px] text-muted-foreground/60 self-center">Вставити:</span>
+                  <span className="text-[10px] text-text-sub self-center">Вставити:</span>
                   {["{{ім'я}}", '{{кількість_візитів}}', '{{знижка}}'].map(v => (
                     <button type="button" key={v}
                       onClick={() => setMessage(prev => prev + v)}
@@ -547,7 +547,7 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
                   {tags.length > 0 && (
                     <button type="button"
                       onClick={() => setMessage(TEMPLATES[tags[0]] ?? TEMPLATES.default)}
-                      className="text-[10px] px-2 py-0.5 rounded-full border border-warning/40 text-warning hover:bg-warning/10 transition-colors ml-auto cursor-pointer active:scale-[0.95]">
+                      className="text-[10px] px-2 py-0.5 rounded-full border border-warning/40 text-[#9A4508] hover:bg-warning/10 transition-colors ml-auto cursor-pointer active:scale-[0.95]">
                       Шаблон для тегу
                     </button>
                   )}
@@ -564,7 +564,7 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
                 <div className="pt-3 space-y-3">
                   <div className="flex gap-3">
                     <div className="flex-1">
-                      <label className="text-xs text-muted-foreground/60 mb-1 block">Знижка %</label>
+                      <label className="text-xs text-text-sub mb-1 block">Знижка %</label>
                       <input type="number" min={1} max={99}
                         value={discountPct}
                         onChange={e => setDiscountPct(e.target.value === '' ? '' : Number(e.target.value))}
@@ -575,7 +575,7 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
                       />
                     </div>
                     <div className="flex-1">
-                      <label className="text-xs text-muted-foreground/60 mb-1 block">Діє</label>
+                      <label className="text-xs text-text-sub mb-1 block">Діє</label>
                       <select value={discountDays} onChange={e => setDiscountDays(Number(e.target.value))}
                         className="w-full px-3 py-2.5 rounded-xl text-sm text-foreground outline-none border border-border cursor-pointer"
                         style={{ background: 'var(--surface)' }}>
@@ -589,7 +589,7 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
                     <option value="">Будь-яка послуга</option>
                     {(services ?? []).map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                   </select>
-                  <p className="text-[11px] text-muted-foreground/60 leading-relaxed">
+                  <p className="text-[11px] text-text-sub leading-relaxed">
                     Клієнт отримає знижку автоматично після підтвердження номера телефону при записі.
                   </p>
                 </div>
@@ -604,7 +604,7 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
               >
                 <div className="pt-3 space-y-3">
                   <div>
-                    <label className="text-xs text-muted-foreground/60 mb-1 flex items-center gap-1">
+                    <label className="text-xs text-text-sub mb-1 flex items-center gap-1">
                       <Scissors size={11} /> Послуга
                     </label>
                     <select value={serviceLinkId} onChange={e => setServiceLinkId(e.target.value)}
@@ -615,7 +615,7 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
                     </select>
                   </div>
                   <div>
-                    <label className="text-xs text-muted-foreground/60 mb-1 flex items-center gap-1">
+                    <label className="text-xs text-text-sub mb-1 flex items-center gap-1">
                       <ShoppingBag size={11} /> Товар
                     </label>
                     <select value={productLinkId} onChange={e => setProductLinkId(e.target.value)}
@@ -633,7 +633,7 @@ export function BroadcastEditor({ onClose, onSent, products, broadcastsUsed, isS
               {isStarter && broadcastsUsed >= 3 && (
                 <div className="rounded-2xl p-4 text-sm bg-warning/8 border border-warning/20">
                   <p className="font-semibold text-foreground mb-1">Ліміт вичерпано</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-text-sub">
                     У Starter плані доступно 3 безкоштовні розсилки. Перейди на Pro для необмежених.
                   </p>
                 </div>
@@ -678,18 +678,18 @@ function ClientRow({
         <div className="flex items-center gap-1.5">
           <span className="text-sm font-medium text-foreground truncate">{client.name}</span>
           {client.isVip && (
-            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-warning/8 text-warning">VIP</span>
+            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-warning/8 text-[#9A4508]">VIP</span>
           )}
         </div>
-        <span className="text-[11px] text-muted-foreground/60">{client.phone}</span>
+        <span className="text-[11px] text-text-sub">{client.phone}</span>
       </div>
       <div className="flex items-center gap-1 shrink-0">
         {client.retentionStatus && (
-          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-secondary text-muted-foreground">
+          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-secondary text-text-sub">
             {client.retentionStatus}
           </span>
         )}
-        <UserCheck size={13} className={checked ? 'text-primary' : 'text-muted-foreground/40'} />
+        <UserCheck size={13} className={checked ? 'text-primary' : 'text-text-sub'} />
       </div>
     </button>
   );
@@ -739,7 +739,7 @@ function ConfirmRow({
     <div className="flex items-start gap-2.5">
       <span className="text-primary mt-0.5 shrink-0">{icon}</span>
       <div className="min-w-0">
-        <p className="text-[11px] text-muted-foreground/60">{label}</p>
+        <p className="text-[11px] text-text-sub">{label}</p>
         <p className={`text-sm text-foreground font-medium ${multiline ? 'line-clamp-3' : ''}`}>{value}</p>
       </div>
     </div>

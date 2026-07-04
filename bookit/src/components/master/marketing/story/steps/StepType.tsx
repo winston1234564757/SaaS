@@ -32,7 +32,7 @@ export function StepType({ mode, onSelect }: StepTypeProps) {
             <span className="flex-1 min-w-0 truncate">{m.label}</span>
             {m.premium && (
               <span className={cn('shrink-0 text-[9px] font-bold px-1.5 py-0.5 rounded-md',
-                active ? 'bg-accent-on/25 text-accent-on' : 'bg-warning/15 text-warning')}>PRO</span>
+                active ? 'bg-accent-on/25 text-accent-on' : 'bg-warning/15 text-[#9A4508]')}>PRO</span>
             )}
           </button>
         );

@@ -44,7 +44,7 @@ export function StepNav({ currentStep, completion, onBack, onNext, onJump, isFir
                 />
               </span>
               <span className={cn('flex items-center gap-1 text-[10px] font-semibold transition-colors duration-150',
-                active ? 'text-foreground' : 'text-muted-foreground/60')}>
+                active ? 'text-foreground' : 'text-text-sub')}>
                 {done && <Check size={10} strokeWidth={3} className="text-accent" />}
                 {s.label}
               </span>

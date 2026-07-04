@@ -25,7 +25,7 @@ export function StepLook({
     <div className="space-y-5">
       {/* Палітра */}
       <div>
-        <p className="text-xs font-semibold text-muted-foreground mb-2">Палітра</p>
+        <p className="text-xs font-semibold text-text-sub mb-2">Палітра</p>
         <div className="flex gap-2 flex-wrap">
           {PALETTES.map((p, i) => (
             <button key={p.id} type="button" aria-label={p.label} aria-pressed={i === palIdx}
@@ -40,13 +40,13 @@ export function StepLook({
             </button>
           ))}
         </div>
-        <p className="text-[10px] text-muted-foreground/60 mt-1.5">{PALETTES[palIdx].label}</p>
+        <p className="text-[10px] text-text-sub mt-1.5">{PALETTES[palIdx].label}</p>
       </div>
 
       {/* Фон (фото) */}
       <div>
         <div className="flex justify-between items-center mb-2">
-          <p className="text-xs font-semibold text-muted-foreground">Фон (фото)</p>
+          <p className="text-xs font-semibold text-text-sub">Фон (фото)</p>
           <button type="button" onClick={onUploadClick} className="text-[10px] font-bold text-primary hover:underline flex items-center gap-1 cursor-pointer">
             <Plus size={11} /> Завантажити
           </button>

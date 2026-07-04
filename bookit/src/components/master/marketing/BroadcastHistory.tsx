@@ -137,7 +137,7 @@ function BroadcastCard({
             <div className="px-4 py-4 space-y-4">
               {/* Message preview */}
               <div>
-                <p className="text-[10px] uppercase tracking-wide text-text-secondary mb-1.5">Повідомлення</p>
+                <p className="text-[11px] font-medium text-text-sub mb-1.5">Повідомлення</p>
                 <p className="text-xs text-foreground leading-relaxed rounded-xl px-3 py-2.5"
                   style={{ background: 'color-mix(in srgb, var(--accent) 5%, transparent)' }}
                 >

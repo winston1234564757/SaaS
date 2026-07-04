@@ -48,16 +48,16 @@ export function StepContent({
             >
               <BookOpen size={18} className="text-primary shrink-0" />
               <span className="flex-1 text-sm font-semibold text-foreground">Обрати з готових варіантів</span>
-              <ChevronRight size={16} className="text-muted-foreground/60 shrink-0" />
+              <ChevronRight size={16} className="text-text-sub shrink-0" />
             </button>
           )}
           <div>
-            <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Введіть свій текст</label>
+            <label className="text-xs font-semibold text-text-sub mb-1.5 block">Введіть свій текст</label>
             <textarea value={state.annoText} onChange={e => set.setAnnoText(e.target.value)}
               rows={3} maxLength={200} placeholder="Ваш текст..."
               className="resize-none outline-none text-sm transition-colors duration-150" style={{ ...INPUT_STYLE, height: 'auto' }} />
             <div className="flex justify-end mt-1">
-              <span className="text-[10px] text-muted-foreground/60">{state.annoText.length}/200</span>
+              <span className="text-[10px] text-text-sub">{state.annoText.length}/200</span>
             </div>
           </div>
 
@@ -98,9 +98,9 @@ export function StepContent({
       {mode === 'free_slots' && (
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Послуга</label>
+            <label className="text-xs font-semibold text-text-sub mb-1.5 block">Послуга</label>
             {services.length === 0 ? (
-              <div className="px-3 py-2.5 rounded-2xl text-xs text-muted-foreground/60 bg-secondary/60 border border-border">Немає послуг</div>
+              <div className="px-3 py-2.5 rounded-2xl text-xs text-text-sub bg-secondary/60 border border-border">Немає послуг</div>
             ) : (
               <select value={state.selectedSvcId ?? ''} onChange={e => set.setSelectedSvcId(e.target.value || null)} className="outline-none text-sm cursor-pointer" style={INPUT_STYLE}>
                 {services.map(s => <option key={s.id} value={s.id}>{s.emoji ? `${s.emoji} ` : ''}{s.name} ({s.duration_minutes} хв)</option>)}
@@ -108,10 +108,10 @@ export function StepContent({
             )}
           </div>
           <div>
-            <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Дата</label>
+            <label className="text-xs font-semibold text-text-sub mb-1.5 block">Дата</label>
             <input type="date" value={state.slotsDate ?? ''} min={todayStr} onChange={e => set.setSlotsDate(e.target.value || null)} aria-label="Дата слоту для сторіс" className="outline-none text-sm" style={INPUT_STYLE} />
             {state.slotsDate && !slotsLoading && (
-              <p className={`text-[11px] mt-1 font-medium ${slots.length > 0 ? 'text-success' : 'text-muted-foreground/60'}`}>
+              <p className={`text-[11px] mt-1 font-medium ${slots.length > 0 ? 'text-[#0B6B2E]' : 'text-text-sub'}`}>
                 {slots.length > 0 ? `${slots.length} вільних вікон` : 'Немає вікон'}
               </p>
             )}
@@ -122,11 +122,11 @@ export function StepContent({
       {mode === 'vacation' && (
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">З якого числа</label>
+            <label className="text-xs font-semibold text-text-sub mb-1.5 block">З якого числа</label>
             <input type="date" value={state.vacStart ?? ''} onChange={e => set.setVacStart(e.target.value || null)} aria-label="Початок відпустки" className="outline-none text-sm" style={INPUT_STYLE} />
           </div>
           <div>
-            <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">По яке число</label>
+            <label className="text-xs font-semibold text-text-sub mb-1.5 block">По яке число</label>
             <input type="date" value={state.vacEnd ?? ''} min={state.vacStart ?? ''} onChange={e => set.setVacEnd(e.target.value || null)} aria-label="Кінець відпустки" className="outline-none text-sm" style={INPUT_STYLE} />
           </div>
         </div>
@@ -134,9 +134,9 @@ export function StepContent({
 
       {mode === 'promo' && (
         <div>
-          <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Активна Flash Deal</label>
+          <label className="text-xs font-semibold text-text-sub mb-1.5 block">Активна Flash Deal</label>
           {flashDeals.length === 0 ? (
-            <div className="px-3 py-2.5 rounded-2xl text-xs text-muted-foreground/60 bg-secondary/60 border border-border">
+            <div className="px-3 py-2.5 rounded-2xl text-xs text-text-sub bg-secondary/60 border border-border">
               Немає акцій. Створіть у <span className="font-semibold text-primary">Дохід → Flash Deals</span>.
             </div>
           ) : (
@@ -149,16 +149,16 @@ export function StepContent({
 
       {mode === 'review_spotlight' && (
         <div>
-          <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">5★ відгук клієнта</label>
+          <label className="text-xs font-semibold text-text-sub mb-1.5 block">5★ відгук клієнта</label>
           {starReviews.length === 0 ? (
-            <div className="px-3 py-2.5 rounded-2xl text-xs text-muted-foreground/60 bg-secondary/60 border border-border">Немає опублікованих 5★ відгуків</div>
+            <div className="px-3 py-2.5 rounded-2xl text-xs text-text-sub bg-secondary/60 border border-border">Немає опублікованих 5★ відгуків</div>
           ) : (
             <select value={state.selectedReviewId ?? ''} onChange={e => set.setSelectedReviewId(e.target.value || null)} className="outline-none text-sm cursor-pointer" style={INPUT_STYLE}>
               {starReviews.map(r => <option key={r.id} value={r.id}>{r.client_name} — {(r.comment ?? '').slice(0, 40)}{(r.comment ?? '').length > 40 ? '...' : ''}</option>)}
             </select>
           )}
           {selectedReview?.comment && (
-            <p className="text-[11px] text-muted-foreground mt-1.5 leading-relaxed px-1 line-clamp-2">«{selectedReview.comment}»</p>
+            <p className="text-[11px] text-text-sub mt-1.5 leading-relaxed px-1 line-clamp-2">«{selectedReview.comment}»</p>
           )}
         </div>
       )}
@@ -167,9 +167,9 @@ export function StepContent({
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-3">
             <div>
-              <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Послуга</label>
+              <label className="text-xs font-semibold text-text-sub mb-1.5 block">Послуга</label>
               {services.length === 0 ? (
-                <div className="px-3 py-2.5 rounded-2xl text-xs text-muted-foreground/60 bg-secondary/60 border border-border">Немає послуг</div>
+                <div className="px-3 py-2.5 rounded-2xl text-xs text-text-sub bg-secondary/60 border border-border">Немає послуг</div>
               ) : (
                 <select value={state.flashWinSvcId ?? ''} onChange={e => set.setFlashWinSvcId(e.target.value || null)} className="outline-none text-sm cursor-pointer" style={INPUT_STYLE}>
                   {services.map(s => <option key={s.id} value={s.id}>{s.emoji ? `${s.emoji} ` : ''}{s.name} ({s.duration_minutes} хв)</option>)}
@@ -177,18 +177,18 @@ export function StepContent({
               )}
             </div>
             <div>
-              <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Дата</label>
+              <label className="text-xs font-semibold text-text-sub mb-1.5 block">Дата</label>
               <input type="date" value={state.flashWinDate ?? ''} min={todayStr} onChange={e => set.setFlashWinDate(e.target.value || null)} aria-label="Дата флеш-пропозиції" className="outline-none text-sm" style={INPUT_STYLE} />
             </div>
           </div>
           <div className="space-y-3">
             {state.flashWinDate && (
               <div>
-                <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Час слоту</label>
+                <label className="text-xs font-semibold text-text-sub mb-1.5 block">Час слоту</label>
                 {flashWinSlotsLoading ? (
-                  <p className="text-[11px] text-muted-foreground/60">Завантаження...</p>
+                  <p className="text-[11px] text-text-sub">Завантаження...</p>
                 ) : flashWinSlots.length === 0 ? (
-                  <p className="text-[11px] text-muted-foreground/60">Немає вільних вікон</p>
+                  <p className="text-[11px] text-text-sub">Немає вільних вікон</p>
                 ) : (
                   <div className="flex flex-wrap gap-1.5">
                     {flashWinSlots.map(s => (
@@ -203,18 +203,18 @@ export function StepContent({
               </div>
             )}
             <div>
-              <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Знижка: <span className="text-destructive font-bold">−{state.flashWinDiscount}%</span></label>
+              <label className="text-xs font-semibold text-text-sub mb-1.5 block">Знижка: <span className="text-destructive font-bold">−{state.flashWinDiscount}%</span></label>
               <input type="range" min={5} max={70} step={5} value={state.flashWinDiscount}
                 onChange={e => set.setFlashWinDiscount(Number(e.target.value))}
                 aria-label="Відсоток знижки" className="w-full cursor-pointer" style={{ accentColor: 'var(--accent)' }} />
-              <div className="flex justify-between text-[10px] text-muted-foreground/60 mt-0.5"><span>5%</span><span>70%</span></div>
+              <div className="flex justify-between text-[10px] text-text-sub mt-0.5"><span>5%</span><span>70%</span></div>
             </div>
           </div>
         </div>
       )}
 
       {mode === 'portfolio_item' && (
-        <div className="px-3 py-2.5 rounded-2xl text-xs text-muted-foreground/60 bg-secondary/60 border border-border">
+        <div className="px-3 py-2.5 rounded-2xl text-xs text-text-sub bg-secondary/60 border border-border">
           Оберіть роботу як фон у наступному кроці «Вигляд».
         </div>
       )}

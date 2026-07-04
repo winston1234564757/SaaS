@@ -51,7 +51,7 @@ export function StoryPreview({ canvasProps, scale, radius, isBlurLocked, isPremi
 
       {isPremiumLocked && !blurActive && (
         <div className="absolute bottom-2 left-0 right-0 flex justify-center">
-          <span className="text-[9px] text-muted-foreground/60 bg-background/80 rounded-full px-2 py-0.5">Перегляд · 10 сек</span>
+          <span className="text-[9px] text-text-sub bg-background/80 rounded-full px-2 py-0.5">Перегляд · 10 сек</span>
         </div>
       )}
     </div>
