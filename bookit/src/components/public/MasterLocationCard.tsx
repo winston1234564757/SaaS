@@ -37,13 +37,13 @@ export function MasterLocationCard({ location, mapUrl, lat, lng, floor, cabinet 
   // --- Graceful degradation: no API key OR static map failed (billing) → text-only card ---
   if (!HAS_MAPS_KEY || staticMapError) {
     return (
-      <div className="rounded-xl border border-border bg-secondary/40 backdrop-blur-md shadow-sm px-4 py-3 flex items-start justify-between gap-3">
-        <div className="flex items-start gap-2 min-w-0">
-          <MapPin size={14} className="mt-0.5 shrink-0 text-primary" />
+      <div className="bento-card px-4 py-3.5 flex items-center justify-between gap-3">
+        <div className="flex items-start gap-2.5 min-w-0">
+          <MapPin size={15} className="mt-0.5 shrink-0 text-primary" />
           <div className="min-w-0">
-            <p className="text-xs font-medium text-foreground leading-snug line-clamp-2">{location}</p>
+            <p className="text-sm font-semibold text-foreground leading-snug line-clamp-2">{location}</p>
             {(floor || cabinet) && (
-              <p className="text-[11px] text-muted-foreground/60 mt-0.5">
+              <p className="text-[12px] text-text-sub mt-0.5">
                 {[floor && `${floor} поверх`, cabinet && `каб. ${cabinet}`].filter(Boolean).join(' · ')}
               </p>
             )}
@@ -54,9 +54,9 @@ export function MasterLocationCard({ location, mapUrl, lat, lng, floor, cabinet 
             href={mapUrl}
             target={mapUrl.startsWith('http') ? '_blank' : '_self'}
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 shrink-0 px-3 py-1.5 rounded-xl text-xs font-medium text-white bg-primary hover:bg-sage-dark active:scale-95 transition-all"
+            className="flex items-center gap-1.5 shrink-0 h-10 px-4 rounded-xl text-[13px] font-bold text-[var(--accent-on)] bg-[var(--btn-primary-bg)] shadow-sm hover:opacity-90 active:scale-[0.97] transition-all"
           >
-            <Navigation size={12} />
+            <Navigation size={13} />
             Маршрут
           </a>
         )}
@@ -72,7 +72,7 @@ export function MasterLocationCard({ location, mapUrl, lat, lng, floor, cabinet 
   const detailsLine = details.join(' · ');
 
   return (
-    <div className="rounded-xl overflow-hidden border border-border bg-secondary/40 backdrop-blur-md shadow-sm">
+    <div className="bento-card overflow-hidden p-0">
       {/* Static map */}
       <div className="relative w-full" style={{ height: 160 }}>
         <Image
@@ -90,15 +90,15 @@ export function MasterLocationCard({ location, mapUrl, lat, lng, floor, cabinet 
       </div>
 
       {/* Address row + CTA */}
-      <div className="px-4 py-3 flex items-start justify-between gap-3">
-        <div className="flex items-start gap-2 min-w-0">
-          <MapPin size={14} className="mt-0.5 shrink-0 text-primary" />
+      <div className="px-4 py-3.5 flex items-center justify-between gap-3">
+        <div className="flex items-start gap-2.5 min-w-0">
+          <MapPin size={15} className="mt-0.5 shrink-0 text-primary" />
           <div className="min-w-0">
-            <p className="text-xs font-medium text-foreground leading-snug line-clamp-2">
+            <p className="text-sm font-semibold text-foreground leading-snug line-clamp-2">
               {location}
             </p>
             {detailsLine && (
-              <p className="text-[11px] text-muted-foreground/60 mt-0.5">{detailsLine}</p>
+              <p className="text-[12px] text-text-sub mt-0.5">{detailsLine}</p>
             )}
           </div>
         </div>
@@ -108,9 +108,9 @@ export function MasterLocationCard({ location, mapUrl, lat, lng, floor, cabinet 
             href={mapUrl}
             target={mapUrl.startsWith('http') ? '_blank' : '_self'}
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 shrink-0 px-3 py-1.5 rounded-xl text-xs font-medium text-white bg-primary hover:bg-sage-dark active:scale-95 transition-all"
+            className="flex items-center gap-1.5 shrink-0 h-10 px-4 rounded-xl text-[13px] font-bold text-[var(--accent-on)] bg-[var(--btn-primary-bg)] shadow-sm hover:opacity-90 active:scale-[0.97] transition-all"
           >
-            <Navigation size={12} />
+            <Navigation size={13} />
             Маршрут
           </a>
         )}

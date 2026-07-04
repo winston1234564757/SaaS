@@ -1,7 +1,10 @@
 'use client';
 
-import { Gift, Crown } from 'lucide-react';
+import { Gift, Crown, ArrowRight } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import { pluralUk } from '@/lib/utils/pluralUk';
+import { createClient } from '@/lib/supabase/client';
+import { Section } from '@/components/ui/Section';
 
 interface LoyaltyTier {
   targetVisits: number;
@@ -17,15 +20,20 @@ interface Props {
   onBook?: () => void;
 }
 
+// Калібрований тон активної знижки на Frost `--surface` (good 5.25:1, не сирий --success).
+const GOOD = '#0B6B2E';
+
 function formatReward(tier: LoyaltyTier): string {
   if (tier.rewardType === 'percent_discount') return `-${tier.rewardValue}%`;
   if (tier.rewardType === 'fixed_discount') return `-${tier.rewardValue} ₴`;
   return 'Подарунок';
 }
 
-import { createClient } from '@/lib/supabase/client';
-import { useQuery } from '@tanstack/react-query';
-
+/**
+ * DS-CLIENT-01 — програма лояльності клієнта на публічній сторінці. Дизайн-мова: світлий
+ * `Section` з домінантою (поточна знижка / прогрес), а не рівний bento з вимитими токенами.
+ * Викорінено `text-muted-foreground` + warning/success на дрібному тексті (провал 4.5:1).
+ */
 export function LoyaltyWidget({ masterId, serverIsAuth, serverCurrentVisits, tiers, onBook }: Props) {
   const { data: clientAuth } = useQuery({
     queryKey: ['loyalty-visits', masterId],
@@ -33,14 +41,12 @@ export function LoyaltyWidget({ masterId, serverIsAuth, serverCurrentVisits, tie
       const sb = createClient();
       const { data: { user } } = await sb.auth.getUser();
       if (!user) return { isAuth: false, visits: 0 };
-      
       const { count } = await sb
         .from('bookings')
         .select('*', { count: 'exact', head: true })
         .eq('master_id', masterId)
         .eq('client_id', user.id)
         .eq('status', 'completed');
-        
       return { isAuth: true, visits: count ?? 0 };
     },
     staleTime: 2 * 60 * 1000,
@@ -54,93 +60,87 @@ export function LoyaltyWidget({ masterId, serverIsAuth, serverCurrentVisits, tie
   const firstTier = tiers[0];
   const maxTier = tiers[tiers.length - 1];
 
-  // Unauth — marketing teaser showing first (lowest) tier + CTA
+  // ── Unauth — маркетинговий тизер найнижчого рівня + CTA ──
   if (!isAuth) {
     return (
-      <div className="bento-card p-4 bg-secondary/40 border border-border">
-        <div className="flex items-start gap-3">
-          <div className="size-10 rounded-lg flex items-center justify-center shrink-0 bg-primary/15 text-primary">
-            <Gift size={18} />
+      <div className="mb-4">
+        <Section title="Програма лояльності" icon={Gift}>
+          <div className="flex items-end justify-between gap-3">
+            <div className="min-w-0">
+              <p className="metric-value text-[26px] leading-none text-foreground">{formatReward(firstTier)}</p>
+              <p className="text-xs text-text-sub mt-1.5">
+                після {firstTier.targetVisits}-го візиту — і більше далі
+              </p>
+            </div>
+            {onBook && (
+              <button
+                type="button"
+                onClick={onBook}
+                className="shrink-0 inline-flex items-center gap-1.5 h-10 px-4 rounded-xl text-[13px] font-bold bg-[var(--btn-primary-bg)] text-[var(--accent-on)] shadow-sm hover:opacity-90 active:scale-[0.97] transition-all cursor-pointer"
+              >
+                Записатись
+                <ArrowRight size={14} />
+              </button>
+            )}
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-foreground leading-snug">Програма лояльності</p>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Знижка {formatReward(firstTier)} після {firstTier.targetVisits}-го візиту
-            </p>
-          </div>
-        </div>
-        {onBook && (
-          <button type="button"
-            onClick={onBook}
-            className="mt-3 w-full py-2 rounded-lg text-xs font-semibold text-primary-foreground transition-opacity hover:opacity-90 active:scale-[0.95] transition-all cursor-pointer bg-primary"
-          >
-            Записатись і отримати
-          </button>
-        )}
+        </Section>
       </div>
     );
   }
 
-  // Compute current and next tiers
   const currentTier = [...tiers].reverse().find(t => t.targetVisits <= currentVisits) ?? null;
   const nextTier = tiers.find(t => t.targetVisits > currentVisits) ?? null;
   const maxReached = currentVisits >= maxTier.targetVisits;
 
-  // Max tier reached
+  // ── Максимум досягнуто ──
   if (maxReached) {
     return (
-      <div className="bento-card p-4 bg-secondary/40 border border-border">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <Crown size={14} className="text-primary" />
-            <span className="text-xs font-semibold text-foreground uppercase tracking-wider">Програма лояльності</span>
-          </div>
-          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/15 text-primary">
-            Максимум
-          </span>
-        </div>
-        <div className="h-2 rounded-full mb-3 bg-primary" />
-        <p className="text-xs font-semibold text-foreground">
-          Ви досягли максимального рівня! Ваша постійна знижка: {formatReward(maxTier)}.
-        </p>
+      <div className="mb-4">
+        <Section
+          title="Програма лояльності"
+          icon={Crown}
+          action={<span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-primary/12 text-primary">Максимум</span>}
+        >
+          <p className="metric-value text-[26px] leading-none" style={{ color: GOOD }}>{formatReward(maxTier)}</p>
+          <p className="text-xs text-text-sub mt-1.5">Постійна знижка — ви на найвищому рівні лояльності</p>
+          <div className="h-1.5 rounded-full mt-3 bg-primary" />
+        </Section>
       </div>
     );
   }
 
-  // Progress toward next tier
-  const progressPct = nextTier
-    ? Math.min(100, Math.round((currentVisits / nextTier.targetVisits) * 100))
-    : 100;
+  // ── Прогрес до наступного рівня ──
+  const nextTarget = nextTier?.targetVisits ?? maxTier.targetVisits;
+  const progressPct = Math.min(100, Math.round((currentVisits / nextTarget) * 100));
   const visitsLeft = nextTier ? nextTier.targetVisits - currentVisits : 0;
 
   return (
-    <div className="bento-card p-4 bg-secondary/40 border border-border">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <Gift size={14} className="text-primary" />
-          <span className="text-xs font-semibold text-foreground uppercase tracking-wider">Програма лояльності</span>
+    <div className="mb-4">
+      <Section
+        title="Програма лояльності"
+        icon={Gift}
+        action={<span className="metric-value text-sm text-text-sub">{currentVisits} / {nextTarget}</span>}
+      >
+        {/* Домінанта — поточна знижка (або перший рубіж, якщо ще нема) */}
+        {currentTier ? (
+          <div className="flex items-baseline gap-2">
+            <p className="metric-value text-[26px] leading-none" style={{ color: GOOD }}>{formatReward(currentTier)}</p>
+            <p className="text-xs text-text-sub">ваша знижка зараз</p>
+          </div>
+        ) : (
+          <p className="text-sm font-bold text-foreground">Перша знижка {formatReward(firstTier)} — вже близько</p>
+        )}
+
+        <div className="h-1.5 rounded-full mt-3 overflow-hidden bg-primary/12">
+          <div className="h-full rounded-full bg-primary transition-all duration-500" style={{ width: `${progressPct}%` }} />
         </div>
-        <span className="text-xs font-bold text-warning">{currentVisits} / {nextTier?.targetVisits ?? maxTier.targetVisits}</span>
-      </div>
 
-      <div className="h-2 rounded-full mb-3 overflow-hidden bg-primary/15">
-        <div
-          className="h-full rounded-full transition-all duration-500 bg-primary"
-          style={{ width: `${progressPct}%` }}
-        />
-      </div>
-
-      {currentTier && (
-        <p className="text-[11px] font-semibold mb-1 text-success">
-          Ваша поточна знижка: {formatReward(currentTier)}
-        </p>
-      )}
-
-      <p className="text-xs text-muted-foreground">
-        {nextTier
-          ? `Ще ${visitsLeft} ${pluralUk(visitsLeft, 'візит', 'візити', 'візитів')} до постійної знижки ${formatReward(nextTier)}.`
-          : ''}
-      </p>
+        {nextTier && (
+          <p className="text-xs text-text-sub mt-2.5">
+            Ще <span className="font-bold text-foreground">{visitsLeft}</span> {pluralUk(visitsLeft, 'візит', 'візити', 'візитів')} до постійної знижки {formatReward(nextTier)}
+          </p>
+        )}
+      </Section>
     </div>
   );
 }

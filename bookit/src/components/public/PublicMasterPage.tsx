@@ -199,13 +199,13 @@ function FlashDealCard({ deal, accent, onBook }: { deal: FlashDeal; accent: stri
 
       <div className="flex items-center justify-between mb-3">
         <div>
-          <p className="text-xs text-muted-foreground/60">{dateLabel} о {deal.slotTime}</p>
+          <p className="text-xs text-text-sub">{dateLabel} о {deal.slotTime}</p>
           <div className="flex items-baseline gap-1.5 mt-0.5">
-            <span className="text-base font-bold text-foreground">{discounted} ₴</span>
-            <span className="text-xs text-muted-foreground/60 line-through">{deal.originalPrice} ₴</span>
+            <span className="metric-value text-lg text-foreground">{discounted} ₴</span>
+            <span className="text-xs text-text-sub line-through">{deal.originalPrice} ₴</span>
           </div>
         </div>
-        <div className="flex items-center gap-1 text-xs font-mono font-bold" style={{ color: accent }}>
+        <div className="flex items-center gap-1 text-xs font-bold tabular-nums text-primary">
           <Clock size={12} />
           {countdown}
         </div>
