@@ -17,7 +17,7 @@
 
 ═══ ПОТОЧНИЙ СТАН ═══
 Фундамент ✅ (C-CLI-01, 03.07, founder 10/10): токени --cover-bg / .editorial-cover · примітиви EditorialCover + Section · Button/Badge під мову · BentoCard видалено · Sheet srTitle · DESIGN_LANGUAGE.md.
-Прогрес задач: 20/24 ✅ — **P1 дашборд ЗАКРИТА** · **P3 модалки 6/7** · **P2 клієнт-зона: 01/03/04/05-Explore ✅**. CLIENT-02 (BookingWizard) відкладено — окрема сесія з founder.
+Прогрес задач: 21/25 ✅ — **P1 дашборд ЗАКРИТА** · **P3 модалки 6/7** · **P2 клієнт-зона: 01/03/04/05-Explore ✅** · **Analytics ПОВНІСТЮ ✅**. CLIENT-02 (BookingWizard) відкладено — окрема сесія з founder.
 Кіт: bookit/src/components/ui/ — EditorialCover (темний герой, 1 на поверхню) · Section (білий тіло, hairline) · Button (primary slate / secondary hairline / ghost / danger) · Badge (surface light|dark) · Sheet (srTitle).
 Еталон реалізації: ClientDossierHero + ClientDetailSheet + BookingDetailsModal band (variant cover/inline). Читай BRIEFS/C-CLI-01.md перш ніж робити першу модалку/картку.
 
@@ -27,8 +27,8 @@
   3. Кожен віджет = домінанта-заголовок (що читається за 3 сек) + виділена «зірка» в даних + за можливості actionable-лінк (напр. пік→«Підняти ціну в пік»→`/dashboard?drawer=dynamic_pricing`). Смарт-drawer на дашборді = `<Link href="/dashboard?drawer=NAME">` (nuqs, див. DashboardDrawers.tsx: flash_deals, dynamic_pricing).
   4. 🔴 КОНТРАСТ НА FROST (DS-DASH-04): токени `--success`/`--warning` провалюють 4.5:1 на дрібному (12px) тексті на periwinkle-картці (≈3.95). `.heading-serif`=weight500 → NIE bold → навіть 19px = normal text (4.5, не 3). Для тексту-статусу юзай калібровані тони good`#0B6B2E`/warn`#9A4508`/bad`--error`. **`--text-tertiary` (2.78:1) = забанене §4 значення → НІКОЛИ для тексту; тільки `--text-primary`/`--text-secondary`. Ієрархію — розміром.**
 
-▶ НАСТУПНА ДІЯ: Analytics — `AnalyticsPage` (найгірший §4-борг: gradient/glow/blob ×7; Shop уже зроблено commit 29767f07, пропустити). УВАГА: 7 табів уже M-ANL-редизайнено (темний/світлий герої) — перевір grep-аудитом що лишилось (banned-токени/eyebrow), не переробляй готове.
-  Далі: Settings (найбільше eyebrow) → Bookings-list → Clients → Marketing → Billing · P5 лендинг (LAND-01).
+▶ НАСТУПНА ДІЯ: Settings — `master/settings/SettingsPage.tsx` (426, найбільше uppercase-eyebrow за REAUDIT: 11). 10-col editorial grid, 13 секцій. Спочатку grep-аудит banned-токенів/eyebrow (як на Explore/Analytics) — визнач що вже конформне (M-SET-01..05 зроблено!), не переробляй. Ймовірно residual-пас, не rewrite.
+  Далі: Bookings-list → Clients → Marketing → Billing · P5 лендинг (LAND-01).
   ⚠️ DS-MODAL-01 + DS-CLIENT-02 (BookingWizard) — НЕ автономно: revenue-critical shared 6-крок flow. Присвячена сесія з founder-in-loop.
   🔴 УРОК founder (застосовуй усюди): «більше крафту над СВІТЛИМИ блоками» — featured-диференціація + домінантна типографіка (metric-value/heading-serif) + hairline-структура в КОЖНОМУ Section, не лише в темному герої. Світлий блок «служить» ≠ «нудний». Пам'ять: feedback_light_blocks_craft.md.
 
@@ -56,6 +56,13 @@ TRACKER: DS-[ID] ⬜→✅ + оновити ▶ NEXT + прогрес N/23 → �
 ---
 
 ## Нотатки сесій (свіжі зверху)
+
+### DS-ANL-RESIDUAL — Analytics дозакрито (04.07, ✅ own-eyes, автономна) — commit 015da069
+- **Чесний рефрейм:** REAUDIT казав «Analytics найгірший §4, 7 порушень» — це було ДО M-ANL-01..07. Live-grep показав: shell (старі gradient/glow 946/970), 7 табів, OverviewBriefing, SmartPricingOptimizer — УЖЕ конформні. Residual менший, ніж план думав. НЕ переробляв готове.
+- **Residual виправлено:** (A) 2 живі віджети табу «Огляд»: `BusinessHealthScoreWidget` → **Section-мова** (quiet eyebrow + Activity-іконка + score-кільце `metric-value`-домінанта + калібровані вердикт-тони good `#0B6B2E`/`--error` + hairline метрик-смуги); `MorningBriefing` → sentence-case заголовок + text-sub + `metric-value` час. (B) charts+primitives (8 файлів: CohortHeatmap/ForecastBarChart/HeatmapGrid/EmptyCell/ErrorCell/ProUpgradeCard/ServicePairingMatrix/RevenueLineChart) — `text-muted-foreground(/NN)` + `--text-tertiary` (axis tick) викорінено sed'ом → `text-sub`/`--text-secondary`. (C) OverviewBriefing `text-text-tertiary`→sub; OverviewDetailSheet+StockTab uppercase-eyebrow → sentence-case.
+- **🗑 Purge мертвого коду (grep-верифіковано 0 зовн. посилань):** `HeroStory.tsx` (не рендериться, замінений OverviewBriefing — `StoryItem` type перенесено в OverviewBriefing.tsx export, AnalyticsPage import оновлено) · `GoalProgress.tsx`+`__tests__/GoalProgress.test.tsx` (рендер лише у власному тесті) · `KpiTicker.tsx` (не імпортиться). Прецедент M-ANL (8+ видалень).
+- **🔧 Урок:** `--color-muted-foreground` мапиться на `--text-tertiary` (2.78:1) — тому `text-muted-foreground` = завжди §4-провал на Frost. sed `s#text-muted-foreground(/[0-9]+)?#text-text-sub#g` безпечний для Cyrillic (ASCII-байти). `Section` primitive-хедер САМ = 1 санкц. quiet uppercase eyebrow (не скафолд-бан).
+- **Own-eyes:** BHS 3 стани (93/78/52 → Відмінно/Добре/Потребує уваги) collapsed+expanded Playwright, видалено. MorningBriefing = чисті token-свопи (grep+impeccable, без структури) — рендер пропущено (MasterContext+react-query дорого мокати). TSC:0 · Build:clean · 21 tests pass.
 
 ### DS-CLIENT-05 — Explore (04.07, ✅ own-eyes, автономна) — commit 80e667bd
 - **Чесна оцінка:** Explore = одна з найсильніших легасі-поверхонь, НЕ зламана. Уже має темний блок-герой (`SearchPortal` = `bg-accent` slate `#0F172A`), spotlight-асиметрію, чесні low-data (hero fallback today→tomorrow→top, spotlight ховається без фото). Тому **token+contrast+craft alignment, не rewrite** (ситуація DS-CLIENT-03). Переписувати = регресія робочого discovery (geo/smart-sort/intent).
