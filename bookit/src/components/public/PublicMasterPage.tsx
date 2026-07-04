@@ -5,9 +5,10 @@ import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
 import { useUrlActionBus } from '@/lib/actions/UrlActionBus';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Star, BadgeCheck, Share2, Instagram, Send, Clock, Zap, Gift, ShoppingBag, ArrowRight } from 'lucide-react';
+import { Star, BadgeCheck, Clock, Zap, Gift, ShoppingBag, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { MasterLocationCard } from './MasterLocationCard';
+import { PublicMasterHero } from './PublicMasterHero';
 import { LoyaltyWidget } from './LoyaltyWidget';
 import dynamic from 'next/dynamic';
 import { createClient } from '@/lib/supabase/client';
@@ -447,10 +448,7 @@ export function PublicMasterPage({
 
   const textSecondary = isDark ? 'rgba(240, 230, 210, 0.65)' : '#6B5750';
   const textTertiary = isDark ? 'rgba(240, 230, 210, 0.40)' : '#A8928D';
-  const accentBg = isDark ? `${theme.accent}30` : `${theme.accent}18`;
-  const avatarBg = isDark ? 'rgba(212, 175, 55, 0.12)' : 'rgba(255, 210, 194, 0.55)';
   const serviceEmojiCircleBg = isDark ? 'rgba(212, 175, 55, 0.10)' : 'rgba(255, 210, 194, 0.4)';
-  const socialBtnBg = isDark ? 'rgba(255,255,255,0.08)' : '#F5E8E3';
 
   return (
     <div>
@@ -526,168 +524,34 @@ export function PublicMasterPage({
           )}
         </AnimatePresence>
 
-        {/* ── Header card — "High-end Cozy Minimalism" ── */}
+        {/* ── Header hero — темна editorial-обкладинка (DS-CLIENT-01) ── */}
         <motion.div
           initial={{ opacity: 0, y: 24, scale: 0.98 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={SPRING}
-          className="bento-card relative mb-4 overflow-hidden border border-border"
         >
-          {/* Share button — absolute top-right */}
-          <button
-            type="button"
-            onClick={handleShare}
-            aria-label="Поділитись сторінкою"
-            className="absolute top-4 right-4 z-10 size-11 rounded-lg bg-secondary/70 border border-border backdrop-blur-sm flex items-center justify-center hover:bg-secondary/90 transition-colors cursor-pointer active:scale-[0.95] transition-all"
-            style={{ color: textSecondary }}
-          >
-            <Share2 size={16} />
-          </button>
-
-          {/* Hero section — centered */}
-          <div className="pt-7 pb-5 px-6 flex flex-col items-center text-center">
-            {/* Avatar */}
-            <div
-              className="size-24 rounded-[28px] flex items-center justify-center text-4xl relative overflow-hidden mb-4"
-              style={{
-                background: avatarBg,
-                boxShadow: isDark ? '0 8px 32px rgba(0,0,0,0.4)' : `0 8px 24px ${theme.accent}22`,
-                border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.4)'}`
-              }}
-            >
-              {master.avatarUrl ? (
-                <Image
-                  src={master.avatarUrl}
-                  alt={master.name}
-                  fill
-                  className="object-cover"
-                  sizes="96px"
-                  priority
-                  quality={90}
-                />
-              ) : (
-                <span className="select-none">{master.avatarEmoji ?? master.emoji}</span>
-              )}
-            </div>
-
-            {/* Name + verified badge */}
-            <div className="flex items-center justify-center gap-1.5 mb-1">
-              <h1 className="heading-serif text-2xl leading-tight text-foreground">{master.name}</h1>
-              {master.isVerified && (
-                <Tooltip content={<p className="text-[11px] text-foreground">Верифікований майстер Bookit</p>} position="top">
-                <BadgeCheck size={18} className="flex-shrink-0 cursor-default text-primary" />
-                </Tooltip>
-              )}
-            </div>
-
-            {/* Specialization */}
-            <p className="text-sm mb-3" style={{ color: textSecondary }}>{master.specialty}</p>
-
-            {/* Working hours / availability badge — client-only, no SSR flash */}
-            {availability && (
-              <div className="mb-3">
-                <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full ${
-                  availability.open
-                    ? 'bg-success/12 text-success'
-                    : 'bg-muted-foreground/10 text-muted-foreground'
-                }`}>
-                  <span className={`size-1.5 rounded-full shrink-0 ${availability.open ? 'bg-success animate-pulse' : 'bg-muted-foreground/60'}`} />
-                  {availability.label}
-                </span>
-              </div>
-            )}
-
-            {/* Rating row */}
-            {master.rating > 0 && master.reviewsCount > 0 && (
-              <div className="flex items-center justify-center gap-2 mb-3">
-                <div className="flex items-center gap-0.5">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <Star
-                      key={i}
-                      size={13}
-                      className={i < Math.floor(master.rating) ? 'fill-warning text-warning' : 'text-secondary/80'}
-                    />
-                  ))}
-                </div>
-                <span className="text-sm font-bold text-foreground">{master.rating.toFixed(1)}</span>
-                <span className="text-xs" style={{ color: textTertiary }}>· {pluralUk(master.reviewsCount, 'відгук', 'відгуки', 'відгуків')}</span>
-              </div>
-            )}
-
-            {/* Occupancy bar */}
-            {typeof master.occupancyRate === 'number' && master.occupancyRate > 0 && (
-              <div className="flex items-center gap-2.5 px-6 pb-3 pt-1">
-                <div className="flex-1 h-[3px] rounded-full overflow-hidden" style={{ background: 'color-mix(in srgb, var(--accent) 12%, transparent)' }}>
-                  <div
-                    className="h-full rounded-full"
-                    style={{ width: `${master.occupancyRate}%`, background: 'var(--accent)', opacity: 0.6 }}
-                  />
-                </div>
-                <span className="text-[11px] font-mono font-semibold whitespace-nowrap flex-shrink-0" style={{ color: textTertiary }}>
-                  {master.occupancyRate}% цього місяця
-                </span>
-              </div>
-            )}
-
-            {/* Location */}
-            {master.location && master.location !== 'Україна' && (
-              <div className="flex items-center justify-center gap-1">
-                <MapPin size={12} style={{ color: textTertiary }} />
-                {master.mapUrl && !master.lat ? (
-                  <a
-                    href={master.mapUrl}
-                    target={master.mapUrl.startsWith('http') ? '_blank' : '_self'}
-                    rel="noopener noreferrer"
-                    className="text-xs underline underline-offset-2 decoration-dotted hover:opacity-70 transition-opacity cursor-pointer"
-                    style={{ color: textTertiary }}
-                  >
-                    {master.location}
-                  </a>
-                ) : (
-                  <span className="text-xs" style={{ color: textTertiary }}>{master.location}</span>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Bio — left-aligned, separated by a subtle rule */}
-          {master.bio && (
-            <p
-              className="text-sm px-6 pb-5 leading-relaxed border-t border-border pt-4"
-              style={{ color: textSecondary }}
-            >
-              {master.bio}
-            </p>
-          )}
-
-          {/* Social links (Instagram / Telegram only — Shop moved to its own banner) */}
-          {(master.instagram || master.telegram) && (
-            <div className="flex items-center justify-center gap-2 px-6 pb-5 -mt-1 flex-wrap">
-              {master.instagram && (
-                <a
-                  href={master.instagram}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all hover:opacity-80 active:scale-[0.95] cursor-pointer"
-                  style={{ background: socialBtnBg, color: textSecondary }}
-                >
-                  <Instagram size={13} /> Instagram
-                </a>
-              )}
-              {master.telegram && (
-                <a
-                  href={master.telegram}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all hover:opacity-80 active:scale-[0.95] cursor-pointer"
-                  style={{ background: socialBtnBg, color: textSecondary }}
-                >
-                  <Send size={13} /> Telegram
-                </a>
-              )}
-            </div>
-          )}
-
+          <PublicMasterHero
+            name={master.name}
+            specialty={master.specialty}
+            isVerified={master.isVerified}
+            avatarUrl={master.avatarUrl ?? null}
+            avatarFallback={master.avatarEmoji ?? master.emoji}
+            availability={availability}
+            rating={master.rating}
+            reviewsCount={master.reviewsCount}
+            occupancyRate={typeof master.occupancyRate === 'number' ? master.occupancyRate : null}
+            location={master.location ?? null}
+            locationHref={master.mapUrl && !master.lat ? master.mapUrl : null}
+            bio={master.bio ?? null}
+            instagram={master.instagram ?? null}
+            telegram={master.telegram ?? null}
+            onShare={handleShare}
+            verifiedBadge={
+              <Tooltip content={<p className="text-[11px] text-foreground">Верифікований майстер Bookit</p>} position="top">
+                <BadgeCheck size={18} className="text-white/80 shrink-0 cursor-default" />
+              </Tooltip>
+            }
+          />
         </motion.div>
 
         {/* Location Card — only when precise coords available */}
@@ -866,66 +730,61 @@ export function PublicMasterPage({
         >
           <h2 className="heading-serif text-lg mb-3 px-1" style={{ color: theme.textPrimary }}>Послуги</h2>
 
-          {categories.map((category, ci) => {
+          {categories.map((category) => {
             const catServices = master.services.filter(s => s.category === category);
             return (
-              <div key={category} className="mb-5">
-                <p
-                  className="text-[11px] font-bold uppercase tracking-widest mb-2 px-1"
-                  style={{ color: textTertiary }}
-                >
+              <div key={category} className="bento-card p-2 mb-4">
+                <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-text-sub px-3 pt-2 pb-2.5">
                   {category}
                 </p>
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col">
                   {catServices.map((service, i) => (
                     <motion.button
                       type="button"
                       key={service.id}
-                      initial={{ opacity: 0, y: 12 }}
+                      initial={{ opacity: 0, y: 10 }}
                       whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true, margin: "-40px" }}
+                      viewport={{ once: true, margin: '-40px' }}
                       transition={{ ...SPRING_CARD, delay: i * 0.04 }}
-                      whileTap={{ scale: 0.95 }}
+                      whileTap={{ scale: 0.98 }}
                       onClick={() => openBooking(service)}
-                      className="bento-card p-4 text-left w-full group relative overflow-hidden border border-border hover:border-border-strong hover:shadow-lg transition-all duration-300 cursor-pointer"
+                      className={`w-full text-left flex items-center gap-3.5 px-3 py-3 rounded-xl group transition-colors cursor-pointer hover:bg-secondary/60 ${
+                        i > 0 ? 'border-t border-border/40' : ''
+                      }`}
                     >
-                      {service.popular && (
-                        <div className="absolute top-3 right-3 z-10">
-                          <span
-                            className="text-[10px] font-bold px-2 py-0.5 rounded-full backdrop-blur-md"
-                            style={{ color: theme.accent, background: `${theme.accent}15`, border: `1px solid ${theme.accent}30` }}
-                          >
-                            Популярне
-                          </span>
+                      {service.image_url ? (
+                        <Image
+                          src={service.image_url}
+                          alt={service.name}
+                          width={44}
+                          height={44}
+                          className="size-11 rounded-xl shrink-0 object-cover"
+                        />
+                      ) : (
+                        <div
+                          className={`size-11 rounded-xl flex items-center justify-center shrink-0 ${service.popular ? 'ring-1 ring-primary/20' : ''}`}
+                          style={{ background: service.popular ? 'var(--accent-light)' : serviceEmojiCircleBg }}
+                        >
+                          <ServiceIcon name={service.icon_name} size={18} />
                         </div>
                       )}
-                      <div className="flex items-center gap-4">
-                        {service.image_url ? (
-                          <Image
-                            src={service.image_url}
-                            alt={service.name}
-                            width={48}
-                            height={48}
-                            className="size-12 rounded-lg flex-shrink-0 object-cover transition-transform group-hover:scale-110"
-                          />
-                        ) : (
-                          <div
-                            className="size-12 rounded-lg flex items-center justify-center text-xl flex-shrink-0 transition-transform group-hover:scale-110"
-                            style={{ background: serviceEmojiCircleBg, border: '1px solid rgba(255,255,255,0.4)' }}
-                          >
-                            <ServiceIcon name={service.icon_name} size={18} />
-                          </div>
-                        )}
-                        <div className="flex-1 min-w-0 pr-12">
-                          <p className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">{service.name}</p>
-                          <p className="text-[11px] mt-0.5 font-medium opacity-70" style={{ color: textSecondary }}>
-                            <Clock size={10} className="inline mr-1 -mt-0.5" />
-                            {formatDurationFull(service.duration)}
-                          </p>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <p className="text-sm font-bold text-foreground truncate group-hover:text-primary transition-colors">{service.name}</p>
+                          {service.popular && (
+                            <span className="shrink-0 text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-primary/10 text-primary">
+                              Хіт
+                            </span>
+                          )}
                         </div>
-                        <div className="flex-shrink-0 text-right">
-                          <p className="text-base font-bold text-foreground">{formatPrice(service.price)}</p>
-                        </div>
+                        <p className="flex items-center gap-1 text-[11px] mt-0.5 font-medium text-text-sub">
+                          <Clock size={10} />
+                          {formatDurationFull(service.duration)}
+                        </p>
+                      </div>
+                      <div className="shrink-0 flex items-center gap-1.5">
+                        <span className="metric-value text-[15px] text-foreground">{formatPrice(service.price)}</span>
+                        <ArrowRight size={14} className="text-text-sub opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
                       </div>
                     </motion.button>
                   ))}
@@ -1017,48 +876,84 @@ export function PublicMasterPage({
             transition={{ ...SPRING, delay: 0.3 }}
             className="mt-2"
           >
-            <div className="flex items-baseline gap-2 mb-3 px-1">
+            <div className="flex items-baseline gap-2.5 mb-3 px-1">
               <h2 className="heading-serif text-lg" style={{ color: theme.textPrimary }}>Відгуки</h2>
               {master.rating > 0 && master.reviewsCount > 0 && (
-                <div className="flex items-center gap-1">
-                  <Star size={13} className="fill-warning text-warning" />
-                  <span className="text-sm font-bold text-foreground">{master.rating.toFixed(1)}</span>
-                  <span className="text-xs" style={{ color: textTertiary }}>· {master.reviewsCount} відгуків</span>
+                <div className="flex items-center gap-1.5">
+                  <Star size={14} className="fill-warning text-warning" />
+                  <span className="metric-value text-base text-foreground leading-none">{master.rating.toFixed(1)}</span>
+                  <span className="text-xs text-text-sub">· {pluralUk(master.reviewsCount, 'відгук', 'відгуки', 'відгуків')}</span>
                 </div>
               )}
             </div>
-            <div className="flex flex-col gap-2">
-              {(master.reviews ?? []).map((review, i) => (
-                <motion.div
-                  key={review.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ ...SPRING_CARD, delay: 0.32 + i * 0.04 }}
-                  className="bento-card p-4"
-                >
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <div>
-                      <p className="text-sm font-semibold text-foreground">{review.clientName}</p>
-                      <div className="flex items-center gap-0.5 mt-0.5">
-                        {Array.from({ length: 5 }).map((_, j) => (
-                          <Star
-                            key={j}
-                            size={11}
-                            className={j < review.rating ? 'fill-warning text-warning' : 'text-secondary/80'}
-                          />
-                        ))}
-                      </div>
+
+            {(() => {
+              const reviews = master.reviews ?? [];
+              const [top, ...rest] = reviews;
+              return (
+                <>
+                  {/* Featured — свіжий відгук багатший (краще розкриває довіру) */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ ...SPRING_CARD, delay: 0.32 }}
+                    className="bento-card p-5 mb-2"
+                  >
+                    <div className="flex items-center gap-1 mb-2.5">
+                      {Array.from({ length: 5 }).map((_, j) => (
+                        <Star key={j} size={14} className={j < top.rating ? 'fill-warning text-warning' : 'text-border'} />
+                      ))}
                     </div>
-                    <span className="text-[11px] flex-shrink-0" style={{ color: textTertiary }}>
-                      {new Date(review.createdAt).toLocaleDateString('uk-UA', { day: 'numeric', month: 'short' })}
-                    </span>
-                  </div>
-                  {review.comment && (
-                    <p className="text-sm leading-relaxed" style={{ color: textSecondary }}>{review.comment}</p>
+                    {top.comment ? (
+                      <p className="text-[15px] leading-relaxed text-foreground">{top.comment}</p>
+                    ) : (
+                      <p className="text-sm text-text-sub">Клієнт залишив оцінку без коментаря</p>
+                    )}
+                    <div className="flex items-center gap-2.5 mt-4 pt-3.5 border-t border-border/40">
+                      <div className="size-8 rounded-full bg-primary/12 text-primary flex items-center justify-center text-xs font-bold shrink-0">
+                        {top.clientName[0]?.toUpperCase() ?? '?'}
+                      </div>
+                      <p className="text-sm font-semibold text-foreground flex-1 min-w-0 truncate">{top.clientName}</p>
+                      <span className="text-[11px] text-text-sub shrink-0">
+                        {new Date(top.createdAt).toLocaleDateString('uk-UA', { day: 'numeric', month: 'short' })}
+                      </span>
+                    </div>
+                  </motion.div>
+
+                  {/* Решта — компактний реєстр з hairline-роздільниками */}
+                  {rest.length > 0 && (
+                    <div className="bento-card p-2">
+                      {rest.map((review, i) => (
+                        <motion.div
+                          key={review.id}
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ ...SPRING_CARD, delay: 0.36 + i * 0.04 }}
+                          className={`flex items-start gap-3 px-3 py-3 ${i > 0 ? 'border-t border-border/40' : ''}`}
+                        >
+                          <div className="size-8 rounded-full bg-secondary/70 text-text-sub flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">
+                            {review.clientName[0]?.toUpperCase() ?? '?'}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between gap-2">
+                              <p className="text-sm font-semibold text-foreground truncate">{review.clientName}</p>
+                              <div className="flex items-center gap-0.5 shrink-0">
+                                {Array.from({ length: 5 }).map((_, j) => (
+                                  <Star key={j} size={10} className={j < review.rating ? 'fill-warning text-warning' : 'text-border'} />
+                                ))}
+                              </div>
+                            </div>
+                            {review.comment && (
+                              <p className="text-[13px] leading-relaxed text-text-sub mt-1 line-clamp-3">{review.comment}</p>
+                            )}
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
                   )}
-                </motion.div>
-              ))}
-            </div>
+                </>
+              );
+            })()}
           </motion.div>
         )}
 
