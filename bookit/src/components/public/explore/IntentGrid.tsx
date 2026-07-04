@@ -27,7 +27,7 @@ function chipCls(active: boolean) {
   return `flex items-center gap-1.5 px-3.5 py-2.5 rounded-full text-xs font-semibold min-h-[44px] whitespace-nowrap flex-shrink-0 transition-colors duration-150 active:scale-95 ${
     active
       ? 'bg-accent text-accent-foreground shadow-sm'
-      : 'bg-background/60 border border-border text-muted-foreground hover:border-accent/40 hover:text-foreground'
+      : 'bg-background/60 border border-border text-text-sub hover:border-accent/40 hover:text-foreground'
   }`;
 }
 
@@ -74,11 +74,11 @@ export function IntentGrid({
         </span>
         <span className="flex-1 min-w-0">
           <span className="block text-sm font-semibold leading-tight">{heroTitle}</span>
-          <span className={`block text-[11px] mt-0.5 ${heroActive ? 'text-accent-foreground/70' : 'text-muted-foreground'}`}>
+          <span className={`block text-[11px] mt-0.5 ${heroActive ? 'text-accent-foreground/70' : 'text-text-sub'}`}>
             {heroSub}
           </span>
         </span>
-        <ArrowRight size={16} className={`flex-shrink-0 ${heroActive ? 'text-accent-foreground/80' : 'text-muted-foreground'}`} aria-hidden="true" />
+        <ArrowRight size={16} className={`flex-shrink-0 ${heroActive ? 'text-accent-foreground/80' : 'text-text-sub'}`} aria-hidden="true" />
       </button>
 
       {/* Secondary intents + filters */}

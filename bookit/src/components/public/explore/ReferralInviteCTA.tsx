@@ -43,7 +43,7 @@ export function ReferralInviteCTA({ inviteCode }: { inviteCode: string | null })
       >
         Не знайшла свого майстра?
       </h2>
-      <p className="text-[13px] text-muted-foreground mt-1.5 leading-relaxed">
+      <p className="text-[13px] text-text-sub mt-1.5 leading-relaxed">
         Запроси його на BookIT. Виграєте обидва.
       </p>
 
@@ -53,7 +53,7 @@ export function ReferralInviteCTA({ inviteCode }: { inviteCode: string | null })
             <Percent size={16} className="text-accent" aria-hidden="true" />
           </span>
           <p className="text-sm text-foreground">
-            <span className="text-muted-foreground">Тобі </span>
+            <span className="text-text-sub">Тобі </span>
             <span className="font-semibold">−50% на перший запис до нього</span>
           </p>
         </div>
@@ -62,7 +62,7 @@ export function ReferralInviteCTA({ inviteCode }: { inviteCode: string | null })
             <Crown size={16} className="text-accent" aria-hidden="true" />
           </span>
           <p className="text-sm text-foreground">
-            <span className="text-muted-foreground">Майстру </span>
+            <span className="text-text-sub">Майстру </span>
             <span className="font-semibold">21 день Pro безкоштовно, без карти</span>
           </p>
         </div>
@@ -72,7 +72,7 @@ export function ReferralInviteCTA({ inviteCode }: { inviteCode: string | null })
         <button
           type="button"
           onClick={share}
-          className="mt-6 inline-flex items-center justify-center gap-2 w-full py-3 rounded-full bg-accent text-accent-foreground text-sm font-semibold min-h-[48px] hover:opacity-90 active:scale-[0.98] transition-all"
+          className="mt-6 inline-flex items-center justify-center gap-2 w-full h-12 rounded-xl bg-[var(--btn-primary-bg)] text-[var(--accent-on)] text-sm font-bold shadow-sm hover:opacity-90 active:opacity-80 active:scale-[0.98] transition-all"
         >
           {copied ? (
             <>
@@ -89,7 +89,7 @@ export function ReferralInviteCTA({ inviteCode }: { inviteCode: string | null })
       ) : (
         <Link
           href="/my/loyalty"
-          className="mt-6 inline-flex items-center justify-center gap-2 w-full py-3 rounded-full bg-accent text-accent-foreground text-sm font-semibold min-h-[48px] hover:opacity-90 active:scale-[0.98] transition-all"
+          className="mt-6 inline-flex items-center justify-center gap-2 w-full h-12 rounded-xl bg-[var(--btn-primary-bg)] text-[var(--accent-on)] text-sm font-bold shadow-sm hover:opacity-90 active:opacity-80 active:scale-[0.98] transition-all"
         >
           <UserPlus size={15} aria-hidden="true" />
           Запросити майстра

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Star, MapPin, Clock, Calendar, BadgeCheck, ArrowRight } from 'lucide-react';
+import { Star, MapPin, Clock, Calendar, BadgeCheck, ArrowRight, Sparkles } from 'lucide-react';
 import { pluralUk } from '@/lib/utils/pluralUk';
 import { formatDistance } from '@/lib/utils/haversine';
 import {
@@ -56,17 +56,17 @@ function MediaCover({
   );
 }
 
-// ─── Availability — honest label (schedule works today, not "free slot") ────────
+// ─── Availability — honest label; calibrated tones (pass 4.5:1 on light card) ────
 
 function AvailChip({ today, tomorrow }: { today: boolean; tomorrow: boolean }) {
   if (!today && !tomorrow) return null;
   const isToday = today;
-  const color = isToday ? 'var(--success)' : 'var(--warning)';
+  const color = isToday ? '#0B6B2E' : '#9A4508';
   const Icon  = isToday ? Clock : Calendar;
   return (
     <span
       className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-full leading-none w-fit"
-      style={{ color, background: `color-mix(in srgb, ${color} 13%, transparent)` }}
+      style={{ color, background: `color-mix(in srgb, ${color} 12%, transparent)` }}
     >
       <Icon size={10} aria-hidden="true" />
       {isToday ? 'Працює сьогодні' : 'Працює завтра'}
@@ -142,7 +142,7 @@ export function MasterCard({
                   {getCategoryLabel(master.categories)}
                 </span>
                 {master.city && (
-                  <span className="flex items-center gap-0.5 text-[11px] text-muted-foreground">
+                  <span className="flex items-center gap-0.5 text-[11px] text-text-sub">
                     <MapPin size={8} aria-hidden="true" />
                     {master.city}
                   </span>
@@ -153,14 +153,14 @@ export function MasterCard({
                 <div className="flex items-center gap-1">
                   <Star size={10} className="text-warning fill-warning" aria-hidden="true" />
                   <span className="text-xs font-semibold text-foreground metric-value">{master.rating.toFixed(1)}</span>
-                  <span className="text-[10px] text-muted-foreground">
+                  <span className="text-[10px] text-text-sub">
                     · {master.ratingCount} {pluralUk(master.ratingCount, 'відгук', 'відгуки', 'відгуків')}
                   </span>
                 </div>
               )}
 
               {master.topServices[0] && (
-                <p className="text-[10px] text-muted-foreground bg-secondary/50 px-2 py-0.5 rounded-full w-fit max-w-full truncate">
+                <p className="text-[10px] text-text-sub bg-secondary/50 px-2 py-0.5 rounded-full w-fit max-w-full truncate">
                   {master.topServices[0].name} · {master.topServices[0].price}₴
                 </p>
               )}
@@ -235,7 +235,7 @@ export function MasterListCard({
                   {getCategoryLabel(master.categories)}
                 </span>
                 {master.city && (
-                  <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
+                  <span className="flex items-center gap-0.5 text-[10px] text-text-sub">
                     <MapPin size={8} aria-hidden="true" />
                     {master.city}
                   </span>
@@ -249,7 +249,7 @@ export function MasterListCard({
                   <div className="flex items-center gap-1">
                     <Star size={9} className="text-warning fill-warning" aria-hidden="true" />
                     <span className="text-xs font-semibold text-foreground metric-value">{master.rating.toFixed(1)}</span>
-                    <span className="text-[10px] text-muted-foreground">
+                    <span className="text-[10px] text-text-sub">
                       ({master.ratingCount})
                     </span>
                   </div>
@@ -279,14 +279,17 @@ export function SpotlightCard({ master }: { master: ExploreMaster }) {
           <span className="absolute top-2.5 left-2.5"><ProTag /></span>
         </div>
         <div className="flex-1 min-w-0 p-4 flex flex-col justify-center gap-2">
-          <span className="text-[10px] font-bold text-accent tracking-[0.2em] uppercase">Обране</span>
+          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-accent w-fit">
+            <Sparkles size={11} aria-hidden="true" />
+            Обране
+          </span>
           <h3
             className="text-foreground leading-tight"
             style={{ fontFamily: CORMORANT, fontSize: '1.55rem', fontWeight: 500 }}
           >
             {master.name}
           </h3>
-          <p className="text-[11px] text-muted-foreground -mt-1">
+          <p className="text-[11px] text-text-sub -mt-1">
             {getCategoryLabel(master.categories)}
             {master.city ? ` · ${master.city}` : ''}
           </p>
@@ -294,13 +297,13 @@ export function SpotlightCard({ master }: { master: ExploreMaster }) {
             <div className="flex items-center gap-1">
               <Star size={12} className="text-warning fill-warning" aria-hidden="true" />
               <span className="text-sm font-semibold text-foreground metric-value">{master.rating.toFixed(1)}</span>
-              <span className="text-[11px] text-muted-foreground">
+              <span className="text-[11px] text-text-sub">
                 · {master.ratingCount} {pluralUk(master.ratingCount, 'відгук', 'відгуки', 'відгуків')}
               </span>
             </div>
           )}
           {master.topServices[0] && (
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-[11px] text-text-sub">
               {master.topServices[0].name} · {master.topServices[0].price}₴
             </p>
           )}
@@ -317,11 +320,11 @@ export function SkeletonGrid() {
     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
       {Array.from({ length: 6 }).map((_, i) => (
         <div key={i} className="bento-card rounded-3xl overflow-hidden animate-pulse">
-          <div className="h-32 bg-muted/20" />
+          <div className="h-32 bg-secondary/50" />
           <div className="px-3.5 py-3.5 space-y-2">
-            <div className="h-4 bg-muted/30 rounded-full w-3/4" />
-            <div className="h-3 bg-muted/20 rounded-full w-1/2" />
-            <div className="h-8 bg-muted/20 rounded-full w-full mt-1" />
+            <div className="h-4 bg-secondary/70 rounded-full w-3/4" />
+            <div className="h-3 bg-secondary/50 rounded-full w-1/2" />
+            <div className="h-8 bg-secondary/50 rounded-full w-full mt-1" />
           </div>
         </div>
       ))}

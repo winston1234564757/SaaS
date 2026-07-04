@@ -1,6 +1,7 @@
 'use client';
 
 import { Sheet } from '@/components/ui/Sheet';
+import { Button } from '@/components/ui/Button';
 import { Check } from 'lucide-react';
 import type { SortMode } from './shared';
 
@@ -40,7 +41,7 @@ export function FilterSheet({
 
         {/* Price */}
         <section>
-          <h4 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-2.5">Ціна</h4>
+          <h4 className="text-[13px] font-semibold text-foreground mb-2.5">Ціна</h4>
           <div className="grid grid-cols-4 gap-2">
             {PRICE_OPTIONS.map(opt => {
               const active = priceMax === opt.value;
@@ -53,7 +54,7 @@ export function FilterSheet({
                   className={`py-2.5 rounded-xl text-xs font-semibold min-h-[44px] transition-colors duration-150 active:scale-95 ${
                     active
                       ? 'bg-accent text-accent-foreground shadow-sm'
-                      : 'bg-background/60 border border-border text-muted-foreground hover:text-foreground'
+                      : 'bg-background/60 border border-border text-text-sub hover:text-foreground'
                   }`}
                 >
                   {opt.label}
@@ -65,7 +66,7 @@ export function FilterSheet({
 
         {/* Sort */}
         <section>
-          <h4 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-2.5">Сортування</h4>
+          <h4 className="text-[13px] font-semibold text-foreground mb-2.5">Сортування</h4>
           <div className="flex flex-col gap-1.5">
             {sortOptions.map(opt => {
               const active = sort === opt.value;
@@ -102,7 +103,7 @@ export function FilterSheet({
             <span className="text-sm font-medium text-foreground">Лише з відгуками</span>
             <span
               className={`relative w-11 h-6 rounded-full transition-colors duration-200 flex-shrink-0 ${
-                withReviews ? 'bg-accent' : 'bg-muted/40'
+                withReviews ? 'bg-accent' : 'bg-secondary'
               }`}
             >
               <span
@@ -116,20 +117,12 @@ export function FilterSheet({
 
         {/* Actions */}
         <div className="flex gap-2.5 pt-1">
-          <button
-            type="button"
-            onClick={onReset}
-            className="flex-1 py-3 rounded-full border border-border text-sm font-semibold text-muted-foreground hover:text-foreground min-h-[48px] active:scale-[0.98] transition-all"
-          >
+          <Button variant="secondary" size="md" fullWidth onClick={onReset}>
             Скинути
-          </button>
-          <button
-            type="button"
-            onClick={() => onOpenChange(false)}
-            className="flex-1 py-3 rounded-full bg-accent text-accent-foreground text-sm font-semibold min-h-[48px] active:scale-[0.98] transition-transform"
-          >
+          </Button>
+          <Button variant="primary" size="md" fullWidth onClick={() => onOpenChange(false)}>
             Готово
-          </button>
+          </Button>
         </div>
       </div>
     </Sheet>

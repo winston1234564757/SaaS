@@ -16,6 +16,7 @@ import { IntentGrid, type HeroMode } from './explore/IntentGrid';
 import { FilterSheet } from './explore/FilterSheet';
 import { MasterCard, MasterListCard, SpotlightCard } from './explore/cards';
 import { ReferralInviteCTA } from './explore/ReferralInviteCTA';
+import { Button } from '@/components/ui/Button';
 
 export type { ExploreMaster } from './explore/shared';
 
@@ -50,21 +51,21 @@ function StickySearch({
         >
           <div className="max-w-2xl mx-auto px-4 py-2.5 flex items-center gap-2">
             <div className="relative flex-1">
-              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-sub pointer-events-none" />
               <input
                 type="search"
                 value={searchQuery}
                 onChange={e => onSearchChange(e.target.value)}
                 placeholder="Пошук…"
                 aria-label="Пошук майстрів"
-                className="w-full min-h-[42px] pl-9 pr-8 rounded-full bg-secondary/60 border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-accent/40 transition-colors"
+                className="w-full min-h-[42px] pl-9 pr-8 rounded-full bg-secondary/60 border border-border text-sm text-foreground placeholder:text-text-sub focus:outline-none focus:border-accent/40 transition-colors"
               />
               {searchQuery && (
                 <button
                   type="button"
                   onClick={() => onSearchChange('')}
                   aria-label="Очистити пошук"
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 size-5 rounded-full bg-muted/40 flex items-center justify-center text-muted-foreground active:scale-90"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 size-5 rounded-full bg-muted/40 flex items-center justify-center text-text-sub active:scale-90"
                 >
                   <X size={10} />
                 </button>
@@ -305,9 +306,9 @@ export function ExplorePage({ masters, categoryCounts, preferredCategories, invi
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -4 }}
                 transition={{ duration: 0.15 }}
-                className="text-xs text-muted-foreground mt-3 flex items-center gap-1.5"
+                className="text-xs text-text-sub mt-3 flex items-center gap-1.5"
               >
-                <span className="size-1.5 rounded-full bg-muted-foreground/40 flex-shrink-0" aria-hidden="true" />
+                <span className="size-1.5 rounded-full bg-text-sub/40 flex-shrink-0" aria-hidden="true" />
                 Геолокацію заблоковано. Дозволь її в налаштуваннях браузера.
               </motion.p>
             )}
@@ -332,7 +333,7 @@ export function ExplorePage({ masters, categoryCounts, preferredCategories, invi
           {/* Count + view toggle */}
           <div className="flex items-center justify-between mt-7 mb-3.5">
             {isFiltered && forDisplay.length > 0 ? (
-              <p className="text-xs text-muted-foreground font-medium">
+              <p className="text-xs text-text-sub font-medium">
                 {forDisplay.length} {pluralUk(forDisplay.length, 'майстер', 'майстри', 'майстрів')}
               </p>
             ) : sort === 'smart' && preferredCategories.length > 0 && !nearbyActive ? (
@@ -345,7 +346,7 @@ export function ExplorePage({ masters, categoryCounts, preferredCategories, invi
                 aria-pressed={viewMode === 'grid'}
                 onClick={() => setViewMode('grid')}
                 className={`size-8 rounded-full flex items-center justify-center transition-all duration-150 ${
-                  viewMode === 'grid' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'
+                  viewMode === 'grid' ? 'bg-background shadow-sm text-foreground' : 'text-text-sub hover:text-foreground'
                 }`}
               >
                 <LayoutGrid size={13} aria-hidden="true" />
@@ -356,7 +357,7 @@ export function ExplorePage({ masters, categoryCounts, preferredCategories, invi
                 aria-pressed={viewMode === 'list'}
                 onClick={() => setViewMode('list')}
                 className={`size-8 rounded-full flex items-center justify-center transition-all duration-150 ${
-                  viewMode === 'list' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'
+                  viewMode === 'list' ? 'bg-background shadow-sm text-foreground' : 'text-text-sub hover:text-foreground'
                 }`}
               >
                 <AlignJustify size={13} aria-hidden="true" />
@@ -381,16 +382,12 @@ export function ExplorePage({ masters, categoryCounts, preferredCategories, invi
                 <p className="text-sm font-semibold text-foreground mb-1.5">
                   {searchQuery ? `За «${searchQuery}» нікого не знайшли` : 'Нікого не знайшли'}
                 </p>
-                <p className="text-xs text-muted-foreground mb-5">
+                <p className="text-xs text-text-sub mb-5">
                   {searchQuery ? 'Спробуй інше слово або прибери фільтри' : 'Спробуй змінити фільтри'}
                 </p>
-                <button
-                  type="button"
-                  onClick={resetFilters}
-                  className="px-5 py-2.5 rounded-full bg-accent/10 text-accent text-xs font-semibold min-h-[44px] hover:bg-accent/20 transition-colors duration-150"
-                >
+                <Button variant="secondary" size="sm" onClick={resetFilters}>
                   Скинути все
-                </button>
+                </Button>
               </motion.div>
             ) : viewMode === 'grid' ? (
               <motion.div key="grid" className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -410,13 +407,9 @@ export function ExplorePage({ masters, categoryCounts, preferredCategories, invi
           {/* Load more */}
           {hasMore && (
             <div className="mt-10 flex justify-center">
-              <button
-                type="button"
-                onClick={() => setPage(p => p + 1)}
-                className="px-6 py-3 rounded-full bg-background/70 border border-border text-sm font-semibold text-foreground hover:border-accent/40 transition-all duration-150 min-h-[44px] active:scale-[0.97]"
-              >
+              <Button variant="secondary" size="md" onClick={() => setPage(p => p + 1)}>
                 Показати ще {remaining}
-              </button>
+              </Button>
             </div>
           )}
 
@@ -429,7 +422,7 @@ export function ExplorePage({ masters, categoryCounts, preferredCategories, invi
           {!hasMore && visible.length > 0 && (
             <div className="mt-4 text-center px-6 py-8 rounded-3xl bg-accent/5 border border-accent/10">
               <p className="text-sm font-semibold text-foreground mb-1.5">Ти майстер?</p>
-              <p className="text-xs text-muted-foreground mb-5 max-w-[260px] mx-auto leading-relaxed">
+              <p className="text-xs text-text-sub mb-5 max-w-[260px] mx-auto leading-relaxed">
                 Приєднуйся безкоштовно. Перший запис можеш отримати вже сьогодні.
               </p>
               <Link

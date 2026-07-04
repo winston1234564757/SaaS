@@ -46,7 +46,7 @@ export function SearchPortal({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.06, duration: 0.3 }}
-          className="text-[11px] text-accent-foreground/50 mt-1.5"
+          className="text-[11px] text-accent-foreground/70 mt-1.5"
         >
           {totalCount} {pluralUk(totalCount, 'майстер', 'майстри', 'майстрів')} поруч
         </motion.p>
@@ -100,7 +100,7 @@ export function SearchPortal({
               className={`py-1.5 min-h-[44px] transition-colors duration-150 active:scale-95 text-[1.15rem] leading-none ${
                 !activeCategory
                   ? 'text-accent-foreground underline decoration-2 underline-offset-[6px]'
-                  : 'text-accent-foreground/45 hover:text-accent-foreground/75'
+                  : 'text-accent-foreground/65 hover:text-accent-foreground/85'
               }`}
             >
               Усі
@@ -117,12 +117,12 @@ export function SearchPortal({
                   className={`py-1.5 min-h-[44px] transition-colors duration-150 active:scale-95 text-[1.15rem] leading-none ${
                     active
                       ? 'text-accent-foreground underline decoration-2 underline-offset-[6px]'
-                      : 'text-accent-foreground/55 hover:text-accent-foreground/80'
+                      : 'text-accent-foreground/65 hover:text-accent-foreground/85'
                   }`}
                 >
                   {w.label}
                   <span
-                    className="text-accent-foreground/35 text-[11px] align-super ml-0.5 metric-value"
+                    className="text-accent-foreground/55 text-[11px] align-super ml-0.5 metric-value"
                     style={{ fontFamily: 'var(--font-geist-sans, system-ui, sans-serif)' }}
                   >
                     {w.count}
