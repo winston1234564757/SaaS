@@ -17,7 +17,7 @@
 
 ═══ ПОТОЧНИЙ СТАН ═══
 Фундамент ✅ (C-CLI-01, 03.07, founder 10/10): токени --cover-bg / .editorial-cover · примітиви EditorialCover + Section · Button/Badge під мову · BentoCard видалено · Sheet srTitle · DESIGN_LANGUAGE.md.
-Прогрес задач: 23/28 ✅ — **P1 дашборд ЗАКРИТА** · **P3 модалки 6/7** · **P2 клієнт-зона ✅** · **Analytics ✅** · **Settings ✅** · **Bookings-list ✅**. Борг DS-BOOK-DASH (темні bookings-views). CLIENT-02 (BookingWizard) відкладено — окрема сесія з founder.
+Прогрес задач: 24/29 ✅ — **P1 дашборд ЗАКРИТА** · **P3 модалки 6/7** · **P2 клієнт-зона ✅** · **Analytics ✅** · **Settings ✅** · **Bookings-list ✅** · **Clients ✅**. Борг DS-BOOK-DASH (темні bookings-views). CLIENT-02 (BookingWizard) відкладено — окрема сесія з founder.
 Кіт: bookit/src/components/ui/ — EditorialCover (темний герой, 1 на поверхню) · Section (білий тіло, hairline) · Button (primary slate / secondary hairline / ghost / danger) · Badge (surface light|dark) · Sheet (srTitle).
 Еталон реалізації: ClientDossierHero + ClientDetailSheet + BookingDetailsModal band (variant cover/inline). Читай BRIEFS/C-CLI-01.md перш ніж робити першу модалку/картку.
 
@@ -27,8 +27,8 @@
   3. Кожен віджет = домінанта-заголовок (що читається за 3 сек) + виділена «зірка» в даних + за можливості actionable-лінк (напр. пік→«Підняти ціну в пік»→`/dashboard?drawer=dynamic_pricing`). Смарт-drawer на дашборді = `<Link href="/dashboard?drawer=NAME">` (nuqs, див. DashboardDrawers.tsx: flash_deals, dynamic_pricing).
   4. 🔴 КОНТРАСТ НА FROST (DS-DASH-04): токени `--success`/`--warning` провалюють 4.5:1 на дрібному (12px) тексті на periwinkle-картці (≈3.95). `.heading-serif`=weight500 → NIE bold → навіть 19px = normal text (4.5, не 3). Для тексту-статусу юзай калібровані тони good`#0B6B2E`/warn`#9A4508`/bad`--error`. **`--text-tertiary` (2.78:1) = забанене §4 значення → НІКОЛИ для тексту; тільки `--text-primary`/`--text-secondary`. Ієрархію — розміром.**
 
-▶ НАСТУПНА ДІЯ: Clients — `master/clients/ClientsPage.tsx` (709) + `ClientListRow`/`ClientGridCard`/`clientsUtils`. Має власну status-hex палітру (RETENTION_CONFIG #5C9E7A/#789A99/#D4935A/#C05B5B — ЛЕГАСІ sage/peach, НЕ Frost!) — перевір grep + чи ці hex на світлому проходять 4.5. Спочатку grep banned-токенів + hex-аудит.
-  Далі: Marketing → Billing · Борг DS-BOOK-DASH (темні bookings-views) · P5 лендинг (LAND-01).
+▶ НАСТУПНА ДІЯ: Marketing — `master/marketing/*` (сторіс/розсилки) або revenue-таби (flash/pricing). Спочатку grep banned-токенів + light/dark-контекст (як усюди). Ймовірно conform-пас.
+  Далі: Billing · Борг DS-BOOK-DASH (темні bookings-views) · P5 лендинг (LAND-01).
   ⚠️ DS-MODAL-01 + DS-CLIENT-02 (BookingWizard) — НЕ автономно: revenue-critical shared 6-крок flow. Присвячена сесія з founder-in-loop.
   🔴 УРОК founder (застосовуй усюди): «більше крафту над СВІТЛИМИ блоками» — featured-диференціація + домінантна типографіка (metric-value/heading-serif) + hairline-структура в КОЖНОМУ Section, не лише в темному герої. Світлий блок «служить» ≠ «нудний». Пам'ять: feedback_light_blocks_craft.md.
 
@@ -56,6 +56,13 @@ TRACKER: DS-[ID] ⬜→✅ + оновити ▶ NEXT + прогрес N/23 → �
 ---
 
 ## Нотатки сесій (свіжі зверху)
+
+### DS-CLI-CONFORM — Clients CRM (04.07, ✅ автономна) — commit 0e7ff013
+- **Скоуп:** 5 light файлів — `ClientsPage` · `ClientGridCard` · `ClientListRow` · `ClientWidgets` · `SegmentBuilder`. Той самий conform-пас.
+- **🚫 НЕ чіпав еталон C-CLI-01 (founder 10/10, спільні 6 точок, dark/light):** `ClientDossierHero` (dark hero, white/55 on-dark коректно), `ClientDetailSheet` (санкц. text-text-sub uppercase tracking-[0.16em] Section-eyebrow вже), `ClientStatChips`, `ClientIdentityHeader`. Не ретрофіть конформне.
+- **Зроблено (sed):** text-muted-foreground(/NN)?→text-text-sub; text-sage(=легасі-alias var(--accent))→text-accent; eyebrows uppercase tracking-XXX→sentence-case. Калібр: ClientWidgets VIP-під-загрозою text-warning/70 (opacity-fail 10px)→#9A4508.
+- **🔑 Stale-нот виправлено:** RETENTION_CONFIG sage/peach-hex УЖЕ фікснуто до WCAG-AA 2026-06-07 (clientsUtils.tsx: #15803D/#0F766E/#C2410C/#B91C1C). SegmentBuilder #5C9E7A/#789A99/#D4935A/#C05B5B = user-selectable segment-swatches (дані) → лишив.
+- **Own-eyes:** heavy providers (virtualizer/context/actions) → grep+tsc+build (мех. пас без layout-змін). TSC:0 · Build:clean · encoding чистий.
 
 ### DS-BOOK-LIST — Bookings список (04.07, ✅ автономна) — commit 511a42d2
 - **Чесний скоуп-cut:** `master/bookings/` = 108 hard-bans / 11 файлів, ЗМІШАНІ light/dark. Сліпий sed небезпечний (BookingDetailsModal + VerticalTimeline мають dark-герої → text-sub на темному = dark-on-dark баг). Тому звузив до список-в'ю (light-only): `BookingsPage` + `BookingCard` + `DashboardWidgets` (усі light — verified 0 dark-маркерів).
