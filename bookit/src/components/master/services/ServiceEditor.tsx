@@ -20,6 +20,7 @@ import {
 import { Drawer } from 'vaul';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils/cn';
+import { Button } from '@/components/ui/Button';
 import { useServices } from '@/lib/supabase/hooks/useServices';
 import { type Service, CATEGORIES, DURATIONS, formatDuration, formatPrice, serviceSchema } from './types';
 import { pluralUk } from '@/lib/utils/pluralUk';
@@ -303,19 +304,10 @@ export function ServiceEditor({ id }: Props) {
               <Trash2 size={18} />
             </button>
           )}
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={isSaving}
-            className="flex items-center gap-2 px-6 h-11 rounded-full bg-primary text-primary-foreground font-semibold shadow-lg shadow-primary/20 hover:opacity-90 transition-all active:scale-[0.95] cursor-pointer disabled:opacity-50"
-          >
-            {isSaving ? (
-              <div className="size-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <Save size={18} />
-            )}
+          <Button variant="primary" size="md" onClick={handleSave} disabled={isSaving} isLoading={isSaving} className="px-6 shadow-lg">
+            <Save size={18} />
             <span className="hidden sm:inline">Зберегти</span>
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -771,18 +763,13 @@ export function ServiceEditor({ id }: Props) {
                 <button
                   type="button"
                   onClick={() => setShowAddSheet(false)}
-                  className="flex-1 h-12 rounded-full border border-border text-sm font-semibold text-muted-foreground hover:bg-secondary/60 transition-colors active:scale-[0.97]"
+                  className="flex-1 h-12 rounded-full border border-border text-sm font-semibold text-text-sub hover:bg-secondary/60 transition-colors active:scale-[0.97]"
                 >
                   Скасувати
                 </button>
-                <button
-                  type="button"
-                  onClick={handleSaveConsumableLinks}
-                  disabled={isAddingConsumable || addSelectedIds.size === 0}
-                  className="flex-1 h-12 rounded-full bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors active:scale-[0.97] disabled:opacity-50"
-                >
-                  {isAddingConsumable ? 'Збереження...' : `Зберегти`}
-                </button>
+                <Button variant="primary" size="lg" onClick={handleSaveConsumableLinks} disabled={isAddingConsumable || addSelectedIds.size === 0} isLoading={isAddingConsumable} className="flex-1">
+                  Зберегти
+                </Button>
               </div>
             </div>
           </Drawer.Content>

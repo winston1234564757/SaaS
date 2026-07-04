@@ -21,6 +21,7 @@ import {
   Bell,
 } from 'lucide-react';
 import Image from 'next/image';
+import { Button } from '@/components/ui/Button';
 import { useQueryClient } from '@tanstack/react-query';
 import { useMasterContext } from '@/lib/supabase/context';
 import { useServices } from '@/lib/supabase/hooks/useServices';
@@ -368,15 +369,10 @@ export function ProductEditor({ id }: Props) {
               <Trash2 size={18} />
             </button>
           )}
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={isSaving || uploading}
-            className="flex items-center gap-2 px-6 h-11 rounded-full bg-primary text-primary-foreground font-semibold shadow-lg shadow-primary/20 hover:opacity-90 transition-all active:scale-[0.95] cursor-pointer disabled:opacity-50"
-          >
-            {isSaving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
+          <Button variant="primary" size="md" onClick={handleSave} disabled={isSaving || uploading} isLoading={isSaving} className="px-6 shadow-lg">
+            <Save size={18} />
             <span className="hidden sm:inline">Зберегти</span>
-          </button>
+          </Button>
         </div>
       </div>
 
