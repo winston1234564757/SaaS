@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Search, MessageCircle } from 'lucide-react';
 import { pluralUk } from '@/lib/utils/pluralUk';
+import { ClientPageHero } from './ClientPageHero';
 
 interface Master {
   id: string;
@@ -42,14 +43,12 @@ function relativeDate(dateStr: string): string {
 export function MyMastersPage({ masters }: { masters: Master[] }) {
   return (
     <div className="flex flex-col gap-4">
-      <div className="bento-card p-5">
-        <h1 className="heading-serif text-xl text-foreground mb-0.5">Мої майстри</h1>
-        <p className="text-sm text-text-sub">
-          {masters.length > 0
-            ? `${masters.length} ${pluralUk(masters.length, 'майстер', 'майстри', 'майстрів')}`
-            : 'Ще немає майстрів'}
-        </p>
-      </div>
+      <ClientPageHero
+        title="Мої майстри"
+        metric={masters.length}
+        metricLabel={pluralUk(masters.length, 'майстер', 'майстри', 'майстрів')}
+        subtitle={masters.length === 0 ? 'Ще немає збережених майстрів' : undefined}
+      />
 
       {masters.length === 0 && (
         <motion.div

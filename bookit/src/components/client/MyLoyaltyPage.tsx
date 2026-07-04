@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Gift, Copy, Check, Users, Ticket, ArrowRight, Share2, Heart } from 'lucide-react';
 import { pluralUk } from '@/lib/utils/pluralUk';
 import { cn } from '@/lib/utils/cn';
+import { ClientPageHero } from './ClientPageHero';
 
 interface LoyaltyProgram {
   id: string;
@@ -79,6 +80,12 @@ export function MyLoyaltyPage({ programs, c2cCode, c2bCode, totalMastersInvited,
 
   return (
     <div className="flex flex-col gap-5">
+      <ClientPageHero
+        title="Бонуси"
+        subtitle="Програми лояльності та реферальні знижки"
+        glowColor="#FBBF24"
+      />
+
       {/* Tabs */}
       <div className="flex p-1 bg-secondary rounded-xl">
         <button
@@ -116,14 +123,11 @@ export function MyLoyaltyPage({ programs, c2cCode, c2bCode, totalMastersInvited,
             exit={{ opacity: 0, x: 10 }}
             className="flex flex-col gap-4"
           >
-            <div className="bento-card p-5">
-              <h1 className="heading-serif text-xl text-foreground mb-0.5">Лояльність</h1>
-              <p className="text-sm text-text-sub">
-                {programs.length > 0
-                  ? pluralUk(programs.length, 'активна програма', 'активні програми', 'активних програм')
-                  : 'Програми лояльності від майстрів'}
+            {programs.length > 0 && (
+              <p className="text-[11px] font-bold text-text-sub uppercase tracking-[0.14em] px-1">
+                {pluralUk(programs.length, 'активна програма', 'активні програми', 'активних програм')}
               </p>
-            </div>
+            )}
 
             {programs.length === 0 ? (
               <div className="bento-card p-10 text-center flex flex-col items-center gap-3">

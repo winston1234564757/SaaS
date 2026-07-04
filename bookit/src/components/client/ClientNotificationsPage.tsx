@@ -7,6 +7,7 @@ import { Bell, Check, X, Images, CalendarDays, Star, Megaphone, ExternalLink } f
 import { motion } from 'framer-motion';
 import { approvePortfolioConsent, declinePortfolioConsent } from '@/app/my/portfolio-consent/actions';
 import { timeAgo } from '@/lib/utils/dates';
+import { ClientPageHero } from './ClientPageHero';
 
 interface ClientNotification {
   id: string;
@@ -117,12 +118,16 @@ export function ClientNotificationsPage({ notifications, portfolioConsents }: Pr
   const feedNotifs = notifications.filter(n => n.type !== 'portfolio_consent_request');
   const isEmpty = feedNotifs.length === 0 && activeConsents.length === 0;
   const groups = groupByDate(feedNotifs);
+  const unread = feedNotifs.filter(n => !n.isRead).length + activeConsents.length;
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="bento-card p-5">
-        <h1 className="heading-serif text-xl text-foreground mb-0.5">Сповіщення</h1>
-      </div>
+      <ClientPageHero
+        title="Сповіщення"
+        metric={unread}
+        metricLabel="нових"
+        subtitle={isEmpty ? 'Поки порожньо' : unread === 0 ? 'Усе прочитано' : undefined}
+      />
 
       {isEmpty && (
         <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
