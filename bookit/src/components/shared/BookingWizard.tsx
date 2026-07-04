@@ -22,12 +22,13 @@ import { createBooking } from '@/lib/actions/createBooking';
 import { createPublicOrder } from '@/app/[slug]/actions';
 import { UpgradePromptModal } from '@/components/shared/UpgradePromptModal';
 import { Sheet } from '@/components/ui/Sheet';
+import { Button } from '@/components/ui/Button';
 import { useIsDesktop } from '@/lib/hooks/useIsDesktop';
 import { cn } from '@/lib/utils/cn';
 import { getActivePhoneDiscount } from '@/app/(master)/dashboard/marketing/actions';
 import type { WizardService, WizardProduct, BookingWizardProps } from './wizard/types';
-import { toISO, STEP_TITLE } from './wizard/helpers';
-import { StepProgress } from './wizard/StepProgress';
+import { toISO } from './wizard/helpers';
+import { WizardHero } from './wizard/WizardHero';
 import { SafetyAlert } from '@/components/shared/SafetyAlert';
 
 // ── Re-exports (backward compat for consumers that import from BookingWizard) ─
@@ -242,27 +243,27 @@ export function BookingWizard({
       <Sheet
         open={isOpen}
         onOpenChange={(v) => !v && onClose()}
-        title={step !== 'success' ? (mode === 'master' ? 'Новий запис' : masterName) : ''}
+        title=""
+        srTitle={mode === 'master' ? 'Новий запис' : (masterName || 'Онлайн-запис')}
         maxWidth="xl"
       >
-        <div className={cn(
-          "flex flex-col",
-          !isDesktop && "-mx-6 -mt-2"
-        )}>
-          {/* Step dots */}
+        <div className="flex flex-col gap-4">
+          {/* Темний editorial hero-band — домінанта-намір + контекст-метрика (один на поверхню) */}
           {!isAtLimit && step !== 'success' && (
-            <StepProgress step={step} hasProducts={hasProducts} />
-          )}
-
-          {/* Step title */}
-          {!isAtLimit && step !== 'success' && (
-            <div className="text-center mb-4 flex-shrink-0">
-              <p className="font-semibold text-base text-[var(--text-primary)]">
-                {typeof STEP_TITLE[step] === 'function'
-                  ? (STEP_TITLE[step] as (m: string) => string)(mode)
-                  : STEP_TITLE[step]}
-              </p>
-            </div>
+            <WizardHero
+              step={step}
+              mode={mode}
+              masterName={masterName}
+              hasProducts={hasProducts}
+              selectedCount={selectedServices.length}
+              effectiveDuration={effectiveDuration}
+              totalServicesPrice={totalServicesPrice}
+              cartCount={cart.length}
+              finalTotal={finalTotal}
+              selectedDate={selectedDate}
+              selectedTime={selectedTime}
+              statusColor={flashDeal ? '#F59E0B' : '#6366F1'}
+            />
           )}
 
           {/* Safety alert — shown in master mode when a client with health/medical notes is selected */}
@@ -270,19 +271,18 @@ export function BookingWizard({
             <SafetyAlert masterId={masterId} clientId={selectedClientId} />
           )}
 
-          <div className="relative">
+          <div className={cn("relative", !isDesktop && "-mx-6")}>
             {isAtLimit && step !== 'success' && (
               <div className="flex flex-col items-center text-center py-10 px-5 gap-4">
-                <div className="size-16 rounded-xl bg-warning/10 flex items-center justify-center"><Lock size={28} className="text-warning" /></div>
+                <div className="size-16 rounded-2xl bg-warning/10 flex items-center justify-center"><Lock size={28} className="text-warning" /></div>
                 <p className="text-base font-bold text-foreground">Ліміт записів вичерпано</p>
-                <p className="text-sm text-muted-foreground leading-relaxed">
+                <p className="text-sm text-text-sub leading-relaxed">
                   Майстер досяг ліміту 40 записів на місяць.<br />
                   Нові записи будуть доступні з наступного місяця.
                 </p>
-                <button type="button" onClick={onClose}
-                  className="mt-4 px-8 py-4 rounded-lg bg-primary text-white text-sm font-bold uppercase tracking-widest active:scale-95 transition-all shadow-lg">
+                <Button variant="primary" size="lg" onClick={onClose} className="mt-4 px-8">
                   Зрозуміло
-                </button>
+                </Button>
               </div>
             )}
 

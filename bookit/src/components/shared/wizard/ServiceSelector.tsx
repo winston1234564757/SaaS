@@ -3,13 +3,13 @@
 import { useMemo, useRef, useState, useCallback, useEffect } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Clock, Check, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
-import { pluralUk } from '@/lib/utils/pluralUk';
+import { Clock, Check, Sparkles, ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 import { formatDurationFull } from '@/lib/utils/dates';
 import { fmt, slide } from './helpers';
 import type { WizardService } from './types';
 import { ServiceIcon } from '@/lib/service-icons';
 import { ServiceDetailSheet, type ServiceDetailData } from './ServiceDetailSheet';
+import { Button } from '@/components/ui/Button';
 
 interface ServiceSelectorProps {
   services: WizardService[];
@@ -145,8 +145,8 @@ function CategoryCarousel({
                   )}
 
                   {svc.popular && (
-                    <span className="absolute top-2 left-2.5 text-[9px] font-bold uppercase tracking-wider text-primary bg-primary/12 px-2 py-0.5 rounded-full">
-                      популярне
+                    <span className="absolute top-2 left-2.5 inline-flex items-center gap-1 text-[10px] font-bold text-primary bg-background/85 backdrop-blur-sm ring-1 ring-primary/25 px-2 py-0.5 rounded-full">
+                      <Sparkles size={9} className="text-primary" /> Хіт
                     </span>
                   )}
 
@@ -166,22 +166,22 @@ function CategoryCarousel({
                   <p className="text-sm font-semibold text-foreground leading-snug line-clamp-2">
                     {svc.name}
                   </p>
-                  <p className="text-[11px] text-muted-foreground/60 flex items-center gap-1 mt-1">
+                  <p className="text-[11px] text-text-sub flex items-center gap-1 mt-1">
                     <Clock size={9} />
                     {formatDurationFull(svc.duration)}
                   </p>
                   <div className="mt-auto pt-2.5">
                     {c2cDiscountPct ? (
                       <>
-                        <p className={`text-base font-bold tabular-nums leading-tight ${sel ? 'text-primary' : 'text-foreground'}`}>
+                        <p className={`metric-value text-base leading-tight ${sel ? 'text-primary' : 'text-foreground'}`}>
                           {fmt(price)}
                         </p>
-                        <p className="text-[10px] text-muted-foreground/50 line-through leading-none mt-0.5">
+                        <p className="text-[10px] text-text-sub line-through leading-none mt-0.5">
                           {fmt(svc.price)}
                         </p>
                       </>
                     ) : (
-                      <p className={`text-base font-bold tabular-nums ${sel ? 'text-primary' : 'text-foreground'}`}>
+                      <p className={`metric-value text-base ${sel ? 'text-primary' : 'text-foreground'}`}>
                         {fmt(price)}
                       </p>
                     )}
@@ -194,7 +194,7 @@ function CategoryCarousel({
                 type="button"
                 onClick={() => onDetail(svc)}
                 aria-label={`Детальніше про послугу ${svc.name}`}
-                className="shrink-0 py-2.5 text-center text-xs font-bold uppercase tracking-wider bg-accent text-accent-foreground hover:bg-accent/90 active:scale-[0.98] transition-colors cursor-pointer"
+                className="shrink-0 py-2.5 text-center text-xs font-semibold text-text-sub border-t border-border hover:text-foreground hover:bg-secondary/40 active:scale-[0.98] transition-colors cursor-pointer"
               >
                 Детальніше
               </button>
@@ -211,7 +211,7 @@ function CategoryCarousel({
             onClick={() => scrollBy('prev')}
             disabled={!canPrev}
             aria-label="Попередня"
-            className="size-11 rounded-full bg-secondary border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary/80 active:scale-[0.9] transition-all disabled:opacity-25"
+            className="size-11 rounded-full bg-secondary border border-border flex items-center justify-center text-text-sub hover:text-foreground hover:bg-secondary/80 active:scale-[0.9] transition-all disabled:opacity-25"
           >
             <ChevronLeft size={14} />
           </button>
@@ -237,7 +237,7 @@ function CategoryCarousel({
             onClick={() => scrollBy('next')}
             disabled={!canNext}
             aria-label="Наступна"
-            className="size-11 rounded-full bg-secondary border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary/80 active:scale-[0.9] transition-all disabled:opacity-25"
+            className="size-11 rounded-full bg-secondary border border-border flex items-center justify-center text-text-sub hover:text-foreground hover:bg-secondary/80 active:scale-[0.9] transition-all disabled:opacity-25"
           >
             <ChevronRight size={14} />
           </button>
@@ -298,16 +298,16 @@ export function ServiceSelector({
         {services.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-14 gap-3 text-center">
             <div className="size-12 rounded-xl bg-secondary flex items-center justify-center">
-              <Sparkles size={20} className="text-muted-foreground/40" />
+              <Sparkles size={20} className="text-text-sub" />
             </div>
             <p className="text-sm font-semibold text-foreground">Послуг ще немає</p>
-            <p className="text-xs text-muted-foreground/60">Додайте у розділі Послуги</p>
+            <p className="text-xs text-text-sub">Додайте у розділі Послуги</p>
           </div>
         ) : (
           <div className="flex flex-col gap-6">
             {categories.map(cat => (
               <div key={cat}>
-                <p className="text-[11px] font-bold text-muted-foreground/70 uppercase tracking-[0.12em] mb-3">
+                <p className="text-sm font-bold text-foreground mb-3">
                   {cat}
                 </p>
                 <CategoryCarousel
@@ -326,7 +326,7 @@ export function ServiceSelector({
         {partners.length > 0 && (
           <div className="mt-8 mb-2">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-[11px] font-bold text-muted-foreground/70 uppercase tracking-widest">
+              <p className="text-sm font-bold text-foreground">
                 Рекомендуємо також
               </p>
               <span className="text-[10px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
@@ -351,7 +351,7 @@ export function ServiceSelector({
                   </div>
                   <div className="min-w-0 w-full">
                     <p className="text-xs font-bold text-foreground truncate">{p.name}</p>
-                    <p className="text-[10px] text-muted-foreground/60 truncate lowercase italic">{p.category}</p>
+                    <p className="text-[10px] text-text-sub truncate lowercase italic">{p.category}</p>
                   </div>
                   <div className="mt-1 text-[10px] font-bold text-primary border-t border-border pt-2 w-full">
                     Дивитись
@@ -379,10 +379,10 @@ export function ServiceSelector({
                   transition: 'opacity 0.2s ease 0.05s',
                 }}
               >
-                <label className="text-xs font-medium text-muted-foreground mb-1.5 flex items-center gap-1.5">
+                <label className="text-xs font-medium text-text-sub mb-1.5 flex items-center gap-1.5">
                   <Clock size={11} className="text-primary" />
                   Нестандартна тривалість, хв
-                  <span className="font-normal text-muted-foreground/60">(необов'язково)</span>
+                  <span className="font-normal text-text-sub">(необов'язково)</span>
                 </label>
                 <div className="flex items-center gap-3">
                   <input
@@ -395,18 +395,18 @@ export function ServiceSelector({
                     }}
                     placeholder={String(totalDuration)}
                     aria-label="Нестандартна тривалість у хвилинах"
-                    className="w-24 px-3 py-2 rounded-xl bg-secondary border border-border text-sm text-foreground placeholder-muted-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                    className="w-24 px-3 py-2 rounded-xl bg-secondary border border-border text-sm text-foreground placeholder:text-text-sub outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                   />
                   {durationOverride !== null && (
                     <button
                       type="button"
                       onClick={() => { onDurationOverrideChange(null); onClearTime(); }}
-                      className="text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors"
+                      className="text-xs text-text-sub hover:text-text-sub transition-colors"
                     >
                       Скинути
                     </button>
                   )}
-                  <span className="text-xs text-muted-foreground/60">
+                  <span className="text-xs text-text-sub">
                     {durationOverride !== null ? `стандарт: ${totalDuration}хв` : 'за послугами'}
                   </span>
                 </div>
@@ -415,43 +415,9 @@ export function ServiceSelector({
           </div>
         )}
 
-        {/* Selection summary chip */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateRows: selectedServices.length > 0 ? '1fr' : '0fr',
-            transition: 'grid-template-rows 0.28s ease',
-          }}
-        >
-          <div style={{ overflow: 'hidden', minHeight: 0 }}>
-            <div className="pt-4 pb-1">
-              <div
-                className="flex items-center gap-2 px-3 py-2 rounded-xl bg-primary/8 border border-primary/20"
-                style={{
-                  opacity: selectedServices.length > 0 ? 1 : 0,
-                  transition: 'opacity 0.2s ease 0.05s',
-                }}
-              >
-                <div className="flex items-center justify-center size-6 rounded-lg bg-primary/10 border border-primary/25 flex-shrink-0">
-                  <Sparkles size={12} className="text-primary" />
-                </div>
-                <p className="text-xs text-muted-foreground flex-1 min-w-0 break-words leading-tight">
-                  <span className="font-semibold text-foreground">
-                    {selectedServices.length === 1
-                      ? selectedServices[0].name
-                      : pluralUk(selectedServices.length, 'послуга', 'послуги', 'послуг')}
-                  </span>
-                  <span className="ml-1 text-muted-foreground/60">
-                    · {formatDurationFull(effectiveDuration)} · {fmt(totalServicesPrice)}
-                  </span>
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
 
-      {/* CTA */}
+      {/* CTA — hero-band володіє сумою; дія тиха й чиста (kit Button, не pill) */}
       <div className="mt-auto pt-5 pb-2 sticky bottom-0 bg-gradient-to-t from-[var(--page-bg)] via-[var(--page-bg)]/90 to-transparent z-10">
         <AnimatePresence initial={false}>
           {canGoToDatetime && (
@@ -462,25 +428,24 @@ export function ServiceSelector({
               exit={{ opacity: 0, y: 14 }}
               transition={{ type: 'spring' as const, duration: 0.3, bounce: 0 }}
             >
-              <button
-                type="button"
+              <Button
+                variant="primary"
+                size="lg"
+                fullWidth
                 onClick={onContinue}
                 data-testid="wizard-next-btn"
-                className="w-full py-4 rounded-[100px] font-bold text-sm uppercase tracking-widest transition-opacity shadow-lg cursor-pointer bg-[var(--btn-primary-bg)] text-[var(--accent-on)] hover:opacity-90 active:scale-[0.95]"
+                className="shadow-lg"
               >
-                {`Далі · ${pluralUk(selectedServices.length, 'послуга', 'послуги', 'послуг')} · ${fmt(c2cDiscountPct ? Math.round(totalServicesPrice * (1 - c2cDiscountPct / 100)) : totalServicesPrice)}`}
-              </button>
+                Далі
+                <ArrowRight size={16} />
+              </Button>
             </motion.div>
           )}
         </AnimatePresence>
         {mode === 'client' && hasProducts && !canGoToDatetime && onSkipToProducts && (
-          <button
-            type="button"
-            onClick={onSkipToProducts}
-            className="w-full py-3 rounded-[100px] text-[11px] font-bold uppercase tracking-widest text-primary border-2 border-primary/20 hover:bg-primary/5 active:scale-[0.95] transition-all bg-secondary/40 cursor-pointer"
-          >
+          <Button variant="secondary" size="md" fullWidth onClick={onSkipToProducts}>
             Тільки товари
-          </button>
+          </Button>
         )}
       </div>
 

@@ -6,7 +6,7 @@ import type { WizardStep } from './types';
 
 const spring = { type: 'spring', stiffness: 400, damping: 30 } as const;
 
-export function StepProgress({ step, hasProducts }: { step: WizardStep; hasProducts: boolean }) {
+export function StepProgress({ step, hasProducts, onDark = false }: { step: WizardStep; hasProducts: boolean; onDark?: boolean }) {
   const visible = hasProducts ? PROGRESS : PROGRESS.filter(s => s !== 'products');
   const activeIdx = visible.indexOf(step);
   const prefersReduced = useReducedMotion();
@@ -19,11 +19,14 @@ export function StepProgress({ step, hasProducts }: { step: WizardStep; hasProdu
       aria-valuemin={1}
       aria-valuemax={visible.length}
       aria-label="Прогрес запису"
-      className="flex items-center justify-center gap-2.5 py-3.5 flex-shrink-0"
+      className={onDark ? 'flex items-center gap-2.5' : 'flex items-center justify-center gap-2.5 py-3.5 flex-shrink-0'}
     >
       {visible.map((s, i) => {
         const isDone   = i < activeIdx;
         const isActive = i === activeIdx;
+        const bg = onDark
+          ? (isActive ? 'bg-white' : isDone ? 'bg-white/45' : 'bg-white/15')
+          : (isActive ? 'bg-[var(--accent)]' : isDone ? 'bg-[var(--accent)]/50' : 'bg-foreground/15');
         return (
           <motion.div
             key={s}
@@ -31,16 +34,12 @@ export function StepProgress({ step, hasProducts }: { step: WizardStep; hasProdu
             transition={prefersReduced ? { duration: 0 } : spring}
             style={{
               boxShadow: isActive
-                ? '0 0 0 4px color-mix(in srgb, var(--accent) 18%, transparent)'
+                ? (onDark
+                    ? '0 0 0 4px rgba(255,255,255,0.16)'
+                    : '0 0 0 4px color-mix(in srgb, var(--accent) 18%, transparent)')
                 : 'none',
             }}
-            className={`size-2 rounded-full transition-colors duration-300 ${
-              isActive
-                ? 'bg-[var(--accent)]'
-                : isDone
-                ? 'bg-[var(--accent)]/50'
-                : 'bg-foreground/15'
-            }`}
+            className={`size-2 rounded-full transition-colors duration-300 ${bg}`}
           />
         );
       })}
