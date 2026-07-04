@@ -230,11 +230,11 @@ function ReschedulePanel({
     <div className="flex flex-col gap-3">
       {/* Date strip */}
       <div>
-        <p className="text-[11px] text-muted-foreground/60 mb-2">Оберіть нову дату</p>
+        <p className="text-[11px] text-text-sub mb-2">Оберіть нову дату</p>
         {scheduleQuery.isLoading ? (
           <div className="flex items-center gap-2 py-2">
             <Loader2 size={14} className="animate-spin text-primary" />
-            <span className="text-xs text-muted-foreground/60">Завантаження розкладу...</span>
+            <span className="text-xs text-text-sub">Завантаження розкладу...</span>
           </div>
         ) : (
           <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-none">
@@ -257,15 +257,15 @@ function ReschedulePanel({
                       ? 'bg-secondary/40 border border-dashed border-secondary/80 opacity-40 cursor-not-allowed'
                       : full
                       ? 'bg-destructive/8 border border-dashed border-destructive/30 cursor-not-allowed'
-                      : 'bg-secondary/60 text-muted-foreground hover:bg-secondary'
+                      : 'bg-secondary/60 text-text-sub hover:bg-secondary'
                   }`}
                 >
-                  <span className={`text-[10px] font-semibold leading-none ${isSelected ? 'text-white/80' : 'text-muted-foreground/60'}`} aria-hidden="true">
+                  <span className={`text-[10px] font-semibold leading-none ${isSelected ? 'text-white/80' : 'text-text-sub'}`} aria-hidden="true">
                     {UA_DAYS_SHORT[d.getDay()]}
                   </span>
                   <span className="text-sm font-bold leading-none mt-1">{d.getDate()}</span>
                   {full && <span className="text-[8px] text-destructive leading-none mt-0.5">зайнято</span>}
-                  {off  && <span className="text-[8px] text-muted-foreground/60 leading-none mt-0.5">вих.</span>}
+                  {off  && <span className="text-[8px] text-text-sub leading-none mt-0.5">вих.</span>}
                 </button>
               );
             })}
@@ -276,18 +276,18 @@ function ReschedulePanel({
       {/* Slots */}
       {selectedDate && !scheduleQuery.isLoading && (
         <div>
-          <p className="text-[11px] text-muted-foreground/60 mb-2">Доступні слоти</p>
+          <p className="text-[11px] text-text-sub mb-2">Доступні слоти</p>
           {currentDayOff ? (
-            <p className="text-xs text-muted-foreground/60 py-2">Майстер не працює цього дня</p>
+            <p className="text-xs text-text-sub py-2">Майстер не працює цього дня</p>
           ) : !hasAvailableSlots ? (
-            <p className="text-xs text-muted-foreground/60 py-2">Немає вільних слотів</p>
+            <p className="text-xs text-text-sub py-2">Немає вільних слотів</p>
           ) : (
             <div className="grid grid-cols-3 gap-2">
               {renderItems.map((item, idx) =>
                 item.kind === 'break' ? (
                   <div key={`brk-${idx}`} className="col-span-3 flex items-center gap-2 py-0.5">
                     <div className="flex-1 h-px bg-secondary" />
-                    <span className="text-[10px] text-muted-foreground/60 flex-shrink-0">
+                    <span className="text-[10px] text-text-sub flex-shrink-0">
                       {item.label} · {item.start}–{item.end}
                     </span>
                     <div className="flex-1 h-px bg-secondary" />
@@ -302,7 +302,7 @@ function ReschedulePanel({
                         ? 'bg-primary text-white shadow-sm ring-2 ring-primary/20'
                         : item.slot.isSuggested
                         ? 'bg-primary/10 border border-primary/30 text-foreground'
-                        : 'bg-secondary/60 text-muted-foreground hover:bg-secondary'
+                        : 'bg-secondary/60 text-text-sub hover:bg-secondary'
                     }`}
                   >
                     {item.slot.isSuggested && selectedSlot !== item.slot.time && (
@@ -311,7 +311,7 @@ function ReschedulePanel({
                       </span>
                     )}
                     <span className="block font-bold">{item.slot.time}</span>
-                    <span className={`block text-[10px] font-normal mt-0.5 ${selectedSlot === item.slot.time ? 'text-white/70' : 'text-muted-foreground/60'}`}>
+                    <span className={`block text-[10px] font-normal mt-0.5 ${selectedSlot === item.slot.time ? 'text-white/70' : 'text-text-sub'}`}>
                       {computeEndTime(item.slot.time, durationMinutes)}
                     </span>
                   </button>
@@ -337,7 +337,7 @@ function ReschedulePanel({
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2.5 rounded-xl bg-secondary text-muted-foreground/60 text-sm font-semibold hover:bg-secondary/80 active:scale-[0.88] transition-all"
+          className="px-4 py-2.5 rounded-xl bg-secondary text-text-sub text-sm font-semibold hover:bg-secondary/80 active:scale-[0.88] transition-all"
         >
           Скасувати
         </button>
@@ -463,7 +463,7 @@ export function BookingDetailsModal() {
           <div className="h-24 rounded-3xl bg-secondary/50" />
         </div>
       ) : !displayBooking ? (
-        <div className="flex flex-col items-center justify-center py-14 gap-3 text-muted-foreground/60">
+        <div className="flex flex-col items-center justify-center py-14 gap-3 text-text-sub">
           <CalendarClock size={30} className="opacity-25" />
           <p className="text-sm font-medium">Запис не знайдено</p>
         </div>
@@ -534,7 +534,7 @@ export function BookingDetailsModal() {
                         </div>
                         <div className="min-w-0">
                           <p className="text-sm font-bold text-foreground truncate">{s.name}</p>
-                          <p className="text-[10px] font-medium text-muted-foreground/60 uppercase tracking-wider">{formatDurationFull(s.duration)}</p>
+                          <p className="text-[10px] font-medium text-text-sub">{formatDurationFull(s.duration)}</p>
                         </div>
                       </div>
                       <span className="text-sm font-bold text-foreground shrink-0 tabular-nums">{formatPrice(s.price)}</span>
@@ -548,11 +548,11 @@ export function BookingDetailsModal() {
                         <div key={`p-${i}`} className="flex items-center justify-between gap-3">
                           <div className="flex items-center gap-2.5 min-w-0">
                             <div className="size-8 rounded-xl bg-secondary/60 flex items-center justify-center shrink-0">
-                              <ShoppingBag size={14} className="text-muted-foreground" />
+                              <ShoppingBag size={14} className="text-text-sub" />
                             </div>
                             <div className="min-w-0">
                               <p className="text-sm font-bold text-foreground truncate">{p.name}</p>
-                              <p className="text-[10px] font-medium text-muted-foreground/60">× {p.quantity}</p>
+                              <p className="text-[10px] font-medium text-text-sub">× {p.quantity}</p>
                             </div>
                           </div>
                           <span className="text-sm font-bold text-foreground shrink-0 tabular-nums">{formatPrice(p.price * p.quantity)}</span>
@@ -567,7 +567,7 @@ export function BookingDetailsModal() {
             {/* Total */}
             <div className="px-5 pb-5 pt-4 border-t-2 border-dashed border-border/70">
               <div className="flex items-baseline justify-between gap-3">
-                <span className="text-[11px] font-bold text-muted-foreground/60 uppercase tracking-[0.2em]">Разом</span>
+                <span className="text-[11px] font-bold text-text-sub">Разом</span>
                 <span className="heading-serif text-3xl text-foreground tabular-nums">{formatPrice(displayBooking.total_price)}</span>
               </div>
               {displayBooking.dynamic_pricing_label && (
@@ -612,14 +612,14 @@ export function BookingDetailsModal() {
                       : 'Клієнт не прийшов'}
                   </p>
                   {displayBooking.status_changed_at && (
-                    <span className="text-[11px] font-medium text-muted-foreground/60">
+                    <span className="text-[11px] font-medium text-text-sub">
                       {formatDateTime(displayBooking.status_changed_at)}
                     </span>
                   )}
                 </div>
                 {displayBooking.status === 'cancelled' && displayBooking.cancellation_reason && (
                   <p className="text-xs text-foreground/70 mt-1 leading-relaxed">
-                    <span className="text-muted-foreground/60">Причина: </span>
+                    <span className="text-text-sub">Причина: </span>
                     {displayBooking.cancellation_reason}
                   </p>
                 )}
@@ -633,7 +633,7 @@ export function BookingDetailsModal() {
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-1.5">
                   <TrendingUp size={14} className="text-primary opacity-60" />
-                  <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-[0.2em]">Профіль клієнта</p>
+                  <p className="text-[10px] font-bold text-text-sub">Профіль клієнта</p>
                 </div>
                 {clientId && (
                   <button
@@ -659,14 +659,14 @@ export function BookingDetailsModal() {
           {bookingConsumables.length > 0 && (
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-2">
-                <FlaskConical size={14} className="text-muted-foreground/60" />
-                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground/60">Матеріали сеансу</p>
+                <FlaskConical size={14} className="text-text-sub" />
+                <p className="text-xs font-bold text-text-sub">Матеріали сеансу</p>
               </div>
               <div className="flex flex-wrap gap-2">
                 {bookingConsumables.map(c => (
                   <div key={c.product_id} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-secondary/40 border border-border/40">
                     <span className="text-xs font-medium text-foreground">{c.name}</span>
-                    <span className="text-[10px] text-muted-foreground/60">{c.total_qty} {UNIT_LABEL_MODAL[c.unit]}</span>
+                    <span className="text-[10px] text-text-sub">{c.total_qty} {UNIT_LABEL_MODAL[c.unit]}</span>
                   </div>
                 ))}
               </div>
@@ -677,14 +677,14 @@ export function BookingDetailsModal() {
           <div className="flex flex-col gap-3">
             {displayBooking.notes && (
               <div className="bg-primary/5 rounded-3xl p-4 border border-primary/10">
-                <p className="text-[10px] font-bold text-primary uppercase tracking-[0.2em] mb-1.5">Коментар клієнта</p>
+                <p className="text-[10px] font-bold text-primary mb-1.5">Коментар клієнта</p>
                 <p className="text-sm text-foreground/80 italic font-medium leading-relaxed">&laquo;{displayBooking.notes}&raquo;</p>
               </div>
             )}
 
             <div className="bg-secondary/40 rounded-3xl p-5 border border-border shadow-sm">
               <div className="flex items-center justify-between mb-3">
-                <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-[0.2em]">Нотатки майстра</p>
+                <p className="text-[10px] font-bold text-text-sub">Нотатки майстра</p>
                 {isAutoSaving && (
                   <span className="flex items-center gap-1.5 text-[10px] font-bold text-primary animate-pulse uppercase tracking-widest">
                     <Loader2 size={10} className="animate-spin" />
@@ -706,7 +706,7 @@ export function BookingDetailsModal() {
           {/* Active management actions */}
           {canAct && (
             <div className="bg-secondary/40 rounded-3xl p-5 border border-border shadow-sm">
-              <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-[0.2em] mb-4">Керування записом</p>
+              <p className="text-[10px] font-bold text-text-sub mb-4">Керування записом</p>
 
               {showReschedule ? (
                 masterProfile?.id ? (
@@ -768,7 +768,7 @@ export function BookingDetailsModal() {
                       type="button"
                       onClick={() => updateStatus('no_show')}
                       disabled={isUpdatingStatus}
-                      className="col-span-2 flex items-center justify-center gap-2 py-4 rounded-xl bg-secondary/60 border border-border text-muted-foreground/60 hover:text-muted-foreground text-sm font-bold transition-all disabled:opacity-50 active:scale-[0.95]"
+                      className="col-span-2 flex items-center justify-center gap-2 py-4 rounded-xl bg-secondary/60 border border-border text-text-sub hover:text-text-sub text-sm font-bold transition-all disabled:opacity-50 active:scale-[0.95]"
                     >
                       Клієнт не прийшов
                     </button>

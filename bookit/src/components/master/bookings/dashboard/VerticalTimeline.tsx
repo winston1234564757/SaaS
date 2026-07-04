@@ -105,7 +105,7 @@ function TimelineBlock({ booking }: { booking: TL }) {
               <div className="flex flex-col gap-1 min-w-0">
                 <span className="text-xl font-bold tabular-nums text-foreground leading-none">
                   {booking.start_time}
-                  <span className="font-semibold" style={{ color: 'var(--text-tertiary)' }}>
+                  <span className="font-semibold" style={{ color: 'var(--text-secondary)' }}>
                     –{booking.end_time}
                   </span>
                 </span>
@@ -131,7 +131,7 @@ function TimelineBlock({ booking }: { booking: TL }) {
               <span className="font-display text-2xl font-bold text-foreground truncate leading-tight">
                 {booking.client_name}
               </span>
-              <span className="text-sm font-medium text-muted-foreground/70 truncate">
+              <span className="text-sm font-medium text-text-sub truncate">
                 {serviceNames}
               </span>
             </div>
@@ -174,7 +174,7 @@ function TimelineBlock({ booking }: { booking: TL }) {
               )}
             >
               {booking.start_time}
-              <span className="font-semibold" style={{ color: 'var(--text-tertiary)' }}>
+              <span className="font-semibold" style={{ color: 'var(--text-secondary)' }}>
                 –{booking.end_time}
               </span>
             </span>
@@ -201,7 +201,7 @@ function TimelineBlock({ booking }: { booking: TL }) {
           </div>
           {/* Row 3 — service (only on lg, which has the height for it) */}
           {size === 'lg' && (
-            <span className="text-xs text-muted-foreground/60 truncate font-medium">
+            <span className="text-xs text-text-sub truncate font-medium">
               {serviceNames}
             </span>
           )}
@@ -487,10 +487,10 @@ export function VerticalTimeline({
         style={{ border: '0.5px solid var(--border)', background: 'var(--surface)' }}
       >
         <div className="size-12 rounded-full bg-muted/10 flex items-center justify-center">
-          <Moon size={22} className="text-muted-foreground/30" />
+          <Moon size={22} className="text-text-sub" />
         </div>
-        <p className="text-sm font-semibold text-muted-foreground/60">Вихідний день</p>
-        <p className="text-xs text-muted-foreground/70">Робочий графік не заплановано</p>
+        <p className="text-sm font-semibold text-text-sub">Вихідний день</p>
+        <p className="text-xs text-text-sub">Робочий графік не заплановано</p>
       </div>
     );
   }
@@ -579,10 +579,10 @@ export function VerticalTimeline({
             />
             {/* Label */}
             <div className="absolute left-14 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
-              <Coffee size={10} className="text-muted-foreground/30" />
+              <Coffee size={10} className="text-text-sub" />
               <span
                 className="text-[9px] font-bold uppercase tracking-widest"
-                style={{ color: 'var(--text-tertiary)', opacity: 0.55 }}
+                style={{ color: 'var(--text-secondary)', opacity: 0.55 }}
               >
                 Перерва · {br.start}–{br.end}
               </span>

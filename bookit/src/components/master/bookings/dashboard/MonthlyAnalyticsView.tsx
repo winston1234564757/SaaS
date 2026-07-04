@@ -127,7 +127,7 @@ export function MonthlyAnalyticsView({ bookings, month, onDayClick, onWeekClick 
       <div className="flex items-center justify-between mb-2">
         <div className="flex flex-col">
           <span className="text-xl lg:text-3xl font-bold text-foreground heading-serif tracking-tight">{formatPrice(totalRevenue)}</span>
-          <span className="text-[10px] lg:text-[12px] font-bold text-muted-foreground/60 uppercase tracking-widest mt-1">
+          <span className="text-[10px] lg:text-[12px] font-bold text-text-sub mt-1">
             {totalBookings} {pluralUk(totalBookings, 'запис', 'записи', 'записів')}
           </span>
         </div>
@@ -140,7 +140,7 @@ export function MonthlyAnalyticsView({ bookings, month, onDayClick, onWeekClick 
               'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all',
               subView === 'calendar'
                 ? 'bg-secondary shadow-sm text-primary'
-                : 'text-muted-foreground/80 hover:text-muted-foreground',
+                : 'text-text-sub hover:text-text-sub',
             )}
           >
             <CalendarDays size={11} />
@@ -153,7 +153,7 @@ export function MonthlyAnalyticsView({ bookings, month, onDayClick, onWeekClick 
               'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all',
               subView === 'weeks'
                 ? 'bg-secondary shadow-sm text-primary'
-                : 'text-muted-foreground/80 hover:text-muted-foreground',
+                : 'text-text-sub hover:text-text-sub',
             )}
           >
             <LayoutList size={11} />
@@ -180,7 +180,7 @@ export function MonthlyAnalyticsView({ bookings, month, onDayClick, onWeekClick 
                 <div
                   key={d}
                   className="text-center text-[9px] font-bold uppercase tracking-[0.12em] py-2.5"
-                  style={{ color: i >= 5 ? 'var(--accent)' : 'var(--text-tertiary)' }}
+                  style={{ color: i >= 5 ? 'var(--accent)' : 'var(--text-secondary)' }}
                 >
                   {d}
                 </div>
@@ -333,8 +333,8 @@ export function MonthlyAnalyticsView({ bookings, month, onDayClick, onWeekClick 
                   <div className="flex items-start justify-between">
                     <div className="flex flex-col gap-0.5">
                       <span
-                        className="text-[9px] font-bold uppercase tracking-widest"
-                        style={{ color: 'var(--text-tertiary)' }}
+                        className="text-[9px] font-bold"
+                        style={{ color: 'var(--text-secondary)' }}
                       >
                         Тиждень {wi + 1}
                       </span>
@@ -350,7 +350,7 @@ export function MonthlyAnalyticsView({ bookings, month, onDayClick, onWeekClick 
                       </span>
                       <span
                         className="text-[10px] font-semibold"
-                        style={{ color: 'var(--text-tertiary)' }}
+                        style={{ color: 'var(--text-secondary)' }}
                       >
                         {week.totalCount} {pluralUk(week.totalCount, 'запис', 'записи', 'записів')}
                       </span>
@@ -390,7 +390,7 @@ export function MonthlyAnalyticsView({ bookings, month, onDayClick, onWeekClick 
                                 ? 'transparent'
                                 : d.count > 0
                                 ? 'var(--accent)'
-                                : 'var(--text-tertiary)',
+                                : 'var(--text-secondary)',
                               opacity: d.inMonth ? 1 : 0,
                             }}
                           >
@@ -408,8 +408,8 @@ export function MonthlyAnalyticsView({ bookings, month, onDayClick, onWeekClick 
                       style={{ borderTop: '0.5px solid var(--border)' }}
                     >
                       <span
-                        className="text-[9px] font-bold uppercase tracking-widest"
-                        style={{ color: 'var(--text-tertiary)' }}
+                        className="text-[9px] font-bold"
+                        style={{ color: 'var(--text-secondary)' }}
                       >
                         Топ-день
                       </span>
@@ -421,7 +421,7 @@ export function MonthlyAnalyticsView({ bookings, month, onDayClick, onWeekClick 
                       </span>
                       <span
                         className="text-[9px] font-semibold ml-auto"
-                        style={{ color: 'var(--text-tertiary)' }}
+                        style={{ color: 'var(--text-secondary)' }}
                       >
                         {week.bestDay!.count} {pluralUk(week.bestDay!.count, 'запис', 'записи', 'записів')}
                       </span>

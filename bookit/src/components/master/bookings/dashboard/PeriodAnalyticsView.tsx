@@ -59,7 +59,7 @@ export function PeriodAnalyticsView({ bookings, days, onDayClick }: Props) {
         >
           <div className="flex items-center justify-between">
             <div className="flex flex-col">
-              <span className="text-[10px] lg:text-[11px] font-bold uppercase text-muted-foreground/70 tracking-[0.2em] mb-1">
+              <span className="text-[10px] lg:text-[11px] font-bold text-text-sub mb-1">
                 {format(stat.date, 'EEEE', { locale: uk })}
               </span>
               <span className="text-lg lg:text-xl font-bold text-foreground group-hover:text-primary transition-colors">
@@ -68,14 +68,14 @@ export function PeriodAnalyticsView({ bookings, days, onDayClick }: Props) {
             </div>
             <div className={cn(
               "size-10 rounded-2xl flex items-center justify-center transition-colors",
-              stat.count > 0 ? "bg-primary/10 text-primary" : "bg-muted/10 text-muted-foreground/40"
+              stat.count > 0 ? "bg-primary/10 text-primary" : "bg-muted/10 text-text-sub"
             )}>
               <Calendar size={18} />
             </div>
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <div className="flex items-center justify-between text-[10px] font-bold text-muted-foreground/60 uppercase tracking-tighter">
+            <div className="flex items-center justify-between text-[10px] font-bold text-text-sub">
               <span>Завантаженість</span>
               <span>{stat.occupancy}%</span>
             </div>
@@ -93,14 +93,14 @@ export function PeriodAnalyticsView({ bookings, days, onDayClick }: Props) {
 
           <div className="grid grid-cols-2 gap-2 mt-1">
             <div className="flex flex-col">
-              <div className="flex items-center gap-1 text-[9px] font-bold text-muted-foreground/70 uppercase tracking-widest">
+              <div className="flex items-center gap-1 text-[9px] font-bold text-text-sub">
                 <TrendingUp size={10} />
                 <span>Виручка</span>
               </div>
               <span className="text-xs font-bold text-foreground">{formatPrice(stat.revenue)}</span>
             </div>
             <div className="flex flex-col">
-              <div className="flex items-center gap-1 text-[9px] font-bold text-muted-foreground/70 uppercase tracking-widest">
+              <div className="flex items-center gap-1 text-[9px] font-bold text-text-sub">
                 <Users size={10} />
                 <span>Записи</span>
               </div>
@@ -120,7 +120,7 @@ export function PeriodAnalyticsView({ bookings, days, onDayClick }: Props) {
                 </div>
               ))}
               {stat.count > 4 && (
-                <div className="size-7 rounded-full bg-muted/20 border-2 border-peach flex items-center justify-center text-[8px] font-bold text-muted-foreground">
+                <div className="size-7 rounded-full bg-muted/20 border-2 border-peach flex items-center justify-center text-[8px] font-bold text-text-sub">
                   +{stat.count - 4}
                 </div>
               )}

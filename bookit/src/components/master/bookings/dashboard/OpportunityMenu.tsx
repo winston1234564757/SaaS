@@ -34,13 +34,13 @@ export function OpportunityMenu({ isOpen, onClose, time, onAction }: Props) {
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h3 className="text-lg font-bold text-foreground">Вільне вікно</h3>
-                <p className="text-xs text-muted-foreground/60">Оберіть дію на {time}</p>
+                <p className="text-xs text-text-sub">Оберіть дію на {time}</p>
               </div>
               <button
                 type="button"
                 aria-label="Закрити"
                 onClick={onClose}
-                className="size-10 rounded-full bg-muted/10 flex items-center justify-center text-muted-foreground hover:bg-muted/20 transition-all active:scale-[0.88]"
+                className="size-10 rounded-full bg-muted/10 flex items-center justify-center text-text-sub hover:bg-muted/20 transition-all active:scale-[0.88]"
               >
                 <X size={20} />
               </button>
@@ -57,7 +57,7 @@ export function OpportunityMenu({ isOpen, onClose, time, onAction }: Props) {
                 </div>
                 <div className="text-left">
                   <p className="text-sm font-bold text-foreground">Записати вручну</p>
-                  <p className="text-[10px] text-muted-foreground">Додати клієнта в розклад</p>
+                  <p className="text-[10px] text-text-sub">Додати клієнта в розклад</p>
                 </div>
               </button>
 
@@ -71,7 +71,7 @@ export function OpportunityMenu({ isOpen, onClose, time, onAction }: Props) {
                 </div>
                 <div className="text-left">
                   <p className="text-sm font-bold text-foreground">Flash Deal</p>
-                  <p className="text-[10px] text-muted-foreground">Заповнити гаряче вікно знижкою</p>
+                  <p className="text-[10px] text-text-sub">Заповнити гаряче вікно знижкою</p>
                 </div>
               </button>
 
@@ -85,7 +85,7 @@ export function OpportunityMenu({ isOpen, onClose, time, onAction }: Props) {
                 </div>
                 <div className="text-left">
                   <p className="text-sm font-bold text-foreground">Створити Story</p>
-                  <p className="text-[10px] text-muted-foreground">Генерація картки для Instagram</p>
+                  <p className="text-[10px] text-text-sub">Генерація картки для Instagram</p>
                 </div>
               </button>
             </div>

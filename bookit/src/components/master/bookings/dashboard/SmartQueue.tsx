@@ -53,7 +53,7 @@ export function SmartQueue({ bookings }: Props) {
           <CheckCircle2 size={32} className="text-success" />
         </div>
         <p className="text-sm font-semibold text-foreground">Все під контролем!</p>
-        <p className="text-xs text-muted-foreground/60">Немає термінових записів, що потребують вашої уваги.</p>
+        <p className="text-xs text-text-sub">Немає термінових записів, що потребують вашої уваги.</p>
       </div>
     );
   }
@@ -72,15 +72,15 @@ export function SmartQueue({ bookings }: Props) {
           >
             <div className="flex items-center gap-2 px-1">
               {group.icon}
-              <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">{group.title}</h3>
-              <span className="text-[10px] bg-muted/20 px-1.5 py-0.5 rounded-full text-muted-foreground/60">{group.items.length}</span>
+              <h3 className="text-xs font-bold text-text-sub">{group.title}</h3>
+              <span className="text-[10px] bg-muted/20 px-1.5 py-0.5 rounded-full text-text-sub">{group.items.length}</span>
             </div>
             
             <div className="flex flex-col gap-3">
               {group.items.map((b, i) => (
                 <div key={b.id} className="flex flex-col gap-0.5">
                   {group.id === 'complete' && b.date !== todayStr && (
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70 px-3">
+                    <span className="text-[10px] font-bold text-text-sub px-3">
                       {format(parseISO(b.date), 'd MMMM', { locale: uk })}
                     </span>
                   )}
