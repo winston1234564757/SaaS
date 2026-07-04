@@ -2,10 +2,12 @@
 // src/components/shared/wizard/ProductCart.tsx
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { ShoppingBag, Plus, Minus, Sparkles } from 'lucide-react';
+import { Plus, Minus, Sparkles } from 'lucide-react';
 import { fmt, slide } from './helpers';
 import type { WizardProduct, CartItem } from './types';
 import { ProductIcon } from '@/lib/product-icons';
+import { Button } from '@/components/ui/Button';
+import { pluralUk } from '@/lib/utils/pluralUk';
 
 interface ProductCartProps {
   availableProducts: WizardProduct[];
@@ -47,11 +49,7 @@ export function ProductCart({
       className="flex flex-col min-h-[400px]"
     >
       <div>
-        <div className="flex items-center gap-2 mb-1">
-          <ShoppingBag size={16} className="text-primary" />
-          <p className="text-sm font-semibold text-foreground">Додати до візиту?</p>
-        </div>
-        <p className="text-xs text-muted-foreground/60 mb-5">Додайте товари — вони увійдуть у загальний чек</p>
+        <p className="text-sm text-text-sub mb-5">Товари увійдуть у загальний чек — за бажанням</p>
 
         <div className="flex flex-col gap-2 mb-5">
           {sortedProducts.map(p => {
@@ -62,18 +60,27 @@ export function ProductCart({
               <div
                 key={p.id}
                 className={`flex items-center gap-3 p-4 rounded-xl border transition-all ${
-                  qty > 0 ? 'bg-primary/10 border-primary/40 shadow-sm' : 'bg-secondary border-border'
+                  qty > 0
+                    ? 'bg-primary/10 border-primary/40 shadow-sm'
+                    : isLinked
+                    ? 'bg-secondary ring-1 ring-primary/25 border-primary/25'
+                    : 'bg-secondary border-border'
                 }`}
               >
-                <div className="size-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-primary/10 border border-primary/20">
+                <div className={`size-10 rounded-xl flex items-center justify-center flex-shrink-0 border ${isLinked ? 'bg-primary/12 border-primary/30' : 'bg-primary/10 border-primary/20'}`}>
                   <ProductIcon name={p.icon_name} size={18} className="text-primary flex-shrink-0" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-foreground truncate">{p.name}</p>
-                  {p.description && <p className="text-xs text-muted-foreground/60 truncate">{p.description}</p>}
-                  <p className="text-sm font-bold text-primary mt-0.5">
-                    {fmt(p.price)}{isLinked && <Sparkles size={12} className="inline text-primary ml-1.5" />}
+                  <p className="text-sm font-semibold text-foreground truncate flex items-center gap-1.5">
+                    {p.name}
+                    {isLinked && (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded-full shrink-0">
+                        <Sparkles size={9} /> Радимо
+                      </span>
+                    )}
                   </p>
+                  {p.description && <p className="text-xs text-text-sub truncate">{p.description}</p>}
+                  <p className="metric-value text-sm text-primary mt-0.5">{fmt(p.price)}</p>
                 </div>
                 {qty === 0 ? (
                   <button
@@ -90,7 +97,7 @@ export function ProductCart({
                       type="button"
                       aria-label={`Прибрати ${p.name}`}
                       onClick={() => onRemove(p.id)}
-                      className="size-11 rounded-full bg-secondary text-muted-foreground flex items-center justify-center border border-border/40 hover:bg-secondary/80 active:scale-[0.88] transition-all cursor-pointer"
+                      className="size-11 rounded-full bg-secondary text-text-sub flex items-center justify-center border border-border/40 hover:bg-secondary/80 active:scale-[0.88] transition-all cursor-pointer"
                     >
                       <Minus size={14} />
                     </button>
@@ -112,30 +119,34 @@ export function ProductCart({
         </div>
 
         {cart.length > 0 && (
-          <div className="flex items-center justify-between px-1 mb-4">
-            <span className="text-xs text-muted-foreground/60">Товари ({cart.reduce((n, ci) => n + ci.quantity, 0)} шт.)</span>
-            <span className="text-sm font-bold text-primary">{fmt(totalProductsPrice)}</span>
+          <div className="flex items-baseline justify-between px-1 mb-4 pt-3 border-t border-border">
+            <span className="text-xs text-text-sub">
+              {(() => { const n = cart.reduce((a, ci) => a + ci.quantity, 0); return `${n} ${pluralUk(n, 'товар', 'товари', 'товарів')}`; })()}
+            </span>
+            <span className="metric-value text-base text-primary">{fmt(totalProductsPrice)}</span>
           </div>
         )}
       </div>
 
       <div className="pt-6 pb-2 sticky bottom-0 bg-gradient-to-t from-secondary via-secondary/90 to-transparent z-10 flex gap-3">
-        <button
-          type="button"
+        <Button
+          variant="secondary"
+          size="lg"
           onClick={cart.length > 0 ? onBack : onContinue}
           data-testid="wizard-skip-products-btn"
-          className="flex-1 py-4 rounded-[100px] border-2 border-primary/20 bg-secondary/40 text-[11px] font-bold uppercase tracking-widest text-primary hover:bg-primary/5 active:scale-[0.95] transition-all cursor-pointer"
+          className="flex-1"
         >
           {cart.length > 0 ? 'Назад' : 'Пропустити'}
-        </button>
-        <button
-          type="button"
+        </Button>
+        <Button
+          variant="primary"
+          size="lg"
           onClick={onContinue}
           data-testid="wizard-next-btn"
-          className="flex-[2] py-4 rounded-[100px] bg-[var(--btn-primary-bg)] text-[var(--accent-on)] text-sm font-bold uppercase tracking-widest hover:opacity-90 active:scale-[0.95] transition-all shadow-lg cursor-pointer"
+          className="flex-[2] shadow-lg"
         >
           {cart.length > 0 ? `Далі · ${fmt(totalProductsPrice)}` : 'Далі'}
-        </button>
+        </Button>
       </div>
     </motion.div>
   );
