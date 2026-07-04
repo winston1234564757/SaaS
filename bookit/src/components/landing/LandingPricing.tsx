@@ -146,7 +146,7 @@ export function LandingPricing() {
                             ? 'color-mix(in srgb, var(--l-text-on-dark) 60%, transparent)'
                             : plan.waitlist
                             ? 'color-mix(in srgb, var(--l-green) 70%, transparent)'
-                            : 'var(--l-muted-2)',
+                            : 'var(--l-muted)',
                         }}
                       >
                         {plan.name}
@@ -197,7 +197,7 @@ export function LandingPricing() {
                         </div>
                         <p
                           className="text-sm mb-2"
-                          style={{ color: plan.accent ? 'var(--l-muted-on-dark)' : 'var(--l-muted-2)' }}
+                          style={{ color: plan.accent ? 'var(--l-muted-on-dark)' : 'var(--l-muted)' }}
                         >
                           {plan.period}
                         </p>
@@ -407,7 +407,7 @@ export function LandingPricing() {
                   <div className="flex flex-col gap-1.5">
                     <label
                       className="text-xs font-semibold uppercase tracking-wider"
-                      style={{ color: 'var(--l-muted-2)' }}
+                      style={{ color: 'var(--l-muted)' }}
                     >
                       Ваше ім'я або назва студії
                     </label>
@@ -429,7 +429,7 @@ export function LandingPricing() {
                   <div className="flex flex-col gap-1.5">
                     <label
                       className="text-xs font-semibold uppercase tracking-wider"
-                      style={{ color: 'var(--l-muted-2)' }}
+                      style={{ color: 'var(--l-muted)' }}
                     >
                       Telegram або телефон
                     </label>
@@ -451,7 +451,7 @@ export function LandingPricing() {
                   <div className="flex flex-col gap-2">
                     <label
                       className="text-xs font-semibold uppercase tracking-wider"
-                      style={{ color: 'var(--l-muted-2)' }}
+                      style={{ color: 'var(--l-muted)' }}
                     >
                       Скільки майстрів?
                     </label>

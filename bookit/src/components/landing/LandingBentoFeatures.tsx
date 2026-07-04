@@ -190,7 +190,7 @@ export function LandingBentoFeatures() {
                     <th
                       key={d}
                       className="text-center text-[11px] font-semibold pb-3"
-                      style={{ color: 'var(--l-muted-2-on-dark)' }}
+                      style={{ color: 'var(--l-muted-on-dark)' }}
                     >
                       {d}
                     </th>
@@ -202,7 +202,7 @@ export function LandingBentoFeatures() {
                   <tr key={t}>
                     <td
                       className="text-[10px] font-medium pr-3 text-right"
-                      style={{ color: 'var(--l-muted-2-on-dark)', paddingBottom: 3 }}
+                      style={{ color: 'var(--l-muted-on-dark)', paddingBottom: 3 }}
                     >
                       {t}
                     </td>
@@ -259,7 +259,7 @@ export function LandingBentoFeatures() {
                     }}
                     aria-hidden="true"
                   />
-                  <span style={{ fontSize: 11, color: 'var(--l-muted-2-on-dark)' }}>{l.label}</span>
+                  <span style={{ fontSize: 11, color: 'var(--l-muted-on-dark)' }}>{l.label}</span>
                 </div>
               ))}
             </div>

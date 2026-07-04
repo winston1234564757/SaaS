@@ -97,7 +97,7 @@ export function LandingEconomy() {
               <div className="flex flex-col gap-4">
                 <div className="flex items-end justify-between gap-3">
                   <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] mb-1.5" style={{ color: 'var(--l-muted-2)' }}>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] mb-1.5" style={{ color: 'var(--l-muted)' }}>
                       Зараз
                     </p>
                     <AnimatePresence mode="wait">
@@ -127,7 +127,7 @@ export function LandingEconomy() {
                   </motion.span>
 
                   <div className="text-right">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] mb-1.5" style={{ color: 'var(--l-muted-2)' }}>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] mb-1.5" style={{ color: 'var(--l-muted)' }}>
                       З Bookit
                     </p>
                     <AnimatePresence mode="wait">

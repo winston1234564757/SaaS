@@ -82,7 +82,7 @@ export function LandingComparison() {
           <span
             role="columnheader"
             className="text-[11px] font-semibold uppercase tracking-[0.18em]"
-            style={{ color: 'var(--l-muted-2)' }}
+            style={{ color: 'var(--l-muted)' }}
           >
             Без Bookit
           </span>
@@ -123,7 +123,7 @@ export function LandingComparison() {
                     role="img"
                     aria-label="Ні"
                   >
-                    <X size={10} style={{ color: 'var(--l-muted-2)' }} aria-hidden="true" />
+                    <X size={10} style={{ color: 'var(--l-muted)' }} aria-hidden="true" />
                   </div>
                   <p className="text-sm leading-snug" style={{ color: 'var(--l-muted)' }}>
                     {row.before}
