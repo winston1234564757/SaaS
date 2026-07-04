@@ -1,8 +1,8 @@
 # DESIGN-SYSTEM TRACKER — конвергенція на дизайн-мову
 
 > Джерело задач: [DESIGN_SYSTEM_ROLLOUT.md](file:///C:/Users/Vitos/SaaS/XDEV/PLANS/DESIGN_SYSTEM_ROLLOUT.md) · Спека: [DESIGN_LANGUAGE.md](file:///C:/Users/Vitos/SaaS/XDEV/DESIGN_LANGUAGE.md) · Еталон: C-CLI-01
-> Прогрес: **17/23 ✅** · Фундамент ✅ · Активна тема: Frost · **P1 дашборд ЗАКРИТА** · **P3 модалки 6/7** · **P2: DS-CLIENT-01 ✅**
-> ▶ **NEXT: `DS-CLIENT-03`** — Мої записи (`app/my/bookings/*`, Тір 2). Далі DS-CLIENT-04 (Мій профіль) → P5 лендинг. ⚠️ `DS-MODAL-01`+`DS-CLIENT-02` (BookingWizard) — окрема присвячена сесія (revenue-critical shared flow)
+> Прогрес: **19/23 ✅** · Фундамент ✅ · Активна тема: Frost · **P1 ЗАКРИТА** · **P3 6/7** · **P2 клієнт-зона: 01/03/04 ✅** (02 BookingWizard — founder-сесія)
+> ▶ **NEXT: конвергентні повні редизайни** (REAUDIT_PLAN Крок 2): Explore → Shop → Analytics (найгірший §4) → Settings → Bookings-list → Clients → Marketing → Billing. ⚠️ `DS-MODAL-01`+`DS-CLIENT-02` (BookingWizard) — окрема сесія з founder
 
 Легенда: ⬜ не почато · 🔧 в роботі · ✅ здано+founder QA · ↩️ скасовано · тір за WORKFLOW (0 дрібний / 1 середній / 2 повний редизайн).
 
@@ -69,8 +69,8 @@
 |----|----------|------|-----|--------|
 | DS-CLIENT-01 | Публічна сторінка майстра | `public/PublicMasterPage.tsx` | 2 | ✅ |
 | DS-CLIENT-02 | Майстер запису (6 кроків) | `shared/BookingWizard.tsx` | 2 | ⬜ |
-| DS-CLIENT-03 | Мої записи | `app/my/bookings/*` | 2 | ⬜ |
-| DS-CLIENT-04 | Мій профіль | `app/my/profile/*` | 1 | ⬜ |
+| DS-CLIENT-03 | Мої записи | `app/my/bookings/*` | 2 | ✅ |
+| DS-CLIENT-04 | Мій профіль | `app/my/profile/*` | 1 | ✅ |
 
 > **DS-CLIENT-01 ✅ (04.07, commits ef60dadd + 93072d42):** ч.1 header-герой (центрований bento → темна асиметрична `EditorialCover` = `PublicMasterHero`) + Services + Reviews (featured-крафт). ч.2 графік роботи (сьогодні-домінанта, токени, контраст-фікс) + shop-банер (градієнт/blob → чистий bento-CTA) + товари (N карток → hairline-рядки, metric-value). Фідбек «крафт світлих блоків» застосовано наскрізь. **Не чіпав (окремі компоненти / функц-прийнятні):** банери рефералів, FlashDealsStrip, PublicPortfolioGallery, TrustedPartnersBlock, floating CTA — опортуністична міграція коли чіпаємо ці файли.
 > `/my/messages` (месенджер) уже конвергентний (M-CHAT-01) — опортуністична міграція примітивів, не окрема задача.

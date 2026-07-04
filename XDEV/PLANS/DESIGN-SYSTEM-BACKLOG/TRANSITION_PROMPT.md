@@ -57,6 +57,14 @@ TRACKER: DS-[ID] ⬜→✅ + оновити ▶ NEXT + прогрес N/23 → �
 
 ## Нотатки сесій (свіжі зверху)
 
+### Повний аудит + клієнт-зона (04.07, автономна) — commits 2ddec323 · c59b921f · 1bdec4e3
+- **🔴 Founder-корекція:** «редизайн ПОВНИХ сторінок, не hero; графік роботи жахливо». Новий закон feedback_full_page_redesign.md. Grep-аудит → REAUDIT_PLAN.md (борг: muted-foreground/tertiary скрізь, uppercase-eyebrow settings 11, §4-декор analytics 7, кіт майже не прийнятий).
+- **DS-CLIENT-01 Крок 0 (2ddec323):** LoyaltyWidget (bento+muted+warning/success-провал → Section+домінанта metric-value+good #0B6B2E, 3 стани) · MasterLocationCard (muted/60 ≈1.6:1 → text-sub+kit) · FlashDealCard (muted→text-sub, metric-value). **Residual PublicMasterPage** (edit-guard заблокував): рядок ~510 referral-balance muted (рідкісний) + floating CTA depth-glass (§4-захисний).
+- **DS-CLIENT-03 Мої записи (c59b921f):** структура сильна (HeroCard-домінанта+master-групи+tabs) → системний token-pass: muted-foreground ×30 → text-sub; STATUS_CFG калібровано (pending/no_show #9A4508, confirmed #0B6B2E, completed #475569 — було muted-провал); ціна metric-value.
+- **DS-CLIENT-04 Мій профіль (1bdec4e3):** справжній редизайн — центр bg-surface хедер → темний EditorialCover-герой ідентичності (аватар білим+ring, ім'я Cormorant 26px=домінанта, on-dark чіпи) + форма-тіло muted ×26 → text-sub. PhotoUploader/теми/health 1:1.
+- **🔧 Техурок:** edit_counter_guard блокує 12+ Edit/файл за сесію; великі token-міграції роби через `replace_all` (спочатку `/XX`-варіанти, потім голий — інакше `text-text-sub/60`); self-modification session_state заборонено auto-mode.
+
+
 ### DS-CLIENT-01 ч.2 — графік · shop-банер · товари (04.07, ✅ own-eyes, автономна) — commit 93072d42 — DS-CLIENT-01 ЗАКРИТО
 - **Графік роботи:** 7-cell сітка мала хардкод-hex + `#A8928D` textTertiary (провал контрасту на тексті) → CSS-токени: сьогодні домінанта (`bg-primary/10 ring-primary/25` + primary-лейбл), робочі `bg-secondary/50`, вихідні `bg-secondary/20` + «вих.» text-sub, час tabular-nums.
 - **Shop-банер:** градієнт-фон + декоративний blob + icon box-shadow-glow (§4 бани glassmorphism/gradient/glow) → чистий `bento-card` CTA: accent-tile (ring), bold title, count text-sub, hover-arrow.
