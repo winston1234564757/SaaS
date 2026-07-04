@@ -17,7 +17,7 @@
 
 ═══ ПОТОЧНИЙ СТАН ═══
 Фундамент ✅ (C-CLI-01, 03.07, founder 10/10): токени --cover-bg / .editorial-cover · примітиви EditorialCover + Section · Button/Badge під мову · BentoCard видалено · Sheet srTitle · DESIGN_LANGUAGE.md.
-Прогрес задач: 22/26 ✅ — **P1 дашборд ЗАКРИТА** · **P3 модалки 6/7** · **P2 клієнт-зона: 01/03/04/05-Explore ✅** · **Analytics ПОВНІСТЮ ✅** · **Settings ✅**. CLIENT-02 (BookingWizard) відкладено — окрема сесія з founder.
+Прогрес задач: 23/28 ✅ — **P1 дашборд ЗАКРИТА** · **P3 модалки 6/7** · **P2 клієнт-зона ✅** · **Analytics ✅** · **Settings ✅** · **Bookings-list ✅**. Борг DS-BOOK-DASH (темні bookings-views). CLIENT-02 (BookingWizard) відкладено — окрема сесія з founder.
 Кіт: bookit/src/components/ui/ — EditorialCover (темний герой, 1 на поверхню) · Section (білий тіло, hairline) · Button (primary slate / secondary hairline / ghost / danger) · Badge (surface light|dark) · Sheet (srTitle).
 Еталон реалізації: ClientDossierHero + ClientDetailSheet + BookingDetailsModal band (variant cover/inline). Читай BRIEFS/C-CLI-01.md перш ніж робити першу модалку/картку.
 
@@ -27,8 +27,8 @@
   3. Кожен віджет = домінанта-заголовок (що читається за 3 сек) + виділена «зірка» в даних + за можливості actionable-лінк (напр. пік→«Підняти ціну в пік»→`/dashboard?drawer=dynamic_pricing`). Смарт-drawer на дашборді = `<Link href="/dashboard?drawer=NAME">` (nuqs, див. DashboardDrawers.tsx: flash_deals, dynamic_pricing).
   4. 🔴 КОНТРАСТ НА FROST (DS-DASH-04): токени `--success`/`--warning` провалюють 4.5:1 на дрібному (12px) тексті на periwinkle-картці (≈3.95). `.heading-serif`=weight500 → NIE bold → навіть 19px = normal text (4.5, не 3). Для тексту-статусу юзай калібровані тони good`#0B6B2E`/warn`#9A4508`/bad`--error`. **`--text-tertiary` (2.78:1) = забанене §4 значення → НІКОЛИ для тексту; тільки `--text-primary`/`--text-secondary`. Ієрархію — розміром.**
 
-▶ НАСТУПНА ДІЯ: Bookings-list — `master/bookings/BookingsPage.tsx` + `BookingCard.tsx` (M-BOOK-редизайн уже частково зроблено: BookingDetailsModal/VerticalTimeline/DashboardWidgets — перевір grep-аудитом що з list-в'ю лишилось). Спочатку grep banned-токенів як на Settings.
-  Далі: Clients (`ClientsPage` 709 + status-hex палітра) → Marketing → Billing · P5 лендинг (LAND-01).
+▶ НАСТУПНА ДІЯ: Clients — `master/clients/ClientsPage.tsx` (709) + `ClientListRow`/`ClientGridCard`/`clientsUtils`. Має власну status-hex палітру (RETENTION_CONFIG #5C9E7A/#789A99/#D4935A/#C05B5B — ЛЕГАСІ sage/peach, НЕ Frost!) — перевір grep + чи ці hex на світлому проходять 4.5. Спочатку grep banned-токенів + hex-аудит.
+  Далі: Marketing → Billing · Борг DS-BOOK-DASH (темні bookings-views) · P5 лендинг (LAND-01).
   ⚠️ DS-MODAL-01 + DS-CLIENT-02 (BookingWizard) — НЕ автономно: revenue-critical shared 6-крок flow. Присвячена сесія з founder-in-loop.
   🔴 УРОК founder (застосовуй усюди): «більше крафту над СВІТЛИМИ блоками» — featured-диференціація + домінантна типографіка (metric-value/heading-serif) + hairline-структура в КОЖНОМУ Section, не лише в темному герої. Світлий блок «служить» ≠ «нудний». Пам'ять: feedback_light_blocks_craft.md.
 
@@ -56,6 +56,14 @@ TRACKER: DS-[ID] ⬜→✅ + оновити ▶ NEXT + прогрес N/23 → �
 ---
 
 ## Нотатки сесій (свіжі зверху)
+
+### DS-BOOK-LIST — Bookings список (04.07, ✅ автономна) — commit 511a42d2
+- **Чесний скоуп-cut:** `master/bookings/` = 108 hard-bans / 11 файлів, ЗМІШАНІ light/dark. Сліпий sed небезпечний (BookingDetailsModal + VerticalTimeline мають dark-герої → text-sub на темному = dark-on-dark баг). Тому звузив до список-в'ю (light-only): `BookingsPage` + `BookingCard` + `DashboardWidgets` (усі light — verified 0 dark-маркерів).
+- **Зроблено (sed light-safe):** `text-muted-foreground(/NN)?`→`text-text-sub`, `bg-muted-foreground(/NN)?`→`bg-secondary`; eyebrows зняли `uppercase tracking-XXX`→sentence-case (date-роздільники, sidebar «Пошук клієнта»/«Статус запису», DashboardWidgets stat-title).
+- **🔴 No-Emoji фікс (реальна помилка):** BookingCard рядок ~201 `⚠️ Ризик неявки` → Lucide `AlertTriangle` + copy без драми-!; 8px date-мітка знято uppercase (5 ЛИП→5 лип).
+- **Свідомо НЕ чіпав:** status-action-button semantic-кольори (bg-success/12 набір), логіку/actions/grid/tour, script-h1 «Записи».
+- **🔴 Борг DS-BOOK-DASH:** темні Command-Center views (VerticalTimeline dark-блоки, PeriodAnalyticsView, MonthlyAnalyticsView, SmartQueue, OpportunityMenu, BookingDetailsModal dark receipt-cover M-BOOK-05) — ~87 occ, потребують per-file light/dark розрізнення. НЕ sed'ом. Окрема сесія.
+- **Own-eyes:** BookingCard heavy providers (Toast+QueryClient+router+supabase) → live-render fragile, як Settings-widgets → grep+tsc+build verify. Мех. token/eyebrow/emoji без layout-змін. TSC:0 · Build:clean · encoding чистий.
 
 ### DS-SET-CONFORM — Settings контраст+eyebrow (04.07, ✅ own-eyes, автономна) — commit 76bb572d
 - **Чесний рефрейм:** Settings НЕ малий residual — майже всі ~14 віджетів досі на до-дизайн-мова вокабулярі (M-SET-01..05 = reorder/логіка/копірайт, НЕ конвертація мови). Founder-вибір через AskUserQuestion: **«Контраст + eyebrows sentence-case»** (не re-layout, не Section-міграція — та важча окремо якщо захоче).
