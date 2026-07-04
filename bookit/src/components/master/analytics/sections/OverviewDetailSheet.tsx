@@ -66,7 +66,7 @@ export function OverviewDetailBody({ detail }: { detail: OverviewDetail }) {
         <div className="flex flex-col gap-5 pb-2">
           {hasHero && (
             <EditorialCover>
-              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-white/55">
+              <p className="text-[11px] font-semibold text-white/70">
                 {detail.eyebrow || detail.title}
               </p>
               <p className="metric-value text-[38px] leading-none text-white mt-2.5">{detail.hero!.value}</p>
@@ -75,7 +75,7 @@ export function OverviewDetailBody({ detail }: { detail: OverviewDetail }) {
           )}
 
           {!hasHero && detail.eyebrow && (
-            <span className="text-[11px] font-bold text-primary uppercase tracking-[0.14em] -mt-1">{detail.eyebrow}</span>
+            <span className="text-[12px] font-semibold text-primary -mt-1">{detail.eyebrow}</span>
           )}
 
           {detail.rows && detail.rows.length > 0 && (

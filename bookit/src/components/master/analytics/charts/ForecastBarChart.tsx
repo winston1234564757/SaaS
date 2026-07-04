@@ -68,7 +68,7 @@ export function ForecastBarChart({
             </div>
 
             {/* Підпис */}
-            <span className="text-[9px] font-semibold text-muted-foreground/60 uppercase tracking-wider text-center whitespace-nowrap">
+            <span className="text-[9px] font-semibold text-text-sub uppercase tracking-wider text-center whitespace-nowrap">
               {bar.label}
             </span>
           </div>

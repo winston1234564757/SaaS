@@ -162,7 +162,7 @@ export function MorningBriefing({ onOpenClient }: MorningBriefingProps) {
     <div className="flex flex-col gap-3">
       <div className="flex items-center gap-2 px-1">
         <Sparkles className="size-4 text-primary animate-pulse" />
-        <h3 className="text-xs font-semibold text-foreground uppercase tracking-wider">
+        <h3 className="text-xs font-semibold text-foreground">
           Ранковий брифінг на сьогодні
         </h3>
       </div>
@@ -177,12 +177,12 @@ export function MorningBriefing({ onOpenClient }: MorningBriefingProps) {
           >
             <div>
               <div className="flex justify-between items-start mb-2">
-                <span className="text-xs font-bold text-foreground">{item.time}</span>
-                <span className="text-[10px] text-muted-foreground/60 truncate max-w-[120px]">
+                <span className="metric-value text-xs text-foreground">{item.time}</span>
+                <span className="text-[10px] text-text-sub truncate max-w-[120px]">
                   {item.serviceName}
                 </span>
               </div>
-              <h4 className="text-sm font-bold text-foreground truncate">{item.clientName}</h4>
+              <h4 className="text-sm font-semibold text-foreground truncate">{item.clientName}</h4>
 
               {/* DNA Tags — Lucide icons, No-Emoji */}
               <div className="flex flex-wrap gap-1 mt-2">
@@ -199,7 +199,7 @@ export function MorningBriefing({ onOpenClient }: MorningBriefingProps) {
             </div>
 
             <div className="mt-4 pt-2 border-t border-border/10">
-              <p className="text-[10px] text-muted-foreground/80 leading-normal italic">
+              <p className="text-[10px] text-text-sub leading-normal italic">
                 {item.aiTip}
               </p>
             </div>

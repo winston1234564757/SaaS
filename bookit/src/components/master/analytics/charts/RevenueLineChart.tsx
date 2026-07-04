@@ -233,7 +233,7 @@ export function RevenueLineChart({
               dataKey="label"
               tickLine={false}
               axisLine={false}
-              tick={{ fill: 'var(--text-tertiary)', fontSize: 11, fontWeight: 600 }}
+              tick={{ fill: 'var(--text-secondary)', fontSize: 11, fontWeight: 600 }}
               dy={6}
               interval="preserveStartEnd"
             />

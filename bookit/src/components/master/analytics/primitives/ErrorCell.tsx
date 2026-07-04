@@ -36,7 +36,7 @@ export function ErrorCell({
       </div>
 
       <p className="text-xs font-semibold text-destructive mb-1">Помилка завантаження</p>
-      <p className="text-[11px] text-muted-foreground max-w-[200px] leading-normal mb-4 truncate-2-lines">
+      <p className="text-[11px] text-text-sub max-w-[200px] leading-normal mb-4 truncate-2-lines">
         {errorMessage}
       </p>
 

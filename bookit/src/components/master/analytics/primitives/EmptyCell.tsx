@@ -40,7 +40,7 @@ export function EmptyCell({
       </div>
       
       <p className="text-base font-bold text-foreground mb-1.5 relative z-10">{title}</p>
-      <p className="text-xs text-muted-foreground max-w-[260px] leading-relaxed mb-5 relative z-10">
+      <p className="text-xs text-text-sub max-w-[260px] leading-relaxed mb-5 relative z-10">
         {description}
       </p>
 

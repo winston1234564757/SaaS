@@ -76,7 +76,7 @@ export function HeatmapGrid({ data }: HeatmapGridProps) {
           {/* Сітка теплової карти */}
           <div className="flex gap-2">
             {/* Дні тижня (ліва колонка) */}
-            <div className="flex flex-col justify-between py-1 text-[11px] font-semibold text-muted-foreground/60 w-6 select-none">
+            <div className="flex flex-col justify-between py-1 text-[11px] font-semibold text-text-sub w-6 select-none">
               {UA_DOW_SHORT.map((day) => (
                 <div key={day} className="h-6 flex items-center justify-center">
                   {day}
@@ -90,7 +90,7 @@ export function HeatmapGrid({ data }: HeatmapGridProps) {
               {hoursRange.map((hour) => (
                 <div key={hour} className="flex flex-col gap-1">
                   {/* Година зверху (тільки парні для чистоти дизайну) */}
-                  <span className="text-[9px] font-bold text-muted-foreground/40 text-center h-4 flex items-center justify-center select-none">
+                  <span className="text-[9px] font-bold text-text-sub text-center h-4 flex items-center justify-center select-none">
                     {hour % 2 === 0 ? `${hour}:00` : ''}
                   </span>
 
@@ -144,7 +144,7 @@ export function HeatmapGrid({ data }: HeatmapGridProps) {
             <p className="font-semibold text-foreground">
               {UA_DOW_FULL[hoveredCell.dow - 1]}
             </p>
-            <p className="text-muted-foreground mt-0.5">
+            <p className="text-text-sub mt-0.5">
               Час: {hoveredCell.hour}:00
             </p>
             <p className="text-primary font-bold mt-1">

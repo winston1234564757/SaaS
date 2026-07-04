@@ -25,7 +25,7 @@ import { useAnalyticsMarketing } from '@/lib/supabase/hooks/useAnalyticsMarketin
 import { PeriodControls } from './sections/PeriodControls';
 import { OverviewBriefing, type BriefingMetric } from './sections/OverviewBriefing';
 import { OverviewDetailSheet, type OverviewDetail } from './sections/OverviewDetailSheet';
-import { type StoryItem } from './sections/HeroStory';
+import { type StoryItem } from './sections/OverviewBriefing';
 import { BusinessHealthScoreWidget } from './sections/BusinessHealthScoreWidget';
 import { MorningBriefing } from './sections/MorningBriefing';
 import { OverviewTab } from './sections/OverviewTab';

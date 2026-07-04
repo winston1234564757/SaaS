@@ -26,7 +26,7 @@ export function ProUpgradeCard() {
           </div>
           <div>
             <p className="text-sm font-bold text-foreground">Глибока аналітика</p>
-            <p className="text-[11px] text-muted-foreground/60">Доступно з Pro-тарифом</p>
+            <p className="text-[11px] text-text-sub">Доступно з Pro-тарифом</p>
           </div>
         </div>
 
@@ -42,7 +42,7 @@ export function ProUpgradeCard() {
               <div className="size-7 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
                 <f.icon size={13} className="text-primary" />
               </div>
-              <p className="text-[13px] text-muted-foreground">{f.label}</p>
+              <p className="text-[13px] text-text-sub">{f.label}</p>
             </div>
           ))}
         </div>

@@ -26,7 +26,7 @@ export function ServicePairingMatrix({ pairs }: ServicePairingMatrixProps) {
 
   if (points.length === 0) {
     return (
-      <div className="text-center py-6 text-xs text-muted-foreground/60">
+      <div className="text-center py-6 text-xs text-text-sub">
         Недостатньо даних про спільні бронювання послуг
       </div>
     );

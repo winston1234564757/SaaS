@@ -5,10 +5,20 @@ import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { ArrowUpRight, ArrowDownRight, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils/cn';
-import type { StoryItem } from './HeroStory';
 import type { OverviewDetail } from './OverviewDetailSheet';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
+
+/** Editorial insight item — раніше жив у HeroStory (видалено); канон тут. */
+export interface StoryItem {
+  id: string;
+  type: 'growth' | 'anomaly' | 'pricing' | 'general';
+  title: string;
+  description: string;
+  ctaLabel?: string;
+  ctaHref?: string;
+  icon?: React.ReactNode;
+}
 
 export interface BriefingMetric {
   label: string;
@@ -59,7 +69,7 @@ function DeltaChip({ delta, tone = 'dark' }: { delta: number; tone?: 'dark' | 'l
         'inline-flex items-center gap-0.5 text-xs font-semibold leading-none tabular-nums',
         tone === 'dark'
           ? cn(up && 'text-emerald-300', !up && !flat && 'text-rose-300', flat && 'text-white/55')
-          : cn(up && 'text-success', !up && !flat && 'text-error', flat && 'text-text-tertiary'),
+          : cn(up && 'text-success', !up && !flat && 'text-error', flat && 'text-text-sub'),
       )}
     >
       {!flat && <Icon size={13} strokeWidth={2.5} />}

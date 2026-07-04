@@ -237,7 +237,7 @@ export function StockTabView({
                   className="mt-4 p-4 rounded-2xl bg-secondary/40 border border-border/15 flex flex-col gap-3 overflow-hidden"
                 >
                   <div className="flex justify-between items-center">
-                    <span className="text-[11px] font-semibold text-foreground uppercase tracking-wide">До закупівлі</span>
+                    <span className="text-[11px] font-semibold text-foreground">До закупівлі</span>
                     <button
                       type="button"
                       onClick={handleCopy}

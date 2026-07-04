@@ -90,7 +90,7 @@ export function CohortHeatmap({ data }: CohortHeatmapProps) {
       <div className="overflow-x-auto scrollbar-hide -mx-5 px-5">
         <div className="min-w-[560px] flex flex-col gap-2">
           {/* Заголовки стовпців */}
-          <div className="flex text-[9px] font-bold text-muted-foreground/60 uppercase tracking-wider select-none h-6 items-center">
+          <div className="flex text-[9px] font-bold text-text-sub uppercase tracking-wider select-none h-6 items-center">
             <div className="w-24 text-left">Місяць</div>
             <div className="w-16 text-center">Розмір</div>
             <div className="flex-1 grid grid-cols-7 gap-1 text-center">
@@ -117,7 +117,7 @@ export function CohortHeatmap({ data }: CohortHeatmapProps) {
                   </div>
 
                   {/* Розмір когорти */}
-                  <div className="w-16 text-center text-muted-foreground/80 font-semibold select-none">
+                  <div className="w-16 text-center text-text-sub font-semibold select-none">
                     {size}
                   </div>
 
@@ -134,7 +134,7 @@ export function CohortHeatmap({ data }: CohortHeatmapProps) {
                       const pct = cellData?.pct ?? (i === 0 ? 100 : 0);
 
                       // Підбираємо колір за насиченістю
-                      let colorClass = 'bg-secondary/40 text-muted-foreground/60';
+                      let colorClass = 'bg-secondary/40 text-text-sub';
                       if (pct > 0 && pct <= 15) colorClass = 'bg-primary/10 text-primary-foreground/70';
                       if (pct > 15 && pct <= 30) colorClass = 'bg-primary/25 text-primary-foreground';
                       if (pct > 30 && pct <= 60) colorClass = 'bg-primary/55 text-primary-foreground font-bold';
@@ -181,7 +181,7 @@ export function CohortHeatmap({ data }: CohortHeatmapProps) {
             <p className="font-semibold text-foreground">
               Когорта: {hoveredCell.monthName}
             </p>
-            <p className="text-muted-foreground mt-0.5">
+            <p className="text-text-sub mt-0.5">
               Нових клієнтів: {hoveredCell.size}
             </p>
             <p className="text-primary font-bold mt-1">
