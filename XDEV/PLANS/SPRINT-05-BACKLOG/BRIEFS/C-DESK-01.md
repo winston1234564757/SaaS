@@ -106,6 +106,13 @@ Per-page: `design-taste-frontend` → `impeccable` (layout) → `mcp__a11y` → 
 
 **Own-eyes (Playwright headless, прев'ю-роут + прев'ю-проп, видалені):** lg 1280 — sidebar + офсет контенту + навбар прихований ✅; mobile 390 — sidebar відсутній (`hidden lg:flex`), контент повноширинний, MyBottomNav недоторканий ✅. TSC:0 · Build:clean.
 
-**Лишилось (Фаза 2..N):** per-page десктоп-контент по одній сторінці (master-detail bookings, 2-pane messages, тощо — таблиця вище). Верхній `md:pt-20` gap при схованому навбарі лишив як top-padding (рефайн per-page).
+## Реалізація — Фаза 2, стор. 1: /my/bookings ✅ (коміти bbc7fe04 + 00409f17 + 52580478, НЕ задеплоєно)
+
+**Десктоп master-detail** (`DesktopBookings`, `hidden lg:block`; мобільний фід `lg:hidden` недоторканий): ліворуч селектабельний список (секції Майбутні/Раніше, вибір), праворуч деталь — `BookingDetailPane` (узагальнений темний квиток + контекстні дії) / shop → переюз `ShopOrderCard`. 🔴 Fix: `AnimatePresence mode="wait"` зі spring лишав праву панель порожньою → keyed `motion.div`.
+**Поліш світлого списку** (founder: «світла частина слабкувата на фоні темної»): плоскі рядки → контейнер-панель + `divide-y` hairline + section-хедери + щільніші рядки (ім'я+дата·час·послуга+статус+ціна).
+**Мобільний болдер** (founder: «типографіка + присутність»): секційні хедери → serif Cormorant; картка майбутнього → крупне ім'я+ціна; шапка групи → болдер.
+Own-eyes: desktop (upcoming/completed/shop) + mobile. TSC:0 Build:clean.
+
+**Лишилось (Фаза 2, стор. 2..8):** messages 2-pane · masters галерея · loyalty/notifications/profile 2-кол · explore/shop ширші гріди. Верхній `md:pt-20` gap при схованому навбарі лишив як top-padding (рефайн per-page).
 
 ## Прев'ю / реалізація — нижче після виконання
