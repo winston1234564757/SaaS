@@ -474,7 +474,7 @@ export function PhoneOtpForm() {
                     </div>
                   </div>
                   <span className="text-xs text-[#64748B] leading-relaxed">
-                    Я ознайомлений(а) та погоджуюсь з{' '}
+                    Погоджуюсь з{' '}
                     <a
                       href="/legal/terms-of-service"
                       target="_blank"
@@ -562,7 +562,7 @@ export function PhoneOtpForm() {
                     Вхід у Bookit
                   </h1>
                   <p className="text-sm text-[#64748B]">
-                    Введіть номер. Надішлемо код.
+                    Надішлемо код у SMS.
                   </p>
                 </div>
 
