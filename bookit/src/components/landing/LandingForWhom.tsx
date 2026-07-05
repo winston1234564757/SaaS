@@ -27,11 +27,11 @@ const isLong = (n: string) => n.length > 10;
 // %-boxes are relatively smaller, so it only gets airier.
 function box(name: string) {
   const long = isLong(name);
-  const fontPx = long ? 17.6 : 20.8;         // clamp() mins on mobile
-  const maxScale = long ? 1.06 : 1.42;       // breathing ceiling (long words grow less)
+  const fontPx = long ? 19.2 : 24;           // clamp() mins on mobile (bigger)
+  const maxScale = long ? 1.02 : 1.3;        // breathing ceiling (long words grow less)
   const wpx = name.length * fontPx * 0.5 * maxScale;
   const hpx = fontPx * maxScale;
-  const refW = 360, refH = 620;
+  const refW = 360, refH = 470;              // denser field → smaller gaps
   return { w: (wpx / refW) * 100, h: (hpx / refH) * 100 };
 }
 
@@ -51,7 +51,7 @@ function buildPositions(specs: string[]) {
       const x = 1 + rnd(it.i * 7 + a, 11) * (xMax - 1);
       const y = 2 + rnd(it.i * 7 + a, 23) * (yMax - 2);
       const clash = placed.some(
-        (p) => x < p.x + p.w + 1.2 && p.x < x + it.w + 1.2 && y < p.y + p.h + 2 && p.y < y + it.h + 2,
+        (p) => x < p.x + p.w + 0.6 && p.x < x + it.w + 0.6 && y < p.y + p.h + 1 && p.y < y + it.h + 1,
       );
       if (!clash) spot = { x, y };
     }
@@ -108,7 +108,7 @@ export function LandingForWhom() {
 
         {/* Gridless word field — upright words at free random positions, breathing size loop.
             scale (GPU transform) animates instead of font-size to avoid reflow. */}
-        <div className="relative w-full h-[560px] sm:h-[400px] lg:h-[420px]">
+        <div className="relative w-full h-[460px] sm:h-[360px] lg:h-[380px]">
           {SPECS.map((name, i) => {
             const long = isLong(name);
             const pos = POS[i];
@@ -116,7 +116,7 @@ export function LandingForWhom() {
             const baseStatic = 0.72 + rnd(i, 7) * 0.55;     // reduced-motion: varied fixed size
             const accent = rnd(i, 8) > 0.66;
             const color = accent ? 'var(--l-indigo)' : rnd(i, 9) > 0.5 ? 'var(--l-ink)' : 'var(--l-muted)';
-            const loop = long ? [0.7, 1.05, 0.7] : [0.55, 1.4, 0.55];
+            const loop = long ? [0.74, 1.02, 0.74] : [0.62, 1.3, 0.62];
 
             return (
               <motion.span
@@ -125,7 +125,7 @@ export function LandingForWhom() {
                 style={{
                   left: `${pos.x}%`,
                   top: `${pos.y}%`,
-                  fontSize: long ? 'clamp(1.1rem,2.4vw,1.7rem)' : 'clamp(1.3rem,3vw,2.1rem)',
+                  fontSize: long ? 'clamp(1.2rem,2.6vw,1.95rem)' : 'clamp(1.5rem,3.4vw,2.5rem)',
                   color,
                   cursor: 'default',
                   transformOrigin: 'left center',
