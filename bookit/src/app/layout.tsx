@@ -3,6 +3,7 @@ import { Geist, Great_Vibes, Cormorant_Garamond } from 'next/font/google';
 import  QueryProvider  from '@/lib/providers/QueryProvider';
 import { ToastProvider } from '@/lib/toast/context';
 import { MyBottomNav } from '@/components/client/MyBottomNav';
+import { MyDesktopSidebar } from '@/components/client/MyDesktopSidebar';
 import { ServiceWorkerRegistration } from '@/components/shared/ServiceWorkerRegistration';
 import { RefCapture } from '@/components/shared/RefCapture';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
@@ -86,6 +87,19 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const isOnboardingPath = pathname.startsWith('/dashboard/onboarding') || pathname.startsWith('/onboarding');
   const theme = isOnboardingPath ? 'frost' : rawTheme;
 
+  // C-DESK-01: authed clients get a left-sidebar shell on lg+ across client
+  // surfaces (/my, /explore, /[slug]/shop). Set the body class server-side so
+  // the content offset is flash-free (no CLS on hydration). Full-screen chat
+  // owns the viewport, so it's excluded. Gate mirrors MyDesktopSidebar.
+  const isFullscreenChatPath =
+    pathname === '/my/support/chat' || /^\/my\/messages\/[^/]+$/.test(pathname);
+  const isClientShellPath =
+    !isFullscreenChatPath &&
+    (pathname.startsWith('/my') ||
+      pathname.startsWith('/explore') ||
+      /^\/[^/]+\/shop(\/|$)/.test(pathname));
+  const showClientShell = initialIsAuth && isClientShellPath;
+
   return (
     <html lang="uk" className={`${geist.variable} ${greatVibes.variable} ${cormorant.variable}`} data-theme={theme || undefined}>
       <head>
@@ -112,7 +126,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           `}
         </Script>
       </head>
-      <body className="antialiased">
+      <body className={showClientShell ? 'antialiased has-client-shell' : 'antialiased'}>
         {/* Ambient background blobs — CSS animated, no JS */}
         <div aria-hidden="true" className="fixed inset-0 overflow-hidden pointer-events-none" style={{ zIndex: 0 }}>
           <div className="ambient-blob ambient-blob-1" />
@@ -138,6 +152,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                   <main className="flex-1">
                     {children}
                   </main>
+                  <MyDesktopSidebar initialIsAuth={initialIsAuth} />
                   <MyBottomNav initialIsAuth={initialIsAuth} />
                 </div>
               </TelegramProvider>

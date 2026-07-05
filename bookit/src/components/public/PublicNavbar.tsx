@@ -10,7 +10,7 @@ export async function PublicNavbar({ notifBell }: { notifBell?: React.ReactNode 
   const user = session?.user ?? null;
 
   return (
-    <header className="hidden md:block fixed top-0 left-0 right-0 z-50 pointer-events-none">
+    <header className="public-navbar hidden md:block fixed top-0 left-0 right-0 z-50 pointer-events-none">
       <div className="flex justify-center px-6 pt-4">
         <nav className="pointer-events-auto flex items-center gap-1 px-2 py-2 rounded-xl bg-secondary/25 backdrop-blur-3xl border border-border shadow-lg shadow-secondary/20">
 

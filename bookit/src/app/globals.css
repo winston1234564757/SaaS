@@ -1157,3 +1157,15 @@ body.app-loading .app-suspended-curtain {
   .l-blob-float, .l-blob-float-2 { animation: none; }
 }
 
+/* ═══════════════════════════════════════════════════════════
+   C-DESK-01 — CLIENT DESKTOP SHELL (left sidebar, lg+)
+   Body gets `.has-client-shell` server-side (root layout) for authed
+   clients on client surfaces. One rule offsets the shared root <main>
+   across all client layouts (/my, /explore, /[slug]/shop); the redundant
+   floating public navbar is hidden while the sidebar owns navigation.
+   ═══════════════════════════════════════════════════════════ */
+@media (min-width: 1024px) {
+  body.has-client-shell main { padding-left: 264px; }
+  body.has-client-shell .public-navbar { display: none; }
+}
+
