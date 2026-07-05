@@ -17,30 +17,23 @@ export function WordLine({
   inView: boolean;
   reducedMotion?: boolean;
 }) {
+  // Default-visible: words render at rest; the rise-in only enhances when in view and
+  // motion is allowed. No overflow:hidden mask (it clipped Cyrillic descenders).
+  const animate = inView && !reducedMotion;
   return (
     <span style={{ display: 'block', ...style }}>
       {words.map((word, wi) => {
         const delay = reducedMotion ? 0 : (lineIndex * 200 + wi * 70) / 1000;
         return (
-          <span
+          <motion.span
             key={wi}
-            style={{
-              display: 'inline-block',
-              overflow: 'hidden',
-              verticalAlign: 'bottom',
-              lineHeight: 'inherit',
-              marginRight: wi < words.length - 1 ? '0.28em' : 0,
-            }}
+            style={{ display: 'inline-block', marginRight: wi < words.length - 1 ? '0.28em' : 0 }}
+            initial={false}
+            animate={animate ? { y: [16, 0], opacity: [0, 1] } : { y: 0, opacity: 1 }}
+            transition={{ duration: 0.9, ease: easeOut, delay }}
           >
-            <motion.span
-              style={{ display: 'inline-block' }}
-              initial={reducedMotion ? { y: 0 } : { y: '110%' }}
-              animate={inView ? { y: 0 } : {}}
-              transition={{ duration: reducedMotion ? 0 : 0.9, ease: easeOut, delay }}
-            >
-              {word}
-            </motion.span>
-          </span>
+            {word}
+          </motion.span>
         );
       })}
     </span>

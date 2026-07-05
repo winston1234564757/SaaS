@@ -7,6 +7,7 @@ import { LandingHero } from '@/components/landing/LandingHero';
 import { LandingScrollProgress } from '@/components/landing/LandingScrollProgress';
 import { LandingTrustBar } from '@/components/landing/LandingTrustBar';
 import { LandingMarquee } from '@/components/landing/LandingMarquee';
+import { LandingForWhom } from '@/components/landing/LandingForWhom';
 import { LandingAgitation } from '@/components/landing/LandingAgitation';
 import { LandingMagic } from '@/components/landing/LandingMagic';
 import { LandingBentoFeatures } from '@/components/landing/LandingBentoFeatures';
@@ -39,7 +40,7 @@ const SECTIONS: SectionDef[] = [
   { Component: LandingBentoFeatures, id: 'sec-bento',        overlap: true  },
   { Component: LandingFeatures,      id: 'sec-features',     overlap: true  },
   { Component: LandingIntegrations,  id: 'sec-integrations', overlap: true  },
-  { Component: LandingClientFlow,    id: 'sec-client-flow',  overlap: true  },
+  { Component: LandingClientFlow,    id: 'sec-client-flow',  overlap: false },
   { Component: LandingComparison,    id: 'sec-comparison',   overlap: true  },
   { Component: LandingProcess,       id: 'sec-process',      overlap: false },
   { Component: LandingEconomy,       id: 'sec-economy',      overlap: true  },
@@ -136,6 +137,7 @@ export function LandingPageContent() {
           <LandingHero />
           <LandingTrustBar />
           <LandingMarquee />
+          <LandingForWhom />
 
           {SECTIONS.map((sec, i) => {
             const { Component, id, overlap } = sec;

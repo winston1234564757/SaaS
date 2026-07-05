@@ -113,16 +113,6 @@ export function LandingFooterCTA() {
 
       {/* Content */}
       <div className="relative z-10 flex flex-col items-center justify-center text-center px-6 py-28">
-        <motion.span
-          initial={{ opacity: 0, y: 12, filter: 'blur(8px)' }}
-          animate={inView ? { opacity: 1, y: 0, filter: 'blur(0px)' } : {}}
-          transition={{ ...LANDING_SPRING, delay: 0.05 }}
-          className="inline-block text-[11px] font-semibold uppercase tracking-[0.18em] mb-8"
-          style={{ color: 'color-mix(in srgb, var(--l-indigo-glow) 70%, transparent)' }}
-        >
-          Починай сьогодні
-        </motion.span>
-
         <LandingSplitHeading
           text={"Перший запис\nвже сьогодні."}
           className="font-[family-name:var(--font-cormorant)] font-semibold leading-[0.92] tracking-tight text-balance"

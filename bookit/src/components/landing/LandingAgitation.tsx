@@ -1,125 +1,33 @@
 'use client';
 
-import { Fragment, useRef } from 'react';
-import { motion, useInView, useReducedMotion, useScroll, useTransform } from 'framer-motion';
+import { useRef } from 'react';
+import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import { useIsDesktop } from '@/lib/hooks/useIsDesktop';
 import { LandingSplitHeading } from '@/components/landing/LandingSplitHeading';
-import { LANDING_SPRING } from './shared/CountUp';
 
 const easeOut: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 const PAINS = [
   {
-    no: '01',
     title: 'Записуєш у Direct, потім забуваєш',
     body: 'Переписка розпорошена між Instagram, Viber і Telegram. Про скасування дізнаєшся о 22:00.',
   },
   {
-    no: '02',
     title: 'Порожні вікна — і ніхто їх не заповнить',
     body: 'Клієнт відмінив запис, а ти годину шукаєш заміну по чатах. Гроші просто зникли.',
   },
   {
-    no: '03',
     title: 'Без сторінки немає довіри',
     body: 'Клієнт хоче побачити ціни й портфоліо до дзвінка. Якщо не знайде — просто іде.',
   },
   {
-    no: '04',
-    title: 'Облік "на пальцях" — жодної картини',
+    title: 'Облік «на пальцях» — жодної картини',
     body: 'Скільки заробила цього місяця? Яка послуга найвигідніша? Ці цифри нікуди не записані.',
   },
 ];
 
-function splitSentences(text: string): string[] {
-  return text.split(/(?<=[.?!]) /).filter(Boolean);
-}
-
-function PainItem({ item }: { item: typeof PAINS[0] }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: true, margin: '-60px' });
-  const shouldReduce = useReducedMotion();
-  const sentences = splitSentences(item.body);
-
-  return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 32, scale: 0.97 }}
-      animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
-      transition={{ duration: 0.65, ease: easeOut }}
-      whileHover={shouldReduce ? {} : { y: -3, scale: 1.01 }}
-      className="flex items-start gap-7 p-8 rounded-[1.25rem]"
-      style={{
-        background: 'var(--l-surface)',
-        border: '1px solid var(--l-border)',
-        boxShadow: 'var(--l-shadow-card)',
-      }}
-    >
-      {/* Number */}
-      <motion.span
-        initial={{ opacity: 0, y: 14 }}
-        animate={inView ? { opacity: 1, y: 0 } : {}}
-        transition={{ duration: 0.9, ease: easeOut, delay: 0.04 }}
-        className="font-[family-name:var(--font-cormorant)] font-semibold leading-none select-none flex-shrink-0 pt-0.5"
-        style={{
-          fontSize: 'clamp(3rem, 6vw, 5rem)',
-          color: 'color-mix(in srgb, var(--l-indigo) 28%, transparent)',
-        }}
-        aria-hidden="true"
-      >
-        {item.no}
-      </motion.span>
-
-      <div className="flex-1 min-w-0">
-        <h3 className="font-semibold leading-snug mb-3" style={{ fontSize: '1.1rem', color: 'var(--l-ink)' }}>
-          {item.title.split(' ').map((word, wi, arr) => (
-            <span
-              key={wi}
-              style={{
-                display: 'inline-block',
-                overflow: 'hidden',
-                verticalAlign: 'bottom',
-                lineHeight: 'inherit',
-                marginRight: wi < arr.length - 1 ? '0.28em' : 0,
-              }}
-            >
-              <motion.span
-                style={{ display: 'inline-block' }}
-                initial={{ y: '110%' }}
-                animate={inView ? { y: 0 } : {}}
-                transition={{ duration: 0.85, ease: easeOut, delay: 0.08 + wi * 0.065 }}
-              >
-                {word}
-              </motion.span>
-            </span>
-          ))}
-        </h3>
-
-        <p className="text-[0.9rem] leading-relaxed" style={{ color: 'var(--l-muted)' }}>
-          {sentences.map((sentence, si, arr) => (
-            <Fragment key={si}>
-              <span style={{ display: 'inline-block', overflow: 'hidden', verticalAlign: 'bottom' }}>
-                <motion.span
-                  style={{ display: 'inline-block' }}
-                  initial={{ y: '115%', opacity: 0 }}
-                  animate={inView ? { y: 0, opacity: 1 } : {}}
-                  transition={{ duration: 0.85, ease: easeOut, delay: 0.08 + si * 0.16 }}
-                >
-                  {sentence}
-                </motion.span>
-              </span>
-              {si < arr.length - 1 ? ' ' : ''}
-            </Fragment>
-          ))}
-        </p>
-      </div>
-    </motion.div>
-  );
-}
-
 export function LandingAgitation() {
   const ref = useRef<HTMLElement>(null);
-  const inView = useInView(ref, { once: true, margin: '-80px' });
   const shouldReduce = useReducedMotion();
 
   const { scrollYProgress } = useScroll({
@@ -128,8 +36,15 @@ export function LandingAgitation() {
   });
   const isDesktop = useIsDesktop();
   const headingYDesktop = useTransform(scrollYProgress, [0, 1], shouldReduce ? ['0%', '0%'] : ['0%', '-8%']);
-  const headingYMobile  = useTransform(scrollYProgress, [0, 1], shouldReduce ? ['0%', '0%'] : ['0%', '-2%']);
+  const headingYMobile = useTransform(scrollYProgress, [0, 1], shouldReduce ? ['0%', '0%'] : ['0%', '-2%']);
   const headingY = isDesktop ? headingYDesktop : headingYMobile;
+
+  const reveal = (delay: number) => ({
+    initial: { opacity: 0, y: 24 },
+    whileInView: { opacity: 1, y: 0 },
+    viewport: { once: true, margin: '-60px' },
+    transition: { duration: shouldReduce ? 0 : 0.6, ease: easeOut, delay: shouldReduce ? 0 : delay },
+  });
 
   return (
     <section
@@ -151,19 +66,11 @@ export function LandingAgitation() {
       />
 
       <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.6fr] gap-16 lg:gap-28 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.6fr] gap-14 lg:gap-28 items-start">
 
+          {/* Left: sticky header */}
           <div className="lg:sticky lg:top-36 self-start">
             <motion.div style={{ y: headingY }}>
-              <motion.span
-                initial={{ opacity: 0, y: 12, filter: 'blur(8px)' }}
-                animate={inView ? { opacity: 1, y: 0, filter: 'blur(0px)' } : {}}
-                transition={{ ...LANDING_SPRING, delay: 0.05 }}
-                className="inline-block text-[11px] font-semibold uppercase tracking-[0.18em] mb-6"
-                style={{ color: 'var(--l-indigo)' }}
-              >
-                Проблема
-              </motion.span>
               <LandingSplitHeading
                 text={"Звикла\nдо хаосу?"}
                 className="font-[family-name:var(--font-cormorant)] font-semibold leading-[0.9] tracking-tight"
@@ -172,21 +79,48 @@ export function LandingAgitation() {
                 lineDelay={220}
               />
               <motion.p
-                initial={{ opacity: 0, y: 16 }}
-                animate={inView ? { opacity: 1, y: 0 } : {}}
-                transition={{ ...LANDING_SPRING, delay: 0.32 }}
-                className="mt-5 text-base leading-relaxed"
-                style={{ color: 'var(--l-muted)', maxWidth: 280 }}
+                {...reveal(0.28)}
+                className="mt-6 text-base sm:text-lg leading-relaxed"
+                style={{ color: 'var(--l-muted)', maxWidth: 320 }}
               >
                 Більшість майстрів витрачають 2–3 години щодня не на роботу, а на її організацію.
               </motion.p>
             </motion.div>
           </div>
 
-          <div className="flex flex-col gap-6">
-            {PAINS.map((p, i) => (
-              <PainItem key={i} item={p} />
-            ))}
+          {/* Right: editorial pain list — first is featured, hairline rows, no numbered cards */}
+          <div>
+            {PAINS.map((p, i) => {
+              const featured = i === 0;
+              return (
+                <motion.div
+                  key={i}
+                  {...reveal(0.05 + i * 0.07)}
+                  className="py-7 sm:py-9"
+                  style={{ borderTop: i === 0 ? 'none' : '1px solid var(--l-border)' }}
+                >
+                  <h3
+                    className="font-[family-name:var(--font-cormorant)] font-semibold leading-[1.05] tracking-tight"
+                    style={{
+                      fontSize: featured ? 'clamp(1.9rem,3.2vw,2.6rem)' : 'clamp(1.35rem,2vw,1.7rem)',
+                      color: 'var(--l-ink)',
+                    }}
+                  >
+                    {p.title}
+                  </h3>
+                  <p
+                    className="mt-3 leading-relaxed"
+                    style={{
+                      color: 'var(--l-muted)',
+                      fontSize: featured ? '1.05rem' : '0.95rem',
+                      maxWidth: 560,
+                    }}
+                  >
+                    {p.body}
+                  </p>
+                </motion.div>
+              );
+            })}
           </div>
 
         </div>

@@ -41,15 +41,6 @@ export function LandingTestimonials() {
     <section ref={ref} className="py-36 px-4 sm:px-6 lg:px-12">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
-          <motion.span
-            initial={{ opacity: 0, y: 12 }}
-            animate={inView ? { opacity: 1, y: 0 } : {}}
-            transition={{ ...LANDING_SPRING, delay: 0.05 }}
-            className="inline-block text-[11px] font-semibold uppercase tracking-[0.18em] mb-5"
-            style={{ color: 'var(--l-indigo)' }}
-          >
-            Відгуки
-          </motion.span>
           <motion.h2
             initial={{ opacity: 0, y: 24 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}

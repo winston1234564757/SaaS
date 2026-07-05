@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment, useRef } from 'react';
+import { useRef } from 'react';
 import { motion, useInView, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import { useIsDesktop } from '@/lib/hooks/useIsDesktop';
 import Link from 'next/link';
@@ -13,127 +13,23 @@ const easeOut: [number, number, number, number] = [0.22, 1, 0.36, 1];
 const FEATURES = [
   {
     stat: '24/7',
-    eyebrow: 'Онлайн-запис',
     title: 'Клієнт обирає час сам. О третій ночі.',
     body: 'Публічна сторінка з твоїми послугами, цінами й розкладом — завжди доступна. Клієнт записується без дзвінків і повідомлень, ти отримуєш підтвердження в Telegram.',
     reverse: false,
   },
   {
     stat: 'до 27%',
-    eyebrow: 'Smart Slots',
     title: 'Порожні вікна заповнюються до того, як ти їх помітила.',
     body: 'Алгоритм аналізує твій розклад і автоматично пропонує клієнтам час без зайвих пауз. Флеш-акції при скасуваннях — і вікно закривається за 10 хвилин.',
     reverse: true,
   },
   {
     stat: '×3',
-    eyebrow: 'Повернення клієнтів',
     title: 'Клієнт, якого ти вже забула, пишеться сам.',
     body: 'Автоматичні нагадування через Telegram і Push виходять у потрібний момент — коли минає стандартний цикл повернення. Ніяких ручних розсилок.',
     reverse: false,
   },
 ];
-
-function splitSentences(text: string): string[] {
-  return text.split(/(?<=[.?!]) /).filter(Boolean);
-}
-
-function FeatureCard({ feature }: { feature: typeof FEATURES[0] }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: true, margin: '-60px' });
-  const shouldReduce = useReducedMotion();
-  const sentences = splitSentences(feature.body);
-
-  return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 36, scale: 0.97 }}
-      animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
-      transition={{ duration: 0.65, ease: easeOut }}
-      whileHover={shouldReduce ? {} : { y: -4, boxShadow: '0 8px 32px rgba(15,23,42,0.10)' }}
-      className={`flex flex-col lg:items-start gap-10 p-8 rounded-[1.25rem] ${
-        feature.reverse ? 'lg:flex-row-reverse' : 'lg:flex-row'
-      }`}
-      style={{
-        background: 'var(--l-surface)',
-        border: '1px solid var(--l-border)',
-        boxShadow: 'var(--l-shadow-sm)',
-      }}
-    >
-      {/* Stat side */}
-      <div className="flex-shrink-0 lg:w-64">
-        <div style={{ overflow: 'hidden' }}>
-          <motion.p
-            initial={{ y: '110%', opacity: 0 }}
-            animate={inView ? { y: 0, opacity: 1 } : {}}
-            transition={{ duration: 0.9, ease: easeOut, delay: 0.04 }}
-            className="font-[family-name:var(--font-cormorant)] font-semibold leading-none"
-            style={{ fontSize: 'clamp(4.8rem, 9vw, 8rem)', color: 'var(--l-ink)', display: 'block' }}
-          >
-            {feature.stat}
-          </motion.p>
-        </div>
-        <motion.p
-          initial={{ opacity: 0, y: 8 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ ...LANDING_SPRING, delay: 0.16 }}
-          className="text-[11px] font-semibold uppercase tracking-[0.18em] mt-3"
-          style={{ color: 'var(--l-indigo)' }}
-        >
-          {feature.eyebrow}
-        </motion.p>
-      </div>
-
-      {/* Content side */}
-      <div className="flex-1 pt-2">
-        <h3
-          className="font-[family-name:var(--font-cormorant)] font-semibold leading-snug mb-5"
-          style={{ fontSize: 'clamp(1.6rem, 3vw, 2.4rem)', color: 'var(--l-ink)' }}
-        >
-          {feature.title.split(' ').map((word, wi, arr) => (
-            <span
-              key={wi}
-              style={{
-                display: 'inline-block',
-                overflow: 'hidden',
-                verticalAlign: 'bottom',
-                lineHeight: 'inherit',
-                marginRight: wi < arr.length - 1 ? '0.28em' : 0,
-              }}
-            >
-              <motion.span
-                style={{ display: 'inline-block' }}
-                initial={{ y: '110%' }}
-                animate={inView ? { y: 0 } : {}}
-                transition={{ duration: 0.85, ease: easeOut, delay: 0.1 + wi * 0.055 }}
-              >
-                {word}
-              </motion.span>
-            </span>
-          ))}
-        </h3>
-
-        <p className="text-base leading-relaxed max-w-lg" style={{ color: 'var(--l-muted)' }}>
-          {sentences.map((sentence, si, arr) => (
-            <Fragment key={si}>
-              <span style={{ display: 'inline-block', overflow: 'hidden', verticalAlign: 'bottom' }}>
-                <motion.span
-                  style={{ display: 'inline-block' }}
-                  initial={{ y: '115%', opacity: 0 }}
-                  animate={inView ? { y: 0, opacity: 1 } : {}}
-                  transition={{ duration: 0.85, ease: easeOut, delay: 0.1 + si * 0.18 }}
-                >
-                  {sentence}
-                </motion.span>
-              </span>
-              {si < arr.length - 1 ? ' ' : ''}
-            </Fragment>
-          ))}
-        </p>
-      </div>
-    </motion.div>
-  );
-}
 
 export function LandingMagic() {
   const ref = useRef<HTMLElement>(null);
@@ -146,24 +42,22 @@ export function LandingMagic() {
   });
   const isDesktop = useIsDesktop();
   const headingYDesktop = useTransform(scrollYProgress, [0, 1], shouldReduce ? ['0%', '0%'] : ['0%', '-14%']);
-  const headingYMobile  = useTransform(scrollYProgress, [0, 1], shouldReduce ? ['0%', '0%'] : ['0%', '-4%']);
+  const headingYMobile = useTransform(scrollYProgress, [0, 1], shouldReduce ? ['0%', '0%'] : ['0%', '-4%']);
   const headingY = isDesktop ? headingYDesktop : headingYMobile;
+
+  const reveal = (delay: number) => ({
+    initial: { opacity: 0, y: 24 },
+    whileInView: { opacity: 1, y: 0 },
+    viewport: { once: true, margin: '-60px' },
+    transition: { duration: shouldReduce ? 0 : 0.6, ease: easeOut, delay: shouldReduce ? 0 : delay },
+  });
 
   return (
     <section ref={ref} className="px-4 sm:px-6 lg:px-12" style={{ background: 'var(--l-bg)' }}>
       <div className="max-w-7xl mx-auto">
 
-        {/* Section header */}
-        <motion.div className="pt-20 sm:pt-36 pb-14 max-w-2xl" style={{ y: headingY }}>
-          <motion.span
-            initial={{ opacity: 0, y: 12, filter: 'blur(8px)' }}
-            animate={inView ? { opacity: 1, y: 0, filter: 'blur(0px)' } : {}}
-            transition={{ ...LANDING_SPRING, delay: 0.05 }}
-            className="inline-block text-[11px] font-semibold uppercase tracking-[0.18em] mb-5"
-            style={{ color: 'var(--l-indigo)' }}
-          >
-            Як це працює
-          </motion.span>
+        {/* Section header — heading leads */}
+        <motion.div className="pt-20 sm:pt-36 pb-12 sm:pb-16 max-w-2xl" style={{ y: headingY }}>
           <LandingSplitHeading
             text={"Bookit працює,\nпоки ти — зі своїми клієнтами."}
             className="font-[family-name:var(--font-cormorant)] font-semibold leading-[0.92] tracking-tight"
@@ -173,10 +67,38 @@ export function LandingMagic() {
           />
         </motion.div>
 
-        {/* Feature cards */}
-        <div className="flex flex-col gap-4 pb-0">
+        {/* Feature rows — editorial pull-stat + statement, hairline separated, no cards */}
+        <div>
           {FEATURES.map((f, i) => (
-            <FeatureCard key={i} feature={f} />
+            <motion.div
+              key={i}
+              {...reveal(0.05)}
+              className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-12 items-start py-10 sm:py-14"
+              style={{ borderTop: i > 0 ? '1px solid var(--l-border)' : 'none' }}
+            >
+              {/* Stat — big editorial numeral */}
+              <div className={f.reverse ? 'lg:col-span-4 lg:order-2' : 'lg:col-span-4'}>
+                <p
+                  className="font-[family-name:var(--font-cormorant)] font-semibold leading-[0.85] tracking-tight"
+                  style={{ fontSize: 'clamp(3.4rem, 6vw, 5.5rem)', color: 'var(--l-indigo)' }}
+                >
+                  {f.stat}
+                </p>
+              </div>
+
+              {/* Statement */}
+              <div className={f.reverse ? 'lg:col-span-8 lg:order-1' : 'lg:col-span-8'}>
+                <h3
+                  className="font-[family-name:var(--font-cormorant)] font-semibold leading-[1.08] tracking-tight mb-4"
+                  style={{ fontSize: 'clamp(1.6rem, 3vw, 2.5rem)', color: 'var(--l-ink)' }}
+                >
+                  {f.title}
+                </h3>
+                <p className="text-base sm:text-lg leading-relaxed max-w-xl" style={{ color: 'var(--l-muted)' }}>
+                  {f.body}
+                </p>
+              </div>
+            </motion.div>
           ))}
         </div>
 
@@ -184,7 +106,7 @@ export function LandingMagic() {
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ ...LANDING_SPRING, delay: 0.54 }}
+          transition={{ ...LANDING_SPRING, delay: 0.2 }}
           className="py-16 flex items-center justify-between gap-6 flex-wrap"
           style={{ borderTop: '1px solid var(--l-border)' }}
         >

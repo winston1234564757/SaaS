@@ -92,15 +92,6 @@ export function LandingPricing() {
       >
         <div className="max-w-7xl mx-auto">
           <motion.div className="text-center mb-16" style={{ y: headingY }}>
-            <motion.span
-              initial={{ opacity: 0, y: 12, filter: 'blur(8px)' }}
-              animate={inView ? { opacity: 1, y: 0, filter: 'blur(0px)' } : {}}
-              transition={{ ...LANDING_SPRING, delay: 0.05 }}
-              className="inline-block text-[11px] font-semibold uppercase tracking-[0.18em] mb-5"
-              style={{ color: 'var(--l-indigo)' }}
-            >
-              Тарифи
-            </motion.span>
             <LandingSplitHeading
               text="Оберіть свій план."
               className="font-[family-name:var(--font-cormorant)] font-semibold leading-[0.95] tracking-tight"

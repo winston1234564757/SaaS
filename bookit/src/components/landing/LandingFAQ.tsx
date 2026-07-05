@@ -117,15 +117,6 @@ export function LandingFAQ() {
 
           <div className="lg:sticky lg:top-32 self-start">
             <motion.div style={{ y: headingY }}>
-              <motion.span
-                initial={{ opacity: 0, y: 12, filter: 'blur(8px)' }}
-                animate={inView ? { opacity: 1, y: 0, filter: 'blur(0px)' } : {}}
-                transition={{ ...LANDING_SPRING, delay: 0.05 }}
-                className="inline-block text-[11px] font-semibold uppercase tracking-[0.18em] mb-5"
-                style={{ color: 'var(--l-indigo)' }}
-              >
-                Запитання
-              </motion.span>
               <LandingSplitHeading
                 text={"Часті\nзапитання."}
                 className="font-[family-name:var(--font-cormorant)] font-semibold leading-[0.95] tracking-tight"

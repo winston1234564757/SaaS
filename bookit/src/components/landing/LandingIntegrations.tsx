@@ -74,16 +74,6 @@ export function LandingIntegrations() {
 
           {/* Left: header */}
           <motion.div style={{ y: headingY }}>
-            <motion.span
-              initial={{ opacity: 0, y: 12, filter: 'blur(8px)' }}
-              animate={inView ? { opacity: 1, y: 0, filter: 'blur(0px)' } : {}}
-              transition={{ ...LANDING_SPRING, delay: 0.05 }}
-              className="inline-block text-[11px] font-semibold uppercase tracking-[0.18em] mb-5"
-              style={{ color: 'var(--l-indigo)' }}
-            >
-              Сповіщення
-            </motion.span>
-
             <LandingSplitHeading
               text={"Клієнт завжди\nзнає, де і коли."}
               className="font-[family-name:var(--font-cormorant)] font-semibold leading-[0.92] tracking-tight"

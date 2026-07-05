@@ -10,7 +10,7 @@ import {
 } from 'framer-motion';
 import { useIsDesktop } from '@/lib/hooks/useIsDesktop';
 import { LandingSplitHeading } from '@/components/landing/LandingSplitHeading';
-import { CountUp, LANDING_SPRING } from '@/components/landing/shared/CountUp';
+import { CountUp } from '@/components/landing/shared/CountUp';
 
 const easeOut: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
@@ -50,16 +50,6 @@ const SLOTS: Record<string, { status: 'booked' | 'smart' | 'free'; label?: strin
   'Сб-15:00': { status: 'booked' },
 };
 
-type MetricItem =
-  | { type: 'count'; to: number; suffix: string; label: string }
-  | { type: 'static'; text: string; label: string };
-
-const METRICS: MetricItem[] = [
-  { type: 'static', text: 'до 27%', label: 'більше доходу' },
-  { type: 'static', text: '0', label: 'порожніх вікон тижнями' },
-  { type: 'count', to: 10, suffix: '', label: 'хвилин — і скасування закрите' },
-];
-
 export function LandingBentoFeatures() {
   const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, { once: true, margin: '-80px' });
@@ -95,15 +85,6 @@ export function LandingBentoFeatures() {
         {/* Header */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 mb-20">
           <motion.div style={{ y: headingY }}>
-            <motion.span
-              initial={{ opacity: 0, y: 12, filter: 'blur(8px)' }}
-              animate={inView ? { opacity: 1, y: 0, filter: 'blur(0px)' } : {}}
-              transition={{ ...LANDING_SPRING, delay: 0.05 }}
-              className="inline-block text-[11px] font-semibold uppercase tracking-[0.18em] mb-5"
-              style={{ color: 'color-mix(in srgb, var(--l-indigo-glow) 70%, transparent)' }}
-            >
-              Smart Slots
-            </motion.span>
             <LandingSplitHeading
               text={"Розклад\nбез прогалин."}
               className="font-[family-name:var(--font-cormorant)] font-semibold leading-[0.9] tracking-tight"
@@ -128,46 +109,49 @@ export function LandingBentoFeatures() {
           </motion.div>
         </div>
 
-        {/* Metrics */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-14">
-          {METRICS.map((m, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 12, scale: 0.96 }}
-              animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
-              transition={{ duration: 0.9, ease: easeOut, delay: 0.26 + i * 0.08 }}
-              className="flex items-center gap-4 px-6 py-4 rounded-full"
-              style={{
-                background: 'var(--l-surface-on-dark)',
-                border: '1px solid var(--l-border-on-dark)',
-              }}
+        {/* Metrics — editorial stat strip, featured first, no pill blobs */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: shouldReduce ? 0 : 0.7, ease: easeOut, delay: 0.24 }}
+          className="mb-14 pt-8 flex flex-col sm:flex-row sm:items-end gap-8 sm:gap-14"
+          style={{ borderTop: '1px solid var(--l-border-on-dark)' }}
+        >
+          <div>
+            <p
+              className="font-[family-name:var(--font-cormorant)] font-semibold leading-none"
+              style={{ fontSize: 'clamp(3rem, 6vw, 4.5rem)', color: 'var(--l-text-on-dark)' }}
             >
-              <span
-                className="font-[family-name:var(--font-cormorant)] font-semibold"
-                style={{ fontSize: '1.6rem', color: 'var(--l-text-on-dark)' }}
+              до 27%
+            </p>
+            <p className="mt-2 text-sm" style={{ color: 'var(--l-muted-on-dark)' }}>більше доходу</p>
+          </div>
+
+          <div className="flex gap-10 sm:gap-14">
+            <div>
+              <p
+                className="font-[family-name:var(--font-cormorant)] font-semibold leading-none"
+                style={{ fontSize: 'clamp(1.8rem, 3vw, 2.6rem)', color: 'var(--l-text-on-dark)' }}
               >
-                {m.type === 'count' ? (
-                  <CountUp to={m.to} suffix={m.suffix} />
-                ) : (
-                  <motion.span
-                    initial={{ opacity: 0, filter: 'blur(6px)' }}
-                    animate={inView ? { opacity: 1, filter: 'blur(0px)' } : {}}
-                    transition={{ duration: 0.9, ease: easeOut, delay: 0.3 + i * 0.08 }}
-                    style={{ display: 'inline-block' }}
-                  >
-                    {m.text}
-                  </motion.span>
-                )}
-              </span>
-              <span
-                className="text-sm leading-snug max-w-[140px]"
-                style={{ color: 'var(--l-muted-on-dark)' }}
+                0
+              </p>
+              <p className="mt-2 text-sm max-w-[150px]" style={{ color: 'var(--l-muted-on-dark)' }}>
+                порожніх вікон тижнями
+              </p>
+            </div>
+            <div>
+              <p
+                className="font-[family-name:var(--font-cormorant)] font-semibold leading-none"
+                style={{ fontSize: 'clamp(1.8rem, 3vw, 2.6rem)', color: 'var(--l-text-on-dark)' }}
               >
-                {m.label}
-              </span>
-            </motion.div>
-          ))}
-        </div>
+                <CountUp to={10} />
+              </p>
+              <p className="mt-2 text-sm max-w-[160px]" style={{ color: 'var(--l-muted-on-dark)' }}>
+                хвилин — і скасування закрите
+              </p>
+            </div>
+          </div>
+        </motion.div>
 
         {/* Slot grid */}
         <motion.div

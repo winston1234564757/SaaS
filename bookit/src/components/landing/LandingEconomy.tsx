@@ -49,16 +49,6 @@ export function LandingEconomy() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-start">
 
           <motion.div style={{ y: headingY }}>
-            <motion.span
-              initial={{ opacity: 0, y: 12, filter: 'blur(8px)' }}
-              animate={inView ? { opacity: 1, y: 0, filter: 'blur(0px)' } : {}}
-              transition={{ ...LANDING_SPRING, delay: 0.05 }}
-              className="inline-block text-[11px] font-semibold uppercase tracking-[0.18em] mb-5"
-              style={{ color: 'var(--l-indigo)' }}
-            >
-              Калькулятор доходу
-            </motion.span>
-
             <h2
               className="font-[family-name:var(--font-cormorant)] font-semibold leading-[0.95] tracking-tight"
               style={{ fontSize: 'clamp(2.2rem,4.5vw,3.8rem)', color: 'var(--l-ink)' }}
@@ -108,7 +98,7 @@ export function LandingEconomy() {
                         exit={shouldReduce ? undefined : { opacity: 0, y: -8 }}
                         transition={{ duration: 0.15 }}
                         className="font-[family-name:var(--font-cormorant)] font-semibold leading-none"
-                        style={{ fontSize: 'clamp(2.4rem,4vw,3rem)', color: 'var(--l-ink)' }}
+                        style={{ fontSize: 'clamp(1.75rem,4vw,3rem)', color: 'var(--l-ink)' }}
                       >
                         {formatCurrency(monthlyRaw)}
                       </motion.p>
@@ -138,7 +128,7 @@ export function LandingEconomy() {
                         exit={shouldReduce ? undefined : { opacity: 0, y: -8 }}
                         transition={{ duration: 0.15 }}
                         className="font-[family-name:var(--font-cormorant)] font-semibold leading-none"
-                        style={{ fontSize: 'clamp(2.4rem,4vw,3rem)', color: 'var(--l-accent)' }}
+                        style={{ fontSize: 'clamp(1.75rem,4vw,3rem)', color: 'var(--l-accent)' }}
                       >
                         {formatCurrency(monthlyBookit)}
                       </motion.p>
