@@ -408,16 +408,19 @@ function CompactUpcomingRow({ order, index }: { order: UnifiedOrder; index: numb
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ ...SPRING, delay: index * 0.04 }}
-      className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-background border border-border"
+      className="flex items-center gap-3.5 px-4 py-3.5 rounded-2xl bg-background border border-border"
     >
-      <Avatar url={order.masterAvatarUrl} name={order.masterName} size={40} />
+      <Avatar url={order.masterAvatarUrl} name={order.masterName} size={46} />
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-foreground truncate">{order.masterName}</p>
-        <p className="text-xs text-text-sub mt-0.5">
+        <p className="text-base font-bold text-foreground truncate">{order.masterName}</p>
+        <p className="text-sm text-text-sub mt-0.5">
           {fmtShort(order.date)}{order.startTime ? ` · ${order.startTime}` : ''}
         </p>
       </div>
-      <StatusPill status={order.status} />
+      <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+        <StatusPill status={order.status} />
+        <span className="text-sm font-bold text-foreground tabular-nums">{fmtPrice(order.totalPrice)}</span>
+      </div>
     </motion.div>
   );
 }
@@ -514,7 +517,7 @@ function MasterGroup({ group, index }: { group: MasterGroupData; index: number }
         <div className="flex items-center gap-3">
           <Avatar url={group.masterAvatarUrl} name={group.masterName} size={44} />
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-foreground">{group.masterName}</p>
+            <p className="text-base font-bold text-foreground">{group.masterName}</p>
             <p className="text-xs text-text-sub mt-0.5">
               {group.bookings.length} {pluralUk(group.bookings.length, 'візит', 'візити', 'візитів')}
             </p>
@@ -1086,7 +1089,7 @@ export function MyBookingsPage({ bookings }: { bookings: UnifiedOrder[] }) {
                     <HeroCard order={heroCard} />
                     {extraUpcoming.length > 0 && (
                       <div className="flex flex-col gap-2">
-                        <p className="text-[10px] font-bold text-text-sub uppercase tracking-widest px-1">
+                        <p className="heading-serif text-lg text-foreground px-1">
                           Майбутні візити
                         </p>
                         {extraUpcoming.map((b, i) => (
@@ -1102,7 +1105,7 @@ export function MyBookingsPage({ bookings }: { bookings: UnifiedOrder[] }) {
 
               {masterGroups.length > 0 && (
                 <section className="flex flex-col gap-3">
-                  <p className="text-[10px] font-bold text-text-sub uppercase tracking-widest px-1">
+                  <p className="heading-serif text-lg text-foreground px-1">
                     Раніше
                   </p>
                   {masterGroups.map((g, i) => (
