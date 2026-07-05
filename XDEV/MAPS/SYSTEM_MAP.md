@@ -17,10 +17,10 @@
 ---
 
 ## 🗺️ Maps & Indexes
-- [SYSTEM_MAP.md](file:///c:/Users/Vitossik/SaaS/XDEV/MAPS/SYSTEM_MAP.md) — Architectural Index
-- [REFERRAL_MAP.md](file:///c:/Users/Vitossik/SaaS/XDEV/MAPS/REFERRAL_MAP.md) — Referral Mechanics Map
-- [UI_MAP.md](file:///c:/Users/Vitossik/SaaS/XDEV/MAPS/UI_MAP.md) — UI/UX Map
-- [DEEP_LINK_MAP.md](file:///c:/Users/Vitossik/SaaS/XDEV/MAPS/DEEP_LINK_MAP.md) — Deep Linking Map
+- [SYSTEM_MAP.md](file:///c:/Users/Vitos/SaaS/XDEV/MAPS/SYSTEM_MAP.md) — Architectural Index
+- [REFERRAL_MAP.md](file:///c:/Users/Vitos/SaaS/XDEV/MAPS/REFERRAL_MAP.md) — Referral Mechanics Map
+- [UI_MAP.md](file:///c:/Users/Vitos/SaaS/XDEV/MAPS/UI_MAP.md) — UI/UX Map
+- [DEEP_LINK_MAP.md](file:///c:/Users/Vitos/SaaS/XDEV/MAPS/DEEP_LINK_MAP.md) — Deep Linking Map
 
 ---
 
@@ -127,14 +127,17 @@
 - Default theme for new registrations: `mood_theme: 'frost'` set in `register/actions.ts` Phase1+Phase3 upserts
 - **Dependencies (landing-specific):** `gsap@^3.15.0` + `gsap/ScrollTrigger` for card-rise scroll stack; `framer-motion` for per-section animations
 
-### Landing Sections — 14 active (`src/components/landing/`)
+### Landing Sections (`src/components/landing/`)
 
-**Pre-stack (normal scroll flow):**
+> 🔴 **G-LAND-03 impeccable full-audit редизайн (commit `ff6e91e7`, 2026-07-05):** усі body-секції перероблено з icon-card/hero-metric/numbered-card slop у editorial-форму (кожна свій світ, copy 1:1); eyebrow-граматика знята з усіх секцій (лишився ЛИШЕ Hero-бейдж). Старі sub-компоненти (`PainItem`/`FeatureCard`/`StepCard`/`StepItem`) видалені — секції тепер inline editorial (hairline-списки, серіф pull-stat рядки, connected-степери, spine-таймлайни). `dashboard.png` артефакт «F11» замальовано (sharp). **Пре-стек порядок реальний: Hero → TrustBar → Marquee → ForWhom → [SECTIONS].** Таблиця нижче частково історична (Features/Testimonials теж у SECTIONS).
+
+**Pre-stack (normal scroll flow, поза card-rise):**
 | # | Component | Bg | Notes |
 |---|---|---|---|
-| 1 | `LandingHero.tsx` | `#EFF2FF` | Frost 3D mockup hero — `perspective(1400px)` + `rotateX` scroll 12°→0°; `FrostDashboardMockup` inline component |
+| 1 | `LandingHero.tsx` | `#EFF2FF` | Frost 3D mockup hero — `perspective(1400px)` + `rotateX` scroll 12°→0°; єдиний збережений uppercase-бейдж «для майстрів краси» = свідомий бренд-голос |
 | 2 | `LandingTrustBar.tsx` | transparent | 5 stats: 500+ майстрів · ₴12M · 4.9★ · 50+ міст · 98% |
 | 3 | `LandingMarquee.tsx` | transparent | Infinite ticker of tool/integration names |
+| — | `LandingForWhom.tsx` **(NEW G-LAND-01)** | `var(--l-bg)` | Редакційний типографічний індекс спеціалізацій: core-ніші крупний Cormorant (Манікюр/Брови indigo-акцент), суміжні дрібніші muted, розділові крапки, closing-рядок. `id="sec-forwhom"`. Поза card-rise |
 
 **GSAP Card-Rise Stack** (`overlap: true` → 30vh rise; `overlap: false` → transparent bg, excluded):
 | # | Component | Bg | overlap | Notes |
@@ -143,7 +146,7 @@
 | 5 | `LandingMagic.tsx` | `var(--l-bg)` | ✓ | 3 `FeatureCard` sub-components alternating direction (24/7, +27%, ×3 stats) |
 | 6 | `LandingBentoFeatures.tsx` | `#0F172A` | ✓ | Dark — Smart Slots week×time grid; `CountUp` (useState+useMotionValueEvent fix) |
 | 7 | `LandingIntegrations.tsx` | `#FFFFFF` | ✓ | Notification channel previews (TG/Push/SMS mockups), channels table |
-| 8 | `LandingClientFlow.tsx` | `var(--l-bg)` | ✓ | 3 `StepCard` sub-components — 3-col grid with detail chips |
+| 8 | `LandingClientFlow.tsx` | `var(--l-bg)` | ✗ | 🔴 `overlap:false` (2026-07-05) — горизонтальний connected-степер, темні вузли+detail-чіпи; короткий по вертикалі → card-rise перекривав текст-під-вузлами, як Process виведено зі стеку (це також зняло rise у Comparison) |
 | 9 | `LandingComparison.tsx` | `#FFFFFF` | ✓ | Before/after 5 rows with X/Check icons |
 | 10 | `LandingProcess.tsx` | `var(--l-bg)` | ✗ | Master onboarding 3 `StepItem` sub-components, sticky left col, pulse badge — excluded: transparent bg |
 | 11 | `LandingEconomy.tsx` | `var(--l-bg-alt)` | ✓ | Interactive ROI calculator: 3 sliders → `formatCurrency` projections |
@@ -157,12 +160,12 @@
 
 | File | Used By | Description |
 |------|---------|-------------|
-| `CountUp.tsx` | TrustBar, BentoFeatures | Spring-animated number counter (stiffness:70, damping:15, useInView once, margin:-60px) |
-| `WordLine.tsx` | Economy, Process | Word-by-word reveal animation (y:110%→0, easeOut stagger: lineIndex×200ms + word×70ms) |
+| `CountUp.tsx` | TrustBar, BentoFeatures | 🔴 default-visible (2026-07-05): `text` стартує з фінального `to` (SSR/headless/reduced/повільний IO завжди показують число); roll-up 0→to лише коли `!shouldReduce && inView` (startedRef guard). НІКОЛИ не ship 0/невидиме |
+| `WordLine.tsx` | Process | 🔴 fixed (2026-07-05): прибрано per-word `overflow:hidden` mask (рвав кириличні виносні при tight leading); `initial={false}` + keyframe reveal `y:[16,0]` лише коли inView&&!reduced — default-visible |
 
 **Shared utility components (`src/components/landing/`):**
 - `LandingScrollProgress.tsx` — thin indigo progress bar pinned at top (`position: fixed, z-index: 100`)
-- `LandingSplitHeading.tsx` — animated heading utility: word-by-word mask reveal per line; props: `text`, `stagger`, `lineDelay`, `as` (h1/h2/h3/h4)
+- `LandingSplitHeading.tsx` — animated heading utility; props: `text`, `stagger`, `lineDelay`, `as` (h1/h2/h3/h4). 🔴 fixed (2026-07-05): прибрано per-word `overflow:hidden` mask (клипінг кириличних виносних у/д/ц/щ/ї при `leading-[0.9]`); `initial={false}` + keyframe reveal — default-visible, не гейтить у порожнечу в headless/reduced/hidden-tab
 
 ### GSAP Scroll Stack Architecture (`LandingPageContent.tsx`)
 

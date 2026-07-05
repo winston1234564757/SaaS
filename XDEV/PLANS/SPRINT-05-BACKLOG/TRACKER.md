@@ -2,7 +2,8 @@
 > Живий статус. Оновлюється після кожної ітерації (⬜→✅).
 > Деталі виконаного: `HANDOFF.md` | Повний план: `BACKLOG.md`
 
-**Прогрес:** 80/87 ✅ · 3 ↩️ скасовано (M-DASH-11, M-MKT-01, M-MKT-02) | **Розпочато:** 2026-06-21 | **Оновлено:** 2026-07-05
+**Прогрес:** 84/87 ✅ · 3 ↩️ скасовано (M-DASH-11, M-MKT-01, M-MKT-02) | **Розпочато:** 2026-06-21 | **Оновлено:** 2026-07-05
+> ✅ **G-LAND-03 + G-LAND-01 DONE (commit `ff6e91e7`, НЕ задеплоєно):** impeccable full-audit редизайн лендингу (анти-slop + баги) + нова секція «Для кого». П0: CountUp/LandingSplitHeading/WordLine — прибрано клипінг кириличних виносних (overflow:hidden mask рвав у/д/ц/щ/ї при leading<1) + reveal більше не гейтить контент у порожнечу (headless/reduced/повільний IO завжди показують). Форма (кожна секція свій світ, copy збережено): Features→темний флагман+hairline-список; Agitation→hairline-болі featured-перший; ClientFlow→горизонтальний connected-степер (🔴 `overlap:false` в SECTIONS проти card-rise перекриття короткого контенту); Process→вертикальний spine; Magic→редакційні pull-stat рядки; Bento→stat-strip+тижнева сітка-герой. Eyebrow-граматика знята з усіх 13 (лишився Hero-бейдж=бренд-голос). Economy: мертва зона (WordLine-фікс) + mobile-клип картки. dashboard.png: артефакт «F11» замальовано sharp. G-LAND-01: `LandingForWhom.tsx` типографічний індекс спеціалізацій. Own-eyes усі секції mobile+desktop. TSC:0 Build:clean. Уроки: (1) card-rise `overlap:true` з'їдає ~22vh+тінь низу секції → короткий горизонтальний контент виводити `overlap:false` (як Process); (2) per-word overflow:hidden mask-reveal ріже кириличні виносні при tight line-height — фатально для UA-заголовків; (3) reveal мусить підсилювати вже-видиме, не гейтити.
 > Лишилось 7: C-DESK-01 (⚠️ десктоп 8 стор, потребує founder-рев'ю підходу) · M-CLI-07 (CSV export) · M-SHOP-05 (Nova Poshta API — потребує ключів/founder) · + 4 інші відкриті. Клієнт-зона Фаза 5 REDESIGN усі ✅ окрім десктопу.
 **✅ УСІ 74 ЗРОБЛЕНІ ЗАДАЧІ ПЕРЕВІРЕНО founder (2026-07-03).** QA-гейт закрито по всьому спринту. ⏳ Деплой на прод — окремим батчем `vercel --prod` за командою founder (частина комітів ще «НЕ задеплоєно» — це операційний факт, не відкрита задача).
 > Total 84→86: +M-SHOP-05 (Нова Пошта, реальна NP API) +M-CLI-07 (CSV-експорт), додані під час M-BILL-02 як чесні борги (заявлялись у копі, але не реалізовані).
@@ -187,18 +188,17 @@
 | `C-PROF-01` | /my/profile Identity Card (зд. via DS-CLIENT-04) | P1 | ✅ | `design-taste-frontend` + `impeccable` | **Sonnet** | `1bdec4e3` |
 | `C-PHONE-01` | /my/setup/phone onboarding (дизайн-мова polish) | P1 | ✅ | `auth-implementation-patterns` + `design-taste-frontend` | **Sonnet** | `d95bb467` |
 | `C-MSG-02` | /my/messages: "Мої майстри" рейка + hairline під тайтлом | P1 | ✅ | `impeccable (craft)` + `scroll-experience` + `humanizer` | **Opus** | `a7ed44ce` |
-| `C-MSG-01` | /my/messages: UI redesign + keyboard UX | P1 | ⬜ | `senior-frontend` + `design-taste-frontend` + `emilkowalski-motion` | **Sonnet→Opus** | — |
+| `C-MSG-01` | /my/messages: UI redesign + keyboard UX (зд. via M-CHAT-01) | P1 | ✅ | `senior-frontend` + `design-taste-frontend` + `emilkowalski-motion` | **Opus** | `b15829e0` |
 | `C-MAST-01` | /my/masters + loyalty + notifications (темні editorial-герої) | P1 | ✅ | `design-taste-frontend` + `impeccable` | **Opus** | `2918a4be` |
-| `C-PHONE-01` | /my/setup/phone onboarding redesign | P1 | ⬜ | `auth-implementation-patterns` + `design-taste-frontend` | **Sonnet** | — |
 | `C-DESK-01` | Клієнт-зона: десктоп-лейаут 8 сторінок | P1 | ⬜ | `impeccable (layout)` + `design-taste-frontend` | **Opus** | — |
 
 ## ФАЗА 6 — Лендинг
 
 | ID | Задача | P | Ст | Спеціаліст-скіли | Модель | Commit |
 |----|--------|---|----|------------------|--------|--------|
-| `G-LAND-01` | Лендинг: блок "Для кого" (спеціалізації) | P1 | ⬜ | `landing-page-guide-v2` + `humanizer` | **Sonnet** | — |
-| `G-LAND-03` | Лендинг: impeccable full pipeline + guide v2 | P1 | ⬜ | `impeccable` (full) + `landing-page-guide-v2` | **Sonnet** | — |
-| `G-LOGIN-01` | Логін: копірайт-редизайн | P1 | ⬜ | `humanizer` | **Haiku** | — |
+| `G-LAND-01` | Лендинг: блок "Для кого" (спеціалізації) | P1 | ✅ | `landing-page-guide-v2` + `humanizer` | **Opus** | `ff6e91e7` |
+| `G-LAND-03` | Лендинг: impeccable full pipeline + guide v2 | P1 | ✅ | `impeccable` (full) + `humanizer` | **Opus** | `ff6e91e7` |
+| `G-LOGIN-01` | Логін: копірайт-рефайнмент (форма вже сильна) | P1 | ✅ | `humanizer` | **Opus** | `68ddea81` |
 
 ---
 
