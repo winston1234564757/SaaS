@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -690,27 +690,38 @@ function UpcomingEmpty() {
 // the selected item. Mobile keeps the feed (rendered separately, lg:hidden).
 // ─────────────────────────────────────────────────────────────
 
+function DeskSectionHeader({ label }: { label: string }) {
+  return (
+    <div className="px-3.5 py-2 bg-secondary/30 text-[10px] font-bold uppercase tracking-widest text-text-sub">
+      {label}
+    </div>
+  );
+}
+
 function DeskListRow({ order, selected, onSelect }: { order: UnifiedOrder; selected: boolean; onSelect: () => void }) {
+  const firstService = order.services?.[0]?.name;
+  const sub = order.type === 'shop'
+    ? `Замовлення · ${fmtShort(order.date)}`
+    : `${fmtShort(order.date)}${order.startTime ? ` · ${order.startTime}` : ''}${firstService ? ` · ${firstService}` : ''}`;
   return (
     <button
       type="button"
       onClick={onSelect}
       aria-pressed={selected}
       className={cn(
-        'w-full flex items-center gap-3 rounded-2xl px-3 py-3 text-left transition-colors duration-150',
-        selected ? 'bg-secondary ring-1 ring-border shadow-sm' : 'hover:bg-secondary/50',
+        'w-full flex items-center gap-3 px-3.5 py-3 text-left transition-colors duration-150',
+        selected ? 'bg-secondary' : 'hover:bg-secondary/40',
       )}
     >
       <Avatar url={order.masterAvatarUrl} name={order.masterName} size={42} />
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold text-foreground truncate">{order.masterName}</p>
-        <p className="text-xs text-text-sub mt-0.5 truncate">
-          {order.type === 'shop'
-            ? `Замовлення · ${fmtShort(order.date)}`
-            : `${fmtShort(order.date)}${order.startTime ? ` · ${order.startTime}` : ''}`}
-        </p>
+        <p className="text-xs text-text-sub mt-0.5 truncate">{sub}</p>
       </div>
-      <StatusPill status={order.status} />
+      <div className="flex flex-col items-end gap-1 flex-shrink-0">
+        <StatusPill status={order.status} />
+        <span className="text-xs font-bold text-foreground tabular-nums">{fmtPrice(order.totalPrice)}</span>
+      </div>
     </button>
   );
 }
@@ -922,20 +933,19 @@ function DesktopBookings({
               </p>
             </div>
           ) : (
-            <div className="flex flex-col gap-1">
-              {tab === 'bookings' && upcomingCount > 0 && (
-                <p className="text-[10px] font-bold text-text-sub uppercase tracking-widest px-2 pt-1">Майбутні</p>
-              )}
-              {activeList.map((o, i) => {
-                const showPastLabel = tab === 'bookings' && i === upcomingCount && upcomingCount < activeList.length;
-                return (
-                  <div key={o.id}>
-                    {showPastLabel && (
-                      <p className="text-[10px] font-bold text-text-sub uppercase tracking-widest px-2 pt-3 pb-1">Раніше</p>
-                    )}
-                    <DeskListRow order={o} selected={selected?.id === o.id} onSelect={() => setSelectedId(o.id)} />
-                  </div>
+            <div className="rounded-2xl border border-border bg-background/60 overflow-hidden divide-y divide-border/40">
+              {activeList.flatMap((o, i) => {
+                const rows: ReactNode[] = [];
+                if (tab === 'bookings' && i === 0 && upcomingCount > 0) {
+                  rows.push(<DeskSectionHeader key="h-up" label="Майбутні" />);
+                }
+                if (tab === 'bookings' && i === upcomingCount && upcomingCount < activeList.length) {
+                  rows.push(<DeskSectionHeader key="h-past" label="Раніше" />);
+                }
+                rows.push(
+                  <DeskListRow key={o.id} order={o} selected={selected?.id === o.id} onSelect={() => setSelectedId(o.id)} />
                 );
+                return rows;
               })}
             </div>
           )}
