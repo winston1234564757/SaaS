@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Users, Loader2, Link2, Zap, Instagram,
   LayoutGrid, List, ChevronDown, Send, MessageSquare, X,
-  CheckCircle2, Moon, AlertTriangle, UserX, Plus, Search, Share2, Gift,
+  CheckCircle2, Moon, AlertTriangle, UserX, Plus, Search, Share2, Gift, Download,
 } from 'lucide-react';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
 import { ClientDetailSheet } from './ClientDetailSheet';
@@ -14,6 +14,8 @@ import { ClientWidgets } from './ClientWidgets';
 import { ClientListRow } from './ClientListRow';
 import { ClientGridCard } from './ClientGridCard';
 import { ClientBaseHero, type RetentionSegId } from './ClientBaseHero';
+import { clientsToCsv, downloadCsv } from '@/lib/utils/clientsCsv';
+import { UpgradePromptModal } from '@/components/shared/UpgradePromptModal';
 import { useClients } from '@/lib/supabase/hooks/useClients';
 import type { ClientRow, RetentionStatus } from '@/lib/supabase/hooks/useClients';
 import { Sheet } from '@/components/ui/Sheet';
@@ -112,6 +114,17 @@ export function ClientsPage() {
   const [customSegmentId, setCustomSegmentId] = useState<string | null>(null);
   const [bookingFormOpen, setBookingFormOpen] = useState(false);
   const [bookingClient, setBookingClient] = useState<ClientRow | null>(null);
+  const [showUpgrade, setShowUpgrade] = useState(false);
+
+  const isPro = masterProfile?.subscription_tier === 'pro' || masterProfile?.subscription_tier === 'studio';
+
+  // M-CLI-07: CSV-експорт бази (Pro-гейт)
+  function handleExportCsv() {
+    if (!isPro) { setShowUpgrade(true); return; }
+    if (clients.length === 0) return;
+    const stamp = new Date().toISOString().slice(0, 10);
+    downloadCsv(`bookit-clients-${stamp}.csv`, clientsToCsv(clients));
+  }
 
   const clientPhone    = searchParams.get('clientPhone');
   const selectedClient = clientPhone
@@ -439,6 +452,17 @@ export function ClientsPage() {
                   </div>
                 )}
               </div>
+
+              {/* M-CLI-07: CSV-експорт бази (Pro-гейт) */}
+              <button
+                type="button"
+                onClick={handleExportCsv}
+                aria-label="Експортувати клієнтів у CSV"
+                className="h-full px-4 py-3 rounded-xl bg-secondary/60 border border-border text-sm font-bold text-foreground hover:bg-secondary transition-all active:scale-[0.88] flex items-center gap-2 whitespace-nowrap shadow-sm"
+              >
+                <Download size={15} />
+                <span className="hidden sm:inline">CSV</span>
+              </button>
             </div>
           </div>
 
@@ -689,6 +713,13 @@ export function ClientsPage() {
         initialClientId={bookingClient?.client_id ?? undefined}
         initialClientName={bookingClient?.client_name}
         initialClientPhone={bookingClient?.client_phone}
+      />
+
+      <UpgradePromptModal
+        isOpen={showUpgrade}
+        onClose={() => setShowUpgrade(false)}
+        feature="Експорт клієнтів у CSV"
+        description="Вивантажуйте всю базу клієнтів у файл для Excel чи Google Таблиць. Доступно на тарифі Pro."
       />
 
       <TourBanner steps={dynamicSteps} currentStep={currentStep} onNext={nextStep} onClose={closeTour} />
