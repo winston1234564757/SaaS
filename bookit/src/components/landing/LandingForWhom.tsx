@@ -3,69 +3,34 @@
 import { useRef } from 'react';
 import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import { useIsDesktop } from '@/lib/hooks/useIsDesktop';
+import { Sparkles, Footprints, Eye, Scissors, Users, Droplets, Brush, Flower2, PenTool, Wind } from 'lucide-react';
 import { LandingSplitHeading } from '@/components/landing/LandingSplitHeading';
 
 const easeOut: [number, number, number, number] = [0.22, 1, 0.36, 1];
-const spring = { type: 'spring' as const, stiffness: 320, damping: 18 };
+const spring = { type: 'spring' as const, stiffness: 320, damping: 22 };
 
-const SPECS = [
-  'Манікюр', 'Педикюр', 'Брови', 'Вії', 'Волосся', 'Косметологія',
-  'Макіяж', 'Барбер', 'Масаж', 'Тату та перманент', 'Епіляція',
-  'Подологія', 'Стиль та імідж', 'SPA-догляд',
+type Block = {
+  name: string;
+  desc: string;
+  Icon: typeof Sparkles;
+  wide?: boolean;
+  dark?: boolean;
+};
+
+// Bento — mixed block sizes, one dark anchor. Icon + niche + a two-word read.
+// Order matters: the two `wide` blocks sit at row starts so the 4-col grid fills flush.
+const BLOCKS: Block[] = [
+  { name: 'Манікюр', desc: 'постійний потік', Icon: Sparkles, wide: true, dark: true },
+  { name: 'Педикюр', desc: 'спокійний ритм', Icon: Footprints },
+  { name: 'Брови та вії', desc: 'швидко й точно', Icon: Eye },
+  { name: 'Волосся', desc: 'довгі візити', Icon: Scissors },
+  { name: 'Барбершоп', desc: 'свої клієнти', Icon: Users },
+  { name: 'Косметологія', desc: 'догляд курсами', Icon: Droplets },
+  { name: 'Макіяж', desc: 'під подію', Icon: Brush },
+  { name: 'Масаж і SPA', desc: 'тільки за записом', Icon: Flower2, wide: true },
+  { name: 'Тату та перманент', desc: 'великі сесії', Icon: PenTool },
+  { name: 'Епіляція', desc: 'регулярні візити', Icon: Wind },
 ];
-
-// Deterministic pseudo-random in [0,1) — identical on server and client (no hydration drift).
-function rnd(i: number, salt: number): number {
-  const x = Math.sin(i * 97.13 + salt * 41.7) * 43758.5453;
-  return x - Math.floor(x);
-}
-
-const isLong = (n: string) => n.length > 10;
-
-// Estimated word footprint as a % of the (worst-case, mobile) container.
-// Positions are placed so these boxes never overlap; on wider desktop the same
-// %-boxes are relatively smaller, so it only gets airier.
-function box(name: string) {
-  const long = isLong(name);
-  const fontPx = long ? 19.2 : 24;           // clamp() mins on mobile (bigger)
-  const maxScale = long ? 1.02 : 1.3;        // breathing ceiling (long words grow less)
-  const wpx = name.length * fontPx * 0.5 * maxScale;
-  const hpx = fontPx * maxScale;
-  const refW = 360, refH = 470;              // denser field → smaller gaps
-  return { w: (wpx / refW) * 100, h: (hpx / refH) * 100 };
-}
-
-// Free (gridless) placement: no rows, no alignment. Widest words placed first so
-// they reserve room; box-overlap rejection keeps everything legible.
-function buildPositions(specs: string[]) {
-  const items = specs
-    .map((n, i) => ({ i, ...box(n) }))
-    .sort((a, b) => b.w - a.w);
-  const placed: { i: number; x: number; y: number; w: number; h: number }[] = [];
-
-  for (const it of items) {
-    const xMax = Math.max(1, 99 - it.w);
-    const yMax = Math.max(2, 96 - it.h);
-    let spot: { x: number; y: number } | null = null;
-    for (let a = 0; a < 700 && !spot; a++) {
-      const x = 1 + rnd(it.i * 7 + a, 11) * (xMax - 1);
-      const y = 2 + rnd(it.i * 7 + a, 23) * (yMax - 2);
-      const clash = placed.some(
-        (p) => x < p.x + p.w + 0.6 && p.x < x + it.w + 0.6 && y < p.y + p.h + 1 && p.y < y + it.h + 1,
-      );
-      if (!clash) spot = { x, y };
-    }
-    if (!spot) spot = { x: 1 + rnd(it.i, 5) * (xMax - 1), y: 2 + rnd(it.i, 9) * (yMax - 2) };
-    placed.push({ i: it.i, ...spot, w: it.w, h: it.h });
-  }
-
-  const out: { x: number; y: number }[] = new Array(specs.length);
-  for (const p of placed) out[p.i] = { x: p.x, y: p.y };
-  return out;
-}
-
-const POS = buildPositions(SPECS);
-const CYCLE = 2.6; // seconds — big↔small breathing
 
 export function LandingForWhom() {
   const ref = useRef<HTMLElement>(null);
@@ -106,46 +71,54 @@ export function LandingForWhom() {
           </motion.p>
         </motion.div>
 
-        {/* Gridless word field — upright words at free random positions, breathing size loop.
-            scale (GPU transform) animates instead of font-size to avoid reflow. */}
-        <div className="relative w-full h-[460px] sm:h-[360px] lg:h-[380px]">
-          {SPECS.map((name, i) => {
-            const long = isLong(name);
-            const pos = POS[i];
-            const phase = rnd(i, 5) * CYCLE;                // desync so sizes swap over time
-            const baseStatic = 0.72 + rnd(i, 7) * 0.55;     // reduced-motion: varied fixed size
-            const accent = rnd(i, 8) > 0.66;
-            const color = accent ? 'var(--l-indigo)' : rnd(i, 9) > 0.5 ? 'var(--l-ink)' : 'var(--l-muted)';
-            const loop = long ? [0.74, 1.02, 0.74] : [0.62, 1.3, 0.62];
-
+        {/* Bento */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 auto-rows-[132px] sm:auto-rows-[150px]">
+          {BLOCKS.map((b, i) => {
+            const { Icon } = b;
             return (
-              <motion.span
-                key={name}
-                className="absolute inline-block font-[family-name:var(--font-cormorant)] font-semibold leading-none tracking-tight whitespace-nowrap"
+              <motion.div
+                key={b.name}
+                {...reveal(0.04 + i * 0.05)}
+                whileHover={shouldReduce ? undefined : { y: -4, transition: spring }}
+                className={`group relative flex flex-col justify-between overflow-hidden rounded-[1.25rem] p-5 sm:p-6 transition-shadow duration-300 ${b.wide ? 'col-span-2' : ''}`}
                 style={{
-                  left: `${pos.x}%`,
-                  top: `${pos.y}%`,
-                  fontSize: long ? 'clamp(1.2rem,2.6vw,1.95rem)' : 'clamp(1.5rem,3.4vw,2.5rem)',
-                  color,
-                  cursor: 'default',
-                  transformOrigin: 'left center',
-                  willChange: 'transform, opacity',
+                  background: b.dark ? 'var(--l-accent)' : 'var(--l-surface)',
+                  border: `1px solid ${b.dark ? 'transparent' : 'var(--l-border)'}`,
+                  boxShadow: 'var(--l-shadow-sm)',
                 }}
-                initial={{ opacity: 0, scale: shouldReduce ? baseStatic : 0.9 }}
-                whileInView={shouldReduce ? { opacity: 1, scale: baseStatic } : { opacity: 1, scale: loop }}
-                viewport={{ once: true, margin: '-40px' }}
-                transition={
-                  shouldReduce
-                    ? { duration: 0 }
-                    : {
-                        opacity: { duration: 0.5, ease: easeOut, delay: 0.03 * i },
-                        scale: { duration: CYCLE, repeat: Infinity, ease: 'easeInOut', delay: phase },
-                      }
-                }
-                whileHover={shouldReduce ? undefined : { color: 'var(--l-indigo)', transition: spring }}
               >
-                {name}
-              </motion.span>
+                {b.dark && (
+                  <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-0"
+                    style={{ background: 'radial-gradient(ellipse 70% 80% at 88% 10%, var(--l-blob-indigo) 0%, transparent 60%)' }}
+                  />
+                )}
+                <Icon
+                  size={b.wide ? 26 : 22}
+                  strokeWidth={1.7}
+                  className="relative transition-transform duration-300 group-hover:-translate-y-0.5"
+                  style={{ color: b.dark ? 'var(--l-indigo-glow)' : 'var(--l-indigo)' }}
+                  aria-hidden="true"
+                />
+                <div className="relative">
+                  <h3
+                    className="font-[family-name:var(--font-cormorant)] font-semibold leading-tight tracking-tight"
+                    style={{
+                      fontSize: b.wide ? 'clamp(1.5rem,2.6vw,2rem)' : '1.35rem',
+                      color: b.dark ? 'var(--l-text-on-dark)' : 'var(--l-ink)',
+                    }}
+                  >
+                    {b.name}
+                  </h3>
+                  <p
+                    className="mt-1 text-sm"
+                    style={{ color: b.dark ? 'var(--l-muted-on-dark)' : 'var(--l-muted)' }}
+                  >
+                    {b.desc}
+                  </p>
+                </div>
+              </motion.div>
             );
           })}
         </div>
@@ -153,7 +126,7 @@ export function LandingForWhom() {
         {/* Closing note */}
         <motion.p
           {...reveal(0.1)}
-          className="mt-8 sm:mt-10 font-[family-name:var(--font-cormorant)] leading-snug max-w-xl"
+          className="mt-10 sm:mt-12 font-[family-name:var(--font-cormorant)] leading-snug max-w-xl"
           style={{ fontSize: 'clamp(1.15rem,2vw,1.5rem)', color: 'var(--l-muted)' }}
         >
           …і будь-яка інша справа, що робить людей красивішими.
