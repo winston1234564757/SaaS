@@ -684,6 +684,296 @@ function UpcomingEmpty() {
   );
 }
 
+// ─────────────────────────────────────────────────────────────
+// DESKTOP (lg+) master-detail — C-DESK-01 Фаза 2
+// Left: selectable list of all bookings/orders. Right: full detail of
+// the selected item. Mobile keeps the feed (rendered separately, lg:hidden).
+// ─────────────────────────────────────────────────────────────
+
+function DeskListRow({ order, selected, onSelect }: { order: UnifiedOrder; selected: boolean; onSelect: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      aria-pressed={selected}
+      className={cn(
+        'w-full flex items-center gap-3 rounded-2xl px-3 py-3 text-left transition-colors duration-150',
+        selected ? 'bg-secondary ring-1 ring-border shadow-sm' : 'hover:bg-secondary/50',
+      )}
+    >
+      <Avatar url={order.masterAvatarUrl} name={order.masterName} size={42} />
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-semibold text-foreground truncate">{order.masterName}</p>
+        <p className="text-xs text-text-sub mt-0.5 truncate">
+          {order.type === 'shop'
+            ? `Замовлення · ${fmtShort(order.date)}`
+            : `${fmtShort(order.date)}${order.startTime ? ` · ${order.startTime}` : ''}`}
+        </p>
+      </div>
+      <StatusPill status={order.status} />
+    </button>
+  );
+}
+
+function BookingDetailPane({ order }: { order: UnifiedOrder }) {
+  const router = useRouter();
+  const [cancelOpen, setCancelOpen] = useState(false);
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [submittedRating, setSubmittedRating] = useState(0);
+
+  const isToday = order.date === getToday();
+  const canCancel = ['pending', 'confirmed'].includes(order.status);
+  const canReview = order.status === 'completed' && !order.hasReview && !submitted;
+  const reviewed = order.hasReview || submitted;
+  const confirmed = order.status === 'confirmed';
+  const statusTint = confirmed ? '#6EE7B7' : order.status === 'new' ? '#93C5FD'
+    : ['completed', 'cancelled', 'no_show'].includes(order.status) ? '#CBD5E1' : '#FCD34D';
+
+  const services = order.services ?? [];
+  const rebookIds = services.map(s => s.id).filter(Boolean).join(',');
+  const rebookHref = rebookIds ? `/${order.masterSlug}?services=${rebookIds}` : `/${order.masterSlug}`;
+  const mapsHref = order.masterLat && order.masterLng
+    ? `https://www.google.com/maps/dir/?api=1&destination=${order.masterLat},${order.masterLng}`
+    : `https://maps.google.com/?q=${encodeURIComponent(order.masterAddress ?? '')}`;
+
+  return (
+    <div className="flex flex-col gap-4">
+      <EditorialCover glowColor={confirmed ? '#34D399' : '#FBBF24'}>
+        <div className="flex flex-col gap-5">
+          <div className="flex items-center gap-3">
+            <div className="rounded-full ring-1 ring-white/20 overflow-hidden shrink-0">
+              <Avatar url={order.masterAvatarUrl} name={order.masterName} size={56} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-white/55">
+                {order.status === 'completed' ? 'Візит завершено' : order.status === 'cancelled' ? 'Запис скасовано' : 'Запис'}
+              </p>
+              <p className="heading-serif text-2xl text-white leading-tight truncate">{order.masterName}</p>
+            </div>
+            <span
+              className="text-[10px] font-bold px-2.5 py-1 rounded-full flex-shrink-0 whitespace-nowrap"
+              style={{ color: statusTint, background: `${statusTint}1f` }}
+            >
+              {getCfg(order.status).label}
+            </span>
+          </div>
+
+          <div className="flex items-baseline gap-2.5 flex-wrap">
+            <span className="metric-value text-white text-[34px] leading-none">
+              {order.startTime ?? fmtShort(order.date)}
+            </span>
+            <span className="text-white/70 text-sm">
+              {isToday ? 'Сьогодні' : fmtDate(order.date)}
+              {order.startTime && order.endTime ? ` · до ${order.endTime}` : ''}
+            </span>
+          </div>
+
+          {services.length > 0 && (
+            <div className="flex flex-col gap-1.5 border-t border-white/10 pt-3">
+              {services.map((s, i) => (
+                <div key={i} className="flex items-center justify-between gap-3">
+                  <span className="text-sm text-white/80 truncate">{s.name}</span>
+                  <span className="text-sm text-white/60 flex-shrink-0 tabular-nums">{fmtPrice(s.price)}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {order.masterAddress && (
+            <a
+              href={mapsHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-start gap-2 p-2.5 rounded-2xl bg-white/[0.06] ring-1 ring-white/10 hover:bg-white/[0.1] transition-colors"
+            >
+              <MapPin size={13} className="text-white/55 flex-shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <p className="text-[11px] font-semibold text-white/85 truncate">{order.masterAddress}</p>
+                <span className="inline-flex items-center gap-1 mt-0.5 text-[10px] font-bold text-white/70">
+                  <Navigation size={9} />
+                  Прокласти маршрут
+                </span>
+              </div>
+            </a>
+          )}
+
+          <div className="flex items-center justify-between border-t border-white/10 pt-3">
+            <span className="text-xs uppercase tracking-widest text-white/50">Разом</span>
+            <span className="metric-value text-white text-xl">{fmtPrice(order.totalPrice)}</span>
+          </div>
+        </div>
+      </EditorialCover>
+
+      {/* Actions */}
+      <div className="flex flex-wrap items-center gap-2">
+        <Link
+          href={`/my/messages?to=${order.masterId}`}
+          className="min-h-[44px] flex items-center justify-center gap-1.5 px-4 rounded-full bg-secondary border border-border text-foreground text-sm font-semibold hover:bg-secondary/70 active:scale-[0.97] transition-all"
+        >
+          <MessageCircle size={15} />
+          Написати
+        </Link>
+        <Button variant="primary" size="md" onClick={() => router.push(rebookHref)} className="min-h-[44px]">
+          Записатись знову
+        </Button>
+        {canCancel && (
+          <button
+            type="button"
+            onClick={() => setCancelOpen(true)}
+            className="min-h-[44px] flex items-center px-3 text-sm text-text-sub hover:text-destructive transition-colors font-medium"
+          >
+            Скасувати запис
+          </button>
+        )}
+        {canReview && (
+          <button
+            type="button"
+            onClick={() => setReviewOpen(true)}
+            className="min-h-[44px] flex items-center gap-1.5 px-4 rounded-full bg-secondary border border-border text-foreground text-sm font-semibold hover:bg-secondary/70 active:scale-[0.97] transition-all"
+          >
+            <Star size={13} className="text-amber-400" />
+            Поділитись враженнями
+          </button>
+        )}
+        {reviewed && (
+          <div className="flex items-center gap-1.5 px-2">
+            {submitted ? (
+              <>
+                <span className="text-xs text-text-sub">Ваша оцінка:</span>
+                <StarRow rating={submittedRating} />
+              </>
+            ) : (
+              <span className="text-xs text-text-sub">Ви вже залишили відгук</span>
+            )}
+          </div>
+        )}
+      </div>
+
+      <CancelSheet open={cancelOpen} onOpenChange={setCancelOpen} bookingId={order.id} />
+      <ReviewSheet
+        open={reviewOpen}
+        onOpenChange={setReviewOpen}
+        bookingId={order.id}
+        masterId={order.masterId}
+        onSuccess={r => { setSubmitted(true); setSubmittedRating(r); }}
+      />
+    </div>
+  );
+}
+
+function DesktopBookings({
+  tab, setTab, bookingList, shopItems, pendingShop, upcomingCount,
+}: {
+  tab: 'bookings' | 'shop';
+  setTab: (t: 'bookings' | 'shop') => void;
+  bookingList: UnifiedOrder[];
+  shopItems: UnifiedOrder[];
+  pendingShop: number;
+  upcomingCount: number;
+}) {
+  const activeList = tab === 'bookings' ? bookingList : shopItems;
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const selected = activeList.find(o => o.id === selectedId) ?? activeList[0] ?? null;
+
+  return (
+    <div className="hidden lg:block px-8 py-8">
+      <h1 className="heading-serif text-3xl text-foreground mb-1">Мої записи</h1>
+      <p className="text-sm text-text-sub mb-6">Керуйте візитами та замовленнями</p>
+
+      <div className="grid grid-cols-[minmax(320px,360px)_1fr] gap-8 items-start">
+        {/* LEFT — list */}
+        <div className="lg:sticky lg:top-24 self-start max-h-[calc(100dvh-8rem)] overflow-y-auto pr-1 flex flex-col gap-3">
+          <div className="flex gap-1 p-1 rounded-xl bg-secondary/60">
+            <button
+              type="button"
+              aria-pressed={tab === 'bookings'}
+              onClick={() => setTab('bookings')}
+              className={cn('flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-xs font-bold transition-all',
+                tab === 'bookings' ? 'bg-background text-foreground shadow-sm' : 'text-text-sub hover:text-foreground')}
+            >
+              <CalendarDays size={13} />
+              Записи
+            </button>
+            <button
+              type="button"
+              aria-pressed={tab === 'shop'}
+              onClick={() => setTab('shop')}
+              className={cn('flex-1 relative flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-xs font-bold transition-all',
+                tab === 'shop' ? 'bg-background text-foreground shadow-sm' : 'text-text-sub hover:text-foreground')}
+            >
+              <ShoppingBag size={13} />
+              Замовлення
+              {pendingShop > 0 && (
+                <span className="absolute -top-0.5 right-2 size-4 bg-primary text-primary-foreground text-[9px] font-bold rounded-full flex items-center justify-center">
+                  {pendingShop}
+                </span>
+              )}
+            </button>
+          </div>
+
+          {activeList.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-border bg-secondary/30 p-6 text-center">
+              <p className="text-sm font-semibold text-foreground">
+                {tab === 'shop' ? 'Замовлень ще немає' : 'Тут поки порожньо'}
+              </p>
+              <p className="text-xs text-text-sub mt-1">
+                {tab === 'shop' ? 'Ваші замовлення з’являться тут' : 'Історія візитів з’явиться тут'}
+              </p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-1">
+              {tab === 'bookings' && upcomingCount > 0 && (
+                <p className="text-[10px] font-bold text-text-sub uppercase tracking-widest px-2 pt-1">Майбутні</p>
+              )}
+              {activeList.map((o, i) => {
+                const showPastLabel = tab === 'bookings' && i === upcomingCount && upcomingCount < activeList.length;
+                return (
+                  <div key={o.id}>
+                    {showPastLabel && (
+                      <p className="text-[10px] font-bold text-text-sub uppercase tracking-widest px-2 pt-3 pb-1">Раніше</p>
+                    )}
+                    <DeskListRow order={o} selected={selected?.id === o.id} onSelect={() => setSelectedId(o.id)} />
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* RIGHT — detail */}
+        <div className="min-w-0">
+          {selected ? (
+            <motion.div
+              key={selected.id}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={SPRING}
+            >
+              {selected.type === 'shop'
+                ? <ShopOrderCard order={selected} index={0} />
+                : <BookingDetailPane order={selected} />}
+            </motion.div>
+          ) : (
+            <div className="rounded-3xl border border-dashed border-border bg-secondary/30 p-12 flex flex-col items-center gap-3 text-center">
+              <div className="size-14 rounded-2xl bg-secondary flex items-center justify-center">
+                <CalendarSearch size={26} className="text-text-sub" />
+              </div>
+              <div>
+                <p className="text-base font-semibold text-foreground">Оберіть запис</p>
+                <p className="text-sm text-text-sub mt-1">Деталі з’являться тут</p>
+              </div>
+              <Link href="/explore" className="h-11 px-6 rounded-xl bg-primary text-primary-foreground text-sm font-bold inline-flex items-center active:scale-[0.97] transition-transform">
+                Знайти майстра
+              </Link>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function MyBookingsPage({ bookings }: { bookings: UnifiedOrder[] }) {
   const [tab, setTab] = useState<'bookings' | 'shop'>('bookings');
   const today = getToday();
@@ -721,8 +1011,16 @@ export function MyBookingsPage({ bookings }: { bookings: UnifiedOrder[] }) {
   const heroCard = upcoming[0];
   const extraUpcoming = upcoming.slice(1);
 
+  // Desktop master-detail flat list: upcoming soonest-first, then past most-recent-first.
+  const upcomingSorted = [...upcoming].sort((a, b) => a.date.localeCompare(b.date) || (a.startTime ?? '').localeCompare(b.startTime ?? ''));
+  const pastSorted = [...past].sort((a, b) => b.date.localeCompare(a.date) || (b.startTime ?? '').localeCompare(a.startTime ?? ''));
+  const bookingList = [...upcomingSorted, ...pastSorted];
+  const upcomingCount = upcomingSorted.length;
+
   return (
-    <div data-theme="frost" className="flex flex-col min-h-full bg-background">
+    <div data-theme="frost" className="min-h-full bg-background">
+      {/* MOBILE / tablet — feed (unchanged) */}
+      <div className="lg:hidden flex flex-col min-h-full">
       <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm px-4 py-2">
         <div className="flex gap-1 p-1 rounded-xl bg-secondary/60">
           <button
@@ -855,6 +1153,17 @@ export function MyBookingsPage({ bookings }: { bookings: UnifiedOrder[] }) {
           )}
         </AnimatePresence>
       </div>
+      </div>
+
+      {/* DESKTOP (lg+) — master-detail */}
+      <DesktopBookings
+        tab={tab}
+        setTab={setTab}
+        bookingList={bookingList}
+        shopItems={shopItems}
+        pendingShop={pendingShop}
+        upcomingCount={upcomingCount}
+      />
     </div>
   );
 }
