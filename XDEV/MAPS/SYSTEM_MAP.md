@@ -137,7 +137,7 @@
 | 1 | `LandingHero.tsx` | `#EFF2FF` | Frost 3D mockup hero — `perspective(1400px)` + `rotateX` scroll 12°→0°; єдиний збережений uppercase-бейдж «для майстрів краси» = свідомий бренд-голос |
 | 2 | `LandingTrustBar.tsx` | transparent | 5 stats: 500+ майстрів · ₴12M · 4.9★ · 50+ міст · 98% |
 | 3 | `LandingMarquee.tsx` | transparent | Infinite ticker of tool/integration names |
-| — | `LandingForWhom.tsx` **(NEW G-LAND-01)** | `var(--l-bg)` | Редакційний типографічний індекс спеціалізацій: core-ніші крупний Cormorant (Манікюр/Брови indigo-акцент), суміжні дрібніші muted, розділові крапки, closing-рядок. `id="sec-forwhom"`. Поза card-rise |
+| — | `LandingForWhom.tsx` **(NEW G-LAND-01)** | `var(--l-bg)` | Крафтовий **бенто** ніш: 10 блоків (`BLOCKS`), сітка 4-кол(lg)/2-кол, темний featured-анкер «Манікюр» + два `wide` col-span-2 → рядки без дірок; lucide-іконки монохром-indigo + серіф-назва + 2-словний опис (humanizer); delight hover lift+shadow. `id="sec-forwhom"`. Поза card-rise. (Ітерації: типографічний індекс → gridless breathing word-field → **бенто** — фінал за founder) |
 
 **GSAP Card-Rise Stack** (`overlap: true` → 30vh rise; `overlap: false` → transparent bg, excluded):
 | # | Component | Bg | overlap | Notes |
