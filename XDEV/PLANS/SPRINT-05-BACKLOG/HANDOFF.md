@@ -8,7 +8,7 @@
 
 **✅ УСІ ЗРОБЛЕНІ ЗАДАЧІ ПЕРЕВІРЕНО founder (2026-07-03) — QA-гейт спринту закрито.** Деплой на прод = окремий батч `vercel --prod` за командою (частина комітів «НЕ задеплоєно» — операційний факт).
 
-**Наступна задача:** `C-DESK-01` — десктоп-лейаут 8 клієнт-сторінок, підхід = **sidebar-навігація** (рішення founder 2026-07-05). Далі `M-SHOP-05` (Nova Poshta API — ключ founder надасть). M-CLI-07 ✅ закрито (`9c0097d7`, CSV-експорт бази + Pro-гейт).
+**Наступна задача:** продовжити `C-DESK-01` (Фаза 2) — наступна стор. **/my/messages десктоп 2-pane чат** (список розмов ліворуч + активний тред праворуч). ЗРОБЛЕНО цю сесію: Фаза 1 sidebar-шелл ✅ + Фаза 2 /my/bookings master-detail ✅ +поліш +мобільний болдер (коміти `4b6d4d69`, `bbc7fe04`, `00409f17`, `52580478`). Патерн і архітектура — у `BRIEFS/C-DESK-01.md`. Лишилось 6 стор (masters/loyalty/notifications/profile/explore/shop) + `M-SHOP-05` (Nova Poshta API — ключ founder надасть). M-CLI-07 ✅ (`9c0097d7`).
 
 **✅ G-LAND-03 + G-LAND-01 DONE (commit `ff6e91e7`, НЕ задеплоєно) — ФАЗА 6 закрита:** повний impeccable-аудит лендингу (тип REDESIGN Tier 2, обсяг за founder = анти-slop + баги, НЕ видаляти секції) + нова секція «Для кого».
 - **П0 спільні примітиви (баги глобально):** `shared/CountUp.tsx` — число видиме за замовч. (final value на SSR/headless/reduced, roll-up 0→N лише як enhancement); `LandingSplitHeading.tsx` + `shared/WordLine.tsx` — прибрано per-word `overflow:hidden` mask-reveal (🔴 рвав кириличні виносні у/д/ц/щ/ї при `leading-[0.9]` — «вже сьогодні»/«заповнить»/«номер») + default-visible (reveal не гейтить у порожнечу).
