@@ -1,30 +1,26 @@
 'use client';
 
-import { Fragment, useRef } from 'react';
+import { useRef } from 'react';
 import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import { useIsDesktop } from '@/lib/hooks/useIsDesktop';
 import { LandingSplitHeading } from '@/components/landing/LandingSplitHeading';
 
 const easeOut: [number, number, number, number] = [0.22, 1, 0.36, 1];
+const spring = { type: 'spring' as const, stiffness: 340, damping: 18 };
 
-type Spec = { name: string; tier: 'core' | 'adj'; accent?: boolean };
-
-const SPECS: Spec[] = [
-  { name: 'Манікюр', tier: 'core', accent: true },
-  { name: 'Педикюр', tier: 'core' },
-  { name: 'Брови', tier: 'core', accent: true },
-  { name: 'Вії', tier: 'core' },
-  { name: 'Волосся', tier: 'core' },
-  { name: 'Косметологія', tier: 'core' },
-  { name: 'Макіяж', tier: 'core' },
-  { name: 'Барбер', tier: 'core' },
-  { name: 'Масаж', tier: 'adj' },
-  { name: 'Тату та перманент', tier: 'adj' },
-  { name: 'Епіляція', tier: 'adj' },
-  { name: 'Подологія', tier: 'adj' },
-  { name: 'Стиль та імідж', tier: 'adj' },
-  { name: 'SPA-догляд', tier: 'adj' },
+const SPECS = [
+  'Манікюр', 'Педикюр', 'Брови', 'Вії', 'Волосся', 'Косметологія',
+  'Макіяж', 'Барбер', 'Масаж', 'Тату та перманент', 'Епіляція',
+  'Подологія', 'Стиль та імідж', 'SPA-догляд',
 ];
+
+// Deterministic pseudo-random in [0,1) — identical on server and client (no hydration drift).
+function rnd(i: number, salt: number): number {
+  const x = Math.sin(i * 97.13 + salt * 41.7) * 43758.5453;
+  return x - Math.floor(x);
+}
+
+const SIZE_EM = [1.35, 1.7, 2.2, 2.85, 3.6];
 
 export function LandingForWhom() {
   const ref = useRef<HTMLElement>(null);
@@ -65,40 +61,51 @@ export function LandingForWhom() {
           </motion.p>
         </motion.div>
 
-        {/* Editorial specialization index — flowing serif, size/colour tiers, no cards */}
-        <div className="flex flex-wrap items-baseline gap-x-5 sm:gap-x-7 gap-y-2">
-          {SPECS.map((s, i) => {
-            const core = s.tier === 'core';
+        {/* Scattered specialization collage — mixed sizes, broken baseline, tap/hover delight.
+            Base font-size scales with viewport; per-word multipliers give the big/small mix. */}
+        <div
+          className="flex flex-wrap items-start gap-y-5 sm:gap-y-8"
+          style={{ fontSize: 'clamp(0.72rem, 1.9vw, 1.05rem)' }}
+        >
+          {SPECS.map((name, i) => {
+            const long = name.length > 10;
+            const bucket = Math.min(long ? 2 : 4, Math.floor(rnd(i, 1) * 5));
+            const size = SIZE_EM[bucket];
+            const rot = (rnd(i, 2) - 0.5) * 7;            // -3.5°..3.5°
+            const mt = (rnd(i, 3) - 0.3) * 0.85;          // vertical scatter (em)
+            const mr = 0.45 + rnd(i, 4) * 0.7;            // horizontal rhythm (em)
+            const accent = rnd(i, 5) > 0.68;
+            const color = accent ? 'var(--l-indigo)' : size >= 2.2 ? 'var(--l-ink)' : 'var(--l-muted)';
+
             return (
-              <Fragment key={s.name}>
-                {i > 0 && (
-                  <span
-                    className="select-none self-center"
-                    style={{ color: 'var(--l-muted-2)', fontSize: '0.85rem' }}
-                    aria-hidden="true"
-                  >
-                    ·
-                  </span>
-                )}
-                <motion.span
-                  {...reveal(0.04 + i * 0.035)}
-                  className="font-[family-name:var(--font-cormorant)] font-semibold leading-none tracking-tight"
-                  style={{
-                    fontSize: core ? 'clamp(1.7rem,3.4vw,2.7rem)' : 'clamp(1.15rem,2vw,1.55rem)',
-                    color: s.accent ? 'var(--l-indigo)' : core ? 'var(--l-ink)' : 'var(--l-muted)',
-                  }}
-                >
-                  {s.name}
-                </motion.span>
-              </Fragment>
+              <motion.span
+                key={name}
+                className="inline-block font-[family-name:var(--font-cormorant)] font-semibold leading-none tracking-tight"
+                style={{
+                  fontSize: `${size}em`,
+                  marginTop: `${mt}em`,
+                  marginRight: `${mr}em`,
+                  color,
+                  cursor: 'default',
+                  willChange: 'transform',
+                }}
+                initial={shouldReduce ? { opacity: 1, rotate: rot } : { opacity: 0, scale: 0.8, rotate: rot * 1.7 }}
+                whileInView={shouldReduce ? { opacity: 1, rotate: rot } : { opacity: 1, scale: 1, rotate: rot }}
+                viewport={{ once: true, margin: '-40px' }}
+                transition={{ duration: shouldReduce ? 0 : 0.5, ease: easeOut, delay: shouldReduce ? 0 : 0.03 * i + rnd(i, 6) * 0.25 }}
+                whileHover={shouldReduce ? undefined : { scale: 1.16, rotate: 0, color: 'var(--l-indigo)', transition: spring }}
+                whileTap={{ scale: 0.92, rotate: 0, transition: spring }}
+              >
+                {name}
+              </motion.span>
             );
           })}
         </div>
 
-        {/* Closing note — trails the index */}
+        {/* Closing note */}
         <motion.p
           {...reveal(0.1)}
-          className="mt-9 sm:mt-11 font-[family-name:var(--font-cormorant)] leading-snug max-w-xl"
+          className="mt-12 sm:mt-16 font-[family-name:var(--font-cormorant)] leading-snug max-w-xl"
           style={{ fontSize: 'clamp(1.15rem,2vw,1.5rem)', color: 'var(--l-muted)' }}
         >
           …і будь-яка інша справа, що робить людей красивішими.
