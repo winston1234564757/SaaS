@@ -14,7 +14,7 @@ mkdir C:\Users\Vitos\.claude\projects\C--Users-Vitos-SaaS-bookit -Force
 copy chat-handoff\8381b8cc-c684-4d2d-8ddd-c3bfc04ff314.jsonl `
      C:\Users\Vitos\.claude\projects\C--Users-Vitos-SaaS-bookit\
 
-# 3. (опційно) виправити внутрішні шляхи Vitossik->Vitos
+# 3. (опційно) виправити внутрішні шляхи Vitos->Vitos
 python <шлях>\fix-paths.py
 
 # 4. відкрити діалог

@@ -6,7 +6,7 @@
 
 ## 🌍 Публічний Магазин (`/[slug]/shop`)
 
-Магазин доступний для майстрів на тарифах Pro та Studio. Клієнтська сторінка реалізована в [ShopPage.tsx](file:///c:/Users/Vitossik/SaaS/bookit/src/app/[slug]/shop/page.tsx).
+Магазин доступний для майстрів на тарифах Pro та Studio. Клієнтська сторінка реалізована в [ShopPage.tsx](file:///c:/Users/Vitos/SaaS/bookit/src/app/[slug]/shop/page.tsx).
 
 ### Особливості UI:
 *   **Products preview strip**: Смужка попереднього перегляду (до 3 товарів) виводиться безпосередньо на головній публічній сторінці майстра `/[slug]`.

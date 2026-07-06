@@ -6,7 +6,7 @@
 
 ## 🗺️ Кроки Онбордингу (State Transitions)
 
-Процес первинного налаштування кабінету майстра складається з 9 послідовних кроків, реалізованих у [OnboardingWizard.tsx](file:///c:/Users/Vitossik/SaaS/bookit/src/app/onboarding/page.tsx) (було розширено з 3 до 4 основних етапів візуального прогресу):
+Процес первинного налаштування кабінету майстра складається з 9 послідовних кроків, реалізованих у [OnboardingWizard.tsx](file:///c:/Users/Vitos/SaaS/bookit/src/app/onboarding/page.tsx) (було розширено з 3 до 4 основних етапів візуального прогресу):
 
 ```mermaid
 graph TD

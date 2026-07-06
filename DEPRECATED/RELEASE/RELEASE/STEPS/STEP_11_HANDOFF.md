@@ -111,11 +111,11 @@ mempalace_search "createPublicOrder stock atomic"
 
 ```
 Ти Claude Code, продовжуєш роботу над BookIT (Ukrainian beauty booking SaaS).
-CWD: C:\Users\Vitossik\SaaS\bookit
+CWD: C:\Users\Vitos\SaaS\bookit
 
 STARTUP SEQUENCE (виконати ПЕРШИМ):
 1. mcp__mempalace__mempalace_status
-2. Read C:\Users\Vitossik\SaaS\XDEV\MAPS\SYSTEM_MAP.md (offset 495, limit 50)
+2. Read C:\Users\Vitos\SaaS\XDEV\MAPS\SYSTEM_MAP.md (offset 495, limit 50)
 3. Відповісти: "STARTUP OK: Palace [N] drawers | SYSTEM_MAP current | Ready"
 
 ЗАДАЧА: STEP 11 — Shop + Portfolio
@@ -132,7 +132,7 @@ Scope: /[slug]/shop + /[slug]/portfolio + ShopPage.tsx (799 рядків)
 STEP 10 ✅ COMPLETE — Public Master Page correctness + visual polish (2026-05-31)
 Drawer STEP 10: drawer_bookit_audits_6b554b09eed872165f45ba2a
 
-Handoff: C:\Users\Vitossik\SaaS\XDEV\RELEASE\STEPS\STEP_11_HANDOFF.md
+Handoff: C:\Users\Vitos\SaaS\XDEV\RELEASE\STEPS\STEP_11_HANDOFF.md
 
 ЗАЛІЗНІ ПРАВИЛА:
 • SPRING = { type: 'spring' as const, stiffness: 280, damping: 24 } as const

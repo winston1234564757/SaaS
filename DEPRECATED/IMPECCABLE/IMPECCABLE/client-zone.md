@@ -309,7 +309,7 @@ The Frost/Blossom/Studio themes define `--l-indigo`, `--l-accent`, etc. Many cli
 cd bookit
 npm run dev
 # In another terminal:
-node "C:\Users\Vitossik\.agents\skills\impeccable\scripts\live.mjs"
+node "C:\Users\Vitos\.agents\skills\impeccable\scripts\live.mjs"
 ```
 
 ---

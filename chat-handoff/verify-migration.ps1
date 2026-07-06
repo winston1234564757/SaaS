@@ -102,11 +102,11 @@ foreach ($d in @("skills","plugins","agents","commands")) {
   else { Warn (".claude\" + $d + "\ відсутня або порожня") }
 }
 
-# memory: папка має бути перейменована під новий шлях, і НЕ містити Vitossik
+# memory: папка має бути перейменована під новий шлях, і НЕ містити Vitos
 $projRoot = Join-Path $claude "projects"
 $memDirs  = Get-ChildItem $projRoot -Directory | Where-Object { $_.Name -like "*SaaS*" }
 if ($memDirs) {
-  $stale = $memDirs | Where-Object { $_.Name -like "*Vitossik*" }
+  $stale = $memDirs | Where-Object { $_.Name -like "*Vitos*" }
   if ($stale) {
     Bad ("папка пам'яті ще зі старим ім'ям: " + ($stale.Name -join ", ") + " — запусти fix-paths.py")
   }
@@ -188,8 +188,8 @@ $critical = @(
 )
 foreach ($f in $critical) {
   if (Test-Path $f) {
-    if (Select-String -Path $f -Pattern "Vitossik" -SimpleMatch -Quiet) {
-      Bad ("ще містить 'Vitossik': " + $f.Replace($U,"~") + " — запусти fix-paths.py")
+    if (Select-String -Path $f -Pattern "Vitos" -SimpleMatch -Quiet) {
+      Bad ("ще містить 'Vitos': " + $f.Replace($U,"~") + " — запусти fix-paths.py")
     } else { Ok ("шляхи виправлено: " + $f.Replace($U,"~")) }
   } else { Warn ("файл відсутній: " + $f.Replace($U,"~")) }
 }

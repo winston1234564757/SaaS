@@ -8,13 +8,13 @@
 
 ```
 Ти Claude Code, продовжуєш роботу над BookIT (Ukrainian beauty booking SaaS).
-CWD: C:\Users\Vitossik\SaaS\bookit
+CWD: C:\Users\Vitos\SaaS\bookit
 
 ═══════════════════════════════════════════════════
 STARTUP SEQUENCE (виконати ПЕРШИМ, до будь-чого):
 ═══════════════════════════════════════════════════
 1. mcp__mempalace__mempalace_status
-2. Read C:\Users\Vitossik\SaaS\XDEV\MAPS\SYSTEM_MAP.md (offset 495, limit 50)
+2. Read C:\Users\Vitos\SaaS\XDEV\MAPS\SYSTEM_MAP.md (offset 495, limit 50)
 3. Відповісти: "STARTUP OK: Palace [N] drawers | SYSTEM_MAP current | Ready"
 
 ══════════════════════════════════════════════════
@@ -43,7 +43,7 @@ STEP 07 ✅ COMPLETE — Services + Products correctness audit (2026-05-31)
   Drawer: drawer_bookit_audits_ea3affc66ed6c48195edda5e
 STEP 06 ✅ CRM Clients (impeccable 15/20, TSC 0, build clean 51/51)
 STEP 05 ✅ Bookings (impeccable 16/20, E2E 22/22)
-Handoff: C:\Users\Vitossik\SaaS\XDEV\RELEASE\STEPS\STEP_08_HANDOFF.md
+Handoff: C:\Users\Vitos\SaaS\XDEV\RELEASE\STEPS\STEP_08_HANDOFF.md
 
 Carry-over (не блокують, але фіксуй якщо торкнешся цих файлів):
 D-01: ClientsPage.tsx:631,806 — borderLeft 3px → full border+bg tint (P1)
@@ -122,13 +122,13 @@ POST-CHANGE PROTOCOL (RULE 3):
 
 ```
 Ти Claude Code, продовжуєш роботу над BookIT (Ukrainian beauty booking SaaS).
-CWD: C:\Users\Vitossik\SaaS\bookit
+CWD: C:\Users\Vitos\SaaS\bookit
 
 ═══════════════════════════════════════════════════
 STARTUP SEQUENCE (виконати ПЕРШИМ, до будь-чого):
 ═══════════════════════════════════════════════════
 1. mcp__mempalace__mempalace_status
-2. Read C:\Users\Vitossik\SaaS\XDEV\MAPS\SYSTEM_MAP.md (offset 495, limit 50)
+2. Read C:\Users\Vitos\SaaS\XDEV\MAPS\SYSTEM_MAP.md (offset 495, limit 50)
 3. Відповісти: "STARTUP OK: Palace [N] drawers | SYSTEM_MAP current | Ready"
 
 ══════════════════════════════════════════════════
@@ -162,7 +162,7 @@ RPC що стосуються:
 STEP 07 ✅ COMPLETE — Services + Products correctness audit (2026-05-31)
   Drawer: drawer_bookit_audits_ea3affc66ed6c48195edda5e
 STEP 06 ✅ CRM Clients | STEP 05 ✅ Bookings
-Handoff: C:\Users\Vitossik\SaaS\XDEV\RELEASE\STEPS\STEP_08_HANDOFF.md
+Handoff: C:\Users\Vitos\SaaS\XDEV\RELEASE\STEPS\STEP_08_HANDOFF.md
 
 КРИТИЧНИЙ БАГ (зафіксовано у MemPalace):
 - Referral FK 23503: Primary TX before Secondary TX у register/actions.ts (вже виправлено)
@@ -223,13 +223,13 @@ src/proxy.ts (не middleware!) · @/lib/supabase/admin · vaul BottomSheet
 
 ```
 Ти Claude Code, продовжуєш роботу над BookIT (Ukrainian beauty booking SaaS).
-CWD: C:\Users\Vitossik\SaaS\bookit
+CWD: C:\Users\Vitos\SaaS\bookit
 
 ═══════════════════════════════════════════════════
 STARTUP SEQUENCE (виконати ПЕРШИМ, до будь-чого):
 ═══════════════════════════════════════════════════
 1. mcp__mempalace__mempalace_status
-2. Read C:\Users\Vitossik\SaaS\XDEV\MAPS\SYSTEM_MAP.md (offset 495, limit 50)
+2. Read C:\Users\Vitos\SaaS\XDEV\MAPS\SYSTEM_MAP.md (offset 495, limit 50)
 3. Відповісти: "STARTUP OK: Palace [N] drawers | SYSTEM_MAP current | Ready"
 
 ══════════════════════════════════════════════════
@@ -279,7 +279,7 @@ Scope: 4 сторінки в одному чаті
 STEP 07 ✅ COMPLETE — Services + Products (2026-05-31)
   Drawer: drawer_bookit_audits_ea3affc66ed6c48195edda5e
 STEP 06 ✅ CRM Clients | STEP 05 ✅ Bookings
-Handoff: C:\Users\Vitossik\SaaS\XDEV\RELEASE\STEPS\STEP_08_HANDOFF.md
+Handoff: C:\Users\Vitos\SaaS\XDEV\RELEASE\STEPS\STEP_08_HANDOFF.md
 
 NOTIFICATION SYSTEM (зафіксовано у MemPalace):
 - NotificationOrchestrator + notifMap + cascade: TG→Push→SMS (critical-only)
@@ -362,9 +362,9 @@ POST-CHANGE PROTOCOL (RULE 3 — обов'язково):
 - Drawers: vaul BottomSheet ТІЛЬКИ — не bare framer-motion drawer
 
 XDEV ДОКУМЕНТИ (читати перед кодом):
-- C:\Users\Vitossik\SaaS\XDEV\AI_MASTER_GUIDE.md — stack, RLS, anti-patterns, onboarding
-- C:\Users\Vitossik\SaaS\XDEV\UX_STANDARDS.md — No-Emoji, Vaul, animation
-- C:\Users\Vitossik\SaaS\XDEV\MAPS\SYSTEM_MAP.md — routes, tables, RPCs
+- C:\Users\Vitos\SaaS\XDEV\AI_MASTER_GUIDE.md — stack, RLS, anti-patterns, onboarding
+- C:\Users\Vitos\SaaS\XDEV\UX_STANDARDS.md — No-Emoji, Vaul, animation
+- C:\Users\Vitos\SaaS\XDEV\MAPS\SYSTEM_MAP.md — routes, tables, RPCs
 
 МОДЕЛЬ: 🔴 Opus 4.7 max (Billing: Monobank webhook + RLS bypass patterns)
 ```

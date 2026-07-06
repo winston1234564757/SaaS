@@ -51,7 +51,7 @@ AI-агент — це проактивний напарник (Pair Programmer)
 
 ## ⛔ 3. ABSOLUTE IRON RULES
 
-1. **Humanizer** — весь UI-текст має бути гуманізований перед записом у файл (згідно з [SKILL_PROTOCOL.md](file:///C:/Users/Vitossik/SaaS/XDEV/SKILL_PROTOCOL.md)).
+1. **Humanizer** — весь UI-текст має бути гуманізований перед записом у файл (згідно з [SKILL_PROTOCOL.md](file:///C:/Users/Vitos/SaaS/XDEV/SKILL_PROTOCOL.md)).
 2. **Encoding** — перевіряти файли на cp1251 mojibake перед редагуванням (див. `IRON_RULES.md`).
 3. **MemPalace** — обов'язкова робота з пам'яттю: статус на старті, пошук перед рішенням, збереження знань після фіксу.
 4. **No Emoji in UI Components** — емодзі в інтерфейсі (кнопках, pills, chips, картках, рядках) заборонені. Замість них використовуються виключно Lucide React іконки.
@@ -202,7 +202,7 @@ POST /api/auth/verify-sms ➔ atomic RPC check_and_log_sms_attempt() ➔ admin.g
 ## 🤖 10. SKILL PROTOCOL & DESIGN PROMPTS
 
 ### 7 Core Skills Catalogue
-Перед початком ітерації оберіть відповідну роль (згідно з [SKILL_PROTOCOL.md](file:///C:/Users/Vitossik/SaaS/XDEV/SKILL_PROTOCOL.md)):
+Перед початком ітерації оберіть відповідну роль (згідно з [SKILL_PROTOCOL.md](file:///C:/Users/Vitos/SaaS/XDEV/SKILL_PROTOCOL.md)):
 1. **✍️ HUMANIZER** (Copywriting) — жива, природна українська мова, без AI-штампів.
 2. **🎨 DESIGN-TASTE-FRONTEND** (UI Generation) — преміальні інтерфейси, сітки, Glassmorphism.
 3. **🚀 EMIL-DESIGN-ENG** (Animations) — Emil Kowalski motion, пружини, тактильність, `layoutId`.

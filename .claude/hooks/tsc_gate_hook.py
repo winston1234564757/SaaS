@@ -75,7 +75,7 @@ def main() -> int:
             f"\n[TSC GATE BLOCK] Cannot edit '{fname}'\n"
             f"Batch limit: {edits_since_tsc}/{MAX_TS_EDITS_BEFORE_TSC} TS edits since last tsc run.\n\n"
             "Run this first:\n"
-            "  Bash('cd C:/Users/Vitossik/SaaS/bookit && npx tsc --noEmit')\n\n"
+            "  Bash('cd C:/Users/Vitos/SaaS/bookit && npx tsc --noEmit')\n\n"
             "Gate unlocks automatically after tsc runs. Fix any errors first.\n"
         )
         print(msg)

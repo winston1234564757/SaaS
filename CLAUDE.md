@@ -1,6 +1,6 @@
 # CLAUDE.md — Claude Code Instructions
 
-> **Read first:** [IRON_RULES.md](file:///C:/Users/Vitossik/SaaS/IRON_RULES.md) — absolute session rules. Encoding, humanizer, MemPalace. No exceptions.
+> **Read first:** [IRON_RULES.md](file:///C:/Users/Vitos/SaaS/IRON_RULES.md) — absolute session rules. Encoding, humanizer, MemPalace. No exceptions.
 
 ---
 
@@ -37,15 +37,15 @@ Reply before code: `GATE OK: search✓ | QA✓ | Skill: [name] | Humanizer: ✓`
 
 ## Reference Docs (XDEV/)
 
-Path: `C:\Users\Vitossik\SaaS\XDEV\`. Read before any task.
+Path: `C:\Users\Vitos\SaaS\XDEV\`. Read before any task.
 
 | File | Contents |
 |------|----------|
-| [AI_MASTER_GUIDE.md](file:///C:/Users/Vitossik/SaaS/XDEV/AI_MASTER_GUIDE.md) | Tech stack, coding standards, RLS, three themes, pre-deploy checklist |
-| [SKILL_PROTOCOL.md](file:///C:/Users/Vitossik/SaaS/XDEV/SKILL_PROTOCOL.md) | Decision Tree for skill selection, Clarification Framework |
-| [UX_STANDARDS.md](file:///C:/Users/Vitossik/SaaS/XDEV/UX_STANDARDS.md) | No-Emoji Policy, Vaul BottomSheets, Emil Kowalski animation rules |
-| [MAPS/SYSTEM_MAP.md](file:///C:/Users/Vitossik/SaaS/XDEV/MAPS/SYSTEM_MAP.md) | Routes, tables, RPC, hooks, utilities — single source of truth |
-| [BOOKIT.md](file:///C:/Users/Vitossik/SaaS/XDEV/BOOKIT.md) | Product profile: vision, business logic, referral system, Smart Slots |
+| [AI_MASTER_GUIDE.md](file:///C:/Users/Vitos/SaaS/XDEV/AI_MASTER_GUIDE.md) | Tech stack, coding standards, RLS, three themes, pre-deploy checklist |
+| [SKILL_PROTOCOL.md](file:///C:/Users/Vitos/SaaS/XDEV/SKILL_PROTOCOL.md) | Decision Tree for skill selection, Clarification Framework |
+| [UX_STANDARDS.md](file:///C:/Users/Vitos/SaaS/XDEV/UX_STANDARDS.md) | No-Emoji Policy, Vaul BottomSheets, Emil Kowalski animation rules |
+| [MAPS/SYSTEM_MAP.md](file:///C:/Users/Vitos/SaaS/XDEV/MAPS/SYSTEM_MAP.md) | Routes, tables, RPC, hooks, utilities — single source of truth |
+| [BOOKIT.md](file:///C:/Users/Vitos/SaaS/XDEV/BOOKIT.md) | Product profile: vision, business logic, referral system, Smart Slots |
 
 ---
 

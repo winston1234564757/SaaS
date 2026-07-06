@@ -49,7 +49,7 @@
 
 ## Assessment B — `npx impeccable detect --json --gpt`
 
-**Target:** `C:\Users\Vitossik\SaaS\XDEV\MAPS\SYSTEM_MAP.md`
+**Target:** `C:\Users\Vitos\SaaS\XDEV\MAPS\SYSTEM_MAP.md`
 
 | Anti-pattern | Severity | Line | Detail |
 |---|---|---|---|

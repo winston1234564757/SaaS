@@ -11,23 +11,23 @@
 ### **Tier 1: MUST READ BEFORE EVERY TASK**
 
 #### 0. `.claude/CLARIFICATION_FRAMEWORK.md` (✨ Smart Questions System)
-- **Шлях:** [CLARIFICATION_FRAMEWORK.md](file:///C:/Users/Vitossik/SaaS/bookit/.claude/CLARIFICATION_FRAMEWORK.md)
+- **Шлях:** [CLARIFICATION_FRAMEWORK.md](file:///C:/Users/Vitos/SaaS/bookit/.claude/CLARIFICATION_FRAMEWORK.md)
 - **Коли читати:** На старті будь-якої задачі.
 - **Що там:** Шаблони 3-5 уточнювальних питань для різних типів задач (дизайн, код, текст, анімація).
 - **Як використовувати:** Задати питання користувачу почергово перед оголошенням скіла.
 
 #### 1. `TASK.md` (Mission Brief)
-- **Шлях:** [TASK.md](file:///C:/Users/Vitossik/SaaS/XDEV/TASK.md)
+- **Шлях:** [TASK.md](file:///C:/Users/Vitos/SaaS/XDEV/TASK.md)
 - **Коли читати:** На початку виконання конкретної поточної задачі.
 - **Що там:** Опис поточної цілі спринту та критерії успіху.
 
 #### 2. `AI_MASTER_GUIDE.md` (Constitution & Onboarding Guide)
-- **Шлях:** [AI_MASTER_GUIDE.md](file:///C:/Users/Vitossik/SaaS/XDEV/AI_MASTER_GUIDE.md)
+- **Шлях:** [AI_MASTER_GUIDE.md](file:///C:/Users/Vitos/SaaS/XDEV/AI_MASTER_GUIDE.md)
 - **Коли читати:** Перед будь-якою роботою з кодом, базою даних чи дизайном та на початку нової сесії.
 - **Що там:** Стек, правила кодування, RLS, 3 теми (Blossom, Studio, Frost), антипатерни, послідовність онбордингу, DB-to-DOM мислення та протоколи верифікації.
 
 #### 3. `SYSTEM_MAP.md` (Architecture Source of Truth)
-- **Шлях:** [SYSTEM_MAP.md](file:///C:/Users/Vitossik/SaaS/XDEV/MAPS/SYSTEM_MAP.md)
+- **Шлях:** [SYSTEM_MAP.md](file:///C:/Users/Vitos/SaaS/XDEV/MAPS/SYSTEM_MAP.md)
 - **Коли читати:** Перед будь-якими змінами в коді чи схемі бази даних.
 - **Що там:** Мапа маршрутів, таблиць БД, RPC-функцій, TanStack Query хуків та утиліт.
 
@@ -36,7 +36,7 @@
 ### **Tier 2: READ AT START OF PROJECT/PHASE**
 
 #### 4. `BOOKIT.md` (Business Logic & Features)
-- **Шлях:** [BOOKIT.md](file:///C:/Users/Vitossik/SaaS/XDEV/BOOKIT.md)
+- **Шлях:** [BOOKIT.md](file:///C:/Users/Vitos/SaaS/XDEV/BOOKIT.md)
 - **Коли читати:** На старті нової бізнес-фічі або зміни бізнес-логіки.
 - **Що там:** Опис філософії продукту, монетизації, реферальної системи, логіки Smart Slots.
 
@@ -45,22 +45,22 @@
 ### **Tier 3: READ FOR SPECIFIC TASKS**
 
 #### 6. `SKILL_PROTOCOL.md` (Skills & Roles)
-- **Шлях:** [SKILL_PROTOCOL.md](file:///C:/Users/Vitossik/SaaS/XDEV/SKILL_PROTOCOL.md)
+- **Шлях:** [SKILL_PROTOCOL.md](file:///C:/Users/Vitos/SaaS/XDEV/SKILL_PROTOCOL.md)
 - **Коли читати:** Перед початком ітерації для вибору правильної ролі та ланцюга.
 - **Що там:** Повний каталог скілів (24+ скілів), Decision Tree для вибору ролей та обов'язкові ланцюжки виконання.
 
 #### 7. `UX_STANDARDS.md` (Premium UX & Design Rules)
-- **Шлях:** [UX_STANDARDS.md](file:///C:/Users/Vitossik/SaaS/XDEV/UX_STANDARDS.md)
+- **Шлях:** [UX_STANDARDS.md](file:///C:/Users/Vitos/SaaS/XDEV/UX_STANDARDS.md)
 - **Коли читати:** Перед будь-якою роботою з інтерфейсом (кнопки, форми, Bento-сітки, анімації).
 - **Що там:** Колірні токени Blossom, Studio, Frost, No-Emoji Policy, Vaul BottomSheets, анімаційні правила Emil Kowalski.
 
 #### 8. `SKILLS_TOP200.md` (Skill Catalog)
-- **Шлях:** [SKILLS_TOP200.md](file:///C:/Users/Vitossik/SaaS/XDEV/SKILLS_TOP200.md)
+- **Шлях:** [SKILLS_TOP200.md](file:///C:/Users/Vitos/SaaS/XDEV/SKILLS_TOP200.md)
 - **Коли читати:** При виборі скіла для нестандартної задачі.
 - **Що там:** 200+ скілів із маркетплейсу по категоріях, TOP 50 відібраних, ланцюги використання.
 
 #### 9. `DOCS_INDEX.md` (Documentation Catalog)
-- **Шлях:** [DOCS_INDEX.md](file:///C:/Users/Vitossik/SaaS/XDEV/DOCS_INDEX.md)
+- **Шлях:** [DOCS_INDEX.md](file:///C:/Users/Vitos/SaaS/XDEV/DOCS_INDEX.md)
 - **Коли читати:** При пошуку потрібного .md файлу або аудиті документації.
 - **Що там:** Повний каталог ~100 .md файлів проекту: Tier, статус, однорядковий опис кожного.
 

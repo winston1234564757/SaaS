@@ -218,7 +218,7 @@ Changes array in graph-index.json maintains chronological log:
 
 ### **If You Have graphify-cli**
 ```bash
-cd C:\Users\Vitossik\SaaS\bookit
+cd C:\Users\Vitos\SaaS\bookit
 
 # Install graphify-cli (one-time)
 npm install -g @anthropic-ai/graphify

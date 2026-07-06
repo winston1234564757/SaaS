@@ -1,10 +1,10 @@
 # Bookit — перенесення на новий ноут (Windows → Windows)
 
-Дата збірки: 2026-07-03. Старий ноут: користувач `Vitossik`, корінь `C:\Users\Vitossik\SaaS`.
+Дата збірки: 2026-07-03. Старий ноут: користувач `Vitos`, корінь `C:\Users\Vitos\SaaS`.
 
-> **Головне попередження.** Купа конфігів має **прибиті абсолютні шляхи** `C:\Users\Vitossik\...`
+> **Головне попередження.** Купа конфігів має **прибиті абсолютні шляхи** `C:\Users\Vitos\...`
 > (CLAUDE.md, hooks, .claude.json, MEMORY.md посилання). Найпростіший безшовний варіант —
-> завести на новому ноуті Windows-користувача з іменем **`Vitossik`**. Тоді правок 0.
+> завести на новому ноуті Windows-користувача з іменем **`Vitos`**. Тоді правок 0.
 > Якщо ім'я інше — доведеться grep-заміна (див. §7).
 
 Порядок кроків важливий. Виконуй згори вниз.
@@ -28,8 +28,8 @@
 
 ```powershell
 # створи батьківську папку, назви ТОЧНО SaaS
-mkdir C:\Users\Vitossik\SaaS
-cd C:\Users\Vitossik\SaaS
+mkdir C:\Users\Vitos\SaaS
+cd C:\Users\Vitos\SaaS
 git clone https://github.com/winston1234564757/SaaS.git .
 
 # незавершена дизайн-робота лежить в окремій гілці:
@@ -47,8 +47,8 @@ Section, ClientDossierHero, dossier-preview) + свіжі XDEV-доки. `main` 
 Скопіюй вміст папки `secrets/` поверх репо, ЗБЕРІГАЮЧИ структуру:
 
 ```
-secrets\SaaS\.env                          → C:\Users\Vitossik\SaaS\.env
-secrets\SaaS\.env.local                    → C:\Users\Vitossik\SaaS\.env.local
+secrets\SaaS\.env                          → C:\Users\Vitos\SaaS\.env
+secrets\SaaS\.env.local                    → C:\Users\Vitos\SaaS\.env.local
 secrets\bookit\.env.local                  → ...\SaaS\bookit\.env.local
 secrets\bookit\.env.prod                   → ...\SaaS\bookit\.env.prod
 secrets\bookit\.env.test                   → ...\SaaS\bookit\.env.test
@@ -64,7 +64,7 @@ secrets\bookit\.vercel\.env.production.local → ...\SaaS\bookit\.vercel\.env.pr
 ## 3. Залежності
 
 ```powershell
-cd C:\Users\Vitossik\SaaS\bookit
+cd C:\Users\Vitos\SaaS\bookit
 npm install
 npx playwright install    # e2e-тести + dossier-shot.mjs рендер
 ```
@@ -73,24 +73,24 @@ npx playwright install    # e2e-тести + dossier-shot.mjs рендер
 
 ## 4. Глобальний Claude config — з бандла (папка `claude-global/`)
 
-Копіюй у `C:\Users\Vitossik\.claude\`:
+Копіюй у `C:\Users\Vitos\.claude\`:
 
 ```
-claude-global\CLAUDE.md              → C:\Users\Vitossik\.claude\CLAUDE.md
-claude-global\settings.json          → C:\Users\Vitossik\.claude\settings.json
-claude-global\settings.local.json    → C:\Users\Vitossik\.claude\settings.local.json
-claude-global\agents\      (папка)   → C:\Users\Vitossik\.claude\agents\
-claude-global\commands\    (папка)   → C:\Users\Vitossik\.claude\commands\
-claude-global\mcp-wrappers\(папка)   → C:\Users\Vitossik\.claude\mcp-wrappers\
-claude-global\skills\      (папка)   → C:\Users\Vitossik\.claude\skills\
-claude-global\plugins\     (папка)   → C:\Users\Vitossik\.claude\plugins\
-claude-global\projects\    (папка)   → C:\Users\Vitossik\.claude\projects\   (це auto-memory / MEMORY.md)
+claude-global\CLAUDE.md              → C:\Users\Vitos\.claude\CLAUDE.md
+claude-global\settings.json          → C:\Users\Vitos\.claude\settings.json
+claude-global\settings.local.json    → C:\Users\Vitos\.claude\settings.local.json
+claude-global\agents\      (папка)   → C:\Users\Vitos\.claude\agents\
+claude-global\commands\    (папка)   → C:\Users\Vitos\.claude\commands\
+claude-global\mcp-wrappers\(папка)   → C:\Users\Vitos\.claude\mcp-wrappers\
+claude-global\skills\      (папка)   → C:\Users\Vitos\.claude\skills\
+claude-global\plugins\     (папка)   → C:\Users\Vitos\.claude\plugins\
+claude-global\projects\    (папка)   → C:\Users\Vitos\.claude\projects\   (це auto-memory / MEMORY.md)
 ```
 
 Окремо — MCP-реєстрація і trust проєктів:
 
 ```
-claude-global\dot-claude.json  →  C:\Users\Vitossik\.claude.json
+claude-global\dot-claude.json  →  C:\Users\Vitos\.claude.json
 ```
 
 > Файл переіменований на `dot-claude.json` щоб не загубився. На новому ноуті клади його
@@ -101,7 +101,7 @@ claude-global\dot-claude.json  →  C:\Users\Vitossik\.claude.json
 ## 5. MemPalace (28k+ drawers) — з бандла
 
 ```
-mempalace\  (весь вміст)  →  C:\Users\Vitossik\.mempalace\
+mempalace\  (весь вміст)  →  C:\Users\Vitos\.mempalace\
 ```
 
 Перевір: у Claude Code виконай `mempalace_status` — має показати 28,000+ drawers.
@@ -118,9 +118,9 @@ git config --global user.email viktor.koshel24@gmail.com
 
 ---
 
-## 7. Виправлення шляхів (ім'я нового користувача = `Vitos`, НЕ `Vitossik`)
+## 7. Виправлення шляхів (ім'я нового користувача = `Vitos`, НЕ `Vitos`)
 
-Прибиті шляхи `C:\Users\Vitossik\...` є в 100+ файлах. Критичні (зламають запуск):
+Прибиті шляхи `C:\Users\Vitos\...` є в 100+ файлах. Критичні (зламають запуск):
 `SaaS\.claude\settings.json` (18 хуків), `SaaS\.claude\hooks\*.py`, `~\.claude.json`,
 `SaaS\CLAUDE.md`, глобальний `.claude\settings.json`.
 
@@ -137,9 +137,9 @@ python C:\Users\Vitos\<куди-поклав>\fix-paths.py
 ```
 
 Що робить:
-- **[A]** міняє `Vitossik` → `Vitos` у текстових файлах під `C:\Users\Vitos\SaaS` +
+- **[A]** міняє `Vitos` → `Vitos` у текстових файлах під `C:\Users\Vitos\SaaS` +
   `C:\Users\Vitos\.claude` + `~\.claude.json`;
-- **[B]** перейменовує папки auto-memory `~\.claude\projects\C--Users-Vitossik-*` →
+- **[B]** перейменовує папки auto-memory `~\.claude\projects\C--Users-Vitos-*` →
   `C--Users-Vitos-*` (інакше Claude Code не знайде MEMORY.md — ім'я папки це
   закодований старий шлях).
 
@@ -149,7 +149,7 @@ python C:\Users\Vitos\<куди-поклав>\fix-paths.py
 > `.mempalace` навмисно НЕ чіпається — сервер знаходить дані через `~/.mempalace`
 > автоматично, а шляхи всередині drawer-ів косметичні.
 >
-> Альтернатива без правок взагалі: заведи Windows-користувача з іменем `Vitossik`.
+> Альтернатива без правок взагалі: заведи Windows-користувача з іменем `Vitos`.
 > Але раз обрано `Vitos` — просто прожени скрипт.
 
 Після скрипта репо буде «брудним» у git (hook-шляхи змінились) — це очікувано,
@@ -184,7 +184,7 @@ powershell -ExecutionPolicy Bypass -File .\verify-migration.ps1 -Build
 git identity, усі 8 .env, node_modules+next, весь `.claude` config, memory-папки
 (перейменовані), mempalace, **gh auth** (залогінено + scope repo), **supabase MCP**
 (конфіг + project_ref + OAuth + доступність endpoint), і що `fix-paths.py` відпрацював
-(немає залишків `Vitossik`).
+(немає залишків `Vitos`).
 
 Примітка: одразу після переносу `gh auth` і `supabase MCP OAuth` будуть WARN — це
 нормально, вони авторизуються на кроці re-auth (§8) / при першому виклику в Claude Code.
@@ -207,7 +207,7 @@ npm test               # 42 unit (Vitest)
 ## 10. Продовжити цей діалог у Claude Code
 
 Транскрипт сесії «Migration» (`8381b8cc-…jsonl`) вже в бандлі:
-`claude-global\projects\C--Users-Vitossik-SaaS-bookit\`. Після кроку 4 (`fix-paths.py`
+`claude-global\projects\C--Users-Vitos-SaaS-bookit\`. Після кроку 4 (`fix-paths.py`
 переіменує теку в `C--Users-Vitos-SaaS-bookit` і виправить шляхи всередині .jsonl):
 
 ```powershell

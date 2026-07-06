@@ -22,7 +22,7 @@ Thought 1 time(s), Viewed 2 file(s)
 Готово. Ось що є по сторінці Аналітика:
 
 1. Impeccable аудит
-C:\Users\Vitossik\SaaS\IMPECCABLE\analytics.md — 256 рядків, повний 8-блочний аудит (audit / critique / animate / polish / layout / overdrive / live / optimize)
+C:\Users\Vitos\SaaS\IMPECCABLE\analytics.md — 256 рядків, повний 8-блочний аудит (audit / critique / animate / polish / layout / overdrive / live / optimize)
 
 Підсумок: 54/80 (C) — найглибша сторінка по даних, найгірша по discipline
 Scope: 5 файлів — 1 route, 1 loading, 1 dynamic loader, 1 component (991 рядків), 1 hook (451 рядок)
@@ -45,7 +45,7 @@ Top fixes (з самого звіту):
 P0 — 13 div→button на chart bars | P1 — 8 hex → CSS variables | P1 — 7 emoji → text/icons | P1 — type="button" на 12 кнопках | P2 — split 991-line component | P2 — aria-label на chart bars
 
 2. Playwright audit
-C:\Users\Vitossik\SaaS\bookit\e2e\audit\audit.07-analytics.spec.ts — 66 рядків, 5 тестів
+C:\Users\Vitos\SaaS\bookit\e2e\audit\audit.07-analytics.spec.ts — 66 рядків, 5 тестів
 
 #	Тест	Що перевіряє
 1	Analytics завантажується з графіками	desktop 1440×900 screenshot, Recharts рендер 1s
@@ -70,7 +70,7 @@ IMPECCABLE_PROJECT/screenshots/{frost|studio|blossom}/07-analytics/   # дзер
 Також є звичайний e2e: bookit/e2e/tests/15-analytics.spec.ts — функціональні сценарії (не візуальний аудит).
 
 3. Спільний план (Impeccable ↔ Playwright)
-C:\Users\Vitossik\SaaS\bookit\docs\e2e-fix-plans\04-feature-gates-analytics-and-plan-aware-testing.md — 70 рядків, Fix Report #4
+C:\Users\Vitos\SaaS\bookit\docs\e2e-fix-plans\04-feature-gates-analytics-and-plan-aware-testing.md — 70 рядків, Fix Report #4
 
 Чому пріоритет #4: tests змішують 2 моделі валідації на plan-залежних сторінках (Analytics входить у цей пул).
 

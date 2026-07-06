@@ -6,7 +6,7 @@
 
 ## 🎨 Тематичні токени (Theme Mapping)
 
-BookIT підтримує 3 офіційні теми, що перемикаються за допомогою `data-theme` на тезі `<html>`. Всі токени налаштовані в [globals.css](file:///c:/Users/Vitossik/SaaS/bookit/src/app/globals.css).
+BookIT підтримує 3 офіційні теми, що перемикаються за допомогою `data-theme` на тезі `<html>`. Всі токени налаштовані в [globals.css](file:///c:/Users/Vitos/SaaS/bookit/src/app/globals.css).
 
 | Токен (CSS Variable) | Blossom (Taupe Light Air · Default) | Studio (Teal Brutal Dark) | Frost (Ice Lavender) |
 |---|---|---|---|

@@ -46,17 +46,17 @@ E2E-тести критично залежать від передзаповне
 
 | Тестовий файл | Компонент / Функція | Кількість тестів | Опис перевірок |
 |---|---|---|---|
-| [pricing.test.ts](file:///c:/Users/Vitossik/SaaS/bookit/src/lib/billing/pricing.test.ts) | `src/lib/billing/pricing.ts` | 27 | Розрахунок вартості підписок, накладання реферальних знижок, stackable discount logic. |
-| [billing.test.ts](file:///c:/Users/Vitossik/SaaS/bookit/src/lib/billing/billing.test.ts) | `src/lib/billing/MonoProvider.ts` | 6 | Верифікація підпису вебхуку Monobank через Ed25519 (включаючи ротацію ключів). |
-| [smartSlots.test.ts](file:///c:/Users/Vitossik/SaaS/bookit/src/lib/utils/smartSlots.test.ts) | `src/lib/utils/smartSlots.ts` | 15+ | Fluid Anchor алгоритм генерації слотів, обхід перерв/відпусток, запобігання накладанням. |
-| [dynamicPricing.test.ts](file:///c:/Users/Vitossik/SaaS/bookit/src/lib/utils/dynamicPricing.test.ts) | `src/lib/utils/dynamicPricing.ts` | 10+ | Динамічне ціноутворення: markup (+50%) на пікові години, discount floor (-30%) на пусті вікна. |
-| [broadcastUtils.test.ts](file:///c:/Users/Vitossik/SaaS/bookit/src/lib/utils/broadcastUtils.test.ts) | `src/lib/utils/broadcastUtils.ts` | 8+ | Персоналізація тексту розсилок (`{client_name}`), валідація тегів та фільтрів. |
+| [pricing.test.ts](file:///c:/Users/Vitos/SaaS/bookit/src/lib/billing/pricing.test.ts) | `src/lib/billing/pricing.ts` | 27 | Розрахунок вартості підписок, накладання реферальних знижок, stackable discount logic. |
+| [billing.test.ts](file:///c:/Users/Vitos/SaaS/bookit/src/lib/billing/billing.test.ts) | `src/lib/billing/MonoProvider.ts` | 6 | Верифікація підпису вебхуку Monobank через Ed25519 (включаючи ротацію ключів). |
+| [smartSlots.test.ts](file:///c:/Users/Vitos/SaaS/bookit/src/lib/utils/smartSlots.test.ts) | `src/lib/utils/smartSlots.ts` | 15+ | Fluid Anchor алгоритм генерації слотів, обхід перерв/відпусток, запобігання накладанням. |
+| [dynamicPricing.test.ts](file:///c:/Users/Vitos/SaaS/bookit/src/lib/utils/dynamicPricing.test.ts) | `src/lib/utils/dynamicPricing.ts` | 10+ | Динамічне ціноутворення: markup (+50%) на пікові години, discount floor (-30%) на пусті вікна. |
+| [broadcastUtils.test.ts](file:///c:/Users/Vitos/SaaS/bookit/src/lib/utils/broadcastUtils.test.ts) | `src/lib/utils/broadcastUtils.ts` | 8+ | Персоналізація тексту розсилок (`{client_name}`), валідація тегів та фільтрів. |
 
 ---
 
 ## 🎭 Playwright E2E Tests (Реєстр інтеграційних тестів)
 
-Розташовані в [e2e/tests/](file:///c:/Users/Vitossik/SaaS/bookit/e2e/tests/). Забезпечують перевірку реального користувацького досвіду в браузері.
+Розташовані в [e2e/tests/](file:///c:/Users/Vitos/SaaS/bookit/e2e/tests/). Забезпечують перевірку реального користувацького досвіду в браузері.
 
 | Специфікація (Spec File) | Цільовий флоу | Статус стабільності | Перевірки |
 |---|---|---|---|

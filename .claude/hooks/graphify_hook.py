@@ -13,7 +13,7 @@ from pathlib import Path
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
-PROJECT_ROOT = Path("C:/Users/Vitossik/SaaS")
+PROJECT_ROOT = Path("C:/Users/Vitos/SaaS")
 GRAPHIFY_OUT = PROJECT_ROOT / "graphify-out"
 GRAPH_INDEX  = GRAPHIFY_OUT / "graph-index.json"
 

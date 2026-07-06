@@ -840,9 +840,9 @@
     "name": "BookIT",
     "version": "8.2.2",
     "type": "NextJS SaaS (Beauty Booking)",
-    "root": "C:\\Users\\Vitossik\\SaaS\\bookit",
-    "xdevRoot": "C:\\Users\\Vitossik\\SaaS\\XDEV",
-    "memoryRoot": "C:\\Users\\Vitossik\\.claude\\projects\\C--Users-Vitossik-SaaS\\memory",
+    "root": "C:\\Users\\Vitos\\SaaS\\bookit",
+    "xdevRoot": "C:\\Users\\Vitos\\SaaS\\XDEV",
+    "memoryRoot": "C:\\Users\\Vitos\\.claude\\projects\\C--Users-Vitos-SaaS\\memory",
     "architectureFiles": [
       "XDEV/SYSTEM_MAP.md",
       "XDEV/BOOKIT.md",

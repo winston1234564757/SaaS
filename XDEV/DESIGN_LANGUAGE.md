@@ -1,6 +1,6 @@
 # DESIGN_LANGUAGE.md — Мова інтерфейсу BookIT
 
-> Єдине джерело дизайн-мови. На нього посилаються [CLAUDE.md](file:///C:/Users/Vitossik/SaaS/CLAUDE.md), [WORKFLOW.md](file:///C:/Users/Vitossik/SaaS/XDEV/PLANS/SPRINT-05-BACKLOG/WORKFLOW.md) та impeccable `DESIGN.md`.
+> Єдине джерело дизайн-мови. На нього посилаються [CLAUDE.md](file:///C:/Users/Vitos/SaaS/CLAUDE.md), [WORKFLOW.md](file:///C:/Users/Vitos/SaaS/XDEV/PLANS/SPRINT-05-BACKLOG/WORKFLOW.md) та impeccable `DESIGN.md`.
 > Народжена з C-CLI-01 (картка клієнта + запису), яку founder оцінив 10/10. Мета: **щоб увесь проект говорив цією мовою**.
 >
 > Версія 1.0.0 · 2026-07-03 · Активна тема: **Frost** (`#EFF2FF` bg · `#0F172A` slate accent).
@@ -113,4 +113,4 @@ Retention/status-хекси відтюнено під СВІТЛИЙ фон — 
 
 ## Розкат
 
-Фазовий беклог конвергенції — [DESIGN_SYSTEM_ROLLOUT.md](file:///C:/Users/Vitossik/SaaS/XDEV/PLANS/DESIGN_SYSTEM_ROLLOUT.md). Кожна поверхня = окрема REDESIGN-задача за WORKFLOW (пре-код ритуал + власні очі + a11y + humanizer).
+Фазовий беклог конвергенції — [DESIGN_SYSTEM_ROLLOUT.md](file:///C:/Users/Vitos/SaaS/XDEV/PLANS/DESIGN_SYSTEM_ROLLOUT.md). Кожна поверхня = окрема REDESIGN-задача за WORKFLOW (пре-код ритуал + власні очі + a11y + humanizer).

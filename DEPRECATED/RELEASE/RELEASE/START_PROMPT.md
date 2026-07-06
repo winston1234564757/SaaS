@@ -17,14 +17,14 @@
 
 1. mempalace_status — викликати tool (не просто згадати).
 2. Прочитай файли:
-   - C:\Users\Vitossik\SaaS\XDEV\IRON_RULES.md
-   - C:\Users\Vitossik\SaaS\XDEV\RELEASE\README.md
-   - C:\Users\Vitossik\SaaS\XDEV\RELEASE\PROTOCOL.md
-   - C:\Users\Vitossik\SaaS\XDEV\RELEASE\STATUS.md
-   - C:\Users\Vitossik\SaaS\XDEV\MAPS\SYSTEM_MAP.md (offset: останні 60 рядків)
+   - C:\Users\Vitos\SaaS\XDEV\IRON_RULES.md
+   - C:\Users\Vitos\SaaS\XDEV\RELEASE\README.md
+   - C:\Users\Vitos\SaaS\XDEV\RELEASE\PROTOCOL.md
+   - C:\Users\Vitos\SaaS\XDEV\RELEASE\STATUS.md
+   - C:\Users\Vitos\SaaS\XDEV\MAPS\SYSTEM_MAP.md (offset: останні 60 рядків)
 3. Зі STATUS.md визнач активний крок (⏳ In progress).
 4. Прочитай playbook активного кроку:
-   C:\Users\Vitossik\SaaS\XDEV\RELEASE\STEPS\STEP_NN_*.md
+   C:\Users\Vitos\SaaS\XDEV\RELEASE\STEPS\STEP_NN_*.md
 5. Виконай mempalace_search "[ключові слова активної сторінки]".
 6. Відповідь у форматі:
 

@@ -9,7 +9,7 @@
 ## 🎯 What's Been Set Up
 
 ### 1. **Development Hooks** ✅
-Located: `C:\Users\Vitossik\SaaS\.claude\hooks\`
+Located: `C:\Users\Vitos\SaaS\.claude\hooks\`
 
 | Hook | Purpose | Trigger |
 |---|---|---|
@@ -165,7 +165,7 @@ npx vitest run src/lib/utils.test.ts
 ## 📂 Key File Structure
 
 ```
-C:\Users\Vitossik\SaaS\
+C:\Users\Vitos\SaaS\
 ├── CLAUDE.md                        ← Main instructions
 ├── XDEV/
 │   ├── SKILL_PROTOCOL.md           ← Decision Tree (20+ skills)

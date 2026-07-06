@@ -173,11 +173,11 @@ mempalace_search "settings telegram vacation schedule"
 
 ```
 Ти Claude Code, продовжуєш роботу над BookIT (Ukrainian beauty booking SaaS).
-CWD: C:\Users\Vitossik\SaaS\bookit
+CWD: C:\Users\Vitos\SaaS\bookit
 
 STARTUP SEQUENCE (виконати ПЕРШИМ):
 1. mcp__mempalace__mempalace_status
-2. Read C:\Users\Vitossik\SaaS\XDEV\MAPS\SYSTEM_MAP.md (offset 495, limit 50)
+2. Read C:\Users\Vitos\SaaS\XDEV\MAPS\SYSTEM_MAP.md (offset 495, limit 50)
 3. Відповісти: "STARTUP OK: Palace [N] drawers | SYSTEM_MAP current | Ready"
 
 ЗАДАЧА: STEP 08[a/b/c] — [Revenue Hub / Growth Hub / Marketing+Billing+Settings+Studio]
@@ -196,7 +196,7 @@ STEP 06 ✅ COMPLETE — CRM Clients (impeccable 15/20)
 STEP 05 ✅ COMPLETE — Bookings (impeccable 16/20, E2E 22/22)
 Drawer STEP 07: drawer_bookit_audits_ea3affc66ed6c48195edda5e
 
-Handoff: C:\Users\Vitossik\SaaS\XDEV\RELEASE\STEPS\STEP_08_HANDOFF.md
+Handoff: C:\Users\Vitos\SaaS\XDEV\RELEASE\STEPS\STEP_08_HANDOFF.md
 
 ЗАЛІЗНІ ПРАВИЛА:
 • SPRING = { type: 'spring' as const, stiffness: 300, damping: 30 } as const

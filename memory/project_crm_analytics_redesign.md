@@ -6,7 +6,7 @@ We refactored and completely redesigned the BookIT CRM Analytics page (`/dashboa
 ## 🛠️ Key Technical Decisions & Architectures
 
 ### 1. Unified Analytics RPC Aggregator
-To eliminate client-side watermarks, RLS bottlenecks, and parallel network round-trips, we defined a consolidation migration [20260605000000_analytics_system.sql](file:///C:/Users/Vitossik/SaaS/bookit/supabase/migrations/20260605000000_analytics_system.sql).
+To eliminate client-side watermarks, RLS bottlenecks, and parallel network round-trips, we defined a consolidation migration [20260605000000_analytics_system.sql](file:///C:/Users/Vitos/SaaS/bookit/supabase/migrations/20260605000000_analytics_system.sql).
 - **Functions:**
   - `get_occupancy_heatmap`: Computes hourly occupancy percentages per day of the week.
   - `get_cohort_retention`: Evaluates monthly new client cohort sizes and subsequent return rates.

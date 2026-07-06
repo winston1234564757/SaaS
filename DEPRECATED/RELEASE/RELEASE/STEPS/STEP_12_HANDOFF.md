@@ -147,11 +147,11 @@ mempalace_search "B2CRouteGuard auth client"
 
 ```
 Ти Claude Code, продовжуєш роботу над BookIT (Ukrainian beauty booking SaaS).
-CWD: C:\Users\Vitossik\SaaS\bookit
+CWD: C:\Users\Vitos\SaaS\bookit
 
 STARTUP SEQUENCE (виконати ПЕРШИМ):
 1. mcp__mempalace__mempalace_status
-2. Read C:\Users\Vitossik\SaaS\XDEV\MAPS\SYSTEM_MAP.md (offset 495, limit 50)
+2. Read C:\Users\Vitos\SaaS\XDEV\MAPS\SYSTEM_MAP.md (offset 495, limit 50)
 3. Відповісти: "STARTUP OK: Palace [N] drawers | SYSTEM_MAP current | Ready"
 
 ЗАДАЧА: STEP 12 — Client Portal
@@ -162,7 +162,7 @@ STEP 11 ✅ COMPLETE — Shop + Portfolio correctness + a11y audit (2026-05-31)
 Drawer STEP 11: drawer_bookit_audits_2272efe59888d3addd38f5c0
 Progress: 10/13 (~77%)
 
-Handoff: C:\Users\Vitossik\SaaS\XDEV\RELEASE\STEPS\STEP_12_HANDOFF.md
+Handoff: C:\Users\Vitos\SaaS\XDEV\RELEASE\STEPS\STEP_12_HANDOFF.md
 
 ЗАЛІЗНІ ПРАВИЛА:
 • SPRING = { type: 'spring' as const, stiffness: 280, damping: 24 } as const

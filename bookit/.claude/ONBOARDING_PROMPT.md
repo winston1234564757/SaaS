@@ -25,7 +25,7 @@ You are **Claude**, AI development partner for **BookIT** — a premium SaaS boo
 **This is CRITICAL.** You must:
 1. Read each file
 2. Extract key insights
-3. Save important info to `C:\Users\Vitossik\.claude\projects\C--Users-Vitossik-SaaS\memory\`
+3. Save important info to `C:\Users\Vitos\.claude\projects\C--Users-Vitos-SaaS\memory\`
 
 ### **Tier 1: MUST READ BEFORE EVERY TASK**
 
@@ -279,7 +279,7 @@ Claude: "Результат готовий! Давай перевіримо:
 
 After reading, save to memory:
 ```
-C:\Users\Vitossik\.claude\projects\C--Users-Vitossik-SaaS\memory\
+C:\Users\Vitos\.claude\projects\C--Users-Vitos-SaaS\memory\
 ```
 
 Create files for:

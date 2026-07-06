@@ -131,7 +131,7 @@
 - Всі color fixes тільки для Frost CSS tokens (`--color-*` або `var(--btn-*)`)
 
 ### Важливі шляхи
-- XDEV: `C:\Users\Vitossik\SaaS\XDEV\` (НЕ всередині bookit/)
+- XDEV: `C:\Users\Vitos\SaaS\XDEV\` (НЕ всередині bookit/)
 - IRP: `XDEV/PLANS/IRP-2026-06-07.md`
 - SYSTEM_MAP: `XDEV/MAPS/SYSTEM_MAP.md`
 - Admin client: `@/lib/supabase/admin` — ЄДИНЕ джерело

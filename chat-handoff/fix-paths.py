@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """
-Rename hardcoded user path  Vitossik -> Vitos  across BookIT config & repo.
+Rename hardcoded user path  Vitos -> Vitos  across BookIT config & repo.
 
 Запускати ОДИН раз на новому ноуті, ПІСЛЯ того як:
   1) git clone SaaS зроблено в  C:\\Users\\Vitos\\SaaS
   2) бандл розкладено по місцях (.claude, .claude.json, .mempalace)
 
 Робить ДВІ речі:
-  A) міняє текст  Vitossik -> Vitos  у конфігах/коді/хуках;
-  B) перейменовує папки auto-memory  ~/.claude/projects/C--Users-Vitossik-*
+  A) міняє текст  Vitos -> Vitos  у конфігах/коді/хуках;
+  B) перейменовує папки auto-memory  ~/.claude/projects/C--Users-Vitos-*
      на  C--Users-Vitos-*  (інакше Claude Code не знайде пам'ять — імена папок
      це закодований старий шлях).
 
@@ -24,7 +24,7 @@ Rename hardcoded user path  Vitossik -> Vitos  across BookIT config & repo.
 """
 import os
 
-OLD = "Vitossik"
+OLD = "Vitos"
 NEW = "Vitos"
 
 HOME = os.path.expanduser("~")            # на новому ноуті = C:\Users\Vitos
@@ -85,7 +85,7 @@ def fix_contents():
 
 
 def rename_memory_dirs():
-    """Перейменувати ~/.claude/projects/*Vitossik* -> *Vitos* (bottom-up)."""
+    """Перейменувати ~/.claude/projects/*Vitos* -> *Vitos* (bottom-up)."""
     base = os.path.join(HOME, ".claude", "projects")
     if not os.path.isdir(base):
         print("  (немає ~/.claude/projects — пропуск)")

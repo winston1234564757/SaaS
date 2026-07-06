@@ -6,7 +6,7 @@
 
 ## 🏗️ Інтеграція з Monobank
 
-Єдиною платіжною системою в проекті є **Monobank**. Інтеграція реалізована через інтерфейс `PaymentProvider` у файлі [MonoProvider.ts](file:///c:/Users/Vitossik/SaaS/bookit/src/lib/billing/MonoProvider.ts).
+Єдиною платіжною системою в проекті є **Monobank**. Інтеграція реалізована через інтерфейс `PaymentProvider` у файлі [MonoProvider.ts](file:///c:/Users/Vitos/SaaS/bookit/src/lib/billing/MonoProvider.ts).
 
 ### Основні Кроки Оплати:
 1.  **Ініціалізація інвойсу (`createCheckout`)**:
@@ -17,7 +17,7 @@
     *   Майстер перенаправляється на сторінку оплати Monobank.
 2.  **Обробка Вебхуку (`mono-webhook`)**:
     *   Monobank відправляє POST-запит при успішній оплаті.
-    *   Сервер перевіряє Ed25519-підпис запиту (див. [DATABASE_SECURITY_RLS_MAP.md](file:///c:/Users/Vitossik/SaaS/XDEV/MAPS/DATABASE_SECURITY_RLS_MAP.md)).
+    *   Сервер перевіряє Ed25519-підпис запиту (див. [DATABASE_SECURITY_RLS_MAP.md](file:///c:/Users/Vitos/SaaS/XDEV/MAPS/DATABASE_SECURITY_RLS_MAP.md)).
     *   Статус платежу в `payments` змінюється на `success`.
     *   Зберігається рекурентний токен (`maskedPan`, `cardToken` або `approvalCode`) у таблиці `master_subscriptions`.
     *   Підписка майстра активується/подовжується на 30 днів.
@@ -44,7 +44,7 @@
 
 ## 🧮 С택інг знижок та розрахунок вартості (Pricing Engine)
 
-Логіка обчислення ціни підписки знаходиться у файлі [pricing.ts](file:///c:/Users/Vitossik/SaaS/bookit/src/lib/billing/pricing.ts). Усі розрахунки ведуться у **копійках** (цілих числах), щоб уникнути плаваючої коми.
+Логіка обчислення ціни підписки знаходиться у файлі [pricing.ts](file:///c:/Users/Vitos/SaaS/bookit/src/lib/billing/pricing.ts). Усі розрахунки ведуться у **копійках** (цілих числах), щоб уникнути плаваючої коми.
 
 ### Правила накладання знижок (Discount Stacking):
 1.  **Базова ціна**: Визначається тарифом підписки.

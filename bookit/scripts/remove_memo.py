@@ -156,7 +156,7 @@ def process_file(path):
 
 
 def main():
-    src = Path(r'C:\Users\Vitossik\SaaS\bookit\src')
+    src = Path(r'C:\Users\Vitos\SaaS\bookit\src')
     total_m = total_c = files = 0
 
     for ext in ('*.tsx', '*.ts'):

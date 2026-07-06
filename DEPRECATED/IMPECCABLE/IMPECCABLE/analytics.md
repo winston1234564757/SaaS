@@ -22,13 +22,13 @@
 
 ## 📑 Core Audit Reports (V2.0)
 
-- [critique.md](file:///c:/Users/Vitossik/SaaS/IMPECCABLE/analytics-critique.md) — Nielsen Heuristics design critique.
-- [animate.md](file:///c:/Users/Vitossik/SaaS/IMPECCABLE/analytics-animate.md) — Framer Motion spring configurations and layout animation checks.
-- [polish.md](file:///c:/Users/Vitossik/SaaS/IMPECCABLE/analytics-polish.md) — Token and design system compliance, touch target sizes, contrast, and accessibility checklist.
-- [layout.md](file:///c:/Users/Vitossik/SaaS/IMPECCABLE/analytics-layout.md) — Bento Grid visual rhythm, responsive breakpoints, and spatial spacing.
-- [overdrive.md](file:///c:/Users/Vitossik/SaaS/IMPECCABLE/analytics-overdrive.md) — Implemented overdrive items (Smart Pricing peak markup, Consumables stock forecast, Vacation lost revenue simulator).
-- [live.md](file:///c:/Users/Vitossik/SaaS/IMPECCABLE/analytics-live.md) — Playwright E2E visual and functional test verifications.
-- [optimize.md](file:///c:/Users/Vitossik/SaaS/IMPECCABLE/analytics-optimize.md) — Consolidating database queries into a single unified JSONB RPC, React Query staleTime defaults, and bundle analyses.
+- [critique.md](file:///c:/Users/Vitos/SaaS/IMPECCABLE/analytics-critique.md) — Nielsen Heuristics design critique.
+- [animate.md](file:///c:/Users/Vitos/SaaS/IMPECCABLE/analytics-animate.md) — Framer Motion spring configurations and layout animation checks.
+- [polish.md](file:///c:/Users/Vitos/SaaS/IMPECCABLE/analytics-polish.md) — Token and design system compliance, touch target sizes, contrast, and accessibility checklist.
+- [layout.md](file:///c:/Users/Vitos/SaaS/IMPECCABLE/analytics-layout.md) — Bento Grid visual rhythm, responsive breakpoints, and spatial spacing.
+- [overdrive.md](file:///c:/Users/Vitos/SaaS/IMPECCABLE/analytics-overdrive.md) — Implemented overdrive items (Smart Pricing peak markup, Consumables stock forecast, Vacation lost revenue simulator).
+- [live.md](file:///c:/Users/Vitos/SaaS/IMPECCABLE/analytics-live.md) — Playwright E2E visual and functional test verifications.
+- [optimize.md](file:///c:/Users/Vitos/SaaS/IMPECCABLE/analytics-optimize.md) — Consolidating database queries into a single unified JSONB RPC, React Query staleTime defaults, and bundle analyses.
 
 ---
 

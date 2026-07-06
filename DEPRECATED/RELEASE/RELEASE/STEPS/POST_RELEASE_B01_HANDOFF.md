@@ -157,11 +157,11 @@ SPRING = { type: 'spring' as const, stiffness: 280, damping: 24 } as const
 
 ```
 Ти Claude Code, продовжуєш роботу над BookIT (Ukrainian beauty booking SaaS).
-CWD: C:\Users\Vitossik\SaaS\bookit
+CWD: C:\Users\Vitos\SaaS\bookit
 
 STARTUP SEQUENCE (виконати ПЕРШИМ):
 1. mcp__mempalace__mempalace_status
-2. Read C:\Users\Vitossik\SaaS\XDEV\MAPS\SYSTEM_MAP.md (offset 495, limit 50)
+2. Read C:\Users\Vitos\SaaS\XDEV\MAPS\SYSTEM_MAP.md (offset 495, limit 50)
 3. Відповісти: "STARTUP OK: Palace [N] drawers | SYSTEM_MAP current | Ready"
 
 ЗАДАЧА: B-01 — Dashboard Impeccable Audit
@@ -172,7 +172,7 @@ STEP 13 ✅ COMPLETE — всі 13/13 кроків done (2026-06-01)
 Drawer STEP 13: drawer_bookit_audits_774ccb6b5e3b9700582e81ce
 Progress: 13/13 (100%) — Production Ready
 
-Handoff: C:\Users\Vitossik\SaaS\XDEV\RELEASE\STEPS\POST_RELEASE_B01_HANDOFF.md
+Handoff: C:\Users\Vitos\SaaS\XDEV\RELEASE\STEPS\POST_RELEASE_B01_HANDOFF.md
 
 ЩО ТРЕБА ЗРОБИТИ:
 Запустити /impeccable аудит Dashboard (`/dashboard`, три теми).

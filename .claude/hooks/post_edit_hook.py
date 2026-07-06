@@ -72,7 +72,7 @@ def main():
                 msg = (
                     f"[TSC BATCH] {count}/{MAX_TS_EDITS_BEFORE_TSC} TS edits since last tsc. "
                     + ("Run tsc NOW — next edit will be blocked. " if urgent else "Run tsc soon. ")
-                    + "Bash: cd C:/Users/Vitossik/SaaS/bookit && npx tsc --noEmit"
+                    + "Bash: cd C:/Users/Vitos/SaaS/bookit && npx tsc --noEmit"
                 )
                 print(json.dumps({
                     "hookSpecificOutput": {

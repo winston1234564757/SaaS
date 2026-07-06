@@ -19,9 +19,9 @@ if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
 STATE_FILE   = Path(__file__).parent / "state" / "session_state.json"
-TRACKER_FILE = Path("C:/Users/Vitossik/SaaS/XDEV/PLANS/SPRINT-04-BACKLOG/TRACKER.md")
-HANDOFF_FILE = Path("C:/Users/Vitossik/SaaS/XDEV/PLANS/SPRINT-04-BACKLOG/HANDOFF.md")
-TRANSITION   = Path("C:/Users/Vitossik/SaaS/XDEV/PLANS/SPRINT-04-BACKLOG/TRANSITION_PROMPT.md")
+TRACKER_FILE = Path("C:/Users/Vitos/SaaS/XDEV/PLANS/SPRINT-04-BACKLOG/TRACKER.md")
+HANDOFF_FILE = Path("C:/Users/Vitos/SaaS/XDEV/PLANS/SPRINT-04-BACKLOG/HANDOFF.md")
+TRANSITION   = Path("C:/Users/Vitos/SaaS/XDEV/PLANS/SPRINT-04-BACKLOG/TRANSITION_PROMPT.md")
 
 EXTRACT_EDIT_THRESHOLD   = 5
 MANDATORY_EDIT_THRESHOLD = 3

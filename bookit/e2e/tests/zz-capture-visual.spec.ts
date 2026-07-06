@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 // The artifacts directory where we want to save the screenshots
-const artifactsDir = 'C:\\Users\\Vitossik\\.gemini\\antigravity-ide\\brain\\9fbddcd5-f58f-4db2-85b5-308c51dea4b0';
+const artifactsDir = 'C:\\Users\\Vitos\\.gemini\\antigravity-ide\\brain\\9fbddcd5-f58f-4db2-85b5-308c51dea4b0';
 
 test('capture analytics screenshots', async ({ browser }) => {
   // Use the audit master state to have maximum data coverage
