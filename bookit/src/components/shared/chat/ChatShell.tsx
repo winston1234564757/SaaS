@@ -8,15 +8,35 @@ interface ChatShellProps {
   composer: ReactNode;
   /** The message list (or history overlay wrapper). */
   children: ReactNode;
+  /**
+   * Contained mode (desktop 2-pane): fill the parent pane with `h-full`
+   * instead of a fixed full-screen frame, and skip the keyboard viewport
+   * engine (no body-scroll lock). Default `false` keeps the mobile /
+   * master-zone full-screen behaviour byte-identical.
+   */
+  contained?: boolean;
 }
 
 /**
- * Full-screen chat frame: header (pinned, safe-area) → scrollable body →
- * composer (safe-area). Owns the Telegram-grade viewport engine so the root
- * collapses to the area above the keyboard instead of leaving a dead gap.
+ * Chat frame: header (pinned) → scrollable body → composer.
+ *
+ * Full-screen (default): fixed to the visual viewport, owns the Telegram-grade
+ * keyboard engine so the root collapses above the keyboard instead of leaving a
+ * dead gap. Contained: fills a bounded pane (desktop master-detail), no fixed
+ * positioning, no scroll lock.
  */
-export function ChatShell({ header, composer, children }: ChatShellProps) {
-  const { height, offsetTop } = useChatViewport();
+export function ChatShell({ header, composer, children, contained = false }: ChatShellProps) {
+  const { height, offsetTop } = useChatViewport(!contained);
+
+  if (contained) {
+    return (
+      <div className="relative flex h-full min-h-0 flex-col overflow-hidden bg-background text-foreground">
+        {header}
+        {children}
+        {composer}
+      </div>
+    );
+  }
 
   return (
     // Pinned to the visual viewport (top-left), height driven by the keyboard

@@ -18,6 +18,8 @@ interface SupportChatPageProps {
   user: { id: string };
   userRole: 'master' | 'client';
   initialTicketId: string | null;
+  /** Desktop 2-pane: render contained inside the pane, drop the back button. */
+  inPane?: boolean;
 }
 
 const SUGGESTIONS = [
@@ -35,7 +37,7 @@ const STATUS_LABEL: Record<string, string> = {
   closed: 'Вирішена',
 };
 
-export function SupportChatPage({ user, userRole, initialTicketId }: SupportChatPageProps) {
+export function SupportChatPage({ user, userRole, initialTicketId, inPane = false }: SupportChatPageProps) {
   const router = useRouter();
   const supabase = createClient();
 
@@ -195,12 +197,13 @@ export function SupportChatPage({ user, userRole, initialTicketId }: SupportChat
 
   return (
     <ChatShell
+      contained={inPane}
       header={
         <ChatHeader
           avatar={avatar}
           title="Служба підтримки BookIT"
           subtitle={presence.label}
-          onBack={handleBack}
+          onBack={inPane ? undefined : handleBack}
           action={
             <div className="flex items-center gap-2">
               {currentStatus && (

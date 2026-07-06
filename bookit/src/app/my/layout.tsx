@@ -77,6 +77,14 @@ export default async function MyLayout({ children }: { children: React.ReactNode
   const isChatRoute =
     pathname === '/my/support/chat' || /^\/my\/messages\/[^/]+$/.test(pathname);
 
+  // Desktop master-detail surfaces need the full content width on lg (the
+  // `max-w-lg` column would squeeze the two-pane layout). Mobile/tablet keep the
+  // narrow column untouched. C-DESK-01 Фаза 2.
+  const isWideDesktopRoute = pathname === '/my/bookings' || pathname === '/my/messages';
+  // The desktop two-pane messenger fills the viewport: drop the phantom navbar
+  // gap and the floating chrome on lg (support already lives inside the pane).
+  const isDesktopChatSurface = pathname === '/my/messages';
+
   if (isChatRoute) {
     return (
       <div className="min-h-dvh pt-[env(safe-area-inset-top)]">
@@ -88,12 +96,8 @@ export default async function MyLayout({ children }: { children: React.ReactNode
     );
   }
 
-  return (
-    <div data-theme="frost" className="min-h-dvh pt-[env(safe-area-inset-top)] md:pt-20">
-      <GlassSafeArea />
-      <PublicNavbar notifBell={<ClientNotificationsBell userId={user.id} />} />
-      <SmartBackButton floating />
-      <BlobBackground />
+  const banners = (
+    <>
       {isMasterInClientMode && <MasterModeBanner />}
       {(!hasTelegram || !hasPush) && (
         <ChannelBanner
@@ -103,12 +107,31 @@ export default async function MyLayout({ children }: { children: React.ReactNode
           botName={botName}
         />
       )}
-      <div className="max-w-lg mx-auto px-4 py-6 pb-32">
+    </>
+  );
+
+  return (
+    <div
+      data-theme="frost"
+      className={`min-h-dvh pt-[env(safe-area-inset-top)] md:pt-20${isDesktopChatSurface ? ' lg:pt-0' : ''}`}
+    >
+      <GlassSafeArea />
+      <PublicNavbar notifBell={<ClientNotificationsBell userId={user.id} />} />
+      <SmartBackButton floating />
+      <BlobBackground />
+      {isDesktopChatSurface ? <div className="lg:hidden">{banners}</div> : banners}
+      <div
+        className={
+          isWideDesktopRoute
+            ? 'max-w-lg mx-auto px-4 py-6 pb-32 lg:max-w-none lg:mx-0 lg:px-0 lg:py-0 lg:pb-0'
+            : 'max-w-lg mx-auto px-4 py-6 pb-32'
+        }
+      >
         <B2CRouteGuard phone={profile?.phone || null}>
           {children}
         </B2CRouteGuard>
       </div>
-      <SupportWidget />
+      {isDesktopChatSurface ? <div className="lg:hidden"><SupportWidget /></div> : <SupportWidget />}
     </div>
   );
 }

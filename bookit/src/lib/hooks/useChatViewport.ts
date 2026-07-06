@@ -31,10 +31,14 @@ export interface ChatViewport {
  * rubber-band. Returns `height: null` before hydration — callers fall back to
  * `100dvh` via CSS so SSR / first paint is correct.
  */
-export function useChatViewport(): ChatViewport {
+export function useChatViewport(enabled: boolean = true): ChatViewport {
   const [vp, setVp] = useState<ChatViewport>({ height: null, offsetTop: 0 });
 
   useEffect(() => {
+    // Contained surfaces (desktop 2-pane) opt out: they fill a bounded pane and
+    // must NOT lock document scroll or drive height from the visual viewport.
+    if (!enabled) return;
+
     const vv = window.visualViewport;
 
     // Fallback for browsers without visualViewport: track innerHeight, no pan.
@@ -64,7 +68,7 @@ export function useChatViewport(): ChatViewport {
       body.style.overflow = prevOverflow;
       body.style.overscrollBehavior = prevOverscroll;
     };
-  }, []);
+  }, [enabled]);
 
   return vp;
 }

@@ -5,6 +5,7 @@ import { getConversations, getOrCreateConversation } from '@/lib/actions/message
 import { getSupportChatState } from '@/lib/actions/support';
 import { getMyMasters } from '@/lib/actions/myMasters';
 import { MessagesListPage } from '@/components/shared/messages/MessagesListPage';
+import { MyMessagesDesktop } from '@/components/client/MyMessagesDesktop';
 
 export const metadata: Metadata = { title: 'Повідомлення' };
 
@@ -23,11 +24,22 @@ export default async function MyMessagesPage({
     if (conv) redirect(`/my/messages/${conv.id}`);
   }
 
-  const [conversations, supportRow, myMasters] = await Promise.all([
+  const [conversations, supportRow, myMasters, supportTicket] = await Promise.all([
     getConversations(),
     getSupportChatState(),
     getMyMasters(),
+    // Active support chat ticket id - the desktop pane opens it directly.
+    supabase
+      .from('support_tickets')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('type', 'chat')
+      .in('status', ['open', 'active'])
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
   ]);
+  const supportInitialTicketId = supportTicket.data?.id ?? null;
 
   // Rail = masters without an existing conversation (bridge to a new chat).
   // master.id (= master_profiles.id = user id) matches the conversation
@@ -38,13 +50,27 @@ export default async function MyMessagesPage({
     .map(m => ({ id: m.id, slug: m.slug, name: m.name, avatarUrl: m.avatarUrl }));
 
   return (
-    <MessagesListPage
-      conversations={conversations}
-      userRole="client"
-      basePath="/my/messages"
-      supportRow={supportRow}
-      supportHref="/my/support/chat"
-      masters={railMasters}
-    />
+    <>
+      {/* Mobile / tablet - list → route (unchanged) */}
+      <div className="lg:hidden">
+        <MessagesListPage
+          conversations={conversations}
+          userRole="client"
+          basePath="/my/messages"
+          supportRow={supportRow}
+          supportHref="/my/support/chat"
+          masters={railMasters}
+        />
+      </div>
+
+      {/* Desktop (lg+) - two-pane messenger */}
+      <MyMessagesDesktop
+        userId={user.id}
+        conversations={conversations}
+        supportRow={supportRow}
+        supportInitialTicketId={supportInitialTicketId}
+        masters={railMasters}
+      />
+    </>
   );
 }

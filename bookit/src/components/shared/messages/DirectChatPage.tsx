@@ -18,6 +18,8 @@ interface DirectChatPageProps {
   participantAvatarUrl: string | null;
   userRole: 'client' | 'master';
   backHref: string;
+  /** Desktop 2-pane: render contained inside the pane, drop the back button. */
+  inPane?: boolean;
 }
 
 export function DirectChatPage({
@@ -26,6 +28,7 @@ export function DirectChatPage({
   participantName,
   participantAvatarUrl,
   backHref,
+  inPane = false,
 }: DirectChatPageProps) {
   const { messages, loading } = useDMChat(conversationId);
   const [text, setText] = useState('');
@@ -80,12 +83,13 @@ export function DirectChatPage({
 
   return (
     <ChatShell
+      contained={inPane}
       header={
         <ChatHeader
           avatar={avatar}
           title={participantName}
           subtitle="зазвичай відповідає швидко"
-          backHref={backHref}
+          backHref={inPane ? undefined : backHref}
         />
       }
       composer={
