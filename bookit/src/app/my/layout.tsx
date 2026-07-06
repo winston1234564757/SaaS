@@ -77,10 +77,11 @@ export default async function MyLayout({ children }: { children: React.ReactNode
   const isChatRoute =
     pathname === '/my/support/chat' || /^\/my\/messages\/[^/]+$/.test(pathname);
 
-  // Desktop master-detail surfaces need the full content width on lg (the
-  // `max-w-lg` column would squeeze the two-pane layout). Mobile/tablet keep the
+  // Desktop master-detail / gallery surfaces need the full content width on lg
+  // (the `max-w-lg` column would squeeze the layout). Mobile/tablet keep the
   // narrow column untouched. C-DESK-01 Фаза 2.
-  const isWideDesktopRoute = pathname === '/my/bookings' || pathname === '/my/messages';
+  const isWideDesktopRoute =
+    pathname === '/my/bookings' || pathname === '/my/messages' || pathname === '/my/masters';
   // The desktop two-pane messenger fills the viewport: drop the phantom navbar
   // gap and the floating chrome on lg (support already lives inside the pane).
   const isDesktopChatSurface = pathname === '/my/messages';
