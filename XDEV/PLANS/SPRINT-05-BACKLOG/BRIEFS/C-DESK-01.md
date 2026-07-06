@@ -127,6 +127,20 @@ Own-eyes: desktop (upcoming/completed/shop) + mobile. TSC:0 Build:clean.
 
 Own-eyes: Playwright empty/DM/support @1280·1440 + mobile 390 (2-pane схований). TSC:0 · Build:clean · humanizer (em-dash прибрано) · encoding чистий.
 
-**Лишилось (Фаза 2, стор. 3..8):** masters галерея · loyalty/notifications/profile 2-кол · explore/shop ширші гріди.
+**Лишилось (Фаза 2, стор. 4..8):** loyalty/notifications/profile 2-кол · explore/shop ширші гріди.
+
+## Реалізація — Фаза 2, стор. 3: /my/masters ✅ (commit `ac940ef6`, НЕ задеплоєно)
+
+**Десктоп editorial-галерея** (`DesktopMasters` у `MyMastersPage.tsx`, `hidden lg:block`; мобільний 2-col грід `lg:hidden` недоторканий, включно emoji-fallback): темний `ClientPageHero` band (спільний) + **featured «Твій головний майстер»** (найчастіше відвіданий, tiebreak recency) — горизонтальна світла картка з великою обкладинкою + серіф-ім'я 3xl + метрики (`metric-value` візити · востаннє · місто) + категорії + Записатись/Написати; далі секція **«Інші майстри»** auto-fit грід `minmax(258px,1fr)`.
+
+**No-photo → монограм-обкладинка** (детермінований Frost hue `linear-gradient` + Cormorant ініціал), reuse `monogramHue`/`initialOf`/`CORMORANT` з `components/public/explore/shared.ts` — НЕ emoji-заглушка (No-Emoji + патерн Explore).
+
+`/my/masters` додано в `isWideDesktopRoute` (my/layout.tsx) → повна ширина на lg (та сама механіка, що bookings/messages).
+
+Own-eyes: Playwright 1280/1440 (featured + галерея) + mobile 390 (2-col недоторканий, десктоп схований). TSC:0 · Build:clean · humanizer · encoding чистий.
+
+**Уроки:** (1) новий wide-десктоп-роут ТРЕБА додати в `isWideDesktopRoute`, інакше max-w-lg squeeze; (2) no-photo б'юті = designed монограм (reuse explore/shared), не emoji; (3) featured = most-visits (сигнал relationship), не recency; (4) мобільний недоторканий = навіть emoji-fallback лишаємо (breakpoint-різниця свідома).
+
+**Лишилось (Фаза 2, стор. 4..8):** loyalty/notifications/profile 2-кол · explore/shop ширші гріди.
 
 ## Прев'ю / реалізація — нижче після виконання
