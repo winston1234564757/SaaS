@@ -85,7 +85,8 @@ export default async function MyLayout({ children }: { children: React.ReactNode
     pathname === '/my/messages' ||
     pathname === '/my/masters' ||
     pathname === '/my/loyalty' ||
-    pathname === '/my/notifications';
+    pathname === '/my/notifications' ||
+    pathname === '/my/profile';
   // The desktop two-pane messenger fills the viewport: drop the phantom navbar
   // gap and the floating chrome on lg (support already lives inside the pane).
   const isDesktopChatSurface = pathname === '/my/messages';

@@ -138,9 +138,9 @@ export function MyProfilePage({ profile }: Props) {
   const botName = process.env.NEXT_PUBLIC_TELEGRAM_BOT_NAME;
 
   return (
-    <div className="flex flex-col gap-6 pt-4 pb-28">
+    <div className="flex flex-col gap-6 pt-4 pb-28 lg:grid lg:grid-cols-[320px_minmax(0,1fr)] lg:gap-8 lg:items-start lg:max-w-5xl lg:mx-auto lg:px-8 lg:pt-8 lg:pb-8">
 
-      <div className="editorial-cover px-6 py-7 flex flex-col items-center gap-4">
+      <div className="editorial-cover px-6 py-7 flex flex-col items-center gap-4 lg:sticky lg:top-24 lg:self-start">
         <PhotoUploader
           entity={{ type: 'client-avatar', userId: profile.userId }}
           value={avatarUrl}
@@ -210,6 +210,7 @@ export function MyProfilePage({ profile }: Props) {
         </div>
       </div>
 
+      <div className="flex flex-col gap-6 min-w-0">
       <div>
         <SectionLabel>Про вас</SectionLabel>
         <div className="flex flex-col gap-3">
@@ -480,6 +481,7 @@ export function MyProfilePage({ profile }: Props) {
           </button>
         </div>
       </div>
+      </div>
 
       <AnimatePresence>
         {isDirty && (
@@ -488,14 +490,14 @@ export function MyProfilePage({ profile }: Props) {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 100, opacity: 0 }}
             transition={SPRING}
-            className="fixed bottom-[calc(env(safe-area-inset-bottom,0px)+4rem)] left-0 right-0 z-50 px-4"
+            className="fixed bottom-[calc(env(safe-area-inset-bottom,0px)+4rem)] left-0 right-0 z-50 px-4 lg:left-[264px] lg:bottom-6"
           >
             <button
               type="button"
               onClick={handleSave}
               disabled={isPending || !fullName.trim()}
               className={cn(
-                'w-full h-14 rounded-full font-semibold text-sm flex items-center justify-center gap-2',
+                'w-full h-14 rounded-full font-semibold text-sm flex items-center justify-center gap-2 lg:max-w-md lg:mx-auto',
                 'shadow-lg transition-all active:scale-[0.97] cursor-pointer',
                 saved
                   ? 'bg-success text-white'
