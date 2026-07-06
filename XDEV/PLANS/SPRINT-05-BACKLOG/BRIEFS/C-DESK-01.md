@@ -141,6 +141,18 @@ Own-eyes: Playwright 1280/1440 (featured + галерея) + mobile 390 (2-col �
 
 **Уроки:** (1) новий wide-десктоп-роут ТРЕБА додати в `isWideDesktopRoute`, інакше max-w-lg squeeze; (2) no-photo б'юті = designed монограм (reuse explore/shared), не emoji; (3) featured = most-visits (сигнал relationship), не recency; (4) мобільний недоторканий = навіть emoji-fallback лишаємо (breakpoint-різниця свідома).
 
-**Лишилось (Фаза 2, стор. 4..8):** loyalty/notifications/profile 2-кол · explore/shop ширші гріди.
+**Лишилось (Фаза 2, стор. 5..8):** notifications/profile 2-кол · explore/shop ширші гріди.
+
+## Реалізація — Фаза 2, стор. 4: /my/loyalty ✅ (commit `f5795c15`, НЕ задеплоєно)
+
+**Директива founder «прибирай емодзі всюди»** → повний emoji-purge клієнт-зони: усі avatar-заглушки з emoji (`masterEmoji` fallback) → монограм-обкладинка через новий спільний **`MasterAvatar`** (Frost hue `linear-gradient` + Cormorant ініціал, reuse `monogramHue`/`initialOf`/`CORMORANT` з `explore/shared`). Місця: loyalty ×3 (програми/C2C-реферали/промокоди) + masters мобільна картка (`{avatarEmoji}`→`MediaCover`).
+
+**Десктоп-адаптив loyalty** (структура тримається, БЕЗ окремого `hidden lg:block` дерева): root `lg:max-w-5xl lg:mx-auto lg:px-8 lg:py-8`, таби/sub-таби `lg:max-w-md`, гріди програм і C2C `grid sm:grid-cols-2`, C2B-колонка `lg:max-w-2xl`. `/my/loyalty` у `isWideDesktopRoute`.
+
+Own-eyes: Playwright loyalty/referral-C2C/C2B @1280 + mobile 390 (недоторканий, монограми скрізь). TSC:0 · Build:clean · encoding чистий.
+
+**Уроки:** (1) 🔴 ЖОДНИХ emoji-fallback для аватара — завжди designed монограм (спільний MasterAvatar); (2) десктоп-адаптив простих сторінок = центрований max-w + responsive гріди (окреме десктоп-дерево лише коли структура кардинально інша); (3) `masterEmoji` поле лишається в типах/запиті як дані, просто не рендериться.
+
+**Лишилось (Фаза 2, стор. 5..8):** notifications/profile 2-кол · explore/shop ширші гріди.
 
 ## Прев'ю / реалізація — нижче після виконання
