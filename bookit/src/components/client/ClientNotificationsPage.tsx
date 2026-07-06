@@ -95,6 +95,192 @@ function DateSeparator({ label }: { label: string }) {
   );
 }
 
+function ConsentCard({
+  item, index, pending, onApprove, onDecline,
+}: {
+  item: PortfolioConsent; index: number; pending: boolean;
+  onApprove: (id: string) => void; onDecline: (id: string) => void;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.05, ...SPRING }}
+      className="rounded-xl overflow-hidden bg-secondary/80 border border-accent/20 shadow-sm"
+    >
+      {item.cover_url && (
+        <div className="relative w-full h-36">
+          <Image src={item.cover_url} alt={item.title} fill className="object-cover" sizes="512px" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+          <p className="absolute bottom-3 left-4 text-sm font-bold text-white">{item.title}</p>
+        </div>
+      )}
+      <div className="p-4 space-y-3">
+        <div className="flex items-start gap-3">
+          <div className="size-9 rounded-lg bg-accent/15 flex items-center justify-center shrink-0">
+            <Images size={16} className="text-accent" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold text-foreground">
+              {item.master_name} відмітив вас у портфоліо
+            </p>
+            {!item.cover_url && (
+              <p className="text-xs text-text-sub mt-0.5">«{item.title}»</p>
+            )}
+            <p className="text-xs text-text-sub mt-0.5">Підтвердіть або відхиліть участь</p>
+          </div>
+        </div>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => onDecline(item.id)}
+            disabled={pending}
+            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold text-destructive border border-destructive/30 hover:bg-destructive/8 active:scale-[0.97] transition-all duration-100 disabled:opacity-50 cursor-pointer min-h-[44px]"
+          >
+            <X size={15} /> Відхилити
+          </button>
+          <button
+            type="button"
+            onClick={() => onApprove(item.id)}
+            disabled={pending}
+            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold text-accent-foreground bg-accent hover:opacity-90 active:scale-[0.97] transition-all duration-100 disabled:opacity-50 cursor-pointer min-h-[44px]"
+          >
+            <Check size={15} /> Підтвердити
+          </button>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+function NotifRow({ notif, index, router }: { notif: ClientNotification; index: number; router: ReturnType<typeof useRouter> }) {
+  const Icon = notifIcon(notif.type);
+  const isBroadcast = notif.type === 'broadcast';
+  const broadcast = isBroadcast ? parseBroadcastBody(notif.body) : null;
+  const isClickable = (isBroadcast && !!broadcast?.url) ||
+    notif.type === 'support_user_reply' ||
+    !!notif.relatedBookingId ||
+    ['new_booking', 'booking_cancelled', 'booking_created', 'booking_confirmed', 'booking_rescheduled', 'booking_completed', 'reminder'].includes(notif.type);
+
+  return (
+    <motion.button
+      type="button"
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.03, ...SPRING }}
+      onClick={() => {
+        if (isBroadcast && broadcast?.url) {
+          window.location.href = broadcast.url;
+        } else if (notif.type === 'support_user_reply') {
+          router.push('/my/support/chat');
+        } else if (notif.relatedBookingId || ['new_booking', 'booking_cancelled', 'booking_created', 'booking_confirmed', 'booking_rescheduled', 'booking_completed', 'reminder'].includes(notif.type)) {
+          router.push('/my/bookings');
+        }
+      }}
+      className={[
+        'text-left w-full rounded-xl p-4 flex items-start gap-3 border transition-all duration-100',
+        notif.isRead ? 'bg-secondary/40' : 'bg-accent/5 border-accent/10',
+        !notif.isRead ? '' : 'border-border/60',
+        isClickable ? 'cursor-pointer hover:opacity-90 active:scale-[0.98]' : 'cursor-default',
+      ].join(' ')}
+    >
+      {/* Type dot */}
+      <div className="flex flex-col items-center gap-1.5 shrink-0 mt-1.5">
+        <div className={`size-2 rounded-full ${notifDotColor(notif.type)}`} />
+      </div>
+
+      {/* Icon */}
+      <div className={`size-9 rounded-lg flex items-center justify-center shrink-0 ${isBroadcast ? 'bg-accent/12 text-accent' : 'bg-secondary/60 text-text-sub'}`}>
+        <Icon size={16} />
+      </div>
+
+      <div className="flex-1 min-w-0">
+        <p className={`text-sm font-semibold ${notif.isRead ? 'text-foreground/80' : 'text-foreground'}`}>
+          {notif.title}
+        </p>
+
+        {isBroadcast && broadcast ? (
+          <>
+            {broadcast.text && (
+              <p className="text-xs text-text-sub mt-0.5 leading-relaxed">{broadcast.text}</p>
+            )}
+            {broadcast.url && (
+              <a
+                href={broadcast.url}
+                className="inline-flex items-center gap-1.5 mt-2 px-3 py-1.5 rounded-lg text-xs font-semibold text-accent-foreground bg-accent active:scale-[0.97] cursor-pointer transition-all duration-100 hover:opacity-90"
+                onClick={(e) => e.stopPropagation()}
+              >
+                Перейти <ExternalLink size={11} />
+              </a>
+            )}
+          </>
+        ) : (
+          notif.body && (
+            <p className="text-xs text-text-sub mt-0.5 leading-relaxed">{notif.body}</p>
+          )
+        )}
+
+        <p className="text-[10px] text-text-sub mt-1">{timeAgo(notif.createdAt)}</p>
+      </div>
+    </motion.button>
+  );
+}
+
+function FeedGroups({
+  groups, router,
+}: { groups: Array<{ label: string; items: ClientNotification[] }>; router: ReturnType<typeof useRouter> }) {
+  return (
+    <div className="flex flex-col gap-1">
+      {groups.map(({ label, items }) => (
+        <div key={label}>
+          <DateSeparator label={label} />
+          <div className="flex flex-col gap-1.5 mt-1">
+            {items.map((notif, i) => (
+              <NotifRow key={notif.id} notif={notif} index={i} router={router} />
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function EmptyNotifs() {
+  return (
+    <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
+      <div className="size-16 rounded-xl bg-secondary flex items-center justify-center">
+        <Bell size={28} className="text-text-sub" />
+      </div>
+      <p className="text-base font-bold text-foreground">Поки порожньо</p>
+      <p className="text-sm text-text-sub">Тут з&apos;являться сповіщення про записи та інші події</p>
+    </div>
+  );
+}
+
+/** Desktop-only quiet summary rail: unread / needs-response / total breakdown. */
+function DeskSummary({ unread, consentCount, total }: { unread: number; consentCount: number; total: number }) {
+  const rows: Array<{ label: string; value: number; tone: string }> = [
+    { label: 'Нових', value: unread, tone: 'text-accent' },
+    { label: 'Потребують відповіді', value: consentCount, tone: consentCount > 0 ? 'text-[#9A4508]' : 'text-foreground' },
+    { label: 'Усього', value: total, tone: 'text-foreground' },
+  ];
+  return (
+    <aside className="hidden lg:block lg:sticky lg:top-24 self-start">
+      <div className="rounded-2xl border border-border bg-background p-5">
+        <p className="heading-serif text-lg text-foreground mb-4">Огляд</p>
+        <div className="flex flex-col gap-3">
+          {rows.map(r => (
+            <div key={r.label} className="flex items-baseline justify-between gap-3">
+              <span className="text-sm text-text-sub">{r.label}</span>
+              <span className={`metric-value text-lg ${r.tone}`}>{r.value}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </aside>
+  );
+}
+
 export function ClientNotificationsPage({ notifications, portfolioConsents }: Props) {
   const router = useRouter();
   const [resolvedIds, setResolvedIds] = useState<Set<string>>(new Set());
@@ -120,168 +306,51 @@ export function ClientNotificationsPage({ notifications, portfolioConsents }: Pr
   const groups = groupByDate(feedNotifs);
   const unread = feedNotifs.filter(n => !n.isRead).length + activeConsents.length;
 
-  return (
-    <div className="flex flex-col gap-4">
-      <ClientPageHero
-        title="Сповіщення"
-        metric={unread}
-        metricLabel="нових"
-        subtitle={isEmpty ? 'Поки порожньо' : unread === 0 ? 'Усе прочитано' : undefined}
-      />
-
-      {isEmpty && (
-        <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
-          <div className="size-16 rounded-xl bg-secondary flex items-center justify-center">
-            <Bell size={28} className="text-text-sub" />
-          </div>
-          <p className="text-base font-bold text-foreground">Поки порожньо</p>
-          <p className="text-sm text-text-sub">Тут з'являться сповіщення про записи та інші події</p>
-        </div>
-      )}
-
-      {/* Portfolio consent requests */}
-      {activeConsents.length > 0 && (
-        <div className="flex flex-col gap-3">
-          <p className="text-xs font-bold text-warning uppercase tracking-wide px-1">Потребує відповіді</p>
-          {activeConsents.map((item, i) => (
-            <motion.div
-              key={item.id}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05, ...SPRING }}
-              className="rounded-xl overflow-hidden bg-secondary/80 border border-accent/20 shadow-sm"
-            >
-              {item.cover_url && (
-                <div className="relative w-full h-36">
-                  <Image src={item.cover_url} alt={item.title} fill className="object-cover" sizes="512px" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                  <p className="absolute bottom-3 left-4 text-sm font-bold text-white">{item.title}</p>
-                </div>
-              )}
-              <div className="p-4 space-y-3">
-                <div className="flex items-start gap-3">
-                  <div className="size-9 rounded-lg bg-accent/15 flex items-center justify-center shrink-0">
-                    <Images size={16} className="text-accent" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-foreground">
-                      {item.master_name} відмітив вас у портфоліо
-                    </p>
-                    {!item.cover_url && (
-                      <p className="text-xs text-text-sub mt-0.5">«{item.title}»</p>
-                    )}
-                    <p className="text-xs text-text-sub mt-0.5">Підтвердіть або відхиліть участь</p>
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => handleDecline(item.id)}
-                    disabled={pending}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold text-destructive border border-destructive/30 hover:bg-destructive/8 active:scale-[0.97] transition-all duration-100 disabled:opacity-50 cursor-pointer min-h-[44px]"
-                  >
-                    <X size={15} /> Відхилити
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleApprove(item.id)}
-                    disabled={pending}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold text-accent-foreground bg-accent hover:opacity-90 active:scale-[0.97] transition-all duration-100 disabled:opacity-50 cursor-pointer min-h-[44px]"
-                  >
-                    <Check size={15} /> Підтвердити
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      )}
-
-      {/* Notifications feed — date-grouped */}
-      {groups.length > 0 && (
-        <div className="flex flex-col gap-1">
-          {groups.map(({ label, items }) => (
-            <div key={label}>
-              <DateSeparator label={label} />
-              <div className="flex flex-col gap-1.5 mt-1">
-                {items.map((notif, i) => {
-                  const Icon = notifIcon(notif.type);
-                  const isBroadcast = notif.type === 'broadcast';
-                  const broadcast = isBroadcast ? parseBroadcastBody(notif.body) : null;
-                  const isClickable = (isBroadcast && !!broadcast?.url) ||
-                    notif.type === 'support_user_reply' ||
-                    !!notif.relatedBookingId ||
-                    ['new_booking', 'booking_cancelled', 'booking_created', 'booking_confirmed', 'booking_rescheduled', 'booking_completed', 'reminder'].includes(notif.type);
-
-                  return (
-                    <motion.button
-                      type="button"
-                      key={notif.id}
-                      initial={{ opacity: 0, y: 6 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.03, ...SPRING }}
-                      onClick={() => {
-                        if (isBroadcast && broadcast?.url) {
-                          window.location.href = broadcast.url;
-                        } else if (notif.type === 'support_user_reply') {
-                          router.push('/my/support/chat');
-                        } else if (notif.relatedBookingId || ['new_booking', 'booking_cancelled', 'booking_created', 'booking_confirmed', 'booking_rescheduled', 'booking_completed', 'reminder'].includes(notif.type)) {
-                          router.push('/my/bookings');
-                        }
-                      }}
-                      className={[
-                        'text-left w-full rounded-xl p-4 flex items-start gap-3 border transition-all duration-100',
-                        notif.isRead ? 'bg-secondary/40' : 'bg-accent/5 border-accent/10',
-                        !notif.isRead ? '' : 'border-border/60',
-                        isClickable ? 'cursor-pointer hover:opacity-90 active:scale-[0.98]' : 'cursor-default',
-                      ].join(' ')}
-                    >
-                      {/* Type dot */}
-                      <div className="flex flex-col items-center gap-1.5 shrink-0 mt-1.5">
-                        <div className={`size-2 rounded-full ${notifDotColor(notif.type)}`} />
-                      </div>
-
-                      {/* Icon */}
-                      <div className={`size-9 rounded-lg flex items-center justify-center shrink-0 ${isBroadcast ? 'bg-accent/12 text-accent' : 'bg-secondary/60 text-text-sub'}`}>
-                        <Icon size={16} />
-                      </div>
-
-                      <div className="flex-1 min-w-0">
-                        <p className={`text-sm font-semibold ${notif.isRead ? 'text-foreground/80' : 'text-foreground'}`}>
-                          {notif.title}
-                        </p>
-
-                        {isBroadcast && broadcast ? (
-                          <>
-                            {broadcast.text && (
-                              <p className="text-xs text-text-sub mt-0.5 leading-relaxed">{broadcast.text}</p>
-                            )}
-                            {broadcast.url && (
-                              <a
-                                href={broadcast.url}
-                                className="inline-flex items-center gap-1.5 mt-2 px-3 py-1.5 rounded-lg text-xs font-semibold text-accent-foreground bg-accent active:scale-[0.97] cursor-pointer transition-all duration-100 hover:opacity-90"
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                Перейти <ExternalLink size={11} />
-                              </a>
-                            )}
-                          </>
-                        ) : (
-                          notif.body && (
-                            <p className="text-xs text-text-sub mt-0.5 leading-relaxed">{notif.body}</p>
-                          )
-                        )}
-
-                        <p className="text-[10px] text-text-sub mt-1">{timeAgo(notif.createdAt)}</p>
-                      </div>
-                    </motion.button>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+  const consentBlock = activeConsents.length > 0 && (
+    <div className="flex flex-col gap-3">
+      <p className="text-xs font-bold text-[#9A4508] uppercase tracking-wide px-1">Потребує відповіді</p>
+      {activeConsents.map((item, i) => (
+        <ConsentCard key={item.id} item={item} index={i} pending={pending} onApprove={handleApprove} onDecline={handleDecline} />
+      ))}
     </div>
+  );
+
+  return (
+    <>
+      {/* MOBILE / tablet — single-column feed (unchanged) */}
+      <div className="lg:hidden flex flex-col gap-4">
+        <ClientPageHero
+          title="Сповіщення"
+          metric={unread}
+          metricLabel="нових"
+          subtitle={isEmpty ? 'Поки порожньо' : unread === 0 ? 'Усе прочитано' : undefined}
+        />
+        {isEmpty && <EmptyNotifs />}
+        {consentBlock}
+        {groups.length > 0 && <FeedGroups groups={groups} router={router} />}
+      </div>
+
+      {/* DESKTOP (lg+) — reading surface: sticky summary rail + narrow feed */}
+      <div className="hidden lg:block px-8 py-8 max-w-4xl mx-auto">
+        <ClientPageHero
+          title="Сповіщення"
+          metric={unread}
+          metricLabel="нових"
+          subtitle={isEmpty ? 'Поки порожньо' : unread === 0 ? 'Усе прочитано' : undefined}
+        />
+
+        {isEmpty ? (
+          <div className="mt-6"><EmptyNotifs /></div>
+        ) : (
+          <div className="mt-6 grid grid-cols-[220px_minmax(0,1fr)] gap-8 items-start">
+            <DeskSummary unread={unread} consentCount={activeConsents.length} total={feedNotifs.length + activeConsents.length} />
+            <div className="min-w-0 flex flex-col gap-4">
+              {consentBlock}
+              {groups.length > 0 && <FeedGroups groups={groups} router={router} />}
+            </div>
+          </div>
+        )}
+      </div>
+    </>
   );
 }
