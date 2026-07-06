@@ -42,7 +42,7 @@ export function ShopCartBar({ masterId, masterSlug, masterName, shipsNovaPoshta,
       <AnimatePresence>
         {count > 0 && (
           <motion.div
-            className="fixed bottom-0 left-0 right-0 z-40 px-4 pb-28 pt-3 bg-gradient-to-t from-background via-background/90 to-transparent pointer-events-none"
+            className="shop-cart-bar fixed bottom-0 left-0 right-0 z-40 px-4 pb-28 lg:pb-6 pt-3 bg-gradient-to-t from-background via-background/90 to-transparent pointer-events-none"
             initial={{ y: 80, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 80, opacity: 0 }}

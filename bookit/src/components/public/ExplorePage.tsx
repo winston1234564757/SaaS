@@ -276,7 +276,7 @@ export function ExplorePage({ masters, categoryCounts, preferredCategories, invi
 
         <div ref={sentinelRef} aria-hidden="true" />
 
-        <div className="max-w-2xl mx-auto px-4">
+        <div className="max-w-2xl lg:max-w-5xl mx-auto px-4 lg:px-8">
 
           {/* Intent grid */}
           <div className="mt-5">
@@ -390,7 +390,7 @@ export function ExplorePage({ masters, categoryCounts, preferredCategories, invi
                 </Button>
               </motion.div>
             ) : viewMode === 'grid' ? (
-              <motion.div key="grid" className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <motion.div key="grid" className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 lg:gap-4">
                 {visible.map((m, i) => (
                   <MasterCard key={m.id} master={m} index={i} showDistance={nearbyActive} isRecommended={isRecommended(m)} />
                 ))}

@@ -40,7 +40,7 @@ export function ShopPage({ masterId, masterSlug, masterName, shipsNovaPoshta, pr
   const filtered   = catFilter ? products.filter(p => p.category === catFilter) : products;
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-6 pb-32 flex flex-col gap-5">
+    <div className="max-w-lg lg:max-w-5xl mx-auto px-4 lg:px-8 py-6 lg:py-8 pb-32 flex flex-col gap-5">
       {/* Header */}
       <div className="flex items-center gap-3 pt-2">
         <Link
@@ -72,7 +72,7 @@ export function ShopPage({ masterId, masterSlug, masterName, shipsNovaPoshta, pr
       {products.length === 0 ? (
         <EmptyShop masterSlug={masterSlug} />
       ) : (
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 lg:gap-4">
           {filtered.map(p => (
             <ProductTile key={p.id} product={p} qty={getQty(p.id)} masterSlug={masterSlug} />
           ))}
@@ -158,7 +158,7 @@ function FilterChip({ active, onClick, children }: { active: boolean; onClick: (
 
 function EmptyShop({ masterSlug }: { masterSlug: string }) {
   return (
-    <div className="col-span-2 bento-card p-10 flex flex-col items-center gap-3 text-center">
+    <div className="bento-card p-10 flex flex-col items-center gap-3 text-center lg:max-w-md lg:mx-auto">
       <ProductIcon name="package" size={28} className="text-text-sub" />
       <p className="text-sm font-semibold text-foreground">Товарів поки немає</p>
       <Link href={`/${masterSlug}`} className="text-xs text-primary hover:underline flex items-center gap-1">

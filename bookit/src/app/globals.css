@@ -1167,5 +1167,7 @@ body.app-loading .app-suspended-curtain {
 @media (min-width: 1024px) {
   body.has-client-shell main { padding-left: 264px; }
   body.has-client-shell .public-navbar { display: none; }
+  /* Floating shop cart bar clears the sidebar for authed clients. */
+  body.has-client-shell .shop-cart-bar { left: 264px; }
 }
 
