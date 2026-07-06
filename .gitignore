@@ -38,3 +38,9 @@ __pycache__/
 
 # Impeccable design-hook cache (not the skill dir .claude/skills/impeccable/)
 .impeccable/
+
+# Generated local state (not version-controlled)
+.claude-flow/
+.claude/hooks/state/
+.claude/hooks/__pycache__/
+lint_output.txt
