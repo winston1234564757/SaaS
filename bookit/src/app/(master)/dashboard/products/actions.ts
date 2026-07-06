@@ -52,6 +52,11 @@ export interface CreateOrderPayload {
   client_name?:      string | null;
   client_phone?:     string | null;
   delivery_address?: string | null;
+  // M-SHOP-05: structured Nova Poshta destination (city + branch).
+  np_city_ref?:       string | null;
+  np_city_name?:      string | null;
+  np_warehouse_ref?:  string | null;
+  np_warehouse_name?: string | null;
   note?:             string | null;
   pickup_at?:        string | null;
   booking_id?:       string | null;
@@ -322,8 +327,8 @@ export async function createOrder(
     }
 
     if (!payload.items.length) return { id: null, error: 'Замовлення порожнє' };
-    if (payload.delivery_type === 'nova_poshta' && !payload.delivery_address?.trim()) {
-      return { id: null, error: 'Вкажіть адресу Нової Пошти' };
+    if (payload.delivery_type === 'nova_poshta' && !payload.np_warehouse_ref) {
+      return { id: null, error: 'Оберіть місто та відділення Нової Пошти' };
     }
 
     const admin = createAdminClient();
@@ -360,6 +365,10 @@ export async function createOrder(
         booking_id:       payload.booking_id ?? null,
         delivery_type:    payload.delivery_type,
         delivery_address: payload.delivery_address ?? null,
+        np_city_ref:       payload.np_city_ref ?? null,
+        np_city_name:      payload.np_city_name ?? null,
+        np_warehouse_ref:  payload.np_warehouse_ref ?? null,
+        np_warehouse_name: payload.np_warehouse_name ?? null,
         total_kopecks,
         status:           'new',
         note:             payload.note ?? null,

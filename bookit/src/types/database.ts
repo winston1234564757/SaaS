@@ -312,6 +312,11 @@ export interface Order {
   booking_id: string | null;
   delivery_type: OrderDeliveryType;
   delivery_address: string | null;
+  // M-SHOP-05: structured Nova Poshta destination (nullable; pickup orders have none).
+  np_city_ref: string | null;
+  np_city_name: string | null;
+  np_warehouse_ref: string | null;
+  np_warehouse_name: string | null;
   total_kopecks: number;
   status: OrderStatus;
   note: string | null;

@@ -12,6 +12,7 @@ import { createOrder } from '@/app/(master)/dashboard/products/actions';
 import { cn } from '@/lib/utils/cn';
 import { useShopCart } from './ShopCartContext';
 import { Button } from '@/components/ui/Button';
+import { NovaPoshtaPicker, type NpSelection } from './NovaPoshtaPicker';
 
 const CART_SPRING    = { type: 'spring' as const, stiffness: 380, damping: 32 } as const;
 const SUCCESS_SPRING = { type: 'spring' as const, stiffness: 300, damping: 20 } as const;
@@ -95,7 +96,7 @@ function CartDrawer({ open, masterId, shipsNovaPoshta, isAuth, onClose, onSucces
 }) {
   const { items: cart, setQty, total } = useShopCart();
   const [delivery, setDelivery]      = useState<'pickup' | 'nova_poshta'>('pickup');
-  const [address, setAddress]        = useState('');
+  const [npDest, setNpDest]          = useState<NpSelection | null>(null);
   const [note, setNote]              = useState('');
   const [name, setName]              = useState('');
   const [phone, setPhone]            = useState('+380');
@@ -117,8 +118,8 @@ function CartDrawer({ open, masterId, shipsNovaPoshta, isAuth, onClose, onSucces
     if (!isAuth && (!name.trim() || !phone.trim())) {
       setError("Вкажіть ім'я та номер телефону"); return;
     }
-    if (delivery === 'nova_poshta' && !address.trim()) {
-      setError('Вкажіть адресу Нової Пошти'); return;
+    if (delivery === 'nova_poshta' && !npDest) {
+      setError('Оберіть місто та відділення Нової Пошти'); return;
     }
     if (delivery === 'pickup' && !pickupDate) {
       setError('Оберіть дату самовивозу'); return;
@@ -128,7 +129,13 @@ function CartDrawer({ open, masterId, shipsNovaPoshta, isAuth, onClose, onSucces
       const res = await createOrder({
         master_id:        masterId,
         delivery_type:    delivery,
-        delivery_address: delivery === 'nova_poshta' ? address.trim() : null,
+        delivery_address: delivery === 'nova_poshta' && npDest
+          ? `${npDest.cityName}, ${npDest.warehouseName}`
+          : null,
+        np_city_ref:       delivery === 'nova_poshta' ? npDest?.cityRef ?? null : null,
+        np_city_name:      delivery === 'nova_poshta' ? npDest?.cityName ?? null : null,
+        np_warehouse_ref:  delivery === 'nova_poshta' ? npDest?.warehouseRef ?? null : null,
+        np_warehouse_name: delivery === 'nova_poshta' ? npDest?.warehouseName ?? null : null,
         note:             note.trim() || null,
         client_name:      isAuth ? null : name.trim(),
         client_phone:     isAuth ? null : phone.trim(),
@@ -324,14 +331,7 @@ function CartDrawer({ open, masterId, shipsNovaPoshta, isAuth, onClose, onSucces
                     </div>
                   </div>
                 ) : (
-                  <input
-                    type="text"
-                    placeholder="Місто, відділення або адреса"
-                    value={address}
-                    onChange={e => setAddress(e.target.value)}
-                    aria-label="Адреса доставки"
-                    className="w-full px-4 py-3 rounded-md bg-secondary border border-border text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 shadow-sm transition-all"
-                  />
+                  <NovaPoshtaPicker onChange={setNpDest} />
                 )}
               </div>
 
