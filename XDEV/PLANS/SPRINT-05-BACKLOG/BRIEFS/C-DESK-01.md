@@ -1,6 +1,6 @@
 # C-DESK-01 — Десктоп-лейаут клієнт-зони (лівий sidebar)
 
-> Статус: **APPROVED · Фаза 1 реалізована (own-eyes ✅, не закомічено)** · Тип: REDESIGN + новий layout-патерн · Тір 2 · Модель: Opus
+> Статус: **✅ ПОВНІСТЮ ЗАКРИТО (2026-07-06, НЕ задеплоєно)** — усі 8 сторінок + шелл · Тип: REDESIGN + новий layout-патерн · Тір 2 · Модель: Opus
 > Скіли: `impeccable` (craft/layout) + `design-taste-frontend`
 > Рішення founder (2026-07-05): **лівий sidebar** (новий патерн, не топбар майстер-зони) · скоуп **8 сторінок** · **повний десктоп-редизайн (Тір 2)**
 
@@ -153,6 +153,20 @@ Own-eyes: Playwright loyalty/referral-C2C/C2B @1280 + mobile 390 (недотор
 
 **Уроки:** (1) 🔴 ЖОДНИХ emoji-fallback для аватара — завжди designed монограм (спільний MasterAvatar); (2) десктоп-адаптив простих сторінок = центрований max-w + responsive гріди (окреме десктоп-дерево лише коли структура кардинально інша); (3) `masterEmoji` поле лишається в типах/запиті як дані, просто не рендериться.
 
-**Лишилось (Фаза 2, стор. 5..8):** notifications/profile 2-кол · explore/shop ширші гріди.
+## Реалізація — Фаза 2, стор. 5-8 ✅ (commit `304141b6` · `d9f8d555` · `c3481f38`, НЕ задеплоєно) — C-DESK-01 ЗАКРИТО
+
+- **стор.5 /my/notifications (`304141b6`):** читацька поверхня. Desktop `hidden lg:block` max-w-4xl + 2-кол `grid-cols-[220px_1fr]` — ліва sticky summary-рейка «Огляд» (Нових/Потребують відповіді/Усього, калібр-тон #9A4508) + права вузька колонка (consent + дата-групи фіду, ≤75ch природно). Винесено `ConsentCard`/`NotifRow`/`FeedGroups`/`EmptyNotifs` для переюзу mobile+desktop. Мобільний `lg:hidden` недоторканий.
+- **стор.6 /my/profile (`d9f8d555`):** 2-кол на ТОМУ Ж дереві (форма-стейт спільний, БЕЗ дублювання) — root `flex→lg:grid grid-cols-[320px_1fr]`, identity `editorial-cover` `lg:sticky` ліворуч + усі форма-секції обгорнуто в праву колонку (мобільний DOM-порядок збережено). save-FAB `lg:left-[264px]` (не під sidebar) + `lg:max-w-md`.
+- **стор.7-8 /explore + /shop (`c3481f38`):** widening — контейнери `max-w-2xl`/`max-w-lg` → `lg:max-w-5xl`, гріди `+lg:grid-cols-4`. Explore темний портал/hero вже full-width. Shop cart-піл: globals `body.has-client-shell .shop-cart-bar{left:264px}` (authed only — guest недоторканий, бо shop = guest+client), checkout-логіка `ShopCartBar` НЕ чіпана.
+
+Own-eyes всіх: Playwright desktop 1280/1440 + mobile 390 (недоторканий). TSC:0 · Build:clean · encoding чистий.
+
+**Уроки (Фаза 2 повна):**
+1. Новий wide-роут ОБОВ'ЯЗКОВО в `isWideDesktopRoute` (my/layout.tsx), інакше max-w-lg squeeze.
+2. 🔴 ЖОДНИХ emoji-заглушок аватара — завжди монограм (спільний `MasterAvatar`/`MediaCover`, reuse `explore/shared` monogramHue/initialOf/CORMORANT).
+3. Desktop-стратегія за складністю: окреме `hidden lg:block` дерево ЛИШЕ коли структура кардинально інша (master-detail bookings, 2-pane messages, featured-галерея masters, 2-кол читацька notifications); прості форми/списки = responsive-класи на тому ж дереві (profile sticky-2-кол, loyalty гріди, explore/shop widening).
+4. Shared-примітиви (chat) юзані майстром → opt-in проп default-off (`contained`/`inPane`); ChatShell contained → `useChatViewport(enabled=false)`.
+5. Плаваючі елементи (shop cart-піл, profile FAB) на десктопі не мають лізти під sidebar → `lg:left-[264px]` (статик якщо тільки authed /my) або `body.has-client-shell` CSS (якщо guest+client як shop).
+6. Turbopack dev-cache панікує після `rm .next` під час активного dev → kill усі node (PowerShell) + `rm .next` + ОДИН чистий `npm run dev`.
 
 ## Прев'ю / реалізація — нижче після виконання
