@@ -113,6 +113,20 @@ Per-page: `design-taste-frontend` → `impeccable` (layout) → `mcp__a11y` → 
 **Мобільний болдер** (founder: «типографіка + присутність»): секційні хедери → serif Cormorant; картка майбутнього → крупне ім'я+ціна; шапка групи → болдер.
 Own-eyes: desktop (upcoming/completed/shop) + mobile. TSC:0 Build:clean.
 
-**Лишилось (Фаза 2, стор. 2..8):** messages 2-pane · masters галерея · loyalty/notifications/profile 2-кол · explore/shop ширші гріди. Верхній `md:pt-20` gap при схованому навбарі лишив як top-padding (рефайн per-page).
+**Лишилось (Фаза 2, стор. 3..8):** masters галерея · loyalty/notifications/profile 2-кол · explore/shop ширші гріди.
+
+## Реалізація — Фаза 2, стор. 2: /my/messages ✅ (commit `9386a9d7`, НЕ задеплоєно)
+
+**Рішення founder (AskUserQuestion):** client-side pane-swap (без route-переходу, `?c=` deep-link) · editorial empty-state · **support теж у праву панель**.
+
+**Десктоп 2-pane** (`MyMessagesDesktop.tsx`, `hidden lg:grid`; мобільний `MessagesListPage` у `lg:hidden` недоторканий): ліва інбокс-колонка (Підтримка BookIT + розмови + секція «Написати майстру») + права панель за client-state — `null`→EmptyPane (серіф «Оберіть розмову») · `dm`→`DirectChatPage inPane` · `support`→`SupportChatPage inPane`. Вибір дзеркалиться в `?c=<convId>`|`support` (deep-link/refresh). Keyed `motion.div` remount на switch = fresh realtime. Unread обнуляється оптимістично при відкритті. «Написати майстру»→`getOrCreateConversation`→select→`router.refresh()`.
+
+**🔑 Скоуп-відкриття:** `DirectChatPage`/`SupportChatPage`/`ChatShell`/`MessagesListPage` — SHARED з майстром (`/dashboard/*`). Тому 2-pane = окремий клієнтський компонент, shared-примітиви НЕ переписані — лише opt-in пропи `contained` (ChatShell) + `inPane` (Direct/Support), default off = майстер/мобільний byte-identical. ChatShell contained → `useChatViewport(enabled=false)` (інакше хук лочить `body.overflow=hidden` глобально на десктопі).
+
+**🔴 Latent-баг полагоджено:** офсет-правило додає лише `pl-264px` на root `<main>`, але `my/layout.tsx` затискав контент у `max-w-lg` → десктоп master-detail bookings у реальному layout був стиснутий (own-eyes робили в ізольованому прев'ю). Фікс: layout-контейнер route-aware — `/my/bookings`+`/my/messages` повна ширина на lg. Messages додатково = full-height focus (прибрано phantom `md:pt-20` + плаваючий SupportWidget/ChannelBanner на lg через `lg:hidden`, мобільний недоторканий).
+
+Own-eyes: Playwright empty/DM/support @1280·1440 + mobile 390 (2-pane схований). TSC:0 · Build:clean · humanizer (em-dash прибрано) · encoding чистий.
+
+**Лишилось (Фаза 2, стор. 3..8):** masters галерея · loyalty/notifications/profile 2-кол · explore/shop ширші гріди.
 
 ## Прев'ю / реалізація — нижче після виконання
