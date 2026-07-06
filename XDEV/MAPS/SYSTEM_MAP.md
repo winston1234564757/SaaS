@@ -640,4 +640,4 @@ All numbered sections (Agitation, Process, ClientFlow) and feature rows (Magic) 
 - `20260628000003_get_pricing_rule_stats.sql` — RPC `get_pricing_rule_stats` per-rule стата динамічних цін (auth.uid, без IDOR) — M-REV-04 follow-up
 - `20260628000004_get_pricing_rules_overview.sql` — RPC `get_pricing_rules_overview` огляд усіх 4 правил (auth.uid) — M-REV-05 ч.1
 - `20260628000005_dynamic_pricing_uplift_discounts.sql` — фікс `get_dynamic_pricing_uplift` (матч по типу + saved_slots) — M-REV-05 ч.2
-- `20260706000000_orders_nova_poshta_fields.sql` — orders +`np_city_ref/name` +`np_warehouse_ref/name` (M-SHOP-05, additive nullable). ⚠️ **PENDING** — застосувати через Dashboard SQL Editor або `supabase link`+push (CLI не залінкований); БЕЗ неї insert nova_poshta-замовлення впаде
+- `20260706000000_orders_nova_poshta_fields.sql` — orders +`np_city_ref/name` +`np_warehouse_ref/name` (M-SHOP-05, additive nullable). ✅ **ЗАСТОСОВАНО на прод-БД 2026-07-06** через Supabase Management API. CLI залінковано (`sqlrxsopllgztvgrerqk`, `SUPABASE_ACCESS_TOKEN` у `.env.local`) — надалі `supabase db push` / Management API `/database/query` доступні
