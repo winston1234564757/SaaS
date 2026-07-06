@@ -153,12 +153,8 @@ function MasterCard({ master, index }: { master: Master; index: number }) {
       transition={{ delay: Math.min(index * 0.04, 0.3), ...SPRING }}
     >
       <div className="bento-card overflow-hidden">
-        <Link href={`/${master.slug}`} className="block relative h-40 bg-accent/10 hover:opacity-95 transition-opacity">
-          {master.avatarUrl ? (
-            <Image src={master.avatarUrl} alt={master.name} fill className="object-cover" sizes="(max-width: 640px) 50vw, 33vw" />
-          ) : (
-            <div className="absolute inset-0 flex items-center justify-center text-4xl">{master.avatarEmoji}</div>
-          )}
+        <Link href={`/${master.slug}`} className="block relative h-40 bg-accent/5 hover:opacity-95 transition-opacity">
+          <MediaCover master={master} sizes="(max-width: 640px) 50vw, 33vw" monogramSize="text-4xl" />
 
           <div className="absolute top-2 right-2 flex items-center bg-black/50 backdrop-blur-sm px-2 py-0.5 rounded-full">
             <span className="text-[10px] font-semibold text-white">

@@ -8,6 +8,32 @@ import { Gift, Copy, Check, Users, Ticket, ArrowRight, Share2, Heart } from 'luc
 import { pluralUk } from '@/lib/utils/pluralUk';
 import { cn } from '@/lib/utils/cn';
 import { ClientPageHero } from './ClientPageHero';
+import { monogramHue, initialOf, CORMORANT } from '@/components/public/explore/shared';
+
+/** Master avatar - photo, else a designed monogram (Frost hue + serif initial). No emoji. */
+function MasterAvatar({
+  name, slug, avatarUrl, className, monogramClass = 'text-lg',
+}: { name: string; slug?: string; avatarUrl?: string | null; className: string; monogramClass?: string }) {
+  if (avatarUrl) {
+    return (
+      <div className={`relative overflow-hidden ${className}`}>
+        <Image src={avatarUrl} alt={name} fill className="object-cover" />
+      </div>
+    );
+  }
+  const hue = monogramHue(name || slug || '');
+  return (
+    <div
+      aria-hidden="true"
+      className={`flex items-center justify-center ${className}`}
+      style={{ background: `linear-gradient(140deg, hsl(${hue} 48% 91%), hsl(${hue} 54% 79%))` }}
+    >
+      <span className={`${monogramClass} leading-none select-none`} style={{ fontFamily: CORMORANT, color: `hsl(${hue} 42% 40%)` }}>
+        {initialOf(name)}
+      </span>
+    </div>
+  );
+}
 
 interface LoyaltyProgram {
   id: string;
@@ -79,7 +105,7 @@ export function MyLoyaltyPage({ programs, c2cCode, c2bCode, totalMastersInvited,
   };
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-5 lg:px-8 lg:py-8 lg:max-w-5xl lg:mx-auto lg:w-full">
       <ClientPageHero
         title="Бонуси"
         subtitle="Програми лояльності та реферальні знижки"
@@ -87,7 +113,7 @@ export function MyLoyaltyPage({ programs, c2cCode, c2bCode, totalMastersInvited,
       />
 
       {/* Tabs */}
-      <div className="flex p-1 bg-secondary rounded-xl">
+      <div className="flex p-1 bg-secondary rounded-xl lg:max-w-md">
         <button
           type="button"
           aria-pressed={activeTab === 'loyalty'}
@@ -144,7 +170,7 @@ export function MyLoyaltyPage({ programs, c2cCode, c2bCode, totalMastersInvited,
                 </Link>
               </div>
             ) : (
-              <div className="flex flex-col gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {programs.map((program, index) => (
                   <LoyaltyCard key={program.id} program={program} index={index} />
                 ))}
@@ -160,7 +186,7 @@ export function MyLoyaltyPage({ programs, c2cCode, c2bCode, totalMastersInvited,
             className="flex flex-col gap-4"
           >
             {/* Sub-tabs */}
-            <div className="flex p-1 bg-secondary rounded-xl">
+            <div className="flex p-1 bg-secondary rounded-xl lg:max-w-md">
               <button
                 type="button"
                 aria-pressed={referralSubTab === 'c2c'}
@@ -204,7 +230,8 @@ export function MyLoyaltyPage({ programs, c2cCode, c2bCode, totalMastersInvited,
                       </div>
                     </div>
                   ) : (
-                    c2cMasters.map((m, i) => (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {c2cMasters.map((m, i) => (
                       <motion.div
                         key={m.masterId}
                         initial={{ opacity: 0, y: 10 }}
@@ -213,13 +240,7 @@ export function MyLoyaltyPage({ programs, c2cCode, c2bCode, totalMastersInvited,
                         className="bento-card p-4 flex flex-col gap-3"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="size-10 rounded-lg bg-secondary flex items-center justify-center text-xl shrink-0 overflow-hidden relative">
-                            {m.masterAvatarUrl ? (
-                              <Image src={m.masterAvatarUrl} alt={m.masterName} fill className="object-cover" />
-                            ) : (
-                              m.masterEmoji
-                            )}
-                          </div>
+                          <MasterAvatar name={m.masterName} slug={m.masterSlug} avatarUrl={m.masterAvatarUrl} className="size-10 rounded-lg shrink-0" monogramClass="text-lg" />
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-semibold text-foreground">{m.masterName}</p>
                             <p className="text-xs text-text-sub">
@@ -249,11 +270,12 @@ export function MyLoyaltyPage({ programs, c2cCode, c2bCode, totalMastersInvited,
                           </button>
                         </div>
                       </motion.div>
-                    ))
+                    ))}
+                    </div>
                   )}
                 </motion.div>
               ) : (
-                <motion.div key="c2b" initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -8 }} className="flex flex-col gap-4">
+                <motion.div key="c2b" initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -8 }} className="flex flex-col gap-4 lg:max-w-2xl">
                   <div className="bento-card overflow-hidden border-none shadow-xl shadow-accent/10">
                     <div className="bg-gradient-to-br from-accent to-accent/80 p-6 text-primary-foreground relative overflow-hidden">
                       <div className="absolute -right-6 -top-6 size-32 bg-accent-foreground/10 rounded-full blur-2xl" />
@@ -323,13 +345,7 @@ export function MyLoyaltyPage({ programs, c2cCode, c2bCode, totalMastersInvited,
                           )}
                         >
                           <div className="flex items-center gap-3">
-                            <div className="size-11 rounded-lg bg-secondary/30 flex items-center justify-center text-xl shrink-0 shadow-inner overflow-hidden relative">
-                              {pc.masterAvatarUrl ? (
-                                <Image src={pc.masterAvatarUrl} alt={pc.masterName} fill className="object-cover" />
-                              ) : (
-                                pc.masterEmoji
-                              )}
-                            </div>
+                            <MasterAvatar name={pc.masterName} slug={pc.masterSlug} avatarUrl={pc.masterAvatarUrl} className="size-11 rounded-lg shrink-0 shadow-inner" monogramClass="text-lg" />
                             <div>
                               <p className="text-sm font-bold text-foreground">{pc.masterName}</p>
                               <p className="text-[10px] text-text-sub font-medium">Бонус за рекомендацію • {pc.discount}%</p>
@@ -386,13 +402,7 @@ function LoyaltyCard({ program: p, index }: { program: LoyaltyProgram; index: nu
     >
       {/* Top avatar strip */}
       <div className="h-16 bg-accent/8 flex items-center justify-center relative">
-        <div className="size-12 rounded-full bg-background border-2 border-background shadow-sm overflow-hidden relative flex items-center justify-center text-2xl">
-          {p.masterAvatarUrl ? (
-            <Image src={p.masterAvatarUrl} alt={p.masterName} fill className="object-cover" />
-          ) : (
-            p.masterEmoji
-          )}
-        </div>
+        <MasterAvatar name={p.masterName} slug={p.masterSlug} avatarUrl={p.masterAvatarUrl} className="size-12 rounded-full border-2 border-background shadow-sm" monogramClass="text-xl" />
         {isCompleted && (
           <span className="absolute top-2 right-2 text-[9px] font-bold px-2 py-0.5 rounded-full bg-success text-white leading-none">
             Готово

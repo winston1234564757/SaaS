@@ -81,7 +81,10 @@ export default async function MyLayout({ children }: { children: React.ReactNode
   // (the `max-w-lg` column would squeeze the layout). Mobile/tablet keep the
   // narrow column untouched. C-DESK-01 Фаза 2.
   const isWideDesktopRoute =
-    pathname === '/my/bookings' || pathname === '/my/messages' || pathname === '/my/masters';
+    pathname === '/my/bookings' ||
+    pathname === '/my/messages' ||
+    pathname === '/my/masters' ||
+    pathname === '/my/loyalty';
   // The desktop two-pane messenger fills the viewport: drop the phantom navbar
   // gap and the floating chrome on lg (support already lives inside the pane).
   const isDesktopChatSurface = pathname === '/my/messages';
