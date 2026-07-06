@@ -41,6 +41,7 @@ Path: `C:\Users\Vitos\SaaS\XDEV\`. Read before any task.
 
 | File | Contents |
 |------|----------|
+| [PLAYBOOK.md](file:///C:/Users/Vitos/SaaS/XDEV/PLAYBOOK.md) | **Дистиляція найкращих рішень** — дизайн-закони founder + процес + інженерні патерни (own-eyes, low-data, shared opt-in, route-aware, монограм, Supabase Mgmt API, git-гігієна) |
 | [AI_MASTER_GUIDE.md](file:///C:/Users/Vitos/SaaS/XDEV/AI_MASTER_GUIDE.md) | Tech stack, coding standards, RLS, three themes, pre-deploy checklist |
 | [SKILL_PROTOCOL.md](file:///C:/Users/Vitos/SaaS/XDEV/SKILL_PROTOCOL.md) | Decision Tree for skill selection, Clarification Framework |
 | [UX_STANDARDS.md](file:///C:/Users/Vitos/SaaS/XDEV/UX_STANDARDS.md) | No-Emoji Policy, Vaul BottomSheets, Emil Kowalski animation rules |
