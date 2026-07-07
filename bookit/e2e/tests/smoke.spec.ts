@@ -22,13 +22,16 @@ test.describe('Smoke — публічні сторінки', () => {
 
     await expect(page).toHaveTitle(/Bookit/);
     await expect(explore.heading).toBeVisible();
-    await expect(explore.heading).toContainText('Красота поруч');
+    await expect(explore.heading).toContainText('Знайди свого майстра');
   });
 
-  test('Навігація з головної до /explore', async ({ page }) => {
+  test('Навігація з мобільного меню до /explore', async ({ page }) => {
+    // "Майстрам" → /explore now lives only in the mobile hamburger overlay.
+    await page.setViewportSize({ width: 390, height: 844 });
     const landing = new LandingPage(page);
     await landing.goto();
 
+    await landing.openMobileMenu();
     await landing.navExploreLink.click();
     await expect(page).toHaveURL(/\/explore/);
   });

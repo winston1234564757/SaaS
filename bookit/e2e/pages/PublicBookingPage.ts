@@ -23,8 +23,9 @@ export class PublicBookingPage {
     // Sticky CTA — matched by unique class h-14 (flash-deal btn uses py-2, not h-14)
     this.bookBtn = page.locator('button.h-14');
 
-    // Inside BookingFlow wizard panel (z-[60]): step header
-    this.flowServiceHeader = page.locator('p.font-semibold').filter({ hasText: 'Обери послуги' }).first();
+    // Inside BookingFlow wizard panel (z-[60]): step header — WizardHero renders
+    // the step title as an <h2 class="heading-serif">, not a <p class="font-semibold">.
+    this.flowServiceHeader = page.getByRole('heading', { name: 'Обери послуги' }).first();
 
     // Inside BookingFlow: master name shown above step title
     this.flowMasterName = page.locator('p.text-xs').filter({ hasText: /\S/ }).first();
