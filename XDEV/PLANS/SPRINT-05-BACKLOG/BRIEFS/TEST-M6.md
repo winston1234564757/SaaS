@@ -48,6 +48,47 @@ the test red until fixed. Never edit a test just to make it green (that is the d
   fix commits (this is the valuable output).
 - After green: wire `TEST-M5` anti-drift so copy/selector drift fails fast next time.
 
+## Progress (2026-07-07) — 8 specs green so far
+- **Batch 1 (0003f358):** smoke.spec 4/4.
+- **Batch 2 (3fafbef1):** booking-flow 4/4 (wizard data-testids + hero-band metric).
+- **Seed fix (2b1b4b6c):** products `price_kopecks`/`stock_qty`.
+- Remaining: ~21 specs across the categories below. Next highest-leverage =
+  client-phone harness gap (root cause #2) — it currently BLOCKS `client.json`
+  entirely, so all client specs skip until fixed. Exact fix: seed must create
+  `e2e_client@test.com` (the account `global.setup` uses via `E2E_CLIENT_EMAIL`)
+  with a phone + client_profile — the seeder only makes `e2e_client_crm@…` etc.
+
+**Batch 1 detail (commit 0003f358):** smoke.spec 4/4 green; booking-flow "open flow" green.
+- LandingPage page-object: login `exact`, register CTA "Спробувати безкоштовно",
+  `openMobileMenu()`; explore link is mobile-hamburger only now.
+- PublicBookingPage: step title is `<h2 heading-serif>` not `<p font-semibold>`.
+- smoke: /explore h1 "Знайди свого майстра"; explore-nav via mobile menu.
+
+### Precise root causes for the remainder (verified in code — do these next)
+1. **Wizard-internal selectors** (booking-flow lines 41/52, likely 08-booking too):
+   `PublicBookingPage.serviceCard` / `nextBtn` target `div[class*="z-[60]"]` +
+   `button.w-full.text-left` — neither exists in the redesigned wizard. Service
+   card is a `<motion.button>` grid item containing `p.text-sm.font-semibold`
+   (svc name); footer CTA "Далі" is in ServiceSelector.tsx:439. Re-derive both
+   selectors from current markup (no product bug — pure selector drift).
+2. **Client account has no phone → /my/setup/phone redirect** (16-mobile line 99,
+   14-client-journey): HARNESS INCONSISTENCY — `global.setup.ts` builds
+   `client.json` from `E2E_CLIENT_EMAIL=e2e_client@test.com`, but the seeder
+   creates `clientTimeTravel/Crm/Auth/Referral@test.com` (with phones) — a
+   DIFFERENT account. `e2e_client@test.com` is an orphan without a phone. Fix
+   options: (a) point `global.setup` client at a seeded email, or (b) have the
+   seeder also create+phone `e2e_client@test.com`. Decide deliberately — other
+   specs consume `client.json`.
+3. **04-crm analytics "non-zero revenue"** (line 231): asserts
+   `skeletons.count() === 0`, got 4. AMBIGUOUS — either a real infinite-skeleton
+   on /dashboard/analytics for the crm master, or the `[class*=skeleton]`
+   selector catches non-spinner decorative elements. OPEN THE TRACE before
+   deciding; this is the one that may be a real product bug.
+4. **Untouched categories** (from §"Failure categories"): 03-referral (3),
+   10-master-bookings (3), 15-analytics (1), 17-retention (2), 19-services (1),
+   20-stabilization (2), broadcasts (2), ux-premium (1), 02-time-travel flaky (5),
+   zz-capture-vercel (env-gate).
+
 ## Note on environment
 This run hit the REMOTE prod Supabase (see SEC-01), which adds network flakiness on
 top of the rot. Stabilization is cleaner once SEC-01 moves e2e to a local/dedicated DB.

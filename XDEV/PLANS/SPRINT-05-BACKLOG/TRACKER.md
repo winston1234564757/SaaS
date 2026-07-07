@@ -220,7 +220,7 @@
 | `TEST-M3` | Load/concurrency (booking/stock/C2C/dunning races) | P1 | 🔄 | — | — | — |
 | `TEST-M4` | Integration + unit gaps (CRM segments, ROI, onboarding persist) | P1 | ⬜ | — | — | — |
 | `TEST-M5` | Anti-drift: TESTING_MAP sync script + fix proxy.ts→middleware.ts | P2 | ⬜ | — | — | — |
-| `TEST-M6` | E2E suite stabilization — 35/167 red from rot (stale copy/selectors/flow) | P1 | 🔄 | — | **Opus** | seed fix pending |
+| `TEST-M6` | E2E suite stabilization — 35 red from rot; **8 fixed** (smoke+booking-flow), ~21 left | P1 | 🔄 | — | **Opus** | `0003f358`,`3fafbef1` |
 | `SEC-01` | E2E harness must not target prod Supabase (deferred, prod pre-launch) | P0 | ⬜ | — | — | — |
 
 **Прогін 2026-07-07:** Unit **1013/1013 ✅**. E2E chromium: 93 passed / **35 failed** / 39 skipped — падіння **не** мої (booking/smoke/auth/analytics не торкаються змінених хуків); причина = гниття набору (дрейф копії/селекторів/флоу) + баг сідера. Мої нові специфікації зелені: `00-role-login-smoke` 4/4, `21-rls-security` 8/8. Деталі та тріаж: `BRIEFS/TEST-M6.md`.
