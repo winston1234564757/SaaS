@@ -14,6 +14,9 @@ export class PublicBookingPage {
   // BookingFlow — header (master name inside flow)
   readonly flowMasterName: Locator;
 
+  // WizardHero price metric (dominant sum lives in the hero band, not the button)
+  readonly heroMetric: Locator;
+
   constructor(page: Page) {
     this.page = page;
 
@@ -30,8 +33,13 @@ export class PublicBookingPage {
     // Inside BookingFlow: master name shown above step title
     this.flowMasterName = page.locator('p.text-xs').filter({ hasText: /\S/ }).first();
 
-    // "Далі …" or "Обери послугу" CTA inside wizard — scoped to panel
-    this.nextBtn = page.locator('div[class*="z-\\[60\\]"]').getByRole('button', { name: /^(Далі|Обери)/ }).last();
+    // Wizard "Далі" CTA — stable data-testid. NOTE: in the redesigned wizard this
+    // button renders ONLY once a service is selected (no disabled placeholder).
+    this.nextBtn = page.locator('[data-testid="wizard-next-btn"]');
+
+    // Price/count now live in the WizardHero band (.editorial-cover) — scope to it,
+    // since service cards also use .metric-value for their prices/discounts.
+    this.heroMetric = page.locator('.editorial-cover p.metric-value').first();
   }
 
   async goto(slug: string) {
@@ -59,15 +67,11 @@ export class PublicBookingPage {
    * Wizard panel is z-[60]; service buttons are w-full text-left inside.
    */
   serviceCard(index: number): Locator {
-    return this.page
-      .locator('div[class*="z-\\[60\\]"] button.w-full.text-left')
-      .nth(index);
+    return this.page.locator('[data-testid="service-card"]').nth(index);
   }
 
   /** Clicks a service card by its visible name text */
   serviceCardByName(name: string): Locator {
-    return this.page
-      .locator('div[class*="z-\\[60\\]"] button.w-full.text-left')
-      .filter({ hasText: name });
+    return this.page.locator('[data-testid="service-card"]').filter({ hasText: name });
   }
 }

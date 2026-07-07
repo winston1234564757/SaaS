@@ -38,62 +38,54 @@ test.describe('Публічна сторінка + Booking Flow', () => {
     await expect(pub.flowServiceHeader).toBeVisible();
   });
 
-  test('"Далі" задизейблена без обраних послуг', async ({ page }) => {
+  test('"Далі" не показується без обраних послуг', async ({ page }) => {
     const pub = new PublicBookingPage(page);
     await pub.goto(SLUG!);
     await pub.openBookingFlow();
 
-    // nextBtn should show "Обери послугу" and be disabled
-    await expect(pub.nextBtn).toBeVisible();
-    await expect(pub.nextBtn).toBeDisabled();
-    await expect(pub.nextBtn).toHaveText('Обери послугу');
+    // Redesigned wizard: the "Далі" CTA appears only after a service is picked
+    // (no disabled placeholder button). A guiding hint is shown instead.
+    await expect(pub.nextBtn).toHaveCount(0);
   });
 
-  test('вибір однієї послуги — "Далі" активна, відображає ціну', async ({ page }) => {
+  test('вибір однієї послуги — "Далі" зʼявляється, сума в hero', async ({ page }) => {
     const pub = new PublicBookingPage(page);
     await pub.goto(SLUG!);
     await pub.openBookingFlow();
 
-    // Click the first service card
     const firstCard = pub.serviceCard(0);
     await expect(firstCard).toBeVisible({ timeout: 8_000 });
     await firstCard.click();
 
-    // nextBtn should become enabled and match "Далі · 1 послуга · X ₴"
-    // pluralize(1, ['послуга','послуги','послуг']) → "1 послуга"
+    // CTA appears and is enabled; the dominant sum lives in the WizardHero band.
+    await expect(pub.nextBtn).toBeVisible();
     await expect(pub.nextBtn).toBeEnabled();
-    const btnText = await pub.getNextBtnText();
-    expect(btnText).toMatch(/^Далі · \d+ посл.* · [\d\s]+ ₴$/);
-    expect(btnText).toMatch(/1 послуга/);
+    await expect(pub.nextBtn).toContainText('Далі');
+    await expect(pub.heroMetric).toContainText('₴');
   });
 
-  test('вибір двох послуг — лічильник і сума оновлюються', async ({ page }) => {
+  test('вибір двох послуг — сума в hero оновлюється', async ({ page }) => {
     const pub = new PublicBookingPage(page);
     await pub.goto(SLUG!);
     await pub.openBookingFlow();
 
-    // We need at least 2 service cards (all inside wizard panel z-[60])
-    const cards = pub.page.locator('div[class*="z-\\[60\\]"] button.w-full.text-left');
+    const cards = pub.page.locator('[data-testid="service-card"]');
     const count = await cards.count();
-
     if (count < 2) {
       test.skip(); // not enough services on this test master
       return;
     }
 
+    const parsePrice = (s: string) => parseInt((s.match(/([\d\s]+)\s*₴/)?.[1] ?? '0').replace(/\s/g, ''), 10);
+
     await cards.nth(0).click();
-    const textAfterFirst = await pub.getNextBtnText();
-    // Extract price from "Далі · 1 послуга · X ₴"
-    const priceMatch1 = textAfterFirst.match(/([\d\s]+)\s*₴/);
-    const price1 = priceMatch1 ? parseInt(priceMatch1[1].replace(/\s/g, '')) : 0;
+    await expect(pub.heroMetric).toContainText('₴');
+    const price1 = parsePrice((await pub.heroMetric.textContent()) ?? '');
 
     await cards.nth(1).click();
-    const textAfterSecond = await pub.getNextBtnText();
-    const priceMatch2 = textAfterSecond.match(/([\d\s]+)\s*₴/);
-    const price2 = priceMatch2 ? parseInt(priceMatch2[1].replace(/\s/g, '')) : 0;
-
-    expect(textAfterSecond).toMatch(/2 посл/); // "2 послуги"
-    // Total price after selecting two services must be greater than first alone
-    expect(price2).toBeGreaterThan(price1);
+    // Sum must grow once a second service is added.
+    await expect
+      .poll(async () => parsePrice((await pub.heroMetric.textContent()) ?? ''))
+      .toBeGreaterThan(price1);
   });
 });
