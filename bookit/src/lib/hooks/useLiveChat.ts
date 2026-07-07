@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useId } from 'react';
 import { createClient } from '@/lib/supabase/client';
 
 export interface SupportMessage {
@@ -17,6 +17,10 @@ interface SupportMessagePayload {
 export function useLiveChat(ticketId: string | null) {
   const [messages, setMessages] = useState<SupportMessage[]>([]);
   const [loading, setLoading] = useState(false);
+  // Unique per-instance topic — a ticketId-only topic collides if two consumers
+  // (e.g. admin console + user support view) mount the same ticket at once,
+  // making the second .on() run after subscribe() → throw. See useUnreadDMCount.
+  const instanceId = useId();
 
   useEffect(() => {
     if (!ticketId) {
@@ -43,7 +47,7 @@ export function useLiveChat(ticketId: string | null) {
     fetchInitialMessages();
 
     const channel = supabase
-      .channel(`chat_messages:${ticketId}`)
+      .channel(`chat_messages:${ticketId}:${instanceId}`)
       .on(
         'postgres_changes',
         {
@@ -64,7 +68,7 @@ export function useLiveChat(ticketId: string | null) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [ticketId]);
+  }, [ticketId, instanceId]);
 
   return { messages, loading, setMessages };
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useId } from 'react';
 import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/client';
 
@@ -17,6 +17,9 @@ export interface DirectMessage {
 export function useDMChat(conversationId: string | null) {
   const [messages, setMessages] = useState<DirectMessage[]>([]);
   const [loading, setLoading] = useState(true);
+  // Unique per-instance topic — guards against the channel-collision crash if two
+  // consumers mount the same conversation concurrently. See useUnreadDMCount.
+  const instanceId = useId();
 
   const fetchMessages = useCallback(async () => {
     if (!conversationId) { setLoading(false); return; }
@@ -38,7 +41,7 @@ export function useDMChat(conversationId: string | null) {
     if (!conversationId) return;
     const supabase = createClient();
     const channel = supabase
-      .channel(`dm:${conversationId}`)
+      .channel(`dm:${conversationId}:${instanceId}`)
       .on(
         'postgres_changes',
         {
@@ -68,7 +71,7 @@ export function useDMChat(conversationId: string | null) {
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
-  }, [conversationId]);
+  }, [conversationId, instanceId]);
 
   return { messages, loading, setMessages };
 }

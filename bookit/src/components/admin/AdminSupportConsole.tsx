@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useId } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useLiveChat } from '@/lib/hooks/useLiveChat';
 import { ChatMessageList } from '@/components/shared/chat/ChatMessageList';
@@ -62,6 +62,8 @@ export function AdminSupportConsole({ adminId }: { adminId: string }) {
   const { messages, loading: chatLoading } = useLiveChat(activeTicketId);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const supabase = createClient();
+  // Unique per-instance topic — a static topic collides if two consoles mount. See useUnreadDMCount.
+  const realtimeId = useId();
 
   const fetchTickets = async () => {
     try {
@@ -87,7 +89,7 @@ export function AdminSupportConsole({ adminId }: { adminId: string }) {
 
     // Subscribe to support ticket inserts/updates in real-time
     const channel = supabase
-      .channel('support_tickets_realtime')
+      .channel(`support_tickets_realtime:${realtimeId}`)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'support_tickets' },
