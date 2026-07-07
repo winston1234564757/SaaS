@@ -123,6 +123,13 @@ export async function createPublicOrder(payload: {
   items: Array<{ productId: string; qty: number }>;
 }): Promise<{ id: string | null; error: string | null }> {
   if (!payload.items.length) return { id: null, error: 'Кошик порожній' };
+  // Guard against negative / zero / fractional quantities: a negative qty would pass the
+  // `stock_qty < qty` check, produce a negative total, and INFLATE stock on decrement.
+  for (const item of payload.items) {
+    if (!Number.isInteger(item.qty) || item.qty < 1) {
+      return { id: null, error: 'Невірна кількість товару' };
+    }
+  }
   if (!payload.clientName.trim()) return { id: null, error: 'Вкажіть ім\'я' };
 
   const raw = normalizeToE164(payload.clientPhone);
@@ -195,14 +202,27 @@ export async function createPublicOrder(payload: {
     return { id: null, error: itemsErr.message };
   }
 
-  // Atomic stock decrement
+  // Atomic stock decrement — reserve each unit via decrement_product_stock_atomic
+  // (relative UPDATE, safe under concurrency; returns FALSE when stock was exhausted
+  // between the check above and now). The old `.update().gte()` never checked the
+  // affected-row count, so two concurrent last-unit orders both wrote a `sale` ledger
+  // row while only one decrement landed → oversell + ledger drift. On mid-flight
+  // exhaustion we roll back the units already reserved AND the order.
+  const reserved: Array<{ id: string; qty: number }> = [];
   for (const item of payload.items) {
-    const p = productMap.get(item.productId)!;
-    await admin
-      .from('products')
-      .update({ stock_qty: p.stock_qty - item.qty })
-      .eq('id', item.productId)
-      .gte('stock_qty', item.qty);
+    const { data: ok, error: decErr } = await admin.rpc('decrement_product_stock_atomic', {
+      p_product_id: item.productId,
+      p_qty:        item.qty,
+    });
+    if (decErr || ok === false) {
+      for (const r of reserved) {
+        await admin.rpc('increment_stock', { p_product_id: r.id, p_qty: r.qty });
+      }
+      await admin.from('orders').delete().eq('id', order.id);
+      const pn = productMap.get(item.productId)?.name ?? 'товар';
+      return { id: null, error: `"${pn}" щойно закінчився. Спробуйте ще раз.` };
+    }
+    reserved.push({ id: item.productId, qty: item.qty });
 
     await admin.from('product_transactions').insert({
       product_id: item.productId,
