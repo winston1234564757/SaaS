@@ -23,6 +23,13 @@ const IGNORE: RegExp[] = [
   /Skipping auto-scroll behavior/i, // Next.js dev router noise
   // Resource-load noise (missing favicon/og in test env) — not a JS defect:
   /Failed to load resource: the server responded with a status of 40[34]/i,
+  // Transient network failures reaching the REMOTE Supabase from a headless
+  // browser (token refresh in _getUser/_useSession). Environmental, not an app
+  // defect — a real app-logic throw (e.g. the realtime channel crash) has its
+  // own message and is NOT a "Failed to fetch".
+  /Failed to fetch/i,
+  /TypeError: Load failed/i, // WebKit's equivalent of "Failed to fetch"
+  /network error/i, // transient fetch failure (incl. error-boundary re-log)
 ];
 
 export interface ConsoleGuard {
