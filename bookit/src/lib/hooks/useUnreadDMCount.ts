@@ -1,10 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useId } from 'react';
 import { createClient } from '@/lib/supabase/client';
 
 export function useUnreadDMCount(userId: string | null): number {
   const [total, setTotal] = useState(0);
+  // Unique per-instance topic: this hook mounts simultaneously in MyBottomNav
+  // and MyDesktopSidebar. A userId-only topic makes supabase-js return the same
+  // already-subscribed channel to the second consumer, and `.on()` after
+  // `subscribe()` throws. Same guard as InboxNavButton.
+  const instanceId = useId();
 
   useEffect(() => {
     if (!userId) return;
@@ -22,12 +27,12 @@ export function useUnreadDMCount(userId: string | null): number {
     fetch();
 
     const channel = supabase
-      .channel(`unread-dm:${userId}`)
+      .channel(`unread-dm:${userId}:${instanceId}`)
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'conversations' }, fetch)
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
-  }, [userId]);
+  }, [userId, instanceId]);
 
   return total;
 }
