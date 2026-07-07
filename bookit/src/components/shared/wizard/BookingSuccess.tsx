@@ -103,7 +103,7 @@ export function BookingSuccess({
             className="size-12 rounded-2xl bg-emerald-400/15 ring-1 ring-emerald-300/30 flex items-center justify-center shrink-0">
             <Check size={24} className="text-emerald-300" strokeWidth={2.5} />
           </motion.div>
-          <div className="min-w-0 flex-1">
+          <div role="status" aria-live="polite" className="min-w-0 flex-1">
             <h2 className="heading-serif text-[26px] leading-[1.05] text-white">Запис підтверджено</h2>
             <p className="text-sm text-white/70 mt-1.5 leading-snug">
               {selectedServices.length === 1 ? selectedServices[0].name : pluralUk(selectedServices.length, 'послуга', 'послуги', 'послуг')}

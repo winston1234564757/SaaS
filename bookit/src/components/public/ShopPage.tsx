@@ -145,7 +145,7 @@ function FilterChip({ active, onClick, children }: { active: boolean; onClick: (
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        'shrink-0 px-3.5 py-1.5 rounded-full text-xs font-medium transition-all',
+        'shrink-0 px-3.5 py-2 rounded-full text-xs font-medium transition-all',
         active
           ? 'bg-primary text-primary-foreground active:scale-[0.95] cursor-pointer'
           : 'bg-secondary/70 text-text-sub border border-border hover:bg-secondary active:scale-[0.95] cursor-pointer'

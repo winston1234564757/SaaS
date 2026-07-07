@@ -109,6 +109,7 @@ function NavBar({
           <div className="flex items-center flex-shrink-0">
             <div className="relative -top-3">
               <motion.button
+                type="button"
                 onClick={onToggle}
                 whileTap={{ scale: 0.90 }}
                 className={cn(

@@ -230,6 +230,7 @@ function TrialExhaustedView({
 
         <div className="px-5 pb-4 pt-3 relative z-10">
           <motion.button
+            type="button"
             whileTap={{ scale: 0.98 }}
             onClick={onUpgrade}
             className="w-full py-3 rounded-xl text-[var(--accent-on)] font-bold text-sm flex items-center justify-center gap-2 transition-colors cursor-pointer"
@@ -307,6 +308,7 @@ function ProGateView({ onUpgrade, isDrawer }: { onUpgrade: () => void; isDrawer?
       </div>
 
       <motion.button
+        type="button"
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ ...SPRING, delay: 0.32 }}

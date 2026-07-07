@@ -303,6 +303,7 @@ export function TelegramWelcome({ onSuccess }: TelegramWelcomeProps) {
 
         <div className="grid grid-cols-1 gap-4 w-full px-2 max-w-[320px]">
           <motion.button
+            type="button"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => setUserRole('master')}
@@ -318,6 +319,7 @@ export function TelegramWelcome({ onSuccess }: TelegramWelcomeProps) {
           </motion.button>
 
           <motion.button
+            type="button"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => setUserRole('client')}
@@ -416,6 +418,7 @@ export function TelegramWelcome({ onSuccess }: TelegramWelcomeProps) {
             <AnimatePresence>
               {showBotFallback && status !== 'success' && (
                 <motion.button
+                  type="button"
                   initial={{ opacity: 0, y: -8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}

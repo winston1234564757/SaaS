@@ -103,6 +103,7 @@ export function QuickActions() {
           {/* Новий запис */}
           <Tooltip content={<p className="text-[11px] text-foreground">Створити запис вручну для клієнта</p>} position="top" delay={400}>
             <motion.button
+              type="button"
               whileTap={{ scale: 0.94 }}
               onClick={() => setBookingOpen(true)}
               className="flex flex-col items-center gap-2 py-3 px-1 rounded-xl transition-all hover:bg-secondary/50 w-full cursor-pointer"

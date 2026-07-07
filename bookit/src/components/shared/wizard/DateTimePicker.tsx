@@ -268,6 +268,7 @@ export function DateTimePicker({
                           const endTime = slotFromMins(slotToMins(item.slot.time) + effectiveDuration);
                           return (
                             <motion.button
+                              type="button"
                               key={item.slot.time}
                               layout={!prefersReduced}
                               animate={{

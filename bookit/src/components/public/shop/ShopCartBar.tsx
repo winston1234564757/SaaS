@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition, useRef } from 'react';
+import { useState, useTransition, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -104,6 +104,40 @@ function CartDrawer({ open, masterId, shipsNovaPoshta, isAuth, onClose, onSucces
   const [error, setError]            = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const sliderRef                    = useRef<HTMLDivElement>(null);
+  const dialogRef                    = useRef<HTMLDivElement>(null);
+  const onCloseRef                   = useRef(onClose);
+  onCloseRef.current = onClose;
+
+  // Modal a11y for the hand-rolled checkout drawer (the only money-path surface not on
+  // vaul/Radix): lock body scroll, close on Escape, trap Tab inside the sheet, and move
+  // focus into it on open. Runs only when `open` toggles (onClose read via ref).
+  useEffect(() => {
+    if (!open) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { onCloseRef.current(); return; }
+      if (e.key === 'Tab' && dialogRef.current) {
+        const nodes = dialogRef.current.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        );
+        if (nodes.length === 0) return;
+        const first = nodes[0];
+        const last  = nodes[nodes.length - 1];
+        const active = document.activeElement as HTMLElement | null;
+        if (!active || !dialogRef.current.contains(active)) { e.preventDefault(); first.focus(); }
+        else if (e.shiftKey && active === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && active === last) { e.preventDefault(); first.focus(); }
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    const t = window.setTimeout(() => dialogRef.current?.focus(), 0);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      document.removeEventListener('keydown', onKey);
+      window.clearTimeout(t);
+    };
+  }, [open]);
 
   function handlePhoneChange(val: string) {
     if (!val.startsWith('+380')) {
@@ -166,12 +200,17 @@ function CartDrawer({ open, masterId, shipsNovaPoshta, isAuth, onClose, onSucces
       {open && (
         <>
           <motion.div
-            className="fixed inset-0 bg-black/30 z-40"
+            className="fixed inset-0 bg-black/30 z-[60]"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             onClick={onClose}
           />
           <motion.div
-            className="fixed bottom-0 left-0 right-0 z-50 bg-background rounded-t-xl max-w-lg mx-auto flex flex-col max-h-[90dvh]"
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="checkout-title"
+            tabIndex={-1}
+            className="fixed bottom-0 left-0 right-0 z-[70] bg-background rounded-t-xl max-w-lg mx-auto flex flex-col max-h-[90dvh] outline-none"
             initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
             transition={CART_SPRING}
           >
@@ -180,7 +219,7 @@ function CartDrawer({ open, masterId, shipsNovaPoshta, isAuth, onClose, onSucces
             </div>
 
             <div className="flex items-center justify-between px-5 py-3 shrink-0">
-              <h2 className="text-base font-bold text-foreground">Оформлення замовлення</h2>
+              <h2 id="checkout-title" className="text-base font-bold text-foreground">Оформлення замовлення</h2>
               <button
                 type="button"
                 aria-label="Закрити"
@@ -191,7 +230,7 @@ function CartDrawer({ open, masterId, shipsNovaPoshta, isAuth, onClose, onSucces
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-5 pb-28 flex flex-col gap-5">
+            <div className="flex-1 overflow-y-auto overscroll-contain px-5 pb-28 flex flex-col gap-5">
               {/* Cart items summary */}
               <div className="flex flex-col gap-2">
                 <p className="text-xs font-bold text-foreground">Товари</p>
@@ -352,7 +391,7 @@ function CartDrawer({ open, masterId, shipsNovaPoshta, isAuth, onClose, onSucces
                   <span className="metric-value text-2xl text-foreground">{(total / 100).toFixed(0)} ₴</span>
                 </div>
 
-                {error && <p className="text-xs text-destructive bg-destructive/5 py-2 px-3 rounded-xl border border-destructive/10">{error}</p>}
+                {error && <p role="alert" className="text-xs text-destructive bg-destructive/5 py-2 px-3 rounded-xl border border-destructive/10">{error}</p>}
 
                 <Button
                   variant="primary"
@@ -379,7 +418,7 @@ function CartDrawer({ open, masterId, shipsNovaPoshta, isAuth, onClose, onSucces
 
 function OrderSuccess({ masterSlug, masterName }: { masterSlug: string; masterName: string }) {
   return (
-    <div className="fixed inset-0 z-50 bg-background flex items-center justify-center px-4">
+    <div role="status" aria-live="polite" className="fixed inset-0 z-50 bg-background flex items-center justify-center px-4">
       <div className="max-w-lg w-full flex flex-col items-center gap-5 text-center">
         <motion.div
           initial={{ scale: 0.5, opacity: 0 }}

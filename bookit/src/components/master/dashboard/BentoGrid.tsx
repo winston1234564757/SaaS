@@ -150,6 +150,7 @@ export function BentoGrid() {
           {/* Add Widget Button (only in customizing mode) */}
           {isCustomizing && (
             <motion.button
+              type="button"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               onClick={() => setIsLibraryOpen(true)}

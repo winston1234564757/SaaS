@@ -1,6 +1,17 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
+/* Safe-area bottom padding for position:fixed bars & hand-rolled sheets. Tailwind v4
+   ships no safe-area utilities, so `pb-safe`/`pb-safe-bottom` were silently no-ops —
+   fixed nav bars sat under the iOS home indicator and sheet bodies ended flush. The
+   body-level env() padding (below) does not reach fixed descendants. */
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@utility pb-safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
 /* ═══════════════════════════════════════════════════════════
    TAILWIND THEME BRIDGE
    ═══════════════════════════════════════════════════════════ */

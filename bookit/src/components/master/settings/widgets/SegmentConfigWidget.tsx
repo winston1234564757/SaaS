@@ -54,6 +54,7 @@ export function SegmentConfigWidget({ segments, onChange }: SegmentConfigWidgetP
           <div className="grid grid-cols-2 gap-2">
             {segments.map(seg => (
               <motion.button
+                type="button"
                 key={seg.id}
                 layout
                 onClick={() => openEdit(seg)}

@@ -237,8 +237,8 @@ export function ExpensesTab() {
         shouldScaleBackground
       >
         <Drawer.Portal>
-          <Drawer.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40" />
-          <Drawer.Content className="fixed bottom-0 left-0 right-0 z-50 bg-[var(--background)] rounded-t-[28px] shadow-2xl max-h-[90vh] flex flex-col">
+          <Drawer.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[76]" />
+          <Drawer.Content className="fixed bottom-0 left-0 right-0 z-[80] bg-[var(--background)] rounded-t-[28px] shadow-2xl max-h-[90dvh] flex flex-col">
             <div className="mx-auto mt-3 mb-1 w-12 h-1.5 rounded-full bg-[var(--border-strong)] shrink-0" />
             <div className="overflow-y-auto flex-1 px-5 pt-2 pb-6 flex flex-col gap-4" style={{ paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom, 0px))' }}>
               <Drawer.Title className="text-base font-bold text-foreground">Нова витрата</Drawer.Title>

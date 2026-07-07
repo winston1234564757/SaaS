@@ -196,6 +196,7 @@ export function SupportWidget() {
   // (Framer Motion motion.div with animate adds CSS transform, which breaks position:fixed)
   const fab = (
     <motion.button
+      type="button"
       onClick={() => {
         setIsOpen(true);
         setStep('selection');

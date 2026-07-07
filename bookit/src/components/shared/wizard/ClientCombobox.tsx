@@ -144,6 +144,7 @@ export function ClientCombobox({ errors, watchName, watchPhone, setValue, onClie
               role="option"
               aria-selected={c.client_name === watchName}
               onMouseDown={() => handleSelect(c)}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSelect(c); } }}
               className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-primary/8 transition-colors text-left"
             >
               <div className="size-7 rounded-full bg-background flex items-center justify-center text-xs font-bold text-primary shrink-0" aria-hidden="true">

@@ -47,14 +47,14 @@ export function TransactionHistoryDrawer({ product, open, onClose }: Props) {
       {open && (
         <>
           <motion.div
-            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[76]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
           />
           <motion.div
-            className="fixed bottom-0 left-0 right-0 z-50 bg-[var(--background)] rounded-t-3xl max-w-lg mx-auto border-t border-[var(--border)] flex flex-col"
+            className="fixed bottom-0 left-0 right-0 z-[80] bg-[var(--background)] rounded-t-3xl max-w-lg mx-auto border-t border-[var(--border)] flex flex-col"
             style={{ maxHeight: '75dvh' }}
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
