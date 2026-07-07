@@ -134,11 +134,13 @@ export async function GET(req: NextRequest) {
             },
           }),
           admin.from('master_subscriptions').update({
-            status:          'active',
-            failed_attempts: 0,
-            next_charge_at:  expiresAt,
-            expires_at:      expiresAt,
-            updated_at:      now.toISOString(),
+            status:             'active',
+            failed_attempts:    0,
+            next_charge_at:     expiresAt,
+            expires_at:         expiresAt,
+            charging_at:        null,
+            pending_invoice_id: null,
+            updated_at:         now.toISOString(),
           }).eq('id', sub.id),
         ]);
         // Network Success Report (Telegram) + Orchestrator notification
@@ -160,7 +162,7 @@ export async function GET(req: NextRequest) {
           `Reserve carried over: ${decision.newReserve}`,
           `(status=${decision.statusDiscount} carry=${decision.carryover})`,
         );
-        return { subId: sub.id, succeeded: true, free: true };
+        return { subId: sub.id, succeeded: true, free: true, deferred: false };
       }
 
       // ── Branch B: create invoice at discounted price ───────
@@ -199,13 +201,17 @@ export async function GET(req: NextRequest) {
     (r) => r.status === 'fulfilled' && r.value.succeeded,
   ).length;
   const freeCount = results.filter(
-    (r) => r.status === 'fulfilled' && (r.value as any).free,
+    (r) => r.status === 'fulfilled' && r.value.free,
   ).length;
-  const failedCount = results.length - succeededCount;
+  const deferredCount = results.filter(
+    (r) => r.status === 'fulfilled' && r.value.deferred,
+  ).length;
+  // Rejected promises (thrown before returning a result) + confirmed failures.
+  const failedCount = results.length - succeededCount - deferredCount;
 
-  console.log(`[charge-subscriptions] Done. succeeded=${succeededCount} free=${freeCount} failed=${failedCount}`);
+  console.log(`[charge-subscriptions] Done. succeeded=${succeededCount} free=${freeCount} deferred=${deferredCount} failed=${failedCount}`);
   return NextResponse.json({
-    ok: true, processed: subscriptions.length, succeeded: succeededCount, free: freeCount, failed: failedCount,
+    ok: true, processed: subscriptions.length, succeeded: succeededCount, free: freeCount, deferred: deferredCount, failed: failedCount,
   });
 }
 
@@ -223,8 +229,11 @@ async function chargeAndCommit({
   admin: ReturnType<typeof import('@/lib/supabase/admin').createAdminClient>;
   isFree: boolean;
   onSuccess?: (invoiceId: string | undefined) => Promise<void>;
-}): Promise<{ subId: string; succeeded: boolean; free: boolean }> {
-  let succeeded  = false;
+}): Promise<{ subId: string; succeeded: boolean; free: boolean; deferred: boolean }> {
+  // Synchronous charge status is only a hint. Monobank confirms the real outcome
+  // asynchronously via the webhook (webHookUrl is passed to chargeRecurrent), so a
+  // 'pending' response is NEVER treated as paid — it is deferred to mono-webhook.
+  let chargeStatus: 'success' | 'failure' | 'pending' = 'failure';
   let invoiceId: string | undefined;
   let chargeError: string | undefined;
 
@@ -233,22 +242,50 @@ async function chargeAndCommit({
       provider.chargeRecurrent({ token: sub.token, amountKopecks, orderId, webhookUrl }),
       CHARGE_TIMEOUT_MS,
     );
-    succeeded = result.status !== 'failure';
-    invoiceId = result.invoiceId;
+    chargeStatus = result.status;
+    invoiceId    = result.invoiceId;
   } catch (err) {
+    // Network / timeout — outcome unknown but not confirmed paid → treat as failure.
     chargeError = String(err);
   }
 
   const expiresAt = addDays(now, 30);
 
+  // ── PENDING: outcome unknown — do NOT grant, do NOT dun. Record the invoice so
+  //    the claim RPC won't re-charge this row, and let the webhook settle it. ──────
+  if (chargeStatus === 'pending' && invoiceId) {
+    await admin.from('master_subscriptions').update({
+      pending_invoice_id: invoiceId,
+      updated_at:         now.toISOString(),
+    }).eq('id', sub.id);
+    await admin.from('billing_events').insert({
+      payment_id:  `pending_${invoiceId}`,
+      external_id: `pending_${invoiceId}`,
+      provider:    sub.provider,
+      master_id:   sub.master_id,
+      tier:        sub.plan_id,
+      amount:      amountKopecks,
+      status:      'pending',
+      payload:     { orderId, subscriptionId: sub.id, awaitingWebhook: true },
+    });
+    // No master notification on pending — the webhook notifies once the charge is
+    // actually confirmed (avoids a false "оплачено" on a charge that may still fail).
+    console.log(`[charge-subscriptions] PENDING — sub=${sub.id} master=${sub.master_id} invoice=${invoiceId} → awaiting webhook`);
+    return { subId: sub.id, succeeded: false, free: false, deferred: true };
+  }
+
+  const succeeded = chargeStatus === 'success';
+
   if (succeeded) {
     await Promise.all([
       admin.from('master_subscriptions').update({
-        status:          'active',
-        failed_attempts: 0,
-        next_charge_at:  expiresAt,
-        expires_at:      expiresAt,
-        updated_at:      now.toISOString(),
+        status:             'active',
+        failed_attempts:    0,
+        next_charge_at:     expiresAt,
+        expires_at:         expiresAt,
+        charging_at:        null,
+        pending_invoice_id: null,
+        updated_at:         now.toISOString(),
       }).eq('id', sub.id),
       admin.from('master_profiles').update({
         subscription_tier:       sub.plan_id,
@@ -274,7 +311,12 @@ async function chargeAndCommit({
   } else {
     const newAttempts = (sub.failed_attempts ?? 0) + 1;
     const isDunned    = newAttempts >= MAX_FAILED_ATTEMPTS;
-    const subUpdate: Record<string, unknown> = { failed_attempts: newAttempts, updated_at: now.toISOString() };
+    const subUpdate: Record<string, unknown> = {
+      failed_attempts:    newAttempts,
+      charging_at:        null, // release the claim so dunning can retry next cron
+      pending_invoice_id: null,
+      updated_at:         now.toISOString(),
+    };
     if (isDunned) subUpdate.status = 'past_due';
     await Promise.all([
       admin.from('master_subscriptions').update(subUpdate).eq('id', sub.id),
@@ -297,6 +339,6 @@ async function chargeAndCommit({
     console.warn(`[charge-subscriptions] FAIL — sub=${sub.id} master=${sub.master_id} attempts=${newAttempts} error=${chargeError}`);
   }
 
-  return { subId: sub.id, succeeded, free: isFree };
+  return { subId: sub.id, succeeded, free: isFree, deferred: false };
 }
 
