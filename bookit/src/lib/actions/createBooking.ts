@@ -116,8 +116,13 @@ export async function createBooking(
       return { bookingId: null, error: 'Не авторизований' };
     }
   } else if (p.source === 'online') {
+    // SEC-P1: NEVER trust client-supplied p.clientId for online bookings — identity
+    // is derived solely from the authenticated session. A spoofed clientId would let an
+    // anonymous attacker pollute a victim's /my/bookings and drain their C2C/barter balance.
+    // Anonymous → null (unclaimed booking, later claimed via PostBookingAuth).
     // Only link booking to authenticated CLIENTS — masters visiting a public page
     // must not be set as client_id (their ID has no client_profiles row → FK violation).
+    resolvedClientId = null;
     if (user) {
       const { data: userProfile } = await admin
         .from('profiles')
@@ -676,8 +681,14 @@ export async function createBooking(
   // 13. Trial accounting — облік ведеться DB trigger'ом (fn_dp_trial_earned_on_complete)
   //     при зміні статусу на 'completed'. Тут нічого додатково робити не потрібно.
 
-  // Clear Next.js server-side data cache
-  revalidatePath('/', 'layout');
+  // Refresh only the surfaces a new booking changes — NOT the whole site.
+  // revalidatePath('/', 'layout') purged the entire data + router cache on the
+  // product's highest-frequency write. The public [slug] page is fully dynamic
+  // (reads auth/cookies/searchParams) so it needs no revalidation; the cached
+  // booking views are the dashboard + client cabinet.
+  revalidatePath('/dashboard');
+  revalidatePath('/dashboard/bookings');
+  revalidatePath('/my/bookings');
 
   // 14. Сповіщення майстру про новий запис (Push → Telegram → SMS).
   // Обов'язково робимо await, інакше Next.js Serverless Container може "вбити" процес до завершення відправки.
