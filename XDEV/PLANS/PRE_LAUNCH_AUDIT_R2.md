@@ -72,7 +72,7 @@
 
 ## 🔴 P0 #2 — ACCOUNT TAKEOVER через /api/auth/telegram/link-phone (2026-07-07, День 2)
 
-**Статус: ✅ ВИДАЛЕНО ЛОКАЛЬНО + BUILD OK (2026-07-07). ⚠️ Живий на проді ДО редеплою.** Осиротілий — 0 фронтенд-викликачів (grep), файл `route.ts` + порожня тека видалені, `npm run build` exit 0, роут зник зі списку. `ensureTelegramClientIdentity` збережено (вживає webhook-роут). **Закриється на проді лише після `npx vercel --prod`.**
+**Статус: ✅✅ ЗАКРИТО Й ВЕРИФІКОВАНО НА ПРОДІ (2026-07-07).** Осиротілий роут (0 фронтенд-викликачів) видалено, `npm run build` exit 0, коміт `d7039cab` на гілці `hotfix/p0-telegram-link-phone`, задеплоєно (`vercel --prod`, deployment `dpl_FZcmRwEi2PL415D7cWJYLSQBVPun` READY). **Верифікація:** `POST https://bookit-five-psi.vercel.app/api/auth/telegram/link-phone` → **404**. `ensureTelegramClientIdentity` збережено (вживає webhook-роут). ⚠️ Гілку hotfix ще НЕ змерджено в `main`.
 
 - **Файл:** `src/app/api/auth/telegram/link-phone/route.ts`.
 - **Діра:** роут валідує `initData` (доводить лише що викликач — *якийсь* TG-юзер), але `phone` бере з тіла запиту (рядок 9) без жодної прив'язки до TG-акаунта. Потім `admin.auth.admin.generateLink({type:'magiclink', email: generateVirtualEmail(e164Phone)})` (64-67) видає OTP-токен логіну для акаунта ЦЬОГО телефону і повертає його викликачу (`token: linkData.properties.email_otp`, рядок 79).
