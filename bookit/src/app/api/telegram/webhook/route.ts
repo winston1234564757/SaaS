@@ -141,7 +141,7 @@ export async function POST(req: NextRequest) {
             inline_keyboard: [[
               { 
                 text: 'Відкрити BookIT', 
-                web_app: { url: 'https://bookit-five-psi.vercel.app/' } 
+                web_app: { url: (process.env.NEXT_PUBLIC_SITE_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? 'https://bookit.com.ua') + '/' }
               },
             ]],
           },

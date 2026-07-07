@@ -91,16 +91,18 @@ export async function confirmBooking(bookingId: string): Promise<{ error: string
     if (booking.client_id) {
       const services = (booking.booking_services as BookingService[]).map(s => s.service_name).join(', ');
       const masterName = (booking.master_profiles as unknown as MasterProfileNested)?.profiles?.full_name ?? 'Майстра';
-      notifyClientOnStatusChange({
-        clientId: booking.client_id,
-        masterId: booking.master_id,
-        masterName,
-        bookingId,
-        date: booking.date,
-        startTime: booking.start_time,
-        services,
-        status: 'confirmed',
-      }).catch(err => console.error('[confirmBooking] Notification failed:', err));
+      after(() =>
+        notifyClientOnStatusChange({
+          clientId: booking.client_id,
+          masterId: booking.master_id,
+          masterName,
+          bookingId,
+          date: booking.date,
+          startTime: booking.start_time,
+          services,
+          status: 'confirmed',
+        }).catch(err => console.error('[confirmBooking] Notification failed:', err)),
+      );
     }
 
     return { error: null };
@@ -284,15 +286,17 @@ export async function rescheduleBooking(
     if (booking.client_id) {
       const services = (booking.booking_services as BookingService[]).map(s => s.service_name).join(', ');
       const masterName = (booking.master_profiles as unknown as MasterProfileNested)?.profiles?.full_name ?? 'Майстра';
-      notifyClientOnReschedule({
-        clientId: booking.client_id,
-        masterId: booking.master_id,
-        masterName,
-        bookingId,
-        date,
-        startTime,
-        services,
-      }).catch(err => console.error('[rescheduleBooking] Notification failed:', err));
+      after(() =>
+        notifyClientOnReschedule({
+          clientId: booking.client_id,
+          masterId: booking.master_id,
+          masterName,
+          bookingId,
+          date,
+          startTime,
+          services,
+        }).catch(err => console.error('[rescheduleBooking] Notification failed:', err)),
+      );
     }
 
     return { error: null };
@@ -461,7 +465,7 @@ export async function completeBooking(
         if (deducted <= 0) continue;
 
         if (product.stock_alert_threshold != null && newQty <= product.stock_alert_threshold) {
-          void notifyMasterStockAlert(booking.master_id, product.name, newQty);
+          after(() => notifyMasterStockAlert(booking.master_id, product.name, newQty));
         }
 
         await admin
@@ -488,16 +492,18 @@ export async function completeBooking(
     if (booking.client_id) {
       const services = (booking.booking_services as BookingService[]).map(s => s.service_name).join(', ');
       const masterName = (booking.master_profiles as unknown as MasterProfileNested)?.profiles?.full_name ?? 'Майстра';
-      notifyClientOnStatusChange({
-        clientId: booking.client_id,
-        masterId: booking.master_id,
-        masterName,
-        bookingId,
-        date: booking.date,
-        startTime: booking.start_time,
-        services,
-        status: 'completed',
-      }).catch(err => console.error('[completeBooking] Notification failed:', err));
+      after(() =>
+        notifyClientOnStatusChange({
+          clientId: booking.client_id,
+          masterId: booking.master_id,
+          masterName,
+          bookingId,
+          date: booking.date,
+          startTime: booking.start_time,
+          services,
+          status: 'completed',
+        }).catch(err => console.error('[completeBooking] Notification failed:', err)),
+      );
     }
 
     return { error: null };

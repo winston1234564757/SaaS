@@ -327,9 +327,10 @@ export async function notifyClientBroadcast(
   let telegramSent = false;
   let smsSent = false;
 
-  // In-app (always)
+  // In-app (always). Supabase query builders are lazy thenables — `void` discards
+  // them UNEXECUTED, so broadcast recipients never got the in-app row. Must await.
   if (profile) {
-    void admin.from('notifications').insert({
+    await admin.from('notifications').insert({
       recipient_id: params.clientId,
       type: 'broadcast',
       title: `Повідомлення від ${params.masterName}`,
@@ -358,7 +359,8 @@ export async function notifyClientBroadcast(
       }
     });
     if (expiredEndpoints.length > 0) {
-      void admin.from('push_subscriptions').delete().in('endpoint', expiredEndpoints);
+      // Lazy thenable — `void` never fired the DELETE, so 410-Gone subs were never cleaned.
+      await admin.from('push_subscriptions').delete().in('endpoint', expiredEndpoints);
     }
   }
 
@@ -367,8 +369,9 @@ export async function notifyClientBroadcast(
     telegramSent = await sendTelegramMessage(profile.telegram_chat_id, params.telegramText).catch(() => false);
   }
 
-  // SMS fallback
-  if (params.channels.includes('sms') && !pushDelivered) {
+  // SMS fallback — suppressed when EITHER free channel (push OR Telegram) delivered,
+  // so a client with Telegram but no push does not also get a paid SMS.
+  if (params.channels.includes('sms') && !pushDelivered && !telegramSent) {
     const targetPhone = profile?.phone ?? params.phone;
     if (targetPhone) {
       const res = await sendTurboSMS(targetPhone, params.smsText).catch(() => ({ ok: false }));
