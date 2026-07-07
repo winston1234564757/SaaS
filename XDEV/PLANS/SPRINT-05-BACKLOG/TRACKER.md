@@ -209,6 +209,23 @@
 
 ---
 
+## ФАЗА 7 — Тестування та Безпека (2026-07-07)
+
+| ID | Задача | P | Ст | Спеціаліст-скіли | Модель | Commit |
+|----|--------|---|----|------------------|--------|--------|
+| `RT-CRASH-01` | Крашфікс логіну клієнта (realtime channel collision) | P0 | ✅ | bugfix | **Opus** | `d7971dad` |
+| `TEST-M0` | Runtime-guard: console-guard + real-login smoke + hook unit | P0 | ✅ | writing-plans | **Opus** | `06a4be24` |
+| `TEST-M1` | Латентні realtime-міни (useLiveChat/useDMChat/AdminSupportConsole) | P0 | ✅ | bugfix | **Opus** | `437a7ec0` |
+| `TEST-M2` | RLS cross-tenant suite (8/8 verified проти живої БД) | P0 | ✅ | writing-plans | **Opus** | `c92a48af` |
+| `TEST-M3` | Load/concurrency (booking/stock/C2C/dunning races) | P1 | 🔄 | — | — | — |
+| `TEST-M4` | Integration + unit gaps (CRM segments, ROI, onboarding persist) | P1 | ⬜ | — | — | — |
+| `TEST-M5` | Anti-drift: TESTING_MAP sync script + fix proxy.ts→middleware.ts | P2 | ⬜ | — | — | — |
+| `SEC-01` | E2E harness must not target prod Supabase (deferred, prod pre-launch) | P0 | ⬜ | — | — | — |
+
+Матриця та план: `XDEV/PLANS/TEST_COVERAGE_MATRIX.md`. Task-brief: `BRIEFS/SEC-01.md`.
+
+---
+
 ## Воркфлоу: ONE TASK = ONE SESSION
 1. Прочитати `HANDOFF.md` — знайти ▶ NEXT задачу
 2. Startup: `mempalace_status` → `SYSTEM_MAP` → `TRACKER.md`

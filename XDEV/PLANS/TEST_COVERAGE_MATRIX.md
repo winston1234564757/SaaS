@@ -118,18 +118,19 @@ Dunning-ланцюг (13), onboarding admin-persistence (16), createOrder atomic
 
 RLS-колонка (S): найгостріший страх — крос-tenant витік — **спростовано доказом** для bookings/CRM/broadcasts/payments/notification_logs. Master↔master і anon-lockout тримаються. Решта матриці S (consent RLS домену 12, IDOR deep-links 17) — ще попереду.
 
-## 3b. 🔴 КРИТИЧНА ЗНАХІДКА — `.env.test` вказує на ПРОДАКШН
+## 3b. 🟠 ЗНАХІДКА — локальний `.env.test` вказує на ПРОДАКШН
 
-`bookit/.env.test` (закоммічений у репо) містить:
-- `NEXT_PUBLIC_SUPABASE_URL=https://sqlrxsopllgztvgrerqk.supabase.co` — **той самий ref, що в SYSTEM_MAP значиться як прод** (міграція застосована 2026-07-06).
-- `SUPABASE_SERVICE_ROLE_KEY=...` — **service-role ключ ПРОДА в git**.
-- `E2E_ALLOW_REMOTE=true`.
+**Виправлено 2026-07-07 (первинна оцінка була завищена):** `.env.test` **НЕ** відстежується git (`.gitignore:20`) і **ніколи не був у історії** — прод service-role ключа в репозиторії **немає**. Теза «ключ у git» була хибною.
 
-Наслідки:
-1. `npm run test:e2e` виконує `scripts/seed-e2e-data.ts`, який **wipe+recreate `e2e_*@test.com` акаунти прямо в проді**. Захист лише регексом email — одна помилка в патерні = видалення реальних даних.
-2. Service-role ключ прода лежить у версійному контролі (кожен з доступом до репо = повний bypass RLS прода).
+Фактичний стан:
+- `bookit/.env.test` — **локальний файл дев-машини** (gitignored). Містить `NEXT_PUBLIC_SUPABASE_URL=https://sqlrxsopllgztvgrerqk.supabase.co` (ref = прод за SYSTEM_MAP) + `E2E_ALLOW_REMOTE=true`.
+- CI (`.github/workflows/e2e.yml`) піднімає **локальний ефемерний Supabase** і пише свій `.env.test` з `E2E_ALLOW_REMOTE=false` → **CI безпечний**.
 
-Рекомендація (рішення за founder — не чіпаю без відмашки): окремий Supabase-проєкт для e2e; ротація прод service-role ключа; `.env.test` у `.gitignore`. Це вища пріоритетність за решту тест-програми.
+Реальний (вужчий) ризик:
+1. **Локальний** `npm run test:e2e` виконує `seed-e2e-data.ts`, який **wipe+recreate `e2e_*@test.com` акаунти в проді**. Захист лише регексом email. Прод зараз закритий (pre-launch) → founder дозволив тестувати проти нього тимчасово.
+2. Дев-машина тримає прод service-role ключ у `.env.test` (поза git, але на диску).
+
+Рекомендація (оформлено задачею `SEC-01`, фікс — після тест-фази за рішенням founder): окремий/локальний Supabase-проєкт для e2e на дев-машині; за бажанням ротація ключа.
 
 ## 4. Принцип, а не разова акція
 Кожен новий домен/фіча закривається по всіх 6 колонках або має явний запис «L незастосовно, бо…». RT і S — обовʼязкові для будь-якої сторінки з auth. Матриця живе разом із кодом і перевіряється Milestone-5 скриптом.
