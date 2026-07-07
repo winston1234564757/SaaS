@@ -765,12 +765,12 @@ async function seedAuditMaster(masterId: string, clientId: string): Promise<void
   const { error: p1Err } = await admin.from('products').upsert(
     [
       {
-        master_id: masterId, name: 'Гель-лак Audit #1', price: 12000, stock: 10,
+        master_id: masterId, name: 'Гель-лак Audit #1', price_kopecks: 12000, stock_qty: 10,
         is_active: true, product_type: 'retail', stock_alert_threshold: 2,
         icon_name: null, description: 'Тестовий товар для аудиту',
       },
       {
-        master_id: masterId, name: 'База Audit #2', price: 8000, stock: 5,
+        master_id: masterId, name: 'База Audit #2', price_kopecks: 8000, stock_qty: 5,
         is_active: true, product_type: 'retail', stock_alert_threshold: 1,
         icon_name: null, description: 'Тестовий товар 2',
       },
