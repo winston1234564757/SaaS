@@ -58,25 +58,24 @@ export default async function Page(
     );
   }
 
-  // Fetch active products
+  // Products, auth (checkout pre-fill) and schedule are independent — fetch in
+  // parallel instead of three sequential round-trips (was a request waterfall).
   const pub = createPublicClient();
-  const { data: productsData } = await pub
-    .from('products')
-    .select('id, master_id, icon_name, name, description, category, price_kopecks, photos, stock_qty, is_active, sort_order, created_at, updated_at')
-    .eq('master_id', master.id)
-    .eq('is_active', true)
-    .gt('stock_qty', 0)
-    .order('sort_order', { ascending: true });
-
-  // Current user for checkout pre-fill
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  // Fetch schedule
-  const { data: schedule } = await pub
-    .from('schedule_templates')
-    .select('day_of_week, is_working, start_time, end_time')
-    .eq('master_id', master.id);
+  const [{ data: productsData }, { data: { user } }, { data: schedule }] = await Promise.all([
+    pub
+      .from('products')
+      .select('id, master_id, icon_name, name, description, category, price_kopecks, photos, stock_qty, is_active, sort_order, created_at, updated_at')
+      .eq('master_id', master.id)
+      .eq('is_active', true)
+      .gt('stock_qty', 0)
+      .order('sort_order', { ascending: true }),
+    supabase.auth.getUser(),
+    pub
+      .from('schedule_templates')
+      .select('day_of_week, is_working, start_time, end_time')
+      .eq('master_id', master.id),
+  ]);
 
   return (
     <ShopPage

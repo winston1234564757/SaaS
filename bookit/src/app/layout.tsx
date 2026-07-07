@@ -44,15 +44,18 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'uk_UA',
     siteName: 'Bookit',
-    images: [{ url: '/og-default.png', width: 1200, height: 630, alt: 'Bookit — онлайн запис до майстрів краси' }],
+    // OG image provided by the root opengraph-image.tsx file convention (was a
+    // broken static /og-default.png reference). Per-route files override it.
   },
   twitter: {
     card: 'summary_large_image',
   },
   manifest: '/manifest.json',
+  // Apple touch icon comes from apple-icon.tsx (file convention). The favicon
+  // resolves via the icons/[size] route, which only serves 192/512 — the old
+  // apple: '/icons/icon-180.png' was a 404 (180 is not a valid size).
   icons: {
     icon: '/icons/icon-192.png',
-    apple: '/icons/icon-180.png',
   },
   appleWebApp: {
     capable: true,

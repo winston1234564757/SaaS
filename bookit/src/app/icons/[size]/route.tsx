@@ -9,7 +9,10 @@ export async function GET(
   { params }: { params: Promise<{ size: string }> }
 ) {
   const { size: sizeStr } = await params;
-  const size = parseInt(sizeStr, 10);
+  // Accept both bare numbers ("192") and manifest-style names ("icon-192.png",
+  // "icon-512-maskable.png") — the web app manifest references the latter, which the
+  // strict parseInt(sizeStr) rejected as NaN → 404 → broken PWA install icon.
+  const size = parseInt(sizeStr.replace(/[^0-9]/g, ''), 10);
 
   if (!VALID_SIZES.includes(size)) {
     return new Response('Not found', { status: 404 });
