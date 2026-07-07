@@ -69,7 +69,9 @@ R1-аудит (2026-06-20) застарів — 372 коміти. Запусти
 - **repo-parity** — back-port IDOR guard-тіл + `schema_migrations` desync (вкл. `decrement_product_stock_atomic` відсутній у репо) ДО `supabase db push`.
 - **4 застарілі тести** — partners/referrals + C2B trial=21д.
 
-**⚠️ DEPLOY ORDER (Day 4):** 3 нові міграції (`20260707130000` billing · `131000` flash enum · `132000` SMS budget) мусять накотитись у прод ПЕРЕД деплоєм коду — крон/webhook/turbosms посилаються на нові колонки/RPC/enum.
+**✅ DEPLOYED (2026-07-07):** мерж `hotfix/r2-prelaunch-fixes`→main (`108e9961`, `--no-ff`). 3 міграції застосовано в прод через Management API ПЕРЕД деплоєм і верифіковано (billing_cols=2, claim_rpc=1, sms_rpc=1, enum_in_app=1, sms_table=1). `vercel --prod` → READY (`dpl_3e7FSeYcsezVvu8rNc7pa8199dPc`), build 2m. Прод-smoke ✅: PWA `/icons/icon-{192,512,512-maskable}.png` тепер 200 (були 404), `/opengraph-image` 200, manifest/robots/sitemap/apple-icon 200.
+- ⚠️ `bookit-five-psi.vercel.app` віддає 404 — цей аліас відчеплений від проєкту (деплой живий на `bookit-winston1234564757s-projects.vercel.app`). На запуск = переїзд на `bookit.com.ua`: зааліасити домен + `NEXT_PUBLIC_SITE_URL=https://bookit.com.ua` коли DNS готовий.
+- ⚠️ НЕ запушено в origin (main +104 локально). Крон досі на Hobby (заблокований).
 
 ---
 
