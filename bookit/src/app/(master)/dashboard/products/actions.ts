@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { after } from 'next/server';
 import type { ProductCategory, OrderStatus } from '@/types/database';
 import { notifyMasterNewOrder, notifyMasterStockAlert, notifyClientOrderStatus } from '@/lib/notifications';
 import type { ProductIconName } from '@/lib/product-icons';
@@ -336,7 +337,7 @@ export async function createOrder(
     const productIds = payload.items.map(i => i.product_id);
     const { data: products, error: fetchErr } = await admin
       .from('products')
-      .select('id, price_kopecks, stock_qty, name')
+      .select('id, price_kopecks, stock_qty, name, stock_alert_threshold')
       .in('id', productIds)
       .eq('master_id', payload.master_id)
       .eq('is_active', true);
@@ -347,6 +348,11 @@ export async function createOrder(
 
     let total_kopecks = 0;
     for (const item of payload.items) {
+      // Guard against negative / zero / fractional qty (would pass the stock check,
+      // produce a negative total, and INFLATE stock on decrement).
+      if (!Number.isInteger(item.qty) || item.qty < 1) {
+        return { id: null, error: 'Невірна кількість товару' };
+      }
       const p = productMap.get(item.product_id);
       if (!p) return { id: null, error: `Продукт не знайдено` };
       if (p.stock_qty < item.qty) {
@@ -395,15 +401,27 @@ export async function createOrder(
       throw itemsErr;
     }
 
+    // Atomic stock decrement — reserve each unit via decrement_product_stock_atomic
+    // (relative UPDATE, safe under concurrency; FALSE when exhausted mid-flight). The
+    // old `.update().gte()` never checked the affected-row count, so two concurrent
+    // last-unit orders both wrote a `sale` ledger row while only one decrement landed
+    // → oversell + ledger drift. On exhaustion we roll back reserved units + the order.
+    const reserved: Array<{ id: string; qty: number }> = [];
     for (const item of payload.items) {
       const p = productMap.get(item.product_id)!;
-      const newStock = p.stock_qty - item.qty;
 
-      await admin
-        .from('products')
-        .update({ stock_qty: newStock })
-        .eq('id', item.product_id)
-        .gte('stock_qty', item.qty);
+      const { data: ok, error: decErr } = await admin.rpc('decrement_product_stock_atomic', {
+        p_product_id: item.product_id,
+        p_qty:        item.qty,
+      });
+      if (decErr || ok === false) {
+        for (const r of reserved) {
+          await admin.rpc('increment_stock', { p_product_id: r.id, p_qty: r.qty });
+        }
+        await admin.from('orders').delete().eq('id', order.id);
+        return { id: null, error: `"${p.name}" щойно закінчився. Спробуйте ще раз.` };
+      }
+      reserved.push({ id: item.product_id, qty: item.qty });
 
       await admin
         .from('product_transactions')
@@ -414,15 +432,11 @@ export async function createOrder(
           order_id:   order.id,
         });
 
-      const { data: productData } = await admin
-        .from('products')
-        .select('name, stock_alert_threshold')
-        .eq('id', item.product_id)
-        .single();
-
-      const threshold = productData?.stock_alert_threshold ?? 3;
+      // Stock alert — threshold now comes from the initial fetch (was a per-item N+1 query).
+      const newStock  = p.stock_qty - item.qty;
+      const threshold = p.stock_alert_threshold ?? 3;
       if (newStock <= threshold && newStock >= 0) {
-        void notifyMasterStockAlert(payload.master_id, productData?.name ?? p.name, newStock);
+        after(() => notifyMasterStockAlert(payload.master_id, p.name, newStock));
       }
     }
 
@@ -432,7 +446,7 @@ export async function createOrder(
         return `${p?.name ?? 'Товар'} × ${i.qty}`;
       })
       .join(', ');
-    void notifyMasterNewOrder({ masterId: payload.master_id, orderId: order.id, orderItems: orderItemsText });
+    after(() => notifyMasterNewOrder({ masterId: payload.master_id, orderId: order.id, orderItems: orderItemsText }));
 
     revalidatePath('/dashboard/products');
     return { id: order.id, error: null };
@@ -642,7 +656,7 @@ export async function updateOrderStatus(
     if (error) throw error;
 
     if ((status === 'shipped' || status === 'completed') && order.client_id) {
-      void notifyClientOrderStatus(order.client_id as string, masterId, status, orderId);
+      after(() => notifyClientOrderStatus(order.client_id as string, masterId, status, orderId));
     }
 
     revalidatePath('/dashboard/products');

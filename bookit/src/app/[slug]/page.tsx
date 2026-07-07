@@ -221,7 +221,7 @@ export default async function MasterPublicPage(
   const [productsRes, reviewsRes, scheduleRes, monthlyCountRes, flashDealsRes, loyaltyRes, relationRes, partnerRes, portfolioRes, occupancyBookingsRes] = await Promise.all([
     supabase
       .from('products')
-      .select('id, name, price_kopecks, description, photos, stock_qty, category, icon_name, recommend_always, product_service_links(service_id)')
+      .select('id, name, price_kopecks, description, stock_qty, category, icon_name, recommend_always, product_service_links(service_id)')
       .eq('master_id', data.id)
       .eq('is_active', true)
       .gt('stock_qty', 0)

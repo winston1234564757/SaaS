@@ -313,7 +313,7 @@ export function ProductsPage() {
                         type="button"
                         aria-pressed={orderFilter === f.value}
                         onClick={() => setOrderFilter(f.value)}
-                        className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                        className={`shrink-0 px-3 py-2 rounded-full text-xs font-medium transition-all ${
                           orderFilter === f.value
                             ? 'bg-primary text-white'
                             : 'bg-secondary/60 text-text-sub hover:bg-secondary/80'

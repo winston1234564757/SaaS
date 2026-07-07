@@ -197,12 +197,12 @@ export function ProductFormDrawer({ open, initial, onClose }: Props) {
       {open && (
         <>
           <motion.div
-            className="fixed inset-0 bg-black/30 z-40"
+            className="fixed inset-0 bg-black/30 z-[76]"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             onClick={handleClose}
           />
           <motion.div
-            className="fixed bottom-0 left-0 right-0 z-50 bg-background rounded-t-3xl max-w-lg mx-auto flex flex-col max-h-[92dvh] border-t border-border"
+            className="fixed bottom-0 left-0 right-0 z-[80] bg-background rounded-t-3xl max-w-lg mx-auto flex flex-col max-h-[92dvh] border-t border-border"
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}

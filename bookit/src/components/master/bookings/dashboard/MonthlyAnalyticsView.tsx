@@ -203,6 +203,7 @@ export function MonthlyAnalyticsView({ bookings, month, onDayClick, onWeekClick 
 
                     return (
                       <motion.button
+                        type="button"
                         key={day.key}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: !day.inMonth ? 0.2 : 1 }}
@@ -319,6 +320,7 @@ export function MonthlyAnalyticsView({ bookings, month, onDayClick, onWeekClick 
 
               return (
                 <motion.button
+                  type="button"
                   key={week.weekStart.toISOString()}
                   initial={{ opacity: 0, x: -8 }}
                   animate={{ opacity: 1, x: 0 }}

@@ -594,6 +594,7 @@ export function VerticalTimeline({
       {/* Free gap buttons */}
       {gaps.map((gap, i) => (
         <motion.button
+          type="button"
           key={`gap-${i}`}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

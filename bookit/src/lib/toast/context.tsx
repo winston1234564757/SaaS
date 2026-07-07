@@ -179,7 +179,10 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
-      <div 
+      <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="false"
         className={`fixed bottom-8 right-6 z-[100] w-[calc(100vw-3rem)] max-w-[340px] pointer-events-none transition-all duration-500 ${isExpanded ? 'h-full' : 'h-[100px]'}`}
       >
         <AnimatePresence mode="popLayout">

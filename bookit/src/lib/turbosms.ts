@@ -1,7 +1,25 @@
+import { createAdminClient } from '@/lib/supabase/admin';
+
 export async function sendTurboSMS(phone: string, text: string): Promise<{ ok: boolean; code?: number }> {
   if (!process.env.TURBOSMS_TOKEN) {
     console.warn('[TurboSMS] Missing TURBOSMS_TOKEN');
     return { ok: false };
+  }
+
+  // Spend guard: per-recipient + global daily cap (atomic, advisory-locked). This is the
+  // only path for notification SMS; OTP SMS use Supabase's provider + a separate limiter
+  // and never reach here. Fail-open on a transient RPC error so a critical SMS is not lost.
+  try {
+    const admin = createAdminClient();
+    const { data: allowed, error } = await admin.rpc('check_notification_sms_budget', { p_phone: phone });
+    if (error) {
+      console.error('[TurboSMS] budget RPC failed, sending anyway:', error.message);
+    } else if (allowed === false) {
+      console.warn('[TurboSMS] daily SMS cap reached — send suppressed');
+      return { ok: false, code: -1 };
+    }
+  } catch (e) {
+    console.error('[TurboSMS] budget guard threw, sending anyway:', e);
   }
 
   const ctrl = new AbortController();

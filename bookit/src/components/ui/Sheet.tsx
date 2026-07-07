@@ -110,7 +110,7 @@ function BottomVariant({ open, onOpenChange, title, srTitle, children, className
             'fixed bottom-0 left-0 right-0 z-[100] outline-none flex flex-col',
             'bg-secondary backdrop-blur-3xl saturate-150 rounded-t-xl shadow-lg',
             'border-t border-border',
-            'max-h-[96vh] will-change-transform',
+            'max-h-[96dvh] will-change-transform',
             className,
           )}
         >

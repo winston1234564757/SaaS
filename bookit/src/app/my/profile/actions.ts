@@ -54,8 +54,9 @@ export async function updateClientProfile(
 
   await supabase.auth.updateUser({ data: { full_name: name.trim() } });
 
-  revalidatePath('/', 'layout');
-  revalidatePath('/my/profile');
+  // A profile edit only affects the client cabinet — scope it there instead of
+  // purging the whole-site cache (was revalidatePath('/', 'layout')).
+  revalidatePath('/my', 'layout');
   return { error: null };
 }
 

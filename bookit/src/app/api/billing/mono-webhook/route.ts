@@ -58,6 +58,138 @@ function verifyECDSA(rawBody: string, xSignB64: string, pubKeyB64: string): bool
 // ── Admin client ──────────────────────────────────────────────────────────────
 const getAdmin = () => createAdminClient();
 
+const RECURRING_MAX_FAILED_ATTEMPTS = 3;
+
+// ── Recurring renewal settlement ────────────────────────────────────────────────
+// Reconciles a signature-verified recurrent-charge webhook. reference is
+// `recurring_{subId}_{YYYY}_{MM}` (subId is a UUID → no underscores). Idempotent via
+// the UNIQUE billing_events.invoiceId: a webhook that races the cron's own success
+// grant is de-duped and acked. Clears the charging_at / pending_invoice_id claim set
+// by the cron so the row is no longer considered in-flight.
+async function settleRecurringCharge(args: {
+  reference: string;
+  invoiceId?: string;
+  status?: string;
+  amount?: number;
+  body: Record<string, unknown>;
+}): Promise<NextResponse> {
+  const { reference, invoiceId, status, amount, body } = args;
+  const admin = getAdmin();
+
+  if (!invoiceId) {
+    console.warn('[mono-webhook] recurring webhook without invoiceId — acking:', reference);
+    return NextResponse.json({ status: 'ok' });
+  }
+
+  const subId = reference.split('_')[1];
+  if (!subId) {
+    console.error('[mono-webhook] recurring reference missing subId:', reference);
+    return NextResponse.json({ status: 'ok' });
+  }
+
+  const { data: sub, error: subErr } = await admin
+    .from('master_subscriptions')
+    .select('id, master_id, plan_id, failed_attempts')
+    .eq('id', subId)
+    .maybeSingle();
+
+  if (subErr || !sub) {
+    console.error('[mono-webhook] recurring sub not found:', subId, subErr?.message ?? '');
+    return NextResponse.json({ status: 'ok' });
+  }
+
+  const tier = (sub.plan_id === 'studio' ? 'studio' : 'pro') as 'pro' | 'studio';
+
+  // ── Non-success → reconcile the deferred pending charge as failed (dunning) ──
+  if (status !== 'success') {
+    const newAttempts = (sub.failed_attempts ?? 0) + 1;
+    const isDunned    = newAttempts >= RECURRING_MAX_FAILED_ATTEMPTS;
+    const subUpdate: Record<string, unknown> = {
+      failed_attempts:    newAttempts,
+      charging_at:        null,
+      pending_invoice_id: null,
+      updated_at:         new Date().toISOString(),
+    };
+    if (isDunned) subUpdate.status = 'past_due';
+    await admin.from('master_subscriptions').update(subUpdate).eq('id', sub.id);
+    if (isDunned) {
+      await admin.from('master_profiles').update({ subscription_tier: 'starter' }).eq('id', sub.master_id);
+    }
+    const { error: evtErr } = await admin.from('billing_events').insert({
+      payment_id:  invoiceId,
+      external_id: invoiceId,
+      provider:    'monobank',
+      master_id:   sub.master_id,
+      tier,
+      amount:      typeof amount === 'number' ? amount : null,
+      status:      'failure',
+      payload:     body,
+    });
+    if (evtErr && evtErr.code !== '23505') {
+      console.error('[mono-webhook] recurring failure event insert:', evtErr.message);
+    }
+    notifyMasterBilling(sub.master_id, 'subscription_failed').catch(e => console.error('[notifyMasterBilling]', e));
+    if (isDunned) notifyMasterBilling(sub.master_id, 'subscription_downgraded').catch(e => console.error('[notifyMasterBilling]', e));
+    console.warn(`[mono-webhook] recurring FAILURE settled — sub=${sub.id} attempts=${newAttempts} dunned=${isDunned}`);
+    return NextResponse.json({ status: 'ok' });
+  }
+
+  // ── Success → grant one month, idempotent on the UNIQUE invoiceId ──
+  const { error: evtErr } = await admin.from('billing_events').insert({
+    payment_id:  invoiceId,
+    external_id: invoiceId,
+    provider:    'monobank',
+    master_id:   sub.master_id,
+    tier,
+    amount:      typeof amount === 'number' ? amount : null,
+    status:      'success',
+    payload:     body,
+  });
+  if (evtErr) {
+    if (evtErr.code === '23505') {
+      console.info('[mono-webhook] recurring already settled (dup invoiceId):', invoiceId);
+      return NextResponse.json({ status: 'ok' });
+    }
+    console.error('[mono-webhook] recurring billing_events insert ERROR:', evtErr.message);
+    return NextResponse.json({ status: 'error' }, { status: 500 });
+  }
+
+  const { data: mp } = await admin
+    .from('master_profiles')
+    .select('subscription_expires_at')
+    .eq('id', sub.master_id)
+    .maybeSingle();
+
+  const base = mp?.subscription_expires_at && new Date(mp.subscription_expires_at) > new Date()
+    ? new Date(mp.subscription_expires_at)
+    : new Date();
+  base.setDate(base.getDate() + 30);
+  const expiresAt = base.toISOString();
+
+  await admin.from('master_profiles')
+    .update({ subscription_tier: tier, subscription_expires_at: expiresAt })
+    .eq('id', sub.master_id);
+
+  await admin.from('master_subscriptions').update({
+    status:             'active',
+    failed_attempts:    0,
+    next_charge_at:     expiresAt,
+    expires_at:         expiresAt,
+    charging_at:        null,
+    pending_invoice_id: null,
+    updated_at:         new Date().toISOString(),
+  }).eq('id', sub.id);
+
+  // Renewal → keep the referrer's monthly bounty/status in sync (matches the cron's
+  // per-paid-month behavior; runs here only when the cron deferred a pending charge).
+  await syncReferralAndBounty(sub.master_id);
+
+  const expiresFormatted = new Date(expiresAt).toLocaleDateString('uk-UA', { day: 'numeric', month: 'long', year: 'numeric' });
+  notifyMasterBilling(sub.master_id, 'subscription_paid', tier === 'pro' ? 'Pro' : 'Studio', expiresFormatted).catch(e => console.error('[notifyMasterBilling]', e));
+  console.log(`[mono-webhook] recurring SUCCESS settled — sub=${sub.id} expires=${expiresAt}`);
+  return NextResponse.json({ status: 'ok' });
+}
+
 // ── Handler ───────────────────────────────────────────────────────────────────
 export async function POST(req: NextRequest) {
   console.log('[mono-webhook] POST received');
@@ -111,6 +243,17 @@ export async function POST(req: NextRequest) {
     const walletData = (body as Record<string, unknown>).walletData as
       { cardToken?: string; walletId?: string; status?: string } | undefined;
     const cardToken = walletData?.cardToken;
+
+    // ── Recurring renewal reconciliation ──────────────────────────────────────
+    // The billing cron initiates recurrent charges (reference: recurring_{subId}_{YYYY}_{MM})
+    // and passes this webhook URL — the webhook is the authoritative settlement for
+    // renewals (the cron only defers on a synchronous 'pending'). Handled BEFORE the
+    // freshness/replay window below, whose `_(\d+)$` regex would misread the `_MM`
+    // period suffix as a unix timestamp and wrongly reject it. First-payment refs
+    // (bookit_{tier}_{uid32}_{ts}) fall through to the unchanged path below.
+    if (reference && reference.startsWith('recurring_')) {
+      return await settleRecurringCharge({ reference, invoiceId, status, amount, body });
+    }
 
     if (status !== 'success') {
       console.log('[mono-webhook] non-success status:', status, '— acking');

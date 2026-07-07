@@ -696,8 +696,8 @@ export function ServiceEditor({ id }: Props) {
       {/* Add consumable sheet */}
       <Drawer.Root open={showAddSheet} onOpenChange={v => !v && setShowAddSheet(false)} shouldScaleBackground>
         <Drawer.Portal>
-          <Drawer.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40" />
-          <Drawer.Content className="fixed bottom-0 left-0 right-0 z-50 bg-surface rounded-t-[28px] shadow-2xl max-h-[80vh] flex flex-col">
+          <Drawer.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[76]" />
+          <Drawer.Content className="fixed bottom-0 left-0 right-0 z-[80] bg-surface rounded-t-[28px] shadow-2xl max-h-[80dvh] flex flex-col">
             <div className="mx-auto mt-3 mb-2 w-12 h-1.5 rounded-full bg-border/60 shrink-0" />
             <div className="px-5 overflow-y-auto pb-safe flex flex-col gap-4">
               <div className="flex items-center justify-between pt-1 pb-2">

@@ -1,0 +1,11 @@
+-- Migration 20260707131000: add 'in_app' to notification_channel enum
+--
+-- Fix R2 audit 11-notifications P1: flash-deal in-app inserts set channel='in_app',
+-- but the enum was ('push','telegram','sms') — Postgres rejected the whole batch
+-- insert, so NO flash recipient ever got an in-app notification, while the master's
+-- delivery stats still recorded in_app_sent: true. 'in_app' is the semantically
+-- correct channel for a row stored in the notifications table.
+--
+-- ADD VALUE is transaction-safe on PG 12+ (Supabase = PG 15) as long as the new value
+-- is not USED in the same transaction — it is not here.
+ALTER TYPE notification_channel ADD VALUE IF NOT EXISTS 'in_app';

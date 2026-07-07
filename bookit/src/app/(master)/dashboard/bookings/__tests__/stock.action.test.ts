@@ -16,6 +16,9 @@ import { createAdminClient } from '@/lib/supabase/admin';
 vi.mock('@/lib/supabase/server', () => ({ createClient: vi.fn() }));
 vi.mock('@/lib/supabase/admin',  () => ({ createAdminClient: vi.fn() }));
 vi.mock('next/cache',            () => ({ revalidatePath: vi.fn() }));
+// after() is request-scoped in prod (server actions run inside a request); in a bare
+// unit test there is no scope, so mock it to just run the callback synchronously.
+vi.mock('next/server',           () => ({ after: vi.fn((cb: () => unknown) => { void cb(); }) }));
 vi.mock('@/lib/notifications', () => ({
   notifyClientOnStatusChange: vi.fn(() => Promise.resolve()),
   notifyClientOnReschedule:   vi.fn(() => Promise.resolve()),
