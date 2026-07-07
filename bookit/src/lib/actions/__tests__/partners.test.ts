@@ -65,11 +65,14 @@ describe('partners — server action integration', () => {
       expect(r).toEqual({ link: null, error: 'Не авторизований' });
     });
 
-    it('returns link when master has referral_code', async () => {
+    it('returns link when master already has a partner_invite_token', async () => {
       vi.mocked(createClient).mockResolvedValue({
         auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: MASTER_ID } } }) },
-        from: vi.fn().mockReturnValue(makeChain({ data: { slug: 'master-anna', referral_code: 'ANNA01' } })),
       } as any);
+      // Profile lookup goes through the admin client (createAdminClient), not the server one.
+      vi.mocked(createAdminClient).mockReturnValue(
+        makeAdmin({ master_profiles: [{ data: { slug: 'master-anna', partner_invite_token: 'ANNA01' } }] }),
+      );
       const r = await getPartnerInviteLink();
       expect(r.error).toBeNull();
       expect(r.link).toContain('dashboard/partners/join?token=ANNA01');
@@ -78,8 +81,10 @@ describe('partners — server action integration', () => {
     it('returns error when master profile not found', async () => {
       vi.mocked(createClient).mockResolvedValue({
         auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: MASTER_ID } } }) },
-        from: vi.fn().mockReturnValue(makeChain({ data: null })),
       } as any);
+      vi.mocked(createAdminClient).mockReturnValue(
+        makeAdmin({ master_profiles: [{ data: null }] }),
+      );
       const r = await getPartnerInviteLink();
       expect(r).toEqual({ link: null, error: 'Профіль майстра не знайдено' });
     });

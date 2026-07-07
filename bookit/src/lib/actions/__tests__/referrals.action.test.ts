@@ -171,8 +171,10 @@ describe('referrals — server action integration', () => {
       mockAuthUser(CLIENT_ID);
       vi.mocked(createAdminClient).mockReturnValue(
         makeAdmin({
-          // client_profiles for getOrGenerateProfileReferralCode(CLIENT_ID, 'client')
-          client_profiles: [{ data: { referral_code: 'CLI001' } }],
+          // client_profiles for getOrGenerateProfileReferralCode(CLIENT_ID, 'client').
+          // C2C reads the c2c_referral_code column (not referral_code) — an existing
+          // code is reused verbatim in the link.
+          client_profiles: [{ data: { c2c_referral_code: 'CLI001' } }],
           // master_profiles for the slug lookup
           master_profiles: [{ data: { slug: 'master-anna' } }],
         }) as any,
@@ -248,7 +250,7 @@ describe('referrals — server action integration', () => {
       expect(daysFromNow).toBeLessThan(16);
     });
 
-    it('awards C2B: gives the new master a 30-day Pro trial and creates a client promo', async () => {
+    it('awards C2B: gives the new master a 21-day Pro trial and creates a client promo', async () => {
       mockAuthUser(MASTER_ID);
       vi.mocked(createAdminClient).mockReturnValue(
         makeAdmin({
@@ -261,11 +263,11 @@ describe('referrals — server action integration', () => {
       const result = await applyReferralRewards(MASTER_ID, 'C2BREF');
       expect(result.subscriptionTier).toBe('pro');
       expect(result.finalReferredBy).toBe('C2BREF');
-      // subscriptionExpiresAt should be roughly 30 days from now
+      // subscriptionExpiresAt should be roughly 21 days from now (C2B trial, founder-confirmed)
       const expiresAt   = new Date(result.subscriptionExpiresAt!);
       const daysFromNow = (expiresAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24);
-      expect(daysFromNow).toBeGreaterThan(27);
-      expect(daysFromNow).toBeLessThan(33);
+      expect(daysFromNow).toBeGreaterThan(18);
+      expect(daysFromNow).toBeLessThan(24);
     });
 
     it('returns the existing Pro bonus without re-awarding when referral_grants row already exists (idempotent)', async () => {
