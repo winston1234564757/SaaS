@@ -22,7 +22,9 @@ test.describe('💎 Premium UX/UI Excellence Suite', () => {
     test('Inputs must receive premium focus ring and retain border radius', async ({ page }) => {
       await page.goto('/');
       // Шукаємо будь-який інпут
-      const input = page.locator('input:not([type="hidden"]):not([type="radio"]):not([type="checkbox"])').first();
+      // Exclude type=range — the landing has an opacity-0 range slider (custom control)
+      // whose native outline is irrelevant; the focus-ring contract is for text inputs.
+      const input = page.locator('input:not([type="hidden"]):not([type="radio"]):not([type="checkbox"]):not([type="range"])').first();
       
       if (await input.isVisible()) {
         await input.focus();

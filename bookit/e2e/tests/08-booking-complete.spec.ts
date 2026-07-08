@@ -49,7 +49,7 @@ test.describe('Повний BookingFlow', () => {
     await expect(wizardPanel).toBeVisible({ timeout: 10_000 });
 
     // Перевіряємо заголовок кроку 1 у header wizard
-    const stepHeader = page.locator('p.font-semibold').filter({ hasText: /Обери послуги/i }).first();
+    const stepHeader = page.getByRole('heading', { name: /Обери послуги/i }).first();
     await expect(stepHeader).toBeVisible({ timeout: 8_000 });
 
     // Вибрати першу доступну послугу — шукаємо ВСЕРЕДИНІ wizard panel (z-[60])

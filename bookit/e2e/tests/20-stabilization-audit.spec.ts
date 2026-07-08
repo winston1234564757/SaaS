@@ -61,8 +61,9 @@ test.describe('Stabilization Tasks 1–10', () => {
       await page.waitForLoadState('networkidle');
       await page.waitForTimeout(4000);
 
-      await expect(page.getByText('Завантаженість')).toBeVisible({ timeout: 15_000 });
-      await expect(page.getByText('Аналітика слотів на 30 днів')).toBeVisible();
+      await expect(page.getByText('Завантаженість').first()).toBeVisible({ timeout: 15_000 });
+      // Widget body renders its period sections (redesign: subtitle dropped, "Місяць" → "30 днів")
+      await expect(page.getByText('30 днів').first()).toBeVisible();
       await ctx.close();
     });
 
@@ -76,8 +77,8 @@ test.describe('Stabilization Tasks 1–10', () => {
       await page.waitForLoadState('networkidle');
       await page.waitForTimeout(4000);
 
-      await expect(page.getByText('Тиждень')).toBeVisible({ timeout: 10_000 });
-      await expect(page.getByText('Місяць', { exact: true })).toBeVisible();
+      await expect(page.getByText('Тиждень').first()).toBeVisible({ timeout: 10_000 });
+      await expect(page.getByText('30 днів', { exact: true }).first()).toBeVisible();
       await ctx.close();
     });
   });

@@ -49,7 +49,7 @@ test.describe('Services Loading — icon_name fallback', () => {
       }
 
       // Fill the service form (full-page editor)
-      const nameInput = page.getByPlaceholder('Введіть назву...');
+      const nameInput = page.getByPlaceholder(/Наприклад/).first();
       await nameInput.waitFor({ state: 'visible', timeout: 10_000 });
       await nameInput.fill(serviceName);
 

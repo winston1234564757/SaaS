@@ -5,6 +5,9 @@ import * as path from 'path';
 const artifactsDir = 'C:\\Users\\Vitos\\.gemini\\antigravity-ide\\brain\\9fbddcd5-f58f-4db2-85b5-308c51dea4b0';
 
 test('Capture Analytics on Vercel', async ({ page }) => {
+  // Env-gated capture utility (hits remote Vercel + writes to a local artifacts dir).
+  // Not a local/CI assertion — skip unless explicitly enabled.
+  test.skip(!process.env.CAPTURE_VERCEL, 'Vercel capture — set CAPTURE_VERCEL=1 to run');
   test.setTimeout(120000); // 2 minutes
 
   console.log('Navigating to Vercel deployment...');

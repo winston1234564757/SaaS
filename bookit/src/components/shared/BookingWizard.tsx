@@ -247,7 +247,7 @@ export function BookingWizard({
         srTitle={mode === 'master' ? 'Новий запис' : (masterName || 'Онлайн-запис')}
         maxWidth="xl"
       >
-        <div className="flex flex-col gap-4">
+        <div data-testid="wizard-panel" className="flex flex-col gap-4">
           {/* Темний editorial hero-band — домінанта-намір + контекст-метрика (один на поверхню) */}
           {!isAtLimit && step !== 'success' && (
             <WizardHero
