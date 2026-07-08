@@ -200,7 +200,13 @@ test.describe('Master Bookings — ручне додавання', () => {
       await think(page, 200, 400);
       await nextBtn1.click();
 
-      // Крок 2 — час
+      // Крок 2 — час. Спершу явно обрати доступний день (авто-фокус дня не завжди
+      // встигає заповнити selectedDate → слоти не рендеряться поки день не вибрано).
+      const availableDay = wizardPanel.locator('[id^="day-"]:not([disabled])').first();
+      await expect(availableDay).toBeVisible({ timeout: 10_000 });
+      await think(page, 200, 400);
+      await availableDay.click();
+
       const availableSlot = wizardPanel.locator('[data-testid="time-slot"]:not([disabled])').first();
       await expect(availableSlot).toBeVisible({ timeout: 10_000 });
       await scrollAndFocus(availableSlot);
