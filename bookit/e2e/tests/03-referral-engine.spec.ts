@@ -49,7 +49,9 @@ test.describe('/invite/[code] — Invite page', () => {
     await page.waitForLoadState('networkidle');
 
     // The invite page CTA: "Зареєструватися безкоштовно" links to /register?ref=[code]
-    const ctaLink = page.getByRole('link', { name: /Зареєструватися/i });
+    // Master-inviter branch CTA is "Спробувати безкоштовно"; generic invite uses
+    // "Зареєструватися безкоштовно". Both link to /register?ref=[code].
+    const ctaLink = page.getByRole('link', { name: /Спробувати безкоштовно|Зареєструватися/i });
     await expect(ctaLink).toBeVisible({ timeout: 8_000 });
 
     const href = await ctaLink.getAttribute('href');
@@ -109,8 +111,7 @@ test.describe('Referral code → /register propagation', () => {
     // Registration page rendered (after redirect to /login)
     // Handle the mandatory role selection step
     const auth = new AuthPage(page);
-    await auth.continueButton.waitFor({ state: 'visible', timeout: 10_000 });
-    await auth.continueButton.click();
+    await auth.goToPhoneStep();
 
     // Registration page renders (SMS OTP form)
     const phoneInput = page.locator('input[type="tel"]');
@@ -124,14 +125,13 @@ test.describe('Referral code → /register propagation', () => {
     await page.waitForLoadState('networkidle');
 
     // Click the CTA — should navigate (not open in new tab)
-    const ctaLink = page.getByRole('link', { name: /Зареєструватися/i });
+    const ctaLink = page.getByRole('link', { name: /Спробувати безкоштовно|Зареєструватися/i });
     await ctaLink.click();
 
     // After click, wait for registration page to load
     // Handle the mandatory role selection step
     const auth = new AuthPage(page);
-    await auth.continueButton.waitFor({ state: 'visible', timeout: 10_000 });
-    await auth.continueButton.click();
+    await auth.goToPhoneStep();
 
     // Wait for phone input visible
     await expect(page.locator('input[type="tel"]')).toBeVisible({ timeout: 10_000 });

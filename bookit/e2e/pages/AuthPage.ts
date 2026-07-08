@@ -16,12 +16,17 @@ export class AuthPage {
   readonly heading: Locator;
   readonly errorMessage: Locator;
   readonly otpBox0: Locator;
+  readonly termsLabel: Locator;
 
   constructor(page: Page) {
     this.page = page;
     this.continueButton = page.getByRole('button', { name: /Продовжити/i });
     this.roleClientCard = page.getByRole('button', { name: /Я Клієнт/i });
     this.roleMasterCard = page.getByRole('button', { name: /Я Майстер/i });
+    // Role step gates "Продовжити" on an accepted terms checkbox (sr-only input inside
+    // a <label>). Click the label near its top-left (the visual box) to toggle — avoids
+    // the terms <a> links (which stopPropagation) on the right side of the label.
+    this.termsLabel = page.locator('label').filter({ hasText: /Погоджуюсь/ }).first();
     this.phoneInput    = page.locator('input[type="tel"]');
     this.sendSmsButton = page.getByRole('button', { name: /Отримати код/i });
     this.googleButton  = page.getByRole('button', { name: /Google/i });
@@ -37,6 +42,9 @@ export class AuthPage {
   }
 
   async goToPhoneStep() {
+    // Accept terms so "Продовжити" becomes enabled (role is pre-selected = client).
+    // continueButton.click auto-waits for enabled → implicit confirmation the toggle took.
+    await this.termsLabel.click({ position: { x: 9, y: 9 } });
     await this.continueButton.click();
     await this.page.waitForLoadState('domcontentloaded');
   }
