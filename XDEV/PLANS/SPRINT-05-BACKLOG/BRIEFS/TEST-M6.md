@@ -68,7 +68,20 @@ the test red until fixed. Never edit a test just to make it green (that is the d
   account exists id `dbab90dd-aaf2-4b92-9e39-418601136ee9`, phone `+380991111111`,
   role client, client_profile present → satisfies the `/my/bookings` landing contract.
   TSC:0. This un-skips client specs (08, 16-mobile, 14-client-journey, 17-retention B).
-- Remaining: ~20 specs across the categories below.
+- **14-client-journey GREEN (2026-07-08, commit 2c344629):** verified LIVE (prod
+  build + server, chromium). Root cause = C-DESK-01 dual-tree drift: client pages
+  render separate mobile + `hidden lg:block` desktop trees, so `h1.first()` /
+  `.bento-card` grabbed the hidden off-breakpoint copy or drifted markup. Fixes:
+  (1) page-object `heading`/card/tab locators → `.filter({ visible: true }).first()`
+  so the shown tree wins; (2) tab labels matched across both copies
+  ("Майбутні записи"↔"Майбутні", "Минулі записи"↔"Раніше"); (3) restored the
+  data-testids specs already target (`master-card`, `booking-card`) that the
+  redesign dropped — additive, behavior-neutral, durable anti-drift. GENERAL RULE
+  for every redesigned dual-tree surface: never `.first()` a bare tag — always
+  scope to `:visible`, and prefer stable `data-testid` over class/copy selectors.
+- Remaining: ~19 specs across the categories below. Ground truth is now stale
+  (brief snapshot predates batch 2 + these fixes) — re-run the full chromium suite
+  to get the current red list before triaging further.
 
 **Batch 1 detail (commit 0003f358):** smoke.spec 4/4 green; booking-flow "open flow" green.
 - LandingPage page-object: login `exact`, register CTA "Спробувати безкоштовно",
