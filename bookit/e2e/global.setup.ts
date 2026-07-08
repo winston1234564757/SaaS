@@ -9,7 +9,7 @@
  *   e2e_master_crm@test.com        → master-crm.json
  *   e2e_master_auth@test.com       → master-auth.json
  *   e2e_master_referral@test.com   → master-referral.json
- *   e2e_client@test.com            → client.json
+ *   e2e_client_timetravel@test.com → client.json  (generic client = data-rich TT client)
  *   e2e_studioadmin@test.com       → studio-admin.json  (foundation — тести пізніше)
  *
  * Необхідні змінні у .env.test:

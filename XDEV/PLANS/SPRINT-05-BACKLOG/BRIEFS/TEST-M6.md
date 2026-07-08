@@ -52,11 +52,23 @@ the test red until fixed. Never edit a test just to make it green (that is the d
 - **Batch 1 (0003f358):** smoke.spec 4/4.
 - **Batch 2 (3fafbef1):** booking-flow 4/4 (wizard data-testids + hero-band metric).
 - **Seed fix (2b1b4b6c):** products `price_kopecks`/`stock_qty`.
-- Remaining: ~21 specs across the categories below. Next highest-leverage =
-  client-phone harness gap (root cause #2) — it currently BLOCKS `client.json`
-  entirely, so all client specs skip until fixed. Exact fix: seed must create
-  `e2e_client@test.com` (the account `global.setup` uses via `E2E_CLIENT_EMAIL`)
-  with a phone + client_profile — the seeder only makes `e2e_client_crm@…` etc.
+- **Client-phone harness gap — FIXED (2026-07-08, option a):** root cause was
+  `E2E_CLIENT_EMAIL=e2e_client@test.com` — an orphan the seeder NEVER creates (it
+  makes `e2e_client_timetravel/crm/auth/referral@…`, each with a phone). So
+  `global.setup` built `client.json` from a phoneless orphan → landed on
+  `/my/setup/phone` → disallowed → `client.json` deleted → ALL client specs skip.
+  Chose option (a) over (b): retarget `E2E_CLIENT_EMAIL` → `e2e_client_timetravel@test.com`
+  (the data-rich TT client that `E2E_CLIENT_ID` already aliases via `clientTimeTravelId`),
+  NOT create a new bare orphan (which would give an empty `/my/bookings` + mismatch
+  with `E2E_CLIENT_ID`). Files: `.env.test:15`, `.github/workflows/e2e.yml` +
+  `bookit/.github/workflows/e2e.yml` (both), `08-notification-adoption.spec.ts`
+  (hard-coded `CLIENT_ID='2ba1e13a…'` [the orphan's id] → `process.env.E2E_CLIENT_ID`
+  + skip guard — auth UUIDs are random per fresh DB, never hard-code), comment fixes
+  in `global.setup.ts` + `17-retention`. Verified read-only against prod: target
+  account exists id `dbab90dd-aaf2-4b92-9e39-418601136ee9`, phone `+380991111111`,
+  role client, client_profile present → satisfies the `/my/bookings` landing contract.
+  TSC:0. This un-skips client specs (08, 16-mobile, 14-client-journey, 17-retention B).
+- Remaining: ~20 specs across the categories below.
 
 **Batch 1 detail (commit 0003f358):** smoke.spec 4/4 green; booking-flow "open flow" green.
 - LandingPage page-object: login `exact`, register CTA "Спробувати безкоштовно",

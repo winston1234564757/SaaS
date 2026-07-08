@@ -11,7 +11,7 @@
  *
  * Required env:
  *   E2E_MASTER_ID        — UUID майстра
- *   E2E_CLIENT_EMAIL     — email клієнта (e2e_client@test.com)
+ *   E2E_CLIENT_EMAIL     — email клієнта (e2e_client_timetravel@test.com)
  *   CRON_SECRET          — secret для /api/cron/*
  *   PLAYWRIGHT_BASE_URL  — default http://localhost:3000
  */

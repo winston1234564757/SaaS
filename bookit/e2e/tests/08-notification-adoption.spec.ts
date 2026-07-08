@@ -3,13 +3,16 @@ import * as fs from 'fs';
 import { supabaseAdmin } from '../utils/supabase';
 
 const hasClientState = fs.existsSync('playwright/.auth/client.json');
-// Correct ID for e2e_client@test.com session
-const CLIENT_ID      = '2ba1e13a-3b20-462b-a848-a5070cb4c41b';
+// Client UUID for the session cached in client.json. The seeder writes it to
+// .env.test.runtime (= clientTimeTravelId, the same account E2E_CLIENT_EMAIL points
+// to); never hard-code — Supabase auth UUIDs are random on a fresh DB.
+const CLIENT_ID      = process.env.E2E_CLIENT_ID;
 
 test.describe('Notification Adoption (UI) - Client', () => {
 
   test('ChannelBanner зʼявляється на /my/bookings, якщо немає підписок', async ({ browser }) => {
     test.skip(!hasClientState, 'Немає playwright/.auth/client.json');
+    test.skip(!CLIENT_ID, 'E2E_CLIENT_ID не задано (запусти seed-e2e-data)');
 
     // 1. Clear push subscriptions for this client
     await supabaseAdmin.from('push_subscriptions').delete().eq('user_id', CLIENT_ID);

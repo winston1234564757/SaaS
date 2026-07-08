@@ -72,7 +72,7 @@ jobs:
           E2E_MASTER_CRM_EMAIL=e2e_master_crm@test.com
           E2E_MASTER_AUTH_EMAIL=e2e_master_auth@test.com
           E2E_MASTER_REFERRAL_EMAIL=e2e_master_referral@test.com
-          E2E_CLIENT_EMAIL=e2e_client@test.com
+          E2E_CLIENT_EMAIL=e2e_client_timetravel@test.com
           E2E_CLIENT_TIMETRAVEL_EMAIL=e2e_client_timetravel@test.com
           E2E_CLIENT_CRM_EMAIL=e2e_client_crm@test.com
           E2E_CLIENT_AUTH_EMAIL=e2e_client_auth@test.com
