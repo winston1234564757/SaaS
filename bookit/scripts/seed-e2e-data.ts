@@ -85,15 +85,25 @@ function assertSafeEnvironment(): void {
     );
   }
 
-  // HARD guard (SEC-01): a known production project ref is NEVER seedable.
-  // Ordered before the ALLOW_REMOTE bypass so E2E_ALLOW_REMOTE=true cannot unlock prod.
+  // HARD guard (SEC-01): a known production project ref is NEVER seedable by the
+  // casual E2E_ALLOW_REMOTE flag. Ordered before the ALLOW_REMOTE bypass.
+  // The ONLY way to deliberately seed a prod ref is to name that exact ref in
+  // E2E_SEED_CONFIRM_PROD_REF — an intentional, un-accidental confirmation
+  // (destroys + recreates e2e_*@test.com data on prod). Never leave it set.
   const prodRef = findProdRef(SUPABASE_URL);
-  if (prodRef) {
+  if (prodRef && process.env.E2E_SEED_CONFIRM_PROD_REF !== prodRef) {
     throw new Error(
       `SAFETY ABORT (HARD): SUPABASE_URL "${SUPABASE_URL}" targets a known PRODUCTION project ref "${prodRef}".\n` +
-      `This seeder wipes + recreates e2e_*@test.com accounts and MUST NEVER run against production.\n` +
+      `This seeder wipes + recreates e2e_*@test.com accounts and MUST NEVER run against production by accident.\n` +
       `E2E_ALLOW_REMOTE does NOT override this guard. Repoint .env.test at a local Supabase ` +
-      `(npx supabase start) or a dedicated e2e project.`,
+      `(npx supabase start) or a dedicated e2e project.\n` +
+      `To DELIBERATELY seed this prod ref (authorized one-off only), set E2E_SEED_CONFIRM_PROD_REF="${prodRef}".`,
+    );
+  }
+  if (prodRef) {
+    console.warn(
+      `\n⚠️  DELIBERATE PROD SEED — E2E_SEED_CONFIRM_PROD_REF matches "${prodRef}".\n` +
+      `   Wiping + recreating e2e_*@test.com accounts on PRODUCTION. Scoped to e2e_* rows only.\n`,
     );
   }
 
