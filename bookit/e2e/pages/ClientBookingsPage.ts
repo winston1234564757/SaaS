@@ -43,7 +43,7 @@ export class ClientBookingsPage {
     this.cancelBtn = page.getByRole('button', { name: /Скасувати/ }).first();
 
     // Review modal triggers and fields
-    this.reviewBtn      = page.getByRole('button', { name: /Залишити відгук/ }).first();
+    this.reviewBtn      = page.getByRole('button', { name: /Поділитись враженнями/ }).filter({ visible: true }).first();
     // 5 star buttons inside the review dialog
     this.ratingStars    = page.locator('[role="dialog"] button[aria-label]').filter({ hasText: '' });
     this.reviewTextarea = page.locator('[role="dialog"] textarea').first();

@@ -142,10 +142,6 @@ test.describe('Reviews', () => {
       return;
     }
 
-    // Record current review count so we can assert +1 after
-    const reviewsBefore = await getReviewsByMasterId(MASTER_ID!);
-    const countBefore   = reviewsBefore.length;
-
     const context = await browser.newContext({ storageState: 'playwright/.auth/client.json' });
     const page    = await context.newPage();
     const clientBookings = new ClientBookingsPage(page);
@@ -153,11 +149,17 @@ test.describe('Reviews', () => {
     try {
       await clientBookings.goto();
 
-      // Switch to past bookings tab
-      await clientBookings.pastTab.click();
-      await page.waitForLoadState('networkidle');
+      // Desktop /my/bookings is a master-detail: the review button ("Поділитись
+      // враженнями") lives in the detail pane and only for a completed, not-yet-reviewed
+      // booking. Select booking rows until one exposes it.
+      const cards = page.getByTestId('booking-card');
+      const cardCount = await cards.count();
+      for (let i = 0; i < cardCount; i++) {
+        await cards.nth(i).click();
+        await page.waitForTimeout(300);
+        if (await clientBookings.reviewBtn.isVisible().catch(() => false)) break;
+      }
 
-      // Click the first "Залишити відгук" button
       await expect(clientBookings.reviewBtn).toBeVisible({ timeout: 8_000 });
       await clientBookings.reviewBtn.click();
 
@@ -168,7 +170,9 @@ test.describe('Reviews', () => {
       // Stars are rendered as buttons; click the 5th one (index 4)
       const stars = dialog.getByRole('button').filter({ hasNot: page.locator('svg[data-icon]') });
       // Prefer aria-label approach; fall back to nth
-      const starButtons = dialog.locator('button[data-star], button[aria-label*="зірк"], button[aria-label*="star"]');
+      // Match "зір" not "зірк": the 5-star aria-label is "5 зірок" (зір-О-к) which does
+      // NOT contain the substring "зірк" → the old selector found only stars 1–4.
+      const starButtons = dialog.locator('button[data-star], button[aria-label*="зір"], button[aria-label*="star"]');
       const starCount   = await starButtons.count();
 
       if (starCount >= 5) {
@@ -186,14 +190,21 @@ test.describe('Reviews', () => {
 
       // Submit
       await dialog.getByRole('button', { name: /Відправити|Надіслати|Зберегти/i }).click();
-      await page.waitForLoadState('networkidle');
+      // The Sheet closes only after submitReview resolves — wait for it before the DB check
+      // (networkidle can settle before the server action completes → false negative).
+      await expect(dialog).toBeHidden({ timeout: 10_000 });
 
       // Verify new review in DB
-      const reviewsAfter = await getReviewsByMasterId(MASTER_ID!);
-      expect(reviewsAfter.length).toBeGreaterThan(countBefore);
-
-      const newReview = reviewsAfter.find((r: { comment: string }) => r.comment === REVIEW_COMMENT);
-      expect(newReview).toBeDefined();
+      // The client bookings view is master-centric, so the reviewed booking may belong
+      // to any of the client's masters. Assert the review flow persisted by the unique
+      // comment (cleanup in beforeEach removes it, so this is repeatable).
+      const { data: newReview } = await supabaseAdmin
+        .from('reviews')
+        .select('id, rating, comment')
+        .eq('comment', REVIEW_COMMENT)
+        .limit(1)
+        .maybeSingle();
+      expect(newReview, 'review with the test comment should be persisted').not.toBeNull();
     } finally {
       await context.close();
     }
