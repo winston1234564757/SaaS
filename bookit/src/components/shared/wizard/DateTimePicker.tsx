@@ -331,7 +331,7 @@ export function DateTimePicker({
 
                 {/* Dynamic pricing badge */}
                 {dynamicPricing?.label && mode === 'client' && (
-                  <div className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium mb-3 ${
+                  <div data-testid="dynamic-pricing-badge" className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium mb-3 ${
                     dynamicPricing.modifier > 0
                       ? 'bg-destructive/10 text-destructive border border-destructive/25'
                       : 'bg-primary/10 text-primary border border-primary/25'

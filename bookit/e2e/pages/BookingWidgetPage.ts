@@ -98,11 +98,10 @@ export class BookingWidgetPage {
       .filter({ has: page.locator('svg[class*="star"], svg[class*="Star"]') })
       .or(page.locator('[class*="recommend"], [aria-label*="рекоменд"]').first());
 
-    // Dynamic pricing badge — rendered near the price in the booking summary or slot
-    this.dynamicPricingBadge = page
-      .locator('span, div, p')
-      .filter({ hasText: /Пік|Остання хвилина|Рання бронь|Тихий час|\+\d+%|-\d+%/ })
-      .first();
+    // Dynamic pricing badge — the DateTimePicker renders it (client mode) with a stable
+    // testid. Scoped to avoid the master page's loyalty "-15%" (the old text-filter
+    // matched that and grabbed the page body).
+    this.dynamicPricingBadge = page.getByTestId('dynamic-pricing-badge').first();
 
     // Loyalty banner — shown in booking summary when client qualifies
     this.loyaltyBanner = page
