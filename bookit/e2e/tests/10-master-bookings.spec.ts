@@ -54,16 +54,16 @@ test.describe('Master Bookings — перегляд і навігація', () =
       await bookings.goto();
       await expect(bookings.heading).toBeVisible({ timeout: 10_000 });
 
-      // Перевірити наявність режимів перегляду
-      await expect(bookings.dayViewBtn).toBeVisible({ timeout: 10_000 });
-      await expect(bookings.weekViewBtn).toBeVisible({ timeout: 10_000 });
-      await expect(bookings.monthViewBtn).toBeVisible({ timeout: 10_000 });
+      // Перевірити наявність режимів перегляду (редизайн: Список / Таймлайн / Фокус)
+      await expect(bookings.listViewBtn).toBeVisible({ timeout: 10_000 });
+      await expect(bookings.timelineViewBtn).toBeVisible({ timeout: 10_000 });
+      await expect(bookings.focusViewBtn).toBeVisible({ timeout: 10_000 });
     } finally {
       await context.close();
     }
   });
 
-  test('перемикання режимів Day → Week → Month', async ({ browser }) => {
+  test('перемикання режимів Список → Таймлайн → Фокус', async ({ browser }) => {
     test.skip(!hasMasterState, 'Немає playwright/.auth/master-crm.json');
 
     const context = await browser.newContext({ storageState: 'playwright/.auth/master-crm.json' });
@@ -73,27 +73,27 @@ test.describe('Master Bookings — перегляд і навігація', () =
     try {
       await bookings.goto();
 
-      // Клікаємо "Тиждень"
-      const weekBtn = await bookings.weekViewBtn.isVisible().catch(() => false);
-      if (weekBtn) {
+      // Клікаємо "Таймлайн"
+      const timelineBtn = await bookings.timelineViewBtn.isVisible().catch(() => false);
+      if (timelineBtn) {
         await think(page, 300, 500);
-        await bookings.weekViewBtn.click();
+        await bookings.timelineViewBtn.click();
         await page.waitForLoadState('networkidle');
         await think(page, 200, 400);
       }
 
-      // Клікаємо "Місяць"
-      const monthBtn = await bookings.monthViewBtn.isVisible().catch(() => false);
-      if (monthBtn) {
-        await bookings.monthViewBtn.click();
+      // Клікаємо "Фокус"
+      const focusBtn = await bookings.focusViewBtn.isVisible().catch(() => false);
+      if (focusBtn) {
+        await bookings.focusViewBtn.click();
         await page.waitForLoadState('networkidle');
         await think(page, 200, 400);
       }
 
-      // Клікаємо "День"
-      const dayBtn = await bookings.dayViewBtn.isVisible().catch(() => false);
-      if (dayBtn) {
-        await bookings.dayViewBtn.click();
+      // Клікаємо "Список"
+      const listBtn = await bookings.listViewBtn.isVisible().catch(() => false);
+      if (listBtn) {
+        await bookings.listViewBtn.click();
         await page.waitForLoadState('networkidle');
       }
 
@@ -212,19 +212,12 @@ test.describe('Master Bookings — ручне додавання', () => {
       await think(page, 200, 400);
       await nextBtn2.click();
 
-      // Крок 3 — товари (опціонально)
+      // Крок 3 — товари (опціонально: крок є лише якщо в майстра є товари на складі).
+      // Якщо крок присутній — тиснемо "Пропустити"; інакше ми вже на кроці деталей.
       const skipProductsBtn = wizardPanel.getByTestId('wizard-skip-products-btn').first();
-      const skipVisible = await skipProductsBtn.isVisible().catch(() => false);
-      if (skipVisible) {
+      if (await skipProductsBtn.isVisible().catch(() => false)) {
         await think(page, 300, 500);
         await skipProductsBtn.click();
-      } else {
-        const nextBtn3 = wizardPanel.getByTestId('wizard-next-btn').last();
-        const nextVisible = await nextBtn3.isVisible().catch(() => false);
-        if (nextVisible) {
-          await think(page, 300, 500);
-          await nextBtn3.click();
-        }
       }
 
       // Крок 4 — деталі

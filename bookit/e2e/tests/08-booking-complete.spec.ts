@@ -92,24 +92,12 @@ test.describe('Повний BookingFlow', () => {
     await think(page, 300, 500);
     await nextBtn2.click();
 
-    // ── Крок 3 — товари (якщо є) або одразу крок 4 ──────────────────────
-    // Спробуємо пропустити товари якщо є кнопка
+    // ── Крок 3 — товари (крок є лише якщо в майстра є товари на складі) ──
+    // Якщо крок присутній — "Пропустити"; інакше ми вже на кроці деталей.
     const skipProductsBtn = wizardPanel.getByTestId('wizard-skip-products-btn').first();
-    const skipVisible = await skipProductsBtn.isVisible().catch(() => false);
-    if (skipVisible) {
+    if (await skipProductsBtn.isVisible().catch(() => false)) {
       await think(page, 300, 500);
       await skipProductsBtn.click();
-    } else {
-      // Можливо одразу крок деталей — перевіримо кнопку "Далі"
-      const nextBtn3 = wizardPanel.getByTestId('wizard-next-btn').last();
-      const nextVisible = await nextBtn3.isVisible().catch(() => false);
-      if (nextVisible) {
-        const isEnabled = await nextBtn3.isEnabled().catch(() => false);
-        if (isEnabled) {
-          await think(page, 300, 500);
-          await nextBtn3.click();
-        }
-      }
     }
 
     // ── Крок 4 — деталі (ім'я, телефон) ─────────────────────────────────

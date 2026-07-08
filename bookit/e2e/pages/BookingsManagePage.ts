@@ -4,10 +4,10 @@ export class BookingsManagePage {
   readonly page: Page;
   readonly heading: Locator;
 
-  // Режими перегляду
-  readonly dayViewBtn: Locator;
-  readonly weekViewBtn: Locator;
-  readonly monthViewBtn: Locator;
+  // Режими перегляду — редизайн: Список / Таймлайн / Фокус (icon-кнопки з aria-label)
+  readonly listViewBtn: Locator;
+  readonly timelineViewBtn: Locator;
+  readonly focusViewBtn: Locator;
 
   // Навігація по датах
   readonly prevBtn: Locator;
@@ -16,10 +16,10 @@ export class BookingsManagePage {
   // Пошук
   readonly searchInput: Locator;
 
-  // FAB — кнопка "+" для ручного запису
+  // Кнопка "Новий запис" (ручне додавання → BookingWizard master-mode)
   readonly fab: Locator;
 
-  // ManualBookingForm поля
+  // ManualBookingForm поля (BookingWizard client-details крок)
   readonly clientNameInput: Locator;
   readonly clientPhoneInput: Locator;
   readonly saveBookingBtn: Locator;
@@ -34,19 +34,22 @@ export class BookingsManagePage {
     this.page = page;
     this.heading = page.locator('h1').first();
 
-    this.dayViewBtn   = page.getByTestId('bookings-view-day');
-    this.weekViewBtn  = page.getByTestId('bookings-view-week');
-    this.monthViewBtn = page.getByTestId('bookings-view-month');
+    // Redesign dropped bookings-view-day/week/month testids; modes are now
+    // Список / Таймлайн / Фокус (aria-label icon buttons). Scope to the visible tree.
+    this.listViewBtn     = page.getByRole('button', { name: 'Список' }).filter({ visible: true }).first();
+    this.timelineViewBtn = page.getByRole('button', { name: 'Таймлайн' }).filter({ visible: true }).first();
+    this.focusViewBtn    = page.getByRole('button', { name: 'Фокус' }).filter({ visible: true }).first();
 
     this.prevBtn = page.getByTestId('bookings-nav-prev');
     this.nextBtn = page.getByTestId('bookings-nav-next');
 
-    this.searchInput = page.getByTestId('bookings-search-input');
+    // Search input — matched by placeholder (mobile + desktop trees), visible one wins.
+    this.searchInput = page.getByPlaceholder(/Ім'я або телефон/).filter({ visible: true }).first();
 
-    // FAB — фіксована кругла кнопка
-    this.fab = page.getByTestId('fab-add-booking');
+    // Manual add — button labelled "Новий запис" opens the master BookingWizard.
+    this.fab = page.getByRole('button', { name: 'Новий запис' }).filter({ visible: true }).first();
 
-    // ManualBookingForm / Wizard
+    // ManualBookingForm / Wizard (client-details step)
     this.clientNameInput  = page.getByTestId('wizard-name-input');
     this.clientPhoneInput = page.getByTestId('wizard-phone-input');
     this.saveBookingBtn   = page.getByTestId('wizard-submit-btn');
