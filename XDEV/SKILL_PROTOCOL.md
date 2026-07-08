@@ -273,7 +273,7 @@
 - **Топіки:** RLS, RPC functions, webhooks, data fetching
 
 ### `nextjs-best-practices` ★★★★
-- **Роль:** Next.js App Router Expert (routing, SSR, ISR, caching, src/proxy.ts)
+- **Роль:** Next.js App Router Expert (routing, SSR, ISR, caching, src/middleware.ts)
 
 ### `senior-fullstack` ★★★★ `[MKT: engineering-skills]`
 - **Роль:** Next.js + Supabase combined — code quality analysis + scaffolding

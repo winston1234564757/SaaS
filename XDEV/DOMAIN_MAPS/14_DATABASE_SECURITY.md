@@ -8,7 +8,7 @@ Row Level Security (RLS) матриця, Security Definer RPC, захист API/
 - `src/lib/supabase/client.ts` — Browser client (anon key)
 - `src/lib/supabase/server.ts` — SSR client (cookies)
 - `src/lib/supabase/admin.ts` — Admin client (service_role key)
-- `src/proxy.ts` — Routing guard
+- `src/middleware.ts` — Routing guard
 - All API routes under `src/app/api/`
 - All migration files under `supabase/migrations/`
 
@@ -103,7 +103,7 @@ POST mono-webhook:
 
 ---
 
-## 6. Route Protection (proxy.ts)
+## 6. Route Protection (middleware.ts)
 
 | Route Pattern | Guard |
 |---|---|
@@ -178,7 +178,7 @@ POST mono-webhook:
 ## 9. File Inventory
 
 ### Auth/Guard
-- `src/proxy.ts`
+- `src/middleware.ts`
 - `src/lib/supabase/client.ts`
 - `src/lib/supabase/server.ts`
 - `src/lib/supabase/admin.ts`

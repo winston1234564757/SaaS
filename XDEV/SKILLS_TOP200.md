@@ -244,7 +244,7 @@ SECURITY SENSITIVE:
 
 ## BACKEND & API (24)
 
-> **Stack:** Next.js Server Actions · Supabase RPC (search_path CRITICAL!) · proxy.ts edge guard · Monobank webhook (Ed25519) · Web Push API (VAPID) · Telegram Bot API · NotificationOrchestrator · SmartSlots · DynamicPricing · safeQuery/safeMutation · parseError()
+> **Stack:** Next.js Server Actions · Supabase RPC (search_path CRITICAL!) · middleware.ts edge guard · Monobank webhook (Ed25519) · Web Push API (VAPID) · Telegram Bot API · NotificationOrchestrator · SmartSlots · DynamicPricing · safeQuery/safeMutation · parseError()
 
 | Скіл | КОЛИ | Relevance |
 |------|------|-----------|

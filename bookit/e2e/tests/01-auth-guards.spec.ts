@@ -1,7 +1,7 @@
 /**
  * 01 — Auth Guards
  *
- * Verifies that proxy.ts routing rules are enforced:
+ * Verifies that middleware.ts routing rules are enforced:
  *   - Unauthenticated users are redirected to /login from protected routes
  *   - Masters cannot access /my/* (redirected to /dashboard)
  *   - Clients cannot access /dashboard (redirected to /my/bookings)
@@ -102,7 +102,7 @@ test.describe('Master → role-based routing', () => {
     const page    = await context.newPage();
 
     await page.goto('/my/bookings');
-    // proxy.ts: master on /my/* without view_mode=client → redirect to /dashboard
+    // middleware.ts: master on /my/* without view_mode=client → redirect to /dashboard
     await expect(page).toHaveURL(/\/dashboard/, { timeout: 10_000 });
 
     await context.close();
@@ -155,7 +155,7 @@ test.describe('Client → role-based routing', () => {
     const page    = await context.newPage();
 
     await page.goto('/dashboard');
-    // proxy.ts: client on /dashboard → redirect to /my/bookings
+    // middleware.ts: client on /dashboard → redirect to /my/bookings
     await expect(page).toHaveURL(/\/my\/bookings/, { timeout: 10_000 });
 
     await context.close();

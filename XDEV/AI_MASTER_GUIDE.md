@@ -83,7 +83,7 @@ AI-агент — це проактивний напарник (Pair Programmer)
 
 - **Framework**: Next.js 16+ App Router, React 19, React Compiler увімкнений.
 - **Language**: TypeScript (strict mode, `noImplicitAny: true`).
-- **Routing Guard**: `src/proxy.ts` експортує `async function proxy(request: NextRequest)`. Вся логіка захисту роутів тут (middleware.ts лише реекспортує її).
+- **Routing Guard**: `src/middleware.ts` експортує `async function middleware(request: NextRequest)` + `config.matcher`. Вся логіка захисту роутів тут (файлу `proxy.ts` немає).
 - **Styling**: Tailwind CSS v4. Тільки імпорт `@import "tailwindcss";` у `globals.css` (без `tailwind.config.ts`).
 - **Data Fetching**: TanStack Query v5.
 - **State Management**: Zustand v5 (локальний UI стан).
@@ -262,7 +262,7 @@ SELECT tablename, rowsecurity FROM pg_tables WHERE tablename = 'назва_та�
 
 ## ✅ 13. PRE-DEPLOY CHECKLIST
 
-- [ ] `src/proxy.ts` експортує `proxy` (а не middleware.ts).
+- [ ] `src/middleware.ts` експортує `middleware` + `config.matcher` (файлу `proxy.ts` немає).
 - [ ] RLS увімкнено на кожній новій Supabase таблиці.
 - [ ] Нові міграції застосовано через `npx supabase db push`.
 - [ ] Monobank webhook: Ed25519 верифікація підпису строго увімкнена.

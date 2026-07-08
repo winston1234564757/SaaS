@@ -40,7 +40,7 @@ interface AccountConfig {
   disallowedPathPrefixes: string[];
   /**
    * Page to navigate after cookie injection.
-   * Proxy.ts will redirect to the correct location based on role.
+   * middleware.ts will redirect to the correct location based on role.
    */
   landingPath: string;
 }
@@ -82,7 +82,7 @@ const ACCOUNTS: AccountConfig[] = [
     label: 'client',
     emailEnvVar: 'E2E_CLIENT_EMAIL',
     stateFile: 'playwright/.auth/client.json',
-    // proxy.ts redirects clients from /dashboard → /my/bookings.
+    // middleware.ts redirects clients from /dashboard → /my/bookings.
     // Use strict /my/bookings contract so /my/setup/phone is treated as a setup failure.
     expectedPathPrefix: '/my/bookings',
     disallowedPathPrefixes: ['/login', '/register', '/my/setup/phone'],

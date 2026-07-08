@@ -24,6 +24,7 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as crypto from 'crypto';
+import { findProdRef } from '../src/lib/testing/e2eSeedGuard';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -81,6 +82,18 @@ function assertSafeEnvironment(): void {
     throw new Error(
       'SAFETY: Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY.\n' +
       'Create .env.test from .env.test.example and fill in your LOCAL Supabase values.',
+    );
+  }
+
+  // HARD guard (SEC-01): a known production project ref is NEVER seedable.
+  // Ordered before the ALLOW_REMOTE bypass so E2E_ALLOW_REMOTE=true cannot unlock prod.
+  const prodRef = findProdRef(SUPABASE_URL);
+  if (prodRef) {
+    throw new Error(
+      `SAFETY ABORT (HARD): SUPABASE_URL "${SUPABASE_URL}" targets a known PRODUCTION project ref "${prodRef}".\n` +
+      `This seeder wipes + recreates e2e_*@test.com accounts and MUST NEVER run against production.\n` +
+      `E2E_ALLOW_REMOTE does NOT override this guard. Repoint .env.test at a local Supabase ` +
+      `(npx supabase start) or a dedicated e2e project.`,
     );
   }
 

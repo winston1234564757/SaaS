@@ -17,7 +17,7 @@
 - `src/components/public/ClientAuthSheet.tsx` — Post-booking registration sheet
 - `src/components/public/NavLoginSheet.tsx` — Bottom sheet login
 - `src/components/client/PhoneSetupForm.tsx` — Phone setup
-- `src/proxy.ts` — Routing guard
+- `src/middleware.ts` — Routing guard
 - `src/components/providers/TelegramProvider.tsx` — TMA provider
 
 ### DB Tables
@@ -163,7 +163,7 @@
 - Google OAuth flow overlaps channels step
 - masterId, masterC2cEnabled, masterC2cDiscountPct values change between booking and auth
 
-### 2.5 Routing Guard (proxy.ts)
+### 2.5 Routing Guard (middleware.ts)
 
 ```
 [REQUEST] → proxy(request)
@@ -327,7 +327,7 @@
 - `src/app/api/auth/telegram/intent/route.ts`
 
 ### Lib
-- `src/proxy.ts` — routing guard
+- `src/middleware.ts` — routing guard
 - `src/lib/supabase/client.ts`
 - `src/lib/supabase/server.ts`
 - `src/lib/supabase/admin.ts`

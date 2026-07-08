@@ -445,7 +445,7 @@ All numbered sections (Agitation, Process, ClientFlow) and feature rows (Magic) 
 - Active consumers: `PublicMasterPage` (`booking:create`), `BroadcastsTab` (`marketing:broadcast`)
 
 ### Routing Guard
-- `src/proxy.ts` — `export async function proxy(request: NextRequest)` — замінює `middleware.ts` (Next.js 16)
+- `src/middleware.ts` — `export async function middleware(request: NextRequest)` + `export const config.matcher` — routing guard (session-cookie fast-path, role-based redirect /dashboard↔/my, admin-zone protection). Файлу `src/proxy.ts` НЕ існує — стара нотатка про proxy.ts була хибною.
 - Правила: `/dashboard` → master only; `/my` → auth; `/login|/register` → guest only
 
 ### Dashboard Ambient System (`src/app/layout.tsx` + `globals.css`)

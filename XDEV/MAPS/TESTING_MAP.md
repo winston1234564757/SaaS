@@ -2,6 +2,8 @@
 
 Цей документ є єдиним реєстром автотестів (Playwright E2E та Vitest Unit) у проекті, описує сідери тестових даних та надає інструкції для локального запуску, дебагу та стабілізації тестів.
 
+> **Оновлено:** 2026-07-08 (TEST-M5 anti-drift). Стан: **unit 1013/1013 ✅** (47 файлів) · **e2e останній повний chromium: 123 passed / 2 env-flake / 42 skipped** (після TEST-M6). Реєстри нижче звірені з живим `find *.test.ts` + `e2e/tests/`.
+
 ---
 
 ## ⚙️ Тестове середовище та Команди
@@ -30,80 +32,106 @@ npx playwright test e2e/tests/08-booking-complete.spec.ts
 ## 🗄️ Сідери та Тестові дані (Data Seeding)
 
 E2E-тести критично залежать від передзаповненої БД.
-*   **Скрипт сіду**: `scripts/seed-e2e-data.ts` (запускається через `npm run test:e2e:seed`).
-*   **Дія скрипту**:
-    1. Очищує таблиці `bookings`, `orders`, `profiles`, `master_profiles`, `client_master_relations`.
-    2. Створює тестових майстрів (напр., з різними темами Blossom, Studio, Frost).
-    3. Генерує тестові послуги, товари та налаштування годин роботи.
-    4. Записує тестових клієнтів з історією візитів та реферальним деревом.
-*   **Virtual SMS OTP**: Для проходження SMS-верифікації у тестах використовується віртуальний номер та тестовий OTP код, прописаний у моках (код `123456`).
+
+*   **Скрипт сіду**: `scripts/seed-e2e-data.ts` (частина `npm run test:e2e`).
+*   **Стратегія — SCOPED wipe (НЕ глобальний!)**: скрипт видаляє та перестворює **ТІЛЬКИ акаунти `e2e_*@test.com`** та їхні пов'язані рядки. Жодних global-wipe таблиць `profiles`/`master_profiles`/`bookings`. Захист: `assertE2EEmail` (regex `^e2e_.+@test\.com$`) відмовляє сідити будь-який не-тестовий email.
+*   **Тестові акаунти**: TimeTravelMaster (детерміністична машина часу), CrmMaster (+100 guest-bookings для CRM/аналітики), AuthMaster, ReferralMaster (детерміністичний реферальний фікстур), StudioAdmin, AuditMaster — кожен зі своїм ізольованим клієнтом, послугами та розкладом.
+*   **🔒 SEC-01 hard-guard (2026-07-08)**: сідер **АБОРТИТЬ**, якщо `NEXT_PUBLIC_SUPABASE_URL` містить прод-реф (`sqlrxsopllgztvgrerqk`) — **навіть з `E2E_ALLOW_REMOTE=true`**. Логіка: `src/lib/testing/e2eSeedGuard.ts` (`findProdRef`/`isProdSupabaseUrl`); перевірка стоїть ПЕРЕД `ALLOW_REMOTE`-байпасом у `assertSafeEnvironment`. Локальний запуск вимагає `.env.test` націленого на **локальний** Supabase (`npx supabase start`, `E2E_ALLOW_REMOTE=false`) або на **dedicated** e2e-проект — ніколи не прод. Unit: `src/lib/testing/e2eSeedGuard.test.ts` (5 тестів).
+*   **Virtual SMS OTP**: для проходження SMS-верифікації використовується віртуальний номер та тестовий OTP код у моках (`123456`).
+*   **Runtime IDs**: `seed-e2e-data.ts` пише UUID майстрів / слаги / реферальні коди у `.env.test.runtime`, який `playwright.config.ts` підвантажує другим.
 
 ---
 
 ## 🎯 Vitest Unit Tests (Реєстр модульних тестів)
 
-Юніт-тести перевіряють ізольовану бізнес-логіку без рендерингу UI та звернення до живої бази даних.
+Юніт-тести перевіряють ізольовану бізнес-логіку без рендерингу UI та звернення до живої бази даних. **47 файлів, 1013 тестів.** Ключові суїти документовано; повний реєстр — нижче.
 
-| Тестовий файл | Компонент / Функція | Кількість тестів | Опис перевірок |
-|---|---|---|---|
-| [pricing.test.ts](file:///c:/Users/Vitos/SaaS/bookit/src/lib/billing/pricing.test.ts) | `src/lib/billing/pricing.ts` | 27 | Розрахунок вартості підписок, накладання реферальних знижок, stackable discount logic. |
-| [billing.test.ts](file:///c:/Users/Vitos/SaaS/bookit/src/lib/billing/billing.test.ts) | `src/lib/billing/MonoProvider.ts` | 6 | Верифікація підпису вебхуку Monobank через Ed25519 (включаючи ротацію ключів). |
-| [smartSlots.test.ts](file:///c:/Users/Vitos/SaaS/bookit/src/lib/utils/smartSlots.test.ts) | `src/lib/utils/smartSlots.ts` | 15+ | Fluid Anchor алгоритм генерації слотів, обхід перерв/відпусток, запобігання накладанням. |
-| [dynamicPricing.test.ts](file:///c:/Users/Vitos/SaaS/bookit/src/lib/utils/dynamicPricing.test.ts) | `src/lib/utils/dynamicPricing.ts` | 10+ | Динамічне ціноутворення: markup (+50%) на пікові години, discount floor (-30%) на пусті вікна. |
-| [broadcastUtils.test.ts](file:///c:/Users/Vitos/SaaS/bookit/src/lib/utils/broadcastUtils.test.ts) | `src/lib/utils/broadcastUtils.ts` | 8+ | Персоналізація тексту розсилок (`{client_name}`), валідація тегів та фільтрів. |
+| Тестовий файл | Компонент / Функція | Опис перевірок |
+|---|---|---|
+| `src/lib/billing/pricing.test.ts` | `lib/billing/pricing.ts` | Розрахунок вартості підписок, накладання реферальних знижок, stackable discount logic. |
+| `src/lib/billing/billing.test.ts` | `lib/billing/MonoProvider.ts` | Верифікація підпису вебхуку Monobank через Ed25519 (включно з ротацією ключів). |
+| `src/lib/billing/syncReferralAndBounty.test.ts` | `lib/billing` referral/bounty sync | Синхронізація реферальних резервів і винагород. |
+| `src/lib/utils/smartSlots.test.ts` | `lib/utils/smartSlots.ts` | Fluid Anchor алгоритм генерації слотів, обхід перерв/відпусток, запобігання накладанням. |
+| `src/lib/utils/dynamicPricing.test.ts` | `lib/utils/dynamicPricing.ts` | Динамічне ціноутворення: markup на пікові години, discount floor на пусті вікна. |
+| `src/lib/utils/broadcastUtils.test.ts` | `lib/utils/broadcastUtils.ts` | Персоналізація тексту розсилок, валідація тегів та фільтрів. |
+| `src/lib/actions/__tests__/createBooking.action.test.ts` · `createBooking.test.ts` | `lib/actions/createBooking` | Створення запису: валідація, лояльність, dynamic price, розхідники. |
+| `src/lib/actions/__tests__/referrals.test.ts` · `referrals.action.test.ts` | `lib/actions/referrals` | C2C/C2B/B2B реферальна механіка, FK-порядок транзакцій. |
+| `src/lib/actions/__tests__/mono-webhook.test.ts` | Monobank webhook | Обробка вебхуку оплати, ідемпотентність. |
+| `src/lib/notifications/__tests__/NotificationOrchestrator.test.ts` · `constants/notifMap.test.ts` | NotificationOrchestrator | Каскад TG→Push→SMS, notifMap, critical-only. |
+
+**Повний реєстр файлів (звірено з `find src -name '*.test.ts'`):**
+
+- **billing**: `pricing.test.ts`, `billing.test.ts`, `syncReferralAndBounty.test.ts`
+- **actions**: `__tests__/createBooking.action.test.ts`, `__tests__/createBooking.test.ts`, `__tests__/referrals.test.ts`, `__tests__/referrals.action.test.ts`, `__tests__/partners.test.ts`, `__tests__/flashDeal.test.ts`, `__tests__/mono-webhook.test.ts`, `__tests__/pricing.math.test.ts`, `__tests__/support.test.ts`, `__tests__/waitlist.test.ts`, `UrlActionBus.test.ts`
+- **notifications**: `__tests__/NotificationOrchestrator.test.ts`, `constants/notifMap.test.ts`
+- **supabase hooks**: `hooks/useBookings.test.ts`, `hooks/useServices.test.ts`, `hooks/__tests__/analytics.unit.test.ts`
+- **utils**: `bookingEngine.test.ts`, `broadcastUtils.test.ts`, `cn.test.ts`, `currency.test.ts`, `dates.test.ts`, `dynamicPricing.test.ts`, `errors.test.ts`, `now.test.ts`, `occupancy.test.ts`, `phone.test.ts`, `pluralUk.test.ts`, `slug.test.ts`, `smartSlots.test.ts`, `token.test.ts`, `url.test.ts`, `uuid.test.ts`, `verifyCronSecret.test.ts`
+- **telegram**: `telegram.test.ts`, `telegram/phone.test.ts`
+- **validations**: `validations/booking.test.ts`
+- **api routes**: `app/api/auth/send-sms/route.test.ts`, `app/api/auth/verify-sms/schema.test.ts`, `app/auth/callback/route.test.ts`
+- **app actions/tests**: `app/(master)/dashboard/products/__tests__/getProductStats.action.test.ts`, `app/(master)/dashboard/bookings/__tests__/stock.action.test.ts`
+- **marketing story**: `components/master/marketing/story/storyConstants.test.ts`, `storySteps.test.ts`, `storyTemplates.test.ts`
+- **testing (SEC-01)**: `lib/testing/e2eSeedGuard.test.ts`
 
 ---
 
 ## 🎭 Playwright E2E Tests (Реєстр інтеграційних тестів)
 
-Розташовані в [e2e/tests/](file:///c:/Users/Vitos/SaaS/bookit/e2e/tests/). Забезпечують перевірку реального користувацького досвіду в браузері.
+Розташовані в [e2e/tests/](file:///c:/Users/Vitos/SaaS/bookit/e2e/tests/). **36 spec-файлів.** Останній повний chromium-прогін (TEST-M6, 2026-07-08): **123 passed / 2 env-flake / 42 skipped**. «Env-flake» = проходять ізольовано, падають лише під `fullyParallel` проти віддаленої прод-БД (CI `retries:2` покриває; **SEC-01** усуне остаточно, перевівши e2e на локальну БД).
 
-| Специфікація (Spec File) | Цільовий флоу | Статус стабільності | Перевірки |
-|---|---|---|---|
-| `00-auth-contract.spec.ts` | SMS Auth | ✅ Стабільний | Перевірка SMS OTP контракту та віртуальної пошти клієнта. |
-| `01-auth-guards.spec.ts` | Роутинг та права | ✅ Стабільний | Захист шляхів `/dashboard` (тільки майстер) та `/my` (тільки клієнт). |
-| `02-time-travel-logic.spec.ts` | Слот-енджин | ⚠️ Flaky | Об override системного часу (clock travel) для перевірки зсуву дат. |
-| `03-referral-engine.spec.ts` | Lifetime Alliance | ✅ Стабільний | Реєстрація реферала B2B, зарахування Reserve/Bounty. |
-| `04-crm-logic.spec.ts` | CRM-дашборд | ✅ Стабільний | Розрахунок LTV, середнього чека та кількості візитів клієнта. |
-| `04-master-crm-smoke.spec.ts` | CRM Smoke | ✅ Стабільний | Пошук, фільтрація та створення клієнтів з кабінету. |
-| `05-loyalty-reviews.spec.ts` | Відгуки та бали | ⚠️ Потребує рев'ю | Публікація відгуків, перерахунок рейтингу майстра. |
-| `06-referrals.spec.ts` | C2C Реферали | ✅ Стабільний | Клієнт ділиться посиланням, новий клієнт отримує знижку. |
-| `07-notifications.spec.ts` | Notification Cascade | ✅ Стабільний | Запис логів у `notification_logs`, пріоритет відправки Telegram/SMS. |
-| `08-booking-complete.spec.ts` | Запис клієнта | ✅ Стабільний | Повний цикл BookingWizard з вибором послуг та SMS OTP. |
-| `08-notification-adoption.spec.ts` | Adoption UI | ✅ Стабільний | Рендеринг `ChannelBanner` у `/my/`, якщо не підключений Telegram/Push. |
-| `09-master-settings.spec.ts` | Settings CRUD | ✅ Стабільний | Оновлення розкладу роботи майстра, блокування вихідних днів. |
-| `09-settings-notifications.spec.ts`| Канали сповіщень | ✅ Стабільний | Управління тумблерами In-App, Push, TG, SMS у налаштуваннях. |
-| `10-master-bookings.spec.ts` | Ручний запис | ✅ Стабільний | Створення запису через кабінет майстра, перевірка накладання часу. |
-| `11-master-clients.spec.ts` | CRM клієнтів | ✅ Стабільний | Фільтрація клієнтів за сегментами (VIP, Sleeping, At Risk). |
-| `12-flash-deals.spec.ts` | Flash Deals | ⚠️ Flaky | Створення флеш-акції, бронювання слоту та його автоматичне видалення. |
-| `13-dynamic-pricing.spec.ts` | Dynamic Pricing | ✅ Стабільний | Зміна ціни послуги у BookingWizard залежно від часу слоту. |
-| `14-client-journey.spec.ts` | Публічний профіль | ✅ Стабільний | Повний шлях клієнта від перегляду `/[slug]` до перегляду своїх записів. |
-| `15-analytics.spec.ts` | Аналітика кабінету | ✅ Стабільний | Візуалізація Weekly/Monthly доходів та експорт клієнтів у CSV. |
-| `16-mobile-smoke.spec.ts` | Mobile UI | ✅ Стабільний | Перевірка нижньої панелі Bento та поведінки BottomSheet на мобілках. |
-| `17-retention-loyalty-engine.spec.ts`| Rebooking cron | ⚠️ Flaky | Тригер авто-розсилки пропозицій rebooking клієнтам, що заснули. |
-| `18-marketing-broadcasts.spec.ts` | Broadcasts | ✅ Стабільний | Масова розсилка повідомлень по сегментованій базі з тегами. |
-| `19-services-loading.spec.ts` | Lazy Load / Skeleton | ✅ Стабільний | Перевірка відсутності мерехтіння інтерфейсу при швидкому переході. |
-| `20-stabilization-audit.spec.ts` | Accessibility & Perf | ✅ Стабільний | Перевірка ARIA атрибутів та контрастності за стандартами Premium UX. |
-| `ux-premium.spec.ts` | Visual Regression | ⚠️ Потребує рев'ю | Порівняння скріншотів Blossom/Studio/Frost з еталонними зображеннями. |
+| Специфікація (Spec File) | Цільовий флоу | Примітки |
+|---|---|---|
+| `00-auth-contract.spec.ts` | SMS Auth контракт | Перевірка SMS OTP контракту та віртуальної пошти клієнта. |
+| `00-role-login-smoke.spec.ts` | Логін по ролях | Smoke: майстер/клієнт/адмін логіняться у свою зону. |
+| `01-auth-guards.spec.ts` | Роутинг та права (`middleware.ts`) | Захист `/dashboard` (тільки майстер) та `/my` (тільки клієнт), redirect-правила. |
+| `02-time-travel-logic.spec.ts` | Слот-енджин | ⏱️ Час-залежний — debug-now cookie (`getNow()`). |
+| `03-referral-engine.spec.ts` | Lifetime Alliance (B2B) | Реєстрація реферала, зарахування Reserve/Bounty. |
+| `04-crm-logic.spec.ts` | CRM-дашборд | Розрахунок LTV, середнього чека, кількості візитів. |
+| `04-master-crm-smoke.spec.ts` | CRM Smoke | Пошук, фільтрація, створення клієнтів з кабінету. |
+| `05-loyalty-reviews.spec.ts` | Відгуки та бали | ⚠️ Env-flake ізольовано зелений. Star-селектор: «зірк» ≠ «5 зірок». |
+| `06-referrals.spec.ts` | C2C Реферали | Клієнт ділиться посиланням, новий клієнт отримує знижку. |
+| `07-notifications.spec.ts` | Notification Cascade | Запис `notification_logs`, пріоритет TG/SMS. |
+| `08-booking-complete.spec.ts` | Запис клієнта | Повний цикл BookingWizard; крок «товари» опційний. |
+| `08-notification-adoption.spec.ts` | Adoption UI | `ChannelBanner` у `/my/` при непідключеному TG/Push. |
+| `09-master-settings.spec.ts` | Settings CRUD | Оновлення розкладу, блокування вихідних. |
+| `09-settings-notifications.spec.ts` | Канали сповіщень | Тумблери In-App/Push/TG/SMS. |
+| `10-master-bookings.spec.ts` | Ручний запис майстра | Feature-модель list/timeline/focus, wizard step-3, накладання часу. |
+| `11-master-clients.spec.ts` | CRM клієнтів | Фільтрація за сегментами (VIP/Sleeping/At Risk). |
+| `12-flash-deals.spec.ts` | Flash Deals | Створення флеш-акції, бронювання, авто-видалення. |
+| `13-dynamic-pricing.spec.ts` | Dynamic Pricing | Зміна ціни у BookingWizard залежно від часу слоту. Badge-scoping через `data-testid`. |
+| `14-client-journey.spec.ts` | Публічний профіль | Шлях від `/[slug]` до перегляду своїх записів; dual-tree `.first()`. |
+| `15-analytics.spec.ts` | Аналітика кабінету | Weekly/Monthly дохід, CSV-експорт. |
+| `16-mobile-smoke.spec.ts` | Mobile UI | Нижня Bento-панель, BottomSheet на мобілках. |
+| `17-retention-loyalty-engine.spec.ts` | Rebooking cron | ⏱️ Час-залежний — debug-now cookie. |
+| `18-marketing-broadcasts.spec.ts` | Broadcasts (сегменти) | Масова розсилка по сегментованій базі з тегами. |
+| `19-services-loading.spec.ts` | Lazy Load / Skeleton | Відсутність мерехтіння при швидкому переході. |
+| `20-stabilization-audit.spec.ts` | Accessibility & Perf | ARIA-атрибути, контрастність Premium UX. |
+| `21-rls-security.spec.ts` | RLS Security | Ізоляція даних між майстрами/клієнтами на рівні RLS. |
+| `auth.spec.ts` | Auth (legacy/загальний) | Загальний авторизаційний флоу. |
+| `booking-flow.spec.ts` | Booking flow (smoke) | Наскрізний happy-path бронювання. |
+| `broadcasts.spec.ts` | Broadcasts (happy-path) | ⚠️ Env-flake ізольовано зелений. Сегмент з отримувачами. |
+| `master-crud.spec.ts` | Master CRUD | CRUD сутностей майстра. |
+| `services-icons-visual.spec.ts` | Services icons (visual) | Візуальна перевірка іконок послуг. |
+| `smoke.spec.ts` | Smoke | Базова доступність ключових сторінок. |
+| `studio.spec.ts` | Studio | Studio-зона (coming-soon / beta). |
+| `ux-premium.spec.ts` | Visual Regression | Порівняння скрінів Blossom/Studio/Frost з еталонами. |
+| `zz-capture-visual.spec.ts` | Capture (visual) | Допоміжний захват скрінів (не gate). |
+| `zz-capture-vercel.spec.ts` | Capture (Vercel) | Допоміжний захват проти деплою (не gate). |
 
 ---
 
 ## 🛠️ Інструкція зі стабілізації Flaky-тестів
 
-Деякі тести мають статус `flaky` (нестабільні) через асинхронні запити або зсуви часу (Time Travel).
-
-1.  **Локальний запуск дебагу**:
-    Запускайте тест у UI-режимі для покрокового відстеження виконання:
+1.  **Локальний запуск дебагу** (UI-режим):
     ```bash
     npx playwright test e2e/tests/12-flash-deals.spec.ts --ui
     ```
-2.  **Аналіз трейсів (Playwright Traces)**:
-    Якщо тест впав на CI/локально, відкрийте останній трейс для перевірки стану DOM:
+2.  **Аналіз трейсів**:
     ```bash
     npx playwright show-report
     ```
 3.  **Запобігання Race Conditions**:
-    *   **Заборонено**: Використовувати фіксовані затримки `page.waitForTimeout(1000)`.
-    *   **Правильно**: Очікувати на конкретний стан елемента: `await expect(page.locator('.toast')).toBeVisible()`.
-4.  **Синхронізація часу**:
-    Тести, що працюють з датами (`02-time-travel-logic`, `17-retention-loyalty-engine`), повинні використовувати встановлений кукі debug-часу (`getNow()`), щоб уникнути нічних переходів та розбіжностей у часових поясах (Kyiv Timezone).
+    *   **Заборонено**: фіксовані затримки `page.waitForTimeout(1000)`.
+    *   **Правильно**: очікувати конкретний стан елемента: `await expect(page.locator('.toast')).toBeVisible()`.
+4.  **Синхронізація часу**: тести з датами (`02-time-travel-logic`, `17-retention-loyalty-engine`) використовують debug-now cookie (`getNow()`), щоб уникнути нічних переходів та розбіжностей часових поясів (Kyiv TZ).
+5.  **Env-flake (2 залишкові)**: `05-loyalty-reviews` + `broadcasts` проходять ізольовано, падають лише під `fullyParallel` проти віддаленої прод-БД. Корінь усуне **SEC-01** (локальна/dedicated БД замість прод).
