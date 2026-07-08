@@ -242,10 +242,10 @@ test.describe('Dashboard — Analytics', () => {
       const heading = page.locator('h1').first();
       await expect(heading).toBeVisible({ timeout: 10_000 });
 
-      // Analytics must reach a stable state (no infinite spinner)
-      await page.waitForTimeout(2_000);
-      const skeletons = page.locator('[class*="skeleton"], [class*="Skeleton"]');
-      expect(await skeletons.count()).toBe(0);
+      // Analytics must reach a stable state (no infinite spinner). Poll instead of a
+      // fixed 2s wait — that raced against chart hydration (flaky: saw 4 skeletons at 2s,
+      // 0 at 3s). Probed live: page settles to 0 skeletons.
+      await expect(page.locator('[class*="skeleton"], [class*="Skeleton"]')).toHaveCount(0, { timeout: 12_000 });
 
       // Revenue numbers should be visible — look for ₴ symbol with digits
       const revenueEl = page

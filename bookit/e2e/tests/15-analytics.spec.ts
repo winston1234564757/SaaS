@@ -121,8 +121,10 @@ test.describe('Analytics', () => {
 
       // Verify approximate matching for seeded revenue (CRM Master has 100 bookings * 600 UAH = 60000 UAH, minus cancellations/future)
       // Since some are cancelled or future, we just verify something > 0 is displayed on the page
-      const revenueText = await page.locator('p.text-2xl.font-bold').first().innerText();
-      expect(revenueText).not.toBe('0');
+      // Analytics redesign: metrics render with .metric-value (not p.text-2xl.font-bold).
+      // Assert at least one non-zero numeric metric is shown.
+      const numericMetric = page.locator('.metric-value').filter({ hasText: /[1-9]/ }).first();
+      await expect(numericMetric).toBeVisible({ timeout: 5_000 });
       
     } finally {
       await context.close();

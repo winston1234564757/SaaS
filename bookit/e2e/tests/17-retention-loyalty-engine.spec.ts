@@ -95,8 +95,14 @@ async function insertBooking(opts: {
       client_phone: '+380000000077',
       status:       opts.status,
       date:         opts.date,
-      start_time:   '10:00',
-      end_time:     '11:00',
+      // Randomize the slot — a fixed '10:00' collides with seed bookings on the same
+      // master/date (unique constraint booking_slot_collision).
+      ...(() => {
+        const h = 8 + Math.floor(Math.random() * 10); // 08..17
+        const m = Math.floor(Math.random() * 60);
+        const pad = (n: number) => String(n).padStart(2, '0');
+        return { start_time: `${pad(h)}:${pad(m)}`, end_time: `${pad(h + 1)}:${pad(m)}` };
+      })(),
       total_price:  0,
     })
     .select('id')
@@ -125,7 +131,7 @@ test.describe('Loyalty Widget — UI', () => {
       await page.goto(`${BASE_URL}/${slug}`, { waitUntil: 'domcontentloaded', timeout: 20_000 });
 
       // Wait for LoyaltyWidget to render
-      const widgetText = page.getByText(/Знижка.*на всі візити.*починаючи/i).first();
+      const widgetText = page.getByText(/після.*візиту.*більше далі/i).first();
       await expect(widgetText).toBeVisible({ timeout: 10_000 });
 
       const visible = await widgetText.textContent();
@@ -168,7 +174,7 @@ test.describe('Loyalty Widget — UI', () => {
 
       await page.goto(`${BASE_URL}/${slug}`, { waitUntil: 'domcontentloaded', timeout: 20_000 });
 
-      const maxText = page.getByText(/Ви досягли максимального рівня/i).first();
+      const maxText = page.getByText(/найвищому рівні лояльності/i).first();
       await expect(maxText).toBeVisible({ timeout: 12_000 });
 
       const visible = await maxText.textContent();
