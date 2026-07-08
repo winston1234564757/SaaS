@@ -180,7 +180,7 @@ test.describe('My Masters', () => {
       await expect(masters.heading).toBeVisible({ timeout: 10_000 });
 
       // Або картки майстрів, або empty state
-      const hasCards = await page.locator('.bento-card, [class*="MasterCard"]').first().isVisible({ timeout: 5_000 }).catch(() => false);
+      const hasCards = await masters.masterCards.isVisible({ timeout: 5_000 }).catch(() => false);
       const hasEmpty = await page.getByText(/немає майстрів|Поки що немає/i).first().isVisible({ timeout: 5_000 }).catch(() => false);
       expect(hasCards || hasEmpty).toBe(true);
     } finally {

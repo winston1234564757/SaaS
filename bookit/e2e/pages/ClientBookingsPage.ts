@@ -27,11 +27,15 @@ export class ClientBookingsPage {
   constructor(page: Page) {
     this.page = page;
 
-    this.heading = page.locator('h1').first();
+    // /my/bookings (C-DESK-01) renders separate mobile + `hidden lg:block` desktop
+    // trees, each with an h1. Scope to the visible copy, else `.first()` grabs the
+    // hidden (off-breakpoint) one.
+    this.heading = page.locator('h1').filter({ visible: true }).first();
 
-    // /my/bookings має секції (p.text-xs), а не вкладки-кнопки
-    this.upcomingTab = page.locator('p').filter({ hasText: /Майбутні записи/ }).first();
-    this.pastTab     = page.locator('p').filter({ hasText: /Минулі записи/ }).first();
+    // Section labels differ per tree: mobile "Майбутні записи"/"Минулі записи",
+    // C-DESK-01 desktop DeskSectionHeader "Майбутні"/"Раніше". Match either, visible only.
+    this.upcomingTab = page.getByText(/Майбутні/).filter({ visible: true }).first();
+    this.pastTab     = page.getByText(/Минулі|Раніше/).filter({ visible: true }).first();
 
     this.bookingCards = page.locator('[data-testid="booking-card"]');
 

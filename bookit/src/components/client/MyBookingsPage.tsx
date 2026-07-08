@@ -709,6 +709,7 @@ function DeskListRow({ order, selected, onSelect }: { order: UnifiedOrder; selec
   return (
     <button
       type="button"
+      data-testid="booking-card"
       onClick={onSelect}
       aria-pressed={selected}
       className={cn(

@@ -248,6 +248,7 @@ function FeaturedMasterCard({ master }: { master: Master }) {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={SPRING}
+      data-testid="master-card"
       className="flex overflow-hidden rounded-3xl border border-border bg-background"
     >
       <Link
@@ -305,6 +306,7 @@ function GalleryMasterCard({ master, index }: { master: Master; index: number })
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: Math.min(index * 0.04, 0.3), ...SPRING }}
+      data-testid="master-card"
       className="flex flex-col overflow-hidden rounded-2xl border border-border bg-background"
     >
       <Link href={`/${master.slug}`} className="relative block h-44 bg-accent/5 hover:opacity-95 transition-opacity">
