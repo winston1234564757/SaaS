@@ -116,7 +116,9 @@ test.describe('Marketing — Розсилки', () => {
 
     // Заповнюємо форму
     await page.getByTestId('broadcast-title-input').fill('E2E тест розсилки');
-    await page.getByTestId('tag-filter-active').click();
+    // Use the "new clients" segment — it has available recipients. The "active" segment
+    // resolves to 0 (seeded clients sit in the anti-spam cooldown → preview is blocked).
+    await page.getByTestId('tag-filter-new').click();
     // Шаблон підставиться або заповнюємо вручну
     const msgArea = page.getByTestId('broadcast-message-textarea');
     if ((await msgArea.inputValue()) === '') {
