@@ -11,11 +11,13 @@
 ═══ ОБОВ'ЯЗКОВИЙ STARTUP (виконай ДО будь-чого іншого) ═══
 1. mempalace_status
 2. Read XDEV/MAPS/SYSTEM_MAP.md (останні 50 рядків, offset mode)
-3. Read XDEV/PLANS/SPRINT-05-BACKLOG/TRACKER.md — знайди ▶ NEXT рядок
-4. Відповісти: "STARTUP OK: Palace [N] drawers | Next: [ID] — [назва]"
+3. Read XDEV/AUDIT/RECON_CHECKLIST.md — це НАСТУПНА задача (звірка аудиту)
+4. Відповісти: "STARTUP OK: Palace [N] drawers | Next: звірка аудиту (RECON_CHECKLIST)"
 
-═══ ПОТОЧНИЙ СТАН ═══
-Прогрес: 74/87 ✅ · 3 ↩️ (M-DASH-11, M-MKT-01, M-MKT-02 скасовано) | Sprint-05 IN PROGRESS · ФАЗА 3 закрита (ANALYTICS 7/7 ✅) · ФАЗА 4: усі Settings M-SET-01..05 ✅ · M-BILL-01/02 ✅ · M-PORT-01/02 ✅ · M-ORD-01 ✅ · M-DOC-01 ✅ · M-HELP-01/02 ✅ · M-CHAT-01 ✅ · C-MSG-03 ✅ ad-hoc. ФАЗА 5: C-MSG-02 ✅ · C-NAV-01 ✅ · C-EXPL-01(+02) ✅ (C-MSG-01 закрито M-CHAT-01). Total 84→87. ✅ УСІ зроблені задачі перевірено founder (2026-07-03). Батч до M-CHAT-01 задеплоєно; M-HELP-02 + C-MSG-02/03 + C-NAV-01 + C-EXPL-01 очікують деплою.
+═══ ПОТОЧНИЙ СТАН (оновлено 2026-07-08) ═══
+Sprint-05 ФІЧІ = 83/86 ✅ ЗАКРИТО+ЗАДЕПЛОЄНО (3 ↩️ скасовано), усі перевірені founder. Продукт готовий. Далі — Фаза 7 (тести/безпека) + звірка застарілого аудиту.
+🎯 НАСТУПНА ЗАДАЧА: **звірка аудиту** — пройти `XDEV/AUDIT/RECON_CHECKLIST.md` (готовий чеклист з командами перевірки), оновити AUDIT/*.md, видати чистий список «що реально ще відкрито». VERIFY-прохід, БЕЗ коду.
+Паралельні відкриті: SEC-01 ізольована e2e-БД (чекає рішення: vv-crm pause / Pro / Docker), TEST-M3 🔄 / TEST-M4 ⬜.
 
 ⚠️ ВІДКОЧЕНО 2026-07-02 (commit 0d07d6e4 revert 87b16079): спроба фіксу iOS-caret через position:fixed body ЗЛАМАЛА — при тапі композер влітав УГОРУ екрана (device-репорт founder «все зламав»). useChatViewport повернуто до робочої scrollTo(0,0) версії. ВІДОМИЙ дрібний баг лишився: тап → caret трохи вище інпута, перший символ → стрибає на місце (фокус коректний, косметика). Урок: position:fixed body під position:fixed ChatShell на iOS ламає прив'язку shell до viewport — композер їде вгору. НЕ чіпати viewport-механіку наосліп без реального iOS-девайса. Наступна спроба обережно з device-QA (не body-fixed).
 
