@@ -219,9 +219,9 @@
 | `TEST-M2` | RLS cross-tenant suite (8/8 verified проти живої БД) | P0 | ✅ | writing-plans | **Opus** | `c92a48af` |
 | `TEST-M3` | Load/concurrency (booking/stock/C2C/dunning races) | P1 | 🔄 | — | — | — |
 | `TEST-M4` | Integration + unit gaps (CRM segments, ROI, onboarding persist) | P1 | ⬜ | — | — | — |
-| `TEST-M5` | Anti-drift: TESTING_MAP звірено з живим `find` (47 unit / 36 e2e) + виправлено небезпечний seed-опис + proxy.ts→middleware.ts у живих мапах | P2 | ✅ | doc-anti-drift | **Opus** | pending-commit |
+| `TEST-M5` | Anti-drift: TESTING_MAP звірено з живим `find` (47 unit / 36 e2e) + виправлено небезпечний seed-опис + proxy.ts→middleware.ts у живих мапах | P2 | ✅ | doc-anti-drift | **Opus** | `41bf5b69` |
 | `TEST-M6` | E2E suite stabilization — 35→~0 код-фейлів; повний chromium 123 passed / 2 env-flake / 42 skipped | P1 | ✅ | **Opus** | `b4fda8c9` |
-| `SEC-01` | E2E harness must not target prod Supabase | P0 | 🔄 | focused-fix | **Opus** | pending-commit |
+| `SEC-01` | E2E harness must not target prod Supabase | P0 | 🔄 | focused-fix | **Opus** | `41bf5b69` |
 
 **Прогін 2026-07-07:** Unit **1013/1013 ✅**. E2E chromium: 93 passed / **35 failed** / 39 skipped — падіння **не** мої (booking/smoke/auth/analytics не торкаються змінених хуків); причина = гниття набору (дрейф копії/селекторів/флоу) + баг сідера. Мої нові специфікації зелені: `00-role-login-smoke` 4/4, `21-rls-security` 8/8. Деталі та тріаж: `BRIEFS/TEST-M6.md`.
 
