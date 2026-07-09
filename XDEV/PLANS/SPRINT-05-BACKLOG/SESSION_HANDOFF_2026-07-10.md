@@ -1,8 +1,37 @@
-# Session Handoff — 2026-07-10 (борги + repo-parity repair + founder-дії)
+# Session Handoff — 2026-07-10 (борги закрито + repo-parity repair + founder-дії)
 
 > Читай ЦЕ першим на старті наступної сесії (після `mempalace_status` + SYSTEM_MAP).
-> Попередня сесія (2026-07-09) закрила ВЕСЬ actionable-беклог: секція A (A.1–A.4) +
-> секція B аудит. Деталі закритого: `SESSION_HANDOFF_2026-07-09.md`.
+> Сесія 2026-07-10 закрила БОРГ-1/2/3 (3 коміти). Сесія 2026-07-09 закрила секцію A+B.
+> Деталі: цей файл + `SESSION_HANDOFF_2026-07-09.md`.
+
+---
+
+## ✅ ЩО ЗАКРИТО 2026-07-10 (3 коміти в main)
+
+| Борг | Суть | Commit |
+|---|---|---|
+| БОРГ-1 (P1) | `?to=` DM open — надійний редірект через Route Handler `/my/messages/start` | `6a2c0ce4` |
+| БОРГ-2 (P1-TEST) | POM-rot: studio оживлено (3/3), 18-marketing + master-crud видалено як rotted-дублікати | `fffe2d6b` |
+| БОРГ-3 (P2) | full-run contention: half-split формалізовано як shard-скрипти | `c4561c0d` |
+
+**БОРГ-1 root cause (НЕ те, що припускав попередній хендоф):** DB-логіка
+`getOrCreateConversation` працює коректно (діагностика anon-client довела insert-select
+під RLS повертає id). Реальний баг — **streamed redirect**: `redirect()` в async Server
+Component стрімився в RSC-payload після флашу layout-шела (200 OK), hard-nav його ігнорує.
+Фікс: Route Handler (завжди 307) + усі 6 in-app лінків на `/start` з `prefetch={false}` +
+`getOrCreateConversation` посилено (maybeSingle + refetch-on-conflict). Деталь: MemPalace
+drawer `bookit/fixes` + e2e create-flow субтест у `21-direct-messages.spec.ts`.
+
+**БОРГ-2:** `master-crud`/`18-marketing` видалено бо тестували мертву/дубльовану поверхню
+(products винесено на `/dashboard/products`; services-CRUD вже зелений у `19-services-loading`;
+broadcast-flow у `broadcasts.spec.ts`). Orphan-POM (ServicesPage, MarketingPage) прибрано.
+
+**БОРГ-3:** `npm run test:e2e:half1` / `half2` (shard 85/85). Seed раз, потім обидві половини.
+
+### 🔸 Новий опційний gap (не rot, не блокер)
+- **e2e для `/dashboard/products` CRUD** відсутній (ProductFormDrawer). `master-crud` колись
+  цілив у products, але проти старої архітектури — видалено. Products-CRUD зараз без e2e-покриття
+  (є лише `getProductStats.action.test.ts` unit). Кандидат на новий спек `22-products-crud.spec.ts`.
 
 ---
 
@@ -27,37 +56,7 @@ webkit+mobile 28/28. MemPalace drawers записані (bookit/architecture + b
 
 ## 📋 БЕКЛОГ НАСТУПНОЇ СЕСІЇ (за пріоритетом)
 
-### БОРГ-1 (P1). `getOrCreateConversation` `?to=` повертає null — можливий баг
-- **Симптом:** `GET /my/messages?to=<masterId>` НЕ редіректить у чат (redirect у `page.tsx` не
-  спрацьовує, бо `getOrCreateConversation` повертає `null`) навіть коли розмова існує/має створитись.
-- **Файл:** `src/lib/actions/messages.ts:141` `getOrCreateConversation`. Гіпотези: (а)
-  `.insert(...).select('id').single()` повертає null під RLS SELECT-after-insert; (б) existing-
-  lookup `.single()` промахується + `INSERT` б'є `UNIQUE(client_id, master_id)` → error → null.
-- **Дія:** відтворити (клієнт client.json, `?to=<E2E_MASTER_TIMETRAVEL_ID>`, чистий стан),
-  залогувати обидві гілки, полагодити. Потім МОЖНА додати в `21-direct-messages.spec.ts`
-  під-тест на реальний `?to=` create-flow (зараз спек іде через **засіджену** розмову
-  `E2E_CONVERSATION_ID`, щоб обійти цей баг).
-- **Пов'язане:** broadcast SEND усе ще НЕ вкритий зеленою e2e (`18-marketing` карантин) — після
-  фіксу POM (борг-2) можна закрити.
-
-### БОРГ-2 (P1-TEST). POM-rot: 3 dormant специ
-Мій A.3 `master.json` аліас виявив, що ці специ **завжди скіпались** (гейт на `master.json`, якого
-не було) і мають застарілі page-objects. Аліас відкочено → вони знову чисто скіпають. Щоб оживити:
-або націлити на `master-crm.json` (як зроблено для broadcasts/16-mobile), або відновити аліас.
-- `e2e/tests/master-crud.spec.ts` — Services/Products CRUD: click-timeout на «додати послугу/товар»
-  + heading assertion `Послуги та товари`. Оновити `ServicesPage` POM (`e2e/pages/ServicesPage.ts`)
-  проти живого `/dashboard/services`.
-- `e2e/tests/studio.spec.ts` — coming-soon: `Команда майстрів` / `Записатися у Waitlist` не
-  знайдено. Оновити `StudioPage` POM (`e2e/pages/StudioPage.ts`) проти живого `/dashboard/studio`.
-- `e2e/tests/18-marketing-broadcasts.spec.ts` — **карантин** (`test.describe.skip`), stale дубль
-  `broadcasts.spec.ts`. Дія: злити корисне в `broadcasts.spec.ts` і видалити (P1-TEST-6), АБО
-  полагодити (recipient-count текст на edit-кроці + VIP-tag seed) — але дубль краще прибрати.
-
-### БОРГ-3 (P2). Full-run 2-worker contention
-- У ПОВНОМУ chromium-прогоні (`--project=chromium` без розбивки) ~кілька специв флейкають
-  (напр. `13-dynamic-pricing` — проходить ІЗОЛЬОВАНО). Це задокументована contention (config
-  коментар, `workers:2`), НЕ регресія. RUNBOOK радить half-split. Опційно: підняти діагностику
-  або зафіксувати half-split як офіційний gate.
+> БОРГ-1/2/3 ЗАКРИТО 2026-07-10 (див. секцію вище). Нижче — те, що лишилось.
 
 ### repo-parity Half#2 REPAIR — потребує OK founder (незворотне на проді)
 - **Аудит ЗАВЕРШЕНО** (`03b487e3`, `XDEV/AUDIT/REPO_PARITY.md §HALF#2 AUDIT`): 50 unregistered +
