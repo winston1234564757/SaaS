@@ -49,6 +49,8 @@
 
 ## 🏃 RUNBOOK — запуск e2e локально (щоб не переоткривати)
 ```
+0. ОДНОРАЗОВО (env): npx playwright install   # webkit/mobile-safari бінарники; інакше ці
+   проєкти валяться «Executable doesn't exist» (НЕ rot). chromium зазвичай уже є.
 1. Запустити Docker Desktop (дочекатись "Engine running").
 2. cd bookit && npx supabase start   # локальний стек, застосує ВСІ міграції
 3. .env.test вже націлений на локальний (127.0.0.1:54321). Якщо збитий → відновити з .env.test.prod-bak НЕ треба (то прод); local-ключі = demo-дефолти supabase.
@@ -87,7 +89,15 @@
    `bookit.com.ua` → `getBaseUrl()`. AI-crawler: **founder обрав Варіант 1 «дозволити всі»** →
    robots без змін (свідомий no-op). Верифіковано runtime curl (:3100): canonical на 4 поверхнях +
    JSON-LD env-url. legal/[slug] noindex → canonical пропущено. Gate: tsc 0 · build ✓.
-3. **webkit/mobile e2e стабілізація**: зараз valяться цілими проєктами (rot, не регресія).
+3. ✅ **webkit/mobile e2e стабілізація** — ЗАКРИТО (2026-07-09). Root cause = НЕ rot: webkit-бінарник
+   не встановлено (`npx playwright install webkit`). Далі: partition config (webkit лише
+   `01-auth-guards`; `02-time-travel` анімована кнопка не «stable» на webkit → chromium-вкрито);
+   mobile `/my/bookings` desktop-only h1 → селектор на видимий таб «Записи»; `master.json` аліас
+   у global.setup (copy master-crm) розблокував broadcasts.spec.ts 9/9 + mobile dashboard;
+   `18-marketing-broadcasts` карантин (stale дубль broadcasts.spec.ts → A.4 P1-TEST-6). Результат:
+   webkit 14/14 · mobile 14/14 · chromium broadcasts 9/9. tsc 0.
+   ⚠️ ENV-передумова: `npx playwright install` (webkit/mobile-safari бінарники) — інакше проєкти
+   валяться «browser not installed» (див. RUNBOOK крок 0).
 4. **E2E gaps** (P0-TEST-1/2/3): нема специфікацій /my/messages, /explore category/sort/search,
    нема coverage-config у vitest.
 

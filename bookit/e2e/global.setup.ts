@@ -278,5 +278,19 @@ export default async function globalSetup(config: FullConfig) {
     }
   }
 
+  // Generic `master.json` alias → the data-rich CRM master. Several specs
+  // (16-mobile-smoke dashboard, 18-marketing-broadcasts, broadcasts) gate on
+  // this generic filename; without it they silently skip. master-crm has both
+  // dashboard data and CRM clients, so it satisfies render + broadcast-send.
+  const genericMaster = 'playwright/.auth/master.json';
+  const crmMaster     = 'playwright/.auth/master-crm.json';
+  if (fs.existsSync(crmMaster)) {
+    fs.copyFileSync(crmMaster, genericMaster);
+    console.log('[setup] ✓ master.json (alias → master-crm)');
+  } else if (fs.existsSync(genericMaster)) {
+    // CRM master failed this run — drop the stale alias so specs skip cleanly.
+    fs.unlinkSync(genericMaster);
+  }
+
   console.log('[setup] Auth state caching complete.');
 }

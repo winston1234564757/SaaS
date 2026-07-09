@@ -106,7 +106,9 @@ test.describe('Mobile Smoke — клієнтська зона', () => {
       await page.goto('/my/bookings');
       await page.waitForLoadState('networkidle');
 
-      await expect(page.locator('h1').first()).toBeVisible({ timeout: 10_000 });
+      // Mobile /my/bookings uses a tab switcher (Записи / Замовлення), not the
+      // desktop-only "Мої записи" h1 (hidden lg:block) — assert the visible tab.
+      await expect(page.getByRole('button', { name: 'Записи' }).first()).toBeVisible({ timeout: 10_000 });
       expect(page.url()).toContain('/my/bookings');
     } finally {
       await context.close();
