@@ -239,7 +239,7 @@ All numbered sections (Agitation, Process, ClientFlow) and feature rows (Magic) 
 - `src/components/public/StudioPublicPage.tsx`
 
 ### Explore (Каталог Майстрів) — «Пошуковий портал» (C-EXPL-01+02, `373e9701`)
-- Route: `src/app/explore/page.tsx` (SSR force-dynamic; master_profiles is_published + categoryCounts + preferredCategories з bookings-історії; `availableToday/Tomorrow` = `schedule_templates.is_working` для DOW — «працює в цей день», НЕ вільний слот)
+- Route: `src/app/explore/page.tsx` (dynamic SSR via getUser; **[PERF A.1-2 2026-07-09]** masters mega-query винесено в `src/app/explore/data.ts` → `getExploreMasters()` `unstable_cache` revalidate 60с tag `explore-masters` через anon `createPublicClient`; прибрано мертві `force-dynamic`+`force-no-store`. categoryCounts кешується разом; preferredCategories (bookings-історія) + inviteCode лишились live/user-specific. `availableToday/Tomorrow` = `schedule_templates.is_working` для DOW — «працює в цей день», НЕ вільний слот, baked у кеш ≤60с)
 - Layout: `src/app/explore/layout.tsx` — `PublicNavbar` (desktop, `hidden md:block`) + `SmartBackButton`; мобільний нижній навбар = глобальний `MyBottomNav` (C-NAV-01)
 - Component: `src/components/public/ExplorePage.tsx` — контейнер стану (фільтри/сорт/пагінація/spotlight/sticky IntersectionObserver). **C-DESK-01 Фаза 2 (десктоп widening, commit `c3481f38`):** контейнер `max-w-2xl → lg:max-w-5xl`, грід карток `+lg:grid-cols-4` (темний портал/hero-пошук вже full-width). Мобільний недоторканий
 - Під-компоненти `src/components/public/explore/`:
