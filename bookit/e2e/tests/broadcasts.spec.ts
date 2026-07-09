@@ -2,7 +2,7 @@
  * E2E: Broadcasts — цільова розсилка Push/Telegram/SMS
  *
  * Передумови:
- *   - playwright/.auth/master.json (master storageState)
+ *   - playwright/.auth/master-crm.json (master storageState)
  *   - Застосована міграція 116 (npx supabase db push)
  */
 import { test, expect, type Page } from '@playwright/test';
@@ -11,7 +11,7 @@ import * as fs from 'fs';
 // Prefer fresh crm session; fall back to legacy master.json
 const MASTER_AUTH = fs.existsSync('playwright/.auth/master-crm.json')
   ? 'playwright/.auth/master-crm.json'
-  : 'playwright/.auth/master.json';
+  : 'playwright/.auth/master-crm.json';
 
 const hasMasterState = fs.existsSync(MASTER_AUTH);
 
@@ -31,7 +31,7 @@ async function goToBroadcastsTab(page: Page) {
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 test.describe('Marketing — Розсилки', () => {
-  test.skip(!hasMasterState, 'Немає playwright/.auth/master.json — пропускаємо');
+  test.skip(!hasMasterState, 'Немає playwright/.auth/master-crm.json — пропускаємо');
 
   test('вкладки Сторіс та Розсилки відображаються', async ({ browser }) => {
     const ctx  = await browser.newContext({ storageState: MASTER_AUTH });
@@ -173,7 +173,7 @@ test.describe('Short link /r/[code]', () => {
 // ── Clients page → Broadcast button ──────────────────────────────────────────
 
 test.describe('Clients → Розсилка', () => {
-  test.skip(!hasMasterState, 'Немає playwright/.auth/master.json — пропускаємо');
+  test.skip(!hasMasterState, 'Немає playwright/.auth/master-crm.json — пропускаємо');
 
   test('кнопка "Розсилка" в Clients → редіректить на Розсилки', async ({ browser }) => {
     const ctx  = await browser.newContext({ storageState: MASTER_AUTH });

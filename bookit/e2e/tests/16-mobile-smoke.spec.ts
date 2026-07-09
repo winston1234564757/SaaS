@@ -6,13 +6,13 @@
  *
  * Потрібно:
  *   - E2E_MASTER_SLUG (для публічної сторінки)
- *   - playwright/.auth/master.json (для dashboard)
+ *   - playwright/.auth/master-crm.json (для dashboard)
  *   - playwright/.auth/client.json (для /my/)
  */
 import { test, expect } from '@playwright/test';
 import * as fs from 'fs';
 
-const hasMasterState = fs.existsSync('playwright/.auth/master.json');
+const hasMasterState = fs.existsSync('playwright/.auth/master-crm.json');
 const hasClientState = fs.existsSync('playwright/.auth/client.json');
 const SLUG = process.env.E2E_MASTER_SLUG;
 
@@ -48,9 +48,9 @@ test.describe('Mobile Smoke — публічні сторінки', () => {
 
 test.describe('Mobile Smoke — майстер dashboard', () => {
   test('dashboard рендериться на мобілі з BottomNav', async ({ browser }) => {
-    test.skip(!hasMasterState, 'Немає playwright/.auth/master.json');
+    test.skip(!hasMasterState, 'Немає playwright/.auth/master-crm.json');
 
-    const context = await browser.newContext({ storageState: 'playwright/.auth/master.json' });
+    const context = await browser.newContext({ storageState: 'playwright/.auth/master-crm.json' });
     const page = await context.newPage();
 
     try {
@@ -73,9 +73,9 @@ test.describe('Mobile Smoke — майстер dashboard', () => {
   });
 
   test('/dashboard/services рендериться на мобілі', async ({ browser }) => {
-    test.skip(!hasMasterState, 'Немає playwright/.auth/master.json');
+    test.skip(!hasMasterState, 'Немає playwright/.auth/master-crm.json');
 
-    const context = await browser.newContext({ storageState: 'playwright/.auth/master.json' });
+    const context = await browser.newContext({ storageState: 'playwright/.auth/master-crm.json' });
     const page = await context.newPage();
 
     try {

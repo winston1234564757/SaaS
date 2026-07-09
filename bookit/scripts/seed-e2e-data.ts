@@ -75,6 +75,11 @@ const FIXTURE_CONTRACT = {
   },
 } as const;
 
+// Explore catalog fixtures — lightweight published masters so /explore has
+// enough rows to exercise pagination (> PAGE_SIZE) and geo-distance sort.
+const EXPLORE_FIXTURE_COUNT = 14;
+const EXPLORE_CATEGORIES = ['hair', 'brows', 'makeup', 'massage', 'cosmetology', 'spa'] as const;
+
 // ─── Safety guards ────────────────────────────────────────────────────────────
 
 function assertSafeEnvironment(): void {
@@ -1000,6 +1005,72 @@ function writeRuntimeEnv(ids: Record<string, string>): void {
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
+async function seedExploreFixtures(): Promise<void> {
+  // Display-only catalog masters (no bookings/services/schedules). They give
+  // /explore enough published rows to trigger pagination and real lat/lng for
+  // geo-distance sort. Idempotent via getOrCreateUser + upsert.
+  const KYIV = { lat: 50.4501, lng: 30.5234 };
+  const tasks: Promise<void>[] = [];
+  for (let i = 1; i <= EXPLORE_FIXTURE_COUNT; i++) {
+    const email    = `e2e_explore_fixture_${i}@test.com`;
+    const name     = `E2E Explore Fixture ${i}`;
+    const slug     = `e2e-explore-fixture-${i}`;
+    const category = EXPLORE_CATEGORIES[i % EXPLORE_CATEGORIES.length]!;
+    const tier: 'starter' | 'pro' = i % 3 === 0 ? 'pro' : 'starter';
+    // Spread coords in a ~0.14° box around Kyiv so nearby-sort is deterministic.
+    const lat = KYIV.lat + (i - EXPLORE_FIXTURE_COUNT / 2) * 0.01;
+    const lng = KYIV.lng + (i - EXPLORE_FIXTURE_COUNT / 2) * 0.01;
+    tasks.push((async () => {
+      const id = await getOrCreateUser(email, name);
+      await upsertProfile(id, email, name, 'master', `+3805060${String(i).padStart(4, '0')}`);
+      await upsertMasterProfile(id, slug, name, tier, {
+        categories:    [category],
+        latitude:      lat,
+        longitude:     lng,
+        rating:        4.0 + (i % 10) / 10,
+        rating_count:  i,
+        bio:           'E2E explore fixture — catalog only',
+        // Unique — slug-derived placeholder collides (first 8 chars identical).
+        referral_code: `E2EXPLR${String(i).padStart(4, '0')}`,
+      });
+    })());
+  }
+  await Promise.all(tasks);
+  console.log(`  [explore] seeded ${EXPLORE_FIXTURE_COUNT} catalog fixtures`);
+}
+
+export const SEEDED_CHAT_MESSAGE = 'E2E seeded chat message';
+
+async function seedDirectMessageFixture(clientId: string, masterId: string): Promise<string> {
+  // Deterministic conversation + one master→client message so the direct-chat
+  // spec has stable history and a known conversation id (exported to runtime),
+  // independent of the ?to= create-flow.
+  await admin.from('conversations').delete().eq('client_id', clientId).eq('master_id', masterId);
+
+  const { data: conv, error } = await admin
+    .from('conversations')
+    .insert({
+      client_id:       clientId,
+      master_id:       masterId,
+      last_message:    SEEDED_CHAT_MESSAGE,
+      last_message_at: new Date().toISOString(),
+      client_unread:   1,
+    })
+    .select('id')
+    .single();
+  if (error || !conv) throw new Error(`seedDirectMessageFixture: ${error?.message}`);
+
+  const { error: mErr } = await admin.from('direct_messages').insert({
+    conversation_id: conv.id,
+    sender_id:       masterId,
+    message:         SEEDED_CHAT_MESSAGE,
+  });
+  if (mErr) throw new Error(`seedDirectMessageFixture (message): ${mErr.message}`);
+
+  console.log(`  [messages] seeded conversation ${conv.id}`);
+  return conv.id;
+}
+
 async function main(): Promise<void> {
   console.log('');
   console.log('══════════════════════════════════════════');
@@ -1063,6 +1134,9 @@ async function main(): Promise<void> {
     upsertMasterProfile(auditMasterId, SLUGS.auditMaster,      'E2E Audit Studio',      'pro', { mood_theme: 'blossom' }),
   ]);
 
+  // Explore catalog fixtures (pagination + geo-distance coverage for /explore).
+  await seedExploreFixtures();
+
   // Client profile (separate table from master_profiles)
   await Promise.all([
     upsertClientProfile(clientTimeTravelId),
@@ -1083,6 +1157,9 @@ async function main(): Promise<void> {
   console.log('\n[step 5] Seeding domain data...');
   // TimeTravelMaster has the most work — run first, sequentially
   await seedTimeTravelMaster(timeTravelId, clientTimeTravelId);
+
+  // Direct-chat fixture: conversation between the TT client and TT master.
+  const conversationId = await seedDirectMessageFixture(clientTimeTravelId, timeTravelId);
 
   // Remaining domains are independent — run in parallel
   const [referralCode] = await Promise.all([
@@ -1114,6 +1191,7 @@ async function main(): Promise<void> {
     E2E_MASTER_REFERRAL_SLUG:   SLUGS.referralMaster,
     E2E_MASTER_REFERRAL_CODE:   referralCode,
     E2E_CLIENT_TIMETRAVEL_ID:   clientTimeTravelId,
+    E2E_CONVERSATION_ID:        conversationId,
     E2E_CLIENT_CRM_ID:          clientCrmId,
     E2E_CLIENT_AUTH_ID:         clientAuthId,
     E2E_CLIENT_REFERRAL_ID:     clientReferralId,
