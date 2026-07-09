@@ -64,9 +64,14 @@
 ## 📋 БЕКЛОГ НАСТУПНОЇ СЕСІЇ (за пріоритетом)
 
 ### A. Мої дії (код) — можу сам
-1. **P1 Perf** (окремі Task Gates, архітектура): fully-dynamic `[slug]` Suspense-острів (~11
-   запитів/візит) · `/explore` cache-shell (P0-PERF-1; потребує рішення про `cacheComponents`) ·
-   broadcast serial loop (timeout >40-50 отримувачів). Кожен з тестами.
+1. **P1 Perf** (окремі Task Gates, архітектура):
+   - ✅ `[slug]` data-cache — ЗАКРИТО (2026-07-09). Мертвий `revalidate=300` (dynamic-роут
+     ігнорує) → `unstable_cache` на 7 статичних master-scoped запитів (getMasterCached +
+     getMasterExtras у `[slug]/data.ts`, revalidate 60с, tag `master-public:${slug}`). Owner
+     бачить свої зміни live (isOwner branch); anon — кеш. flash/occupancy/monthly лишились live.
+     Gate: tsc 0 · build ✓ · e2e booking-flow 4/0. Деталь: MemPalace drawer bookit/architecture.
+   - ⬜ `/explore` cache-shell (P0-PERF-1; потребує рішення про `cacheComponents`).
+   - ⬜ broadcast serial loop (timeout >40-50 отримувачів). Кожен з тестами.
 2. **SEO P2/P3 hardening**: canonical на explore/landing/legal (безпечно) · AI-crawler правила в
    robots (**потрібне продуктове рішення founder** allow/block) · JSON-LD url звірка.
 3. **webkit/mobile e2e стабілізація**: зараз valяться цілими проєктами (rot, не регресія).

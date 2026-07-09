@@ -213,9 +213,10 @@ All numbered sections (Agitation, Process, ClientFlow) and feature rows (Magic) 
 - Route: `src/app/[slug]/page.tsx` — Server Component, SSR, SEO
 - Actions: `src/app/[slug]/actions.ts` (server-side data fetch)
 - Key component: `src/components/public/PublicMasterPage.tsx` (~40KB, головний рендер сторінки)
-- **Public Profile**: `/[slug]` (Next.js SSR + ISR).
+- **Public Profile**: `/[slug]` (Next.js dynamic SSR; статичні дані кешуються через `unstable_cache` — див. Shared Data Layer нижче).
 - **Dynamic OG Images**: `/[slug]/opengraph-image.tsx` (Edge Runtime). Premium design with Master Avatar + Category Emojis.
 - **Shared Data Layer**: `src/app/[slug]/data.ts` — єдине джерело даних для Page, Metadata та OG (через `React.cache`).
+  - **[PERF A.1-1, 2026-07-09]** `getMasterCached(slug)` + `getMasterExtras(slug, masterId, live)` — `unstable_cache` (revalidate 60с, tag `master-public:${slug}`) на 7 статичних master-scoped запитів через `createPublicClient` (anon). Роут лишається dynamic (cookies/headers/getUser) — попередній `export const revalidate` був мертвий. Owner (`user.id===master.id`) читає live; anon — кеш. Live-only: flash deals, occupancy, monthly count, user visit count.
 - **Structured Data**: JSON-LD implementation for `ProfessionalService` and `AggregateRating`.
 - **Bento Bottom Nav**: Асиметрична мозаїчна сітка (3/5 Hero, 2/5 Side, 5/5 Wide).
 - **Blossom Atmosphere**: Теплі коричневі та персикові тони з Glassmorphism (`backdrop-blur-3xl`).

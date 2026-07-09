@@ -9,45 +9,12 @@ import { PublicMasterPage } from '@/components/public/PublicMasterPage';
 import type { TrustedPartner } from '@/components/public/TrustedPartnersBlock';
 import { ALL_STEPS } from '@/components/shared/wizard/helpers';
 import { CATEGORY_TEMPLATES } from '@/lib/constants/onboardingTemplates';
-import { getMaster } from './data';
+import { getMaster, getMasterCached, getMasterExtras } from './data';
+import type { ProductRow, ReviewRow, ScheduleRow, LoyaltyRow, PartnerRow, PortfolioRow } from './data';
 import { computeOccupancy } from '@/lib/utils/occupancy';
+import type { ProductIconName } from '@/lib/product-icons';
 
-export const revalidate = 300;
-
-// ── Row types for secondary Supabase queries ──────────────────────────────────
-
-type ProductRow = {
-  id: string;
-  name: string;
-  price_kopecks: number;
-  description: string | null;
-  stock_qty: number;
-  category: string | null;
-  icon_name: string | null;
-  recommend_always: boolean;
-  product_service_links: { service_id: string }[] | null;
-};
-
-type ReviewRow = {
-  id: string;
-  rating: number;
-  comment: string | null;
-  client_name: string | null;
-  created_at: string;
-};
-
-type ScheduleRow = {
-  day_of_week: string;
-  start_time: string | null;
-  end_time: string | null;
-  is_working: boolean;
-};
-
-type LoyaltyRow = {
-  target_visits: number;
-  reward_type: string;
-  reward_value: number;
-};
+// ── Row types for the live (per-request) secondary queries ────────────────────
 
 type FlashDealRow = {
   id: string;
@@ -58,30 +25,6 @@ type FlashDealRow = {
   original_price: number;
   discount_pct: number;
   expires_at: string;
-};
-
-type PartnerProfile = { full_name: string; avatar_url?: string | null };
-type PartnerPartner = {
-  id: string;
-  slug: string;
-  avatar_emoji: string | null;
-  categories: string[];
-  profiles: PartnerProfile | PartnerProfile[];
-};
-type PartnerRow = {
-  partner_id: string;
-  partner: PartnerPartner;
-};
-
-type PortfolioRow = {
-  id: string;
-  title: string;
-  description: string | null;
-  service_id: string | null;
-  display_order: number;
-  portfolio_item_photos: { url: string; display_order: number }[] | null;
-  portfolio_item_reviews: { review_id: string }[] | null;
-  services: { name: string } | null;
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -103,7 +46,7 @@ export async function generateMetadata(
   { params }: { params: Promise<{ slug: string }> }
 ): Promise<Metadata> {
   const { slug } = await params;
-  const master = await getMaster(slug);
+  const master = await getMasterCached(slug);
   if (!master) return { title: 'Майстер не знайдений' };
 
   const profile = master.profiles;
@@ -149,8 +92,17 @@ export default async function MasterPublicPage(
 ) {
   const [{ slug }, sp] = await Promise.all([params, searchParams]);
   const refCode = sp?.ref ?? null;
-  const data = await getMaster(slug);
-  if (!data) notFound();
+
+  const supabase = await createClient();
+  // Поточний юзер (null якщо не залогінений)
+  const { data: { user } } = await supabase.auth.getUser();
+
+  // Anon visitors read the cached profile+extras; the master viewing their own
+  // page reads live so their edits appear immediately (no revalidate wait).
+  const cached = await getMasterCached(slug);
+  if (!cached) notFound();
+  const isOwner = !!user && user.id === cached.id;
+  const data = isOwner ? (await getMaster(slug)) ?? cached : cached;
 
   // Server-side UA detection для native map deep links (no client JS needed)
   const headersList = await headers();
@@ -180,13 +132,12 @@ export default async function MasterPublicPage(
           : `https://maps.google.com/?q=${encodeURIComponent(locationQuery)}`
       : null;
 
-  const supabase = await createClient();
   const cookieStore = await cookies();
   const debugNow = cookieStore.get('next-public-debug-now')?.value;
   const now = debugNow ? new Date(decodeURIComponent(debugNow)) : getNow();
 
-  // Поточний юзер (null якщо не залогінений)
-  const { data: { user } } = await supabase.auth.getUser();
+  // Static master-scoped extras (cached for anon, live for the owner).
+  const extras = await getMasterExtras(slug, data.id, isOwner);
 
   // Validate C2C ref param — resolve referrer client id and discount %
   let c2cRefCode: string | null = null;
@@ -217,27 +168,9 @@ export default async function MasterPublicPage(
   const monthStart = monthStartDate.toISOString();
   const monthEnd   = monthEndDate.toISOString().slice(0, 10);
 
-  // Паралельно завантажуємо products, reviews, schedule, monthly count, flash deals, loyalty, partners, portfolio, occupancy bookings
-  const [productsRes, reviewsRes, scheduleRes, monthlyCountRes, flashDealsRes, loyaltyRes, relationRes, partnerRes, portfolioRes, occupancyBookingsRes] = await Promise.all([
-    supabase
-      .from('products')
-      .select('id, name, price_kopecks, description, stock_qty, category, icon_name, recommend_always, product_service_links(service_id)')
-      .eq('master_id', data.id)
-      .eq('is_active', true)
-      .gt('stock_qty', 0)
-      .order('sort_order')
-      .limit(20),
-    supabase
-      .from('reviews')
-      .select('id, rating, comment, client_name, created_at')
-      .eq('master_id', data.id)
-      .eq('is_published', true)
-      .order('created_at', { ascending: false })
-      .limit(5),
-    supabase
-      .from('schedule_templates')
-      .select('day_of_week, start_time, end_time, is_working')
-      .eq('master_id', data.id),
+  // Live (per-request) data only — monthly count, flash deals, this user's visit
+  // count and occupancy bookings. Static master-scoped data comes from `extras`.
+  const [monthlyCountRes, flashDealsRes, relationRes, occupancyBookingsRes] = await Promise.all([
     supabase
       .from('bookings')
       .select('id', { count: 'exact', head: true })
@@ -252,12 +185,6 @@ export default async function MasterPublicPage(
       .gt('expires_at', getNow().toISOString())
       .order('expires_at', { ascending: true })
       .limit(5),
-    supabase
-      .from('loyalty_programs')
-      .select('target_visits, reward_type, reward_value')
-      .eq('master_id', data.id)
-      .eq('is_active', true)
-      .order('target_visits', { ascending: true }),
     user
       ? supabase
           .from('bookings')
@@ -266,33 +193,6 @@ export default async function MasterPublicPage(
           .eq('client_id', user.id)
           .eq('status', 'completed')
       : Promise.resolve({ count: null, error: null }),
-    // M-GROW-02: видимі прийняті звʼязки (партнери + альянси) для публічної сторінки.
-    // Тепер реально працює для анонів (mc_public_read RLS — стара partners-політика блокувала).
-    supabase
-      .from('master_connections')
-      .select(`
-        other_id,
-        partner:master_profiles!master_connections_other_id_fkey (
-          id, slug, avatar_emoji, categories,
-          profiles ( full_name, avatar_url )
-        )
-      `)
-      .eq('master_id', data.id)
-      .eq('status', 'accepted')
-      .eq('is_visible', true),
-    // Portfolio items (published, with first photo)
-    supabase
-      .from('portfolio_items')
-      .select(`
-        id, title, description, service_id, display_order,
-        portfolio_item_photos ( url, display_order ),
-        portfolio_item_reviews ( review_id ),
-        services ( name )
-      `)
-      .eq('master_id', data.id)
-      .eq('is_published', true)
-      .order('display_order', { ascending: true })
-      .limit(8),
     // Occupancy: anon client with public read RLS — consistent for all visitors
     createPublicClient()
       .from('bookings')
@@ -320,19 +220,19 @@ export default async function MasterPublicPage(
       image_url: s.image_url || null,
     }));
 
-  const products = (productsRes.data ?? []).map((p: ProductRow) => ({
+  const products = extras.products.map((p: ProductRow) => ({
     id:               p.id,
     name:             p.name,
     price:            Math.round(Number(p.price_kopecks) / 100),
     description:      p.description,
-    icon_name:        p.icon_name ?? 'package',
+    icon_name:        (p.icon_name ?? 'package') as ProductIconName,
     inStock:          p.stock_qty > 0,
     stock:            p.stock_qty,
     recommendAlways:  p.recommend_always,
     linkedServiceIds: (p.product_service_links ?? []).map(l => l.service_id),
   }));
 
-  const reviews = (reviewsRes.data ?? []).map((r: ReviewRow) => ({
+  const reviews = extras.reviews.map((r: ReviewRow) => ({
     id: r.id,
     rating: r.rating,
     comment: r.comment,
@@ -340,7 +240,7 @@ export default async function MasterPublicPage(
     createdAt: r.created_at,
   }));
 
-  const schedule = (scheduleRes.data ?? []).map((s: ScheduleRow) => ({
+  const schedule = extras.schedule.map((s: ScheduleRow) => ({
     day: s.day_of_week,
     isWorking: s.is_working,
     startTime: s.start_time?.slice(0, 5) ?? '09:00',
@@ -348,13 +248,13 @@ export default async function MasterPublicPage(
   }));
 
   const occupancyRate = computeOccupancy(
-    (scheduleRes.data ?? []) as ScheduleRow[],
+    extras.schedule,
     (occupancyBookingsRes.data ?? []) as { start_time: string; end_time: string; status: string }[],
     monthStartDate,
     monthEndDate,
   );
 
-  const loyaltyTiers = (loyaltyRes.data ?? []).map((p: LoyaltyRow) => ({
+  const loyaltyTiers = extras.loyalty.map((p: LoyaltyRow) => ({
     targetVisits: p.target_visits,
     rewardType: p.reward_type,
     rewardValue: p.reward_value,
@@ -365,7 +265,7 @@ export default async function MasterPublicPage(
     : null;
 
   // Build trusted partners list from accepted+visible master_connections (partner+alliance)
-  const trustedPartners: TrustedPartner[] = (partnerRes.data ?? []).map((row: PartnerRow) => {
+  const trustedPartners: TrustedPartner[] = extras.partners.map((row: PartnerRow) => {
     const partnerProfile = Array.isArray(row.partner.profiles) ? row.partner.profiles[0] : row.partner.profiles;
     return {
       id:          row.partner.id,
@@ -423,7 +323,7 @@ export default async function MasterPublicPage(
     flashDeals,
     loyalty,
     trustedPartners,
-    portfolio: (portfolioRes.data ?? []).map((item: PortfolioRow) => {
+    portfolio: extras.portfolio.map((item: PortfolioRow) => {
       const photos = [...(item.portfolio_item_photos ?? [])].sort((a, b) => a.display_order - b.display_order);
       return {
         id: item.id,
