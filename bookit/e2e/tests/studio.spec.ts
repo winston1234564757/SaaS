@@ -12,13 +12,14 @@ import { test, expect } from '@playwright/test';
 import * as fs from 'fs';
 import { StudioPage } from '../pages/StudioPage';
 
-const hasMasterState = fs.existsSync('playwright/.auth/master.json');
+const MASTER_STATE = 'playwright/.auth/master-crm.json';
+const hasMasterState = fs.existsSync(MASTER_STATE);
 
 test.describe('Studio coming-soon page', () => {
-  test.skip(!hasMasterState, 'Немає playwright/.auth/master.json');
+  test.skip(!hasMasterState, 'Немає playwright/.auth/master-crm.json');
 
   test('відображає заголовок та бейдж "У розробці"', async ({ browser }) => {
-    const context = await browser.newContext({ storageState: 'playwright/.auth/master.json' });
+    const context = await browser.newContext({ storageState: MASTER_STATE });
     const page = await context.newPage();
     const studio = new StudioPage(page);
 
@@ -30,20 +31,20 @@ test.describe('Studio coming-soon page', () => {
   });
 
   test('відображає список переваг студії', async ({ browser }) => {
-    const context = await browser.newContext({ storageState: 'playwright/.auth/master.json' });
+    const context = await browser.newContext({ storageState: MASTER_STATE });
     const page = await context.newPage();
     const studio = new StudioPage(page);
 
     await studio.goto();
 
     await expect(studio.featuresList).toBeVisible({ timeout: 10_000 });
-    await expect(page.getByText('Зведена аналітика')).toBeVisible();
-    await expect(page.getByText('Спільна сторінка салону')).toBeVisible();
+    await expect(page.getByText('Спільна аналітика')).toBeVisible();
+    await expect(page.getByText('Сторінка салону')).toBeVisible();
     await context.close();
   });
 
-  test('кнопка Waitlist видима', async ({ browser }) => {
-    const context = await browser.newContext({ storageState: 'playwright/.auth/master.json' });
+  test('кнопка заявки в бету видима', async ({ browser }) => {
+    const context = await browser.newContext({ storageState: MASTER_STATE });
     const page = await context.newPage();
     const studio = new StudioPage(page);
 

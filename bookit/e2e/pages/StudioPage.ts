@@ -11,7 +11,8 @@ export class StudioPage {
     this.page = page;
     this.heading = page.locator('h1').filter({ hasText: 'Студія' });
     this.badge = page.getByText('У розробці');
-    this.waitlistButton = page.getByRole('button', { name: /Записатися у Waitlist/i });
+    // Beta CTA in StudioBetaCard — the coming-soon page has no "Waitlist" copy.
+    this.waitlistButton = page.getByRole('button', { name: 'Хочу в бету' });
     this.featuresList = page.getByText('Команда майстрів');
   }
 
