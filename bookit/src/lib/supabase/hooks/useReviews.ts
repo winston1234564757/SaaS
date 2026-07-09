@@ -53,7 +53,8 @@ export function useReviews() {
         .from('reviews')
         .select('id, rating, comment, client_name, is_published, created_at, bookings(date)')
         .eq('master_id', masterId!)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(300);
 
       if (error) throw error;
       return (data ?? []).map((r: ReviewRow) => mapRow(r));

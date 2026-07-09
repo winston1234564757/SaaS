@@ -34,4 +34,13 @@
 - [ ] На майстрі з сотнями відгуків скрол/фільтр плавні (own-eyes).
 
 ## Відкриті питання до тебе
-1. Пагінація «показати ще» чи повна віртуалізація? Для відгуків схиляюсь до віртуалізації (reuse ClientsPage).
+1. ~~Пагінація чи віртуалізація?~~ Обрано віртуалізацію — АЛЕ при читанні коду виявлено 2-колонковий masonry змінної висоти → див. рішення.
+
+---
+
+## [Заповнюється після DONE]
+**Root cause / рішення:** Список — 2-колонковий masonry (`grid-cols-1 lg:grid-cols-2 items-start`) карток ЗМІННОЇ висоти під `AnimatePresence popLayout`, кожна з `layout` → reflow всіх сусідів на фільтрі/сорті. Прибрано `layout` з `motion.div` (ReviewsPage.tsx:321) — thrash усунено, entrance opacity/y лишився. Кількість карток обмежено `.limit(300)` у запиті (DB-06). 
+**Свідомо НЕ зроблено — повна `useWindowVirtualizer`:** нова інформація при читанні коду — це masonry змінної висоти, не одноколонковий fixed-row список як `ClientsPage`. Справжнє вікнування masonry (lane-assignment + dynamic measure) = високий ризик (стрибучий скрол, misalign) + не own-eyes-верифіковне тут, а `.limit(300)`+прибраний `layout` уже знімають знахідку. Gold-plating з ризиком по launch-critical UI відкладено (окрема задача, лише якщо є майстри з 300+ відгуками).
+**Файли:** `src/components/master/reviews/ReviewsPage.tsx:321` (layout removed).
+**Верифікація:** TSC 0 · Build clean · ESLint clean. Own-eyes НЕ прогнано.
+**Commit:** pending.
