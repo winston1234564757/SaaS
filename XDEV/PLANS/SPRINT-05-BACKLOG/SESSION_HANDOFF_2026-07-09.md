@@ -75,7 +75,13 @@
      `explore-masters`, anon-клієнт); прибрано `force-dynamic`+`force-no-store` (останнє вбивало б
      кеш). preferredCategories+inviteCode лишились live. Gate: tsc 0 · build ✓ · e2e smoke 5/0.
      Залишок (окремі задачі): P0-PERF-2 get_explore_masters RPC · P1-PERF-5 react-virtual.
-   - ⬜ broadcast serial loop (timeout >40-50 отримувачів). Кожен з тестами.
+   - ✅ broadcast serial loop — ЗАКРИТО (2026-07-09). `sendBroadcast` серійний цикл → bounded
+     concurrency: новий `src/lib/utils/batch.ts` `runBatched` (10 in-flight) + extracted
+     `processRecipient`. Тест `batch.test.ts` 6/6. Gate: tsc 0 · build ✓. Залишок (окрема
+     задача): списки >~150-200 отримувачів → винести в cron/чергу. Гоча: broadcast e2e скіпають
+     на `master.json` vs `master-*.json` (pre-existing auth-name mismatch, A.3/A.4) — верифіковано
+     unit'ом + parity, не зеленою broadcast-e2e.
+   **→ A.1 (P1 Perf) ЗАКРИТО ПОВНІСТЮ (3/3).**
 2. **SEO P2/P3 hardening**: canonical на explore/landing/legal (безпечно) · AI-crawler правила в
    robots (**потрібне продуктове рішення founder** allow/block) · JSON-LD url звірка.
 3. **webkit/mobile e2e стабілізація**: зараз valяться цілими проєктами (rot, не регресія).

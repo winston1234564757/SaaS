@@ -12,6 +12,7 @@ import {
   buildTargetUrl,
   generateShortCode,
 } from '@/lib/utils/broadcastUtils';
+import { runBatched } from '@/lib/utils/batch';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -287,10 +288,15 @@ export async function sendBroadcast(broadcastId: string, clientIds: string[]) {
   // ── 5. Build target URL ───────────────────────────────────────────────────
   const targetUrl = buildUrl(mp.slug, broadcast.service_link_id, broadcast.product_link_id);
 
-  // ── 6. Send to each client ────────────────────────────────────────────────
-  let successCount = 0;
+  // ── 6. Send to each client (bounded concurrency) ──────────────────────────
+  // Serial per-recipient sending (4-5 round trips + external push/TG/SMS each)
+  // timed out past ~40-50 recipients. Process in small parallel batches so
+  // wall-time scales ~CONCURRENCY× better while keeping load on the
+  // notification providers and Postgres bounded.
+  // NOTE: very large lists (~150-200+) should still move to a cron/queue drain.
+  const CONCURRENCY = 10;
 
-  for (const client of filtered) {
+  const processRecipient = async (client: ClientRow): Promise<boolean> => {
     const clientId = client.client_id as string;
     const phone    = client.client_phone;
 
@@ -316,7 +322,7 @@ export async function sendBroadcast(broadcastId: string, clientIds: string[]) {
       .insert({ broadcast_id: broadcastId, client_id: clientId, phone })
       .select('id').single();
 
-    if (!recipient) continue;
+    if (!recipient) return false;
 
     await admin.from('broadcast_links').insert({
       code, broadcast_id: broadcastId, recipient_id: recipient.id, target_url: targetUrl,
@@ -349,8 +355,11 @@ export async function sendBroadcast(broadcastId: string, clientIds: string[]) {
       .update({ push_sent: pushDelivered, telegram_sent: telegramSent, sms_sent: smsSent })
       .eq('id', recipient.id);
 
-    successCount++;
-  }
+    return true;
+  };
+
+  const results = await runBatched(filtered, CONCURRENCY, processRecipient);
+  const successCount = results.filter(Boolean).length;
 
   // ── 7. Mark as sent + update counters ────────────────────────────────────
   await Promise.all([
