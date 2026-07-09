@@ -94,12 +94,20 @@
    `01-auth-guards`; `02-time-travel` анімована кнопка не «stable» на webkit → chromium-вкрито);
    mobile `/my/bookings` desktop-only h1 → селектор на видимий таб «Записи»; `master.json` аліас
    у global.setup (copy master-crm) розблокував broadcasts.spec.ts 9/9 + mobile dashboard;
-   `18-marketing-broadcasts` карантин (stale дубль broadcasts.spec.ts → A.4 P1-TEST-6). Результат:
-   webkit 14/14 · mobile 14/14 · chromium broadcasts 9/9. tsc 0.
+   `18-marketing-broadcasts` карантин. Результат: webkit 14/14 · mobile 14/14. tsc 0.
    ⚠️ ENV-передумова: `npx playwright install` (webkit/mobile-safari бінарники) — інакше проєкти
    валяться «browser not installed» (див. RUNBOOK крок 0).
-4. **E2E gaps** (P0-TEST-1/2/3): нема специфікацій /my/messages, /explore category/sort/search,
-   нема coverage-config у vitest.
+   ⚠️ ПОПРАВКА (A.4): blanket `master.json` аліас відкотено — він розблокував dormant POM-rotted
+   специ (master-crud/studio/18-marketing → red у full-run). Тепер broadcasts+16-mobile націлені
+   прямо на `master-crm.json`; global.setup видаляє stale аліас → rotted специ чисто скіпають.
+4. ✅ **E2E gaps (P0-TEST-1/2/3)** — ЗАКРИТО (2026-07-09). P0-TEST-3 vitest v8 coverage (810a78fa).
+   P0-TEST-2 `22-explore-public.spec.ts` (10 тестів: search/category/sort/intent/view/pagination/geo).
+   P0-TEST-1 `21-direct-messages.spec.ts` (історія/send/persist/list). Seed розширено: 14 explore-
+   фікстур (pagination+geo) + детермінована розмова (`E2E_CONVERSATION_ID`). Gate: explore 10/10 ·
+   messages 1/1 · broadcasts 9/9 · webkit+mobile 28/28.
+   **→ Секція A (мої дії) ЗАКРИТА ПОВНІСТЮ (A.1–A.4).**
+   Залишок-борг (окремий pass): refresh POM master-crud/studio/18-marketing; investigate
+   `getOrCreateConversation` (?to= повертав null); full-run 2-worker contention (half-split).
 
 ### B. repo-parity Half #2 — schema_migrations desync (ОБЕРЕЖНО, перед будь-яким `db push`)
 Деталі + безпечна процедура: `XDEV/AUDIT/REPO_PARITY.md`. 179 repo-файлів vs 167 зареєстрованих;
