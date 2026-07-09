@@ -688,6 +688,26 @@ async function seedCrmMaster(masterId: string, clientId: string): Promise<void> 
     is_active:     true,
   });
 
+  // One booking tied to the AUTHED CRM client (real client_id). All 100 bookings above
+  // are guests (client_id=null) and get_master_clients / broadcast recipients exclude
+  // null-client rows. This single completed booking makes get_master_clients return a
+  // client with a real client_id and total_visits=1 → matches the "new" broadcast
+  // segment the marketing happy-path e2e selects (otherwise preview resolves 0 recipients
+  // and the confirm screen never renders).
+  await insertBooking({
+    masterId, serviceId,
+    serviceName:     FIXTURE_CONTRACT.services.crm,
+    servicePrice:    600,
+    serviceDuration: 60,
+    clientId,
+    clientName:      'E2E CrmClient',
+    clientPhone:     '+380992222222', // clientCrm profile phone — one booking ⇒ 1 visit
+    date:            fmtDate(skipSunday(addDays(now, -2))),
+    startTime:       '11:00',
+    endTime:         '12:00',
+    status:          'completed',
+  });
+
   // Domain-specific CRM relation (used by trigger/status-transition tests).
   await admin.from('client_master_relations').upsert(
     {

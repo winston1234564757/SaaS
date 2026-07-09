@@ -30,9 +30,13 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   // CI: 2 retries guard against transient network blips; local: 0 for fast feedback.
   retries: process.env.CI ? 2 : 0,
-  // CI: 2 workers (GH Actions ubuntu-latest has 2 real vCPUs);
-  // local: undefined → Playwright picks the optimal count automatically.
-  workers: process.env.CI ? 2 : undefined,
+  // 2 workers everywhere. `undefined` (Playwright default = CPU count) over-subscribes a dev
+  // box already running Docker Postgres + the Next prod server: page loads starve until the
+  // app's own 5s DB-timeout guards fire and console.error — the strict consoleGuard specs
+  // then fail, and analytics/broadcast specs hit the 30s test timeout. The failing set shifts
+  // run-to-run (contention, not a real defect); every borderline spec goes green at 2 workers.
+  // Stability over speed — the full local run is slower but deterministic.
+  workers: 2,
 
   reporter: [['html', { open: 'never' }], ['list']],
 

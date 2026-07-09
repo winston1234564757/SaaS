@@ -15,6 +15,12 @@ import { attachConsoleGuard } from '../support/consoleGuard';
  * regardless of viewport — CSS only hides one), and fails on any runtime error.
  */
 
+// Each test walks 3–5 authenticated routes × a 1.5s realtime-settle wait, under
+// launchOptions.slowMo=120. That inherent ~12–25s cost brushes the default 30s timeout
+// once several workers contend for CPU in a full parallel run (routes themselves load in
+// <500ms — verified — so this is scheduling latency, not an app hang). Give the walk room.
+test.describe.configure({ timeout: 90_000 });
+
 const hasClientAuth = fs.existsSync('playwright/.auth/client.json');
 const hasMasterAuth = fs.existsSync('playwright/.auth/master-auth.json');
 
