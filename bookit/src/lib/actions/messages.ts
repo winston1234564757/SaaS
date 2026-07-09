@@ -154,12 +154,14 @@ export async function getOrCreateConversation(otherUserId: string): Promise<{ id
   const clientId = isMaster ? otherUserId : user.id;
   const masterId = isMaster ? user.id : otherUserId;
 
+  // maybeSingle: 0-or-1 is expected here. `.single()` treats "no row yet" as a
+  // PGRST116 error (logged noise) — wrong for a get-or-create lookup.
   const { data: existing } = await supabase
     .from('conversations')
     .select('id')
     .eq('client_id', clientId)
     .eq('master_id', masterId)
-    .single();
+    .maybeSingle();
 
   if (existing) return { id: existing.id };
 
@@ -169,7 +171,20 @@ export async function getOrCreateConversation(otherUserId: string): Promise<{ id
     .select('id')
     .single();
 
-  return created ? { id: created.id } : null;
+  if (created) return { id: created.id };
+
+  // No row returned — either a UNIQUE(client_id, master_id) race with a
+  // concurrent ?to= open (23505), or an RLS-filtered returning clause. The row
+  // exists either way, so re-fetch instead of returning null (a null return
+  // silently drops the caller's redirect and dumps the user on the inbox).
+  const { data: refetched } = await supabase
+    .from('conversations')
+    .select('id')
+    .eq('client_id', clientId)
+    .eq('master_id', masterId)
+    .maybeSingle();
+
+  return refetched ? { id: refetched.id } : null;
 }
 
 /**

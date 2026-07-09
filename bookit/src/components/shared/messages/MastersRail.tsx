@@ -36,7 +36,8 @@ export function MastersRail({ masters }: { masters: RailMaster[] }) {
         {masters.map(m => (
           <Link
             key={m.id}
-            href={`/my/messages?to=${m.id}`}
+            href={`/my/messages/start?to=${m.id}`}
+            prefetch={false}
             role="listitem"
             aria-label={`Написати: ${m.name}`}
             className="flex flex-col items-center gap-1.5 w-16 shrink-0 active:scale-95 transition-transform"

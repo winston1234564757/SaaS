@@ -527,7 +527,8 @@ function MasterGroup({ group, index }: { group: MasterGroupData; index: number }
         {/* Row 2: action buttons */}
         <div className="flex items-center gap-2">
           <Link
-            href={`/my/messages?to=${group.masterId}`}
+            href={`/my/messages/start?to=${group.masterId}`}
+            prefetch={false}
             className="min-h-[44px] flex-1 flex items-center justify-center gap-1.5 rounded-full bg-secondary border border-border text-foreground text-xs font-semibold active:scale-[0.97] transition-transform"
           >
             <MessageCircle size={14} />
@@ -823,7 +824,8 @@ function BookingDetailPane({ order }: { order: UnifiedOrder }) {
       {/* Actions */}
       <div className="flex flex-wrap items-center gap-2">
         <Link
-          href={`/my/messages?to=${order.masterId}`}
+          href={`/my/messages/start?to=${order.masterId}`}
+          prefetch={false}
           className="min-h-[44px] flex items-center justify-center gap-1.5 px-4 rounded-full bg-secondary border border-border text-foreground text-sm font-semibold hover:bg-secondary/70 active:scale-[0.97] transition-all"
         >
           <MessageCircle size={15} />

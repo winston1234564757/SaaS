@@ -188,7 +188,8 @@ function MasterCard({ master, index }: { master: Master; index: number }) {
               Записатись
             </Link>
             <Link
-              href={`/my/messages?to=${master.id}`}
+              href={`/my/messages/start?to=${master.id}`}
+              prefetch={false}
               aria-label="Написати майстру"
               className="size-11 flex items-center justify-center rounded-xl bg-secondary border border-border text-foreground active:scale-[0.94] transition-transform shrink-0"
             >
@@ -287,7 +288,8 @@ function FeaturedMasterCard({ master }: { master: Master }) {
             Записатись
           </Link>
           <Link
-            href={`/my/messages?to=${master.id}`}
+            href={`/my/messages/start?to=${master.id}`}
+            prefetch={false}
             aria-label="Написати майстру"
             className="inline-flex items-center gap-2 px-4 min-h-[44px] rounded-xl bg-secondary border border-border text-foreground text-sm font-semibold hover:bg-secondary/70 active:scale-[0.98] transition-all"
           >
@@ -334,7 +336,8 @@ function GalleryMasterCard({ master, index }: { master: Master; index: number })
             Записатись
           </Link>
           <Link
-            href={`/my/messages?to=${master.id}`}
+            href={`/my/messages/start?to=${master.id}`}
+            prefetch={false}
             aria-label="Написати майстру"
             className="size-11 flex items-center justify-center rounded-xl bg-secondary border border-border text-foreground hover:bg-secondary/70 active:scale-[0.94] transition-all shrink-0"
           >

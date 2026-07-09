@@ -18,6 +18,9 @@ export default async function MyMessagesPage({
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/login');
 
+  // Legacy/soft-navigation fallback for /my/messages?to=<id>. The reliable entry
+  // is the /my/messages/start route handler (a page-level redirect() streams and
+  // is dropped on hard navigation — see BUG-1). Kept for client-side nav links.
   const { to } = await searchParams;
   if (to) {
     const conv = await getOrCreateConversation(to);
