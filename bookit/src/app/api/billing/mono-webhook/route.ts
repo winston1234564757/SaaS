@@ -231,7 +231,11 @@ export async function POST(req: NextRequest) {
       console.error('[mono-webhook] JSON parse failed');
       return NextResponse.json({ status: 'error' }, { status: 400 });
     }
-    console.log('[mono-webhook] payload:', JSON.stringify(body));
+    // Redact walletData before logging — it carries `cardToken`, the persistent
+    // recurring-charge token. Logging the raw body would leak card tokens to
+    // anyone with Vercel log access (R2 security P2). Keep the useful envelope.
+    const { walletData: _redactedWallet, ...loggableBody } = body as Record<string, unknown>;
+    console.log('[mono-webhook] payload:', JSON.stringify(loggableBody), _redactedWallet ? '| walletData: [redacted]' : '');
 
     const { status, reference, invoiceId, amount } = body as {
       status?: string;

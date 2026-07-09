@@ -42,6 +42,26 @@ export async function sendChurnReminder(
 
     const admin = createAdminClient();
 
+    // Ownership: only message a client who is genuinely this master's (proven by a
+    // booking between them). Without this, a master could push a self-branded
+    // "book with me" message to arbitrary user UUIDs / phone numbers (R2 P3).
+    let owns = false;
+    if (clientId) {
+      const { count } = await admin
+        .from('bookings').select('id', { count: 'exact', head: true })
+        .eq('master_id', user.id).eq('client_id', clientId);
+      owns = (count ?? 0) > 0;
+    }
+    if (!owns && clientPhone) {
+      const { count } = await admin
+        .from('bookings').select('id', { count: 'exact', head: true })
+        .eq('master_id', user.id).eq('client_phone', clientPhone);
+      owns = (count ?? 0) > 0;
+    }
+    if (!owns) {
+      return { sent: false, error: 'Це не ваш клієнт.' };
+    }
+
     const [{ data: mp }, { data: profile }] = await Promise.all([
       admin.from('master_profiles').select('slug').eq('id', user.id).single(),
       admin.from('profiles').select('full_name').eq('id', user.id).single(),

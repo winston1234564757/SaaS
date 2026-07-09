@@ -23,6 +23,11 @@ export async function sendTelegramMessage(chatId: string, text: string, replyMar
     console.warn(`[Telegram] Missing BOT_TOKEN or chatId. BOT_TOKEN exists: ${!!token}`);
     return false;
   }
+  // 8s timeout (parity with sendTurboSMS): some callers await this after the DB
+  // commit (e.g. cancelBooking), so a hung Telegram API must not stall the user's
+  // response up to the platform limit.
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 8000);
   try {
     const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: 'POST',
@@ -34,6 +39,7 @@ export async function sendTelegramMessage(chatId: string, text: string, replyMar
         disable_web_page_preview: true,
         ...(replyMarkup ? { reply_markup: replyMarkup } : {}),
       }),
+      signal: controller.signal,
     });
     const json = await res.json();
     if (!json.ok) {
@@ -43,6 +49,8 @@ export async function sendTelegramMessage(chatId: string, text: string, replyMar
   } catch (error) {
     console.error(`[Telegram] Network/Fetch error:`, error);
     return false;
+  } finally {
+    clearTimeout(timeout);
   }
 }
 

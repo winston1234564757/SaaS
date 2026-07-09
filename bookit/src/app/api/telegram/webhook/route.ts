@@ -199,15 +199,30 @@ export async function POST(req: NextRequest) {
         },
       );
     } else if (UUID_RE.test(param)) {
-      const { error } = await admin
+      // Bind only when the target profile is NOT already connected to a *different*
+      // chat (or is re-connecting the same one). The raw-UUID deep link is guessable,
+      // so without this guard anyone who learns a victim's profile UUID could DM
+      // `/start <uuid>` and rebind an ACTIVE account's notifications to themselves
+      // (R2 security P2 notification-hijack). NULL-or-same guard removes that harm.
+      // Residual (pre-empting a not-yet-connected profile) needs a per-client connect
+      // token — tracked as a follow-up; see HANDOFF.
+      const { data: updated, error } = await admin
         .from('profiles')
         .update({ telegram_chat_id: String(chatId) })
-        .eq('id', param);
+        .eq('id', param)
+        .or(`telegram_chat_id.is.null,telegram_chat_id.eq.${chatId}`)
+        .select('id');
 
-      if (!error) {
+      if (!error && updated && updated.length > 0) {
         await sendTelegramMessage(
           String(chatId),
           '✅ Ваш акаунт успішно підключено до bookit! Тепер ви будете отримувати тут сповіщення.',
+        );
+      } else if (!error) {
+        // Guard blocked the rebind — the profile is already linked to another chat.
+        await sendTelegramMessage(
+          String(chatId),
+          'Цей акаунт уже підключено до іншого Telegram. Якщо це ви — напишіть у підтримку.',
         );
       }
     } else if (TOKEN_RE.test(param)) {
