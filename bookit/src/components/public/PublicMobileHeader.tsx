@@ -5,8 +5,7 @@ import { SmartBackButton } from '@/components/shared/SmartBackButton';
 
 export async function PublicMobileHeader() {
   const supabase = await createClient();
-  const { data: { session } } = await supabase.auth.getSession();
-  const user = session?.user ?? null;
+  const { data: { user } } = await supabase.auth.getUser();
 
   return (
     <header className="flex md:hidden fixed top-0 left-0 right-0 z-50 h-14 border-b border-border bg-background/85 backdrop-blur-md">

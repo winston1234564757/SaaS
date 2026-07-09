@@ -6,8 +6,7 @@ import { InboxNavButton } from '@/components/shared/chat/InboxNavButton';
 
 export async function PublicNavbar({ notifBell }: { notifBell?: React.ReactNode }) {
   const supabase = await createClient();
-  const { data: { session } } = await supabase.auth.getSession();
-  const user = session?.user ?? null;
+  const { data: { user } } = await supabase.auth.getUser();
 
   return (
     <header className="public-navbar hidden md:block fixed top-0 left-0 right-0 z-50 pointer-events-none">

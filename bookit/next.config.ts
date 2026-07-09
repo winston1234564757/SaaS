@@ -1,5 +1,18 @@
 import type { NextConfig } from 'next';
 
+// Derive the configured Supabase origin from env so CSP reflects the ACTUAL backend
+// (prod cloud vs local `supabase start`). Prod keeps the *.supabase.co wildcards below;
+// a local http://127.0.0.1:54321 build additionally whitelists its http + ws origin so the
+// browser client (REST + realtime) is not blocked by connect-src in a production build (e2e).
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
+const supabaseOrigin = (() => {
+  try { return supabaseUrl ? new URL(supabaseUrl).origin : ''; } catch { return ''; }
+})();
+const isLocalSupabase = /^(http:\/\/)?(127\.0\.0\.1|localhost)/.test(supabaseUrl);
+const localSupabaseCsp = isLocalSupabase && supabaseOrigin
+  ? ` ${supabaseOrigin} ${supabaseOrigin.replace(/^http/, 'ws')}`
+  : '';
+
 // V-15: HTTP Security Headers (TMA-Compatible)
 const securityHeaders = [
   { key: 'X-Frame-Options',        value: 'SAMEORIGIN' }, // Allow framing for Telegram Mini Apps
@@ -14,8 +27,8 @@ const securityHeaders = [
       "script-src 'self' 'unsafe-inline' https://maps.googleapis.com https://telegram.org https://oauth.telegram.org",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com",
-      "img-src 'self' data: blob: https://*.supabase.co https://maps.googleapis.com https://maps.gstatic.com https://api.qrserver.com",
-      "connect-src 'self' data: blob: https://*.supabase.co wss://*.supabase.co https://api.monobank.ua https://maps.googleapis.com",
+      `img-src 'self' data: blob: https://*.supabase.co https://maps.googleapis.com https://maps.gstatic.com https://api.qrserver.com${localSupabaseCsp}`,
+      `connect-src 'self' data: blob: https://*.supabase.co wss://*.supabase.co https://api.monobank.ua https://maps.googleapis.com${localSupabaseCsp}`,
       "frame-ancestors 'self' https://t.me https://web.telegram.org https://*.telegram.org", 
     ].join('; '),
   },
