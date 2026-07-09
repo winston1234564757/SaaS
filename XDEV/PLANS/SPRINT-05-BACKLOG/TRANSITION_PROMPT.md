@@ -11,19 +11,23 @@
 ═══ ОБОВ'ЯЗКОВИЙ STARTUP (виконай ДО будь-чого іншого) ═══
 1. mempalace_status
 2. Read XDEV/MAPS/SYSTEM_MAP.md (останні 50 рядків, offset mode)
-3. Read XDEV/PLANS/SPRINT-05-BACKLOG/SESSION_HANDOFF_2026-07-09.md — стан + беклог + e2e runbook
-4. Відповісти: "STARTUP OK: Palace [N] drawers | Next: беклог (P1 perf / SEO / webkit-e2e)"
+3. Read XDEV/PLANS/SPRINT-05-BACKLOG/SESSION_HANDOFF_2026-07-10.md — борги + repo-parity repair + C
+4. Відповісти: "STARTUP OK: Palace [N] drawers | Next: борги (getOrCreateConversation / POM-rot)"
 
-═══ ПОТОЧНИЙ СТАН (оновлено 2026-07-09) ═══
+═══ ПОТОЧНИЙ СТАН (оновлено 2026-07-10) ═══
 Sprint-05 ФІЧІ = 83/86 ✅ ЗАКРИТО+ЗАДЕПЛОЄНО. Продукт готовий.
-✅ 2026-07-09 (закомічено+запушено в origin): звірка аудиту (RECON) ЗАКРИТА · repo-parity — репо
-тепер БУДУЄТЬСЯ З НУЛЯ (5 orphan-дір: 131-guard, 4 OTP-таблиці, dup-версія, 21 IDOR-guard-тіло, 2 view)
-· CSP build-time фікс (249→0) · SEC-01 залишок ЗАКРИТО (локальний Supabase e2e) · e2e chromium
-**139/0 на 2 воркерах**. Деталі + runbook: SESSION_HANDOFF_2026-07-09.md.
-🎯 НАСТУПНА ЗАДАЧА: беклог (див. handoff §БЕКЛОГ) — P1 perf (fully-dynamic [slug] / explore cache /
-broadcast loop) · SEO P2/P3 · webkit/mobile e2e стабілізація · repo-parity Half#2 (schema_migrations
-repair ПЕРЕД будь-яким db push — REPO_PARITY.md).
-Дії founder: Vercel Pro (крони) · Monobank тест-транзакція · домен bookit.com.ua.
+✅ 2026-07-09 (11 комітів у main, запушено в origin): ВЕСЬ actionable-беклог закрито — секція A
+(A.1-1 [slug] data-cache · A.1-2 /explore cache · A.1-3 broadcast concurrency · A.2 SEO canonicals +
+JSON-LD · A.3 webkit/mobile e2e стабілізація · A.4 vitest coverage + /explore & direct-messages
+специ) + секція B repo-parity Half#2 AUDIT (read-only; 50 unregistered + 35 orphans, db push
+небезпечний → repair план готовий). Гейти: tsc0·build·unit1036·explore10/10·messages1/1·
+broadcasts9/9·webkit+mobile28/28. Деталі закритого: SESSION_HANDOFF_2026-07-09.md.
+🎯 НАСТУПНА ЗАДАЧА: БОРГИ (див. SESSION_HANDOFF_2026-07-10.md §БЕКЛОГ) — (1) розслідувати/полагодити
+`getOrCreateConversation` `?to=` null (messages.ts:141); (2) POM-rot оживити master-crud/studio +
+злити 18-marketing-дубль; (3) опц. full-run contention. + repo-parity REPAIR (ЛИШЕ з OK founder,
+незворотне на проді — REPO_PARITY.md §HALF#2).
+Дії founder: Vercel Pro (крони) · Monobank тест-транзакція · домен bookit.com.ua (тоді canonical/
+sitemap автоматично на прод-домен — усе env-derived).
 
 ⚠️ ВІДКОЧЕНО 2026-07-02 (commit 0d07d6e4 revert 87b16079): спроба фіксу iOS-caret через position:fixed body ЗЛАМАЛА — при тапі композер влітав УГОРУ екрана (device-репорт founder «все зламав»). useChatViewport повернуто до робочої scrollTo(0,0) версії. ВІДОМИЙ дрібний баг лишився: тап → caret трохи вище інпута, перший символ → стрибає на місце (фокус коректний, косметика). Урок: position:fixed body під position:fixed ChatShell на iOS ламає прив'язку shell до viewport — композер їде вгору. НЕ чіпати viewport-механіку наосліп без реального iOS-девайса. Наступна спроба обережно з device-QA (не body-fixed).
 

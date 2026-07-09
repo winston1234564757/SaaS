@@ -2,6 +2,22 @@
 > Читай цей файл ПЕРШИМ на початку кожної нової сесії.
 > Тут повний стан спринту: що зроблено, що далі, всі деталі задач.
 
+---
+> ## ⏩ АКТУАЛЬНО (2026-07-10) — точка входу наступної сесії
+> **Весь actionable-беклог аудиту ЗАКРИТО 2026-07-09** (11 комітів у main, запушено): секція A
+> (A.1 perf ×3 · A.2 SEO · A.3 webkit/mobile e2e · A.4 vitest coverage + /explore & direct-messages
+> специ) + секція B repo-parity Half#2 **AUDIT** (read-only; db push небезпечний, repair-план готовий).
+> Гейти зелені (tsc0·build·unit1036·explore10/10·messages1/1·broadcasts9/9·webkit+mobile28/28).
+>
+> **🎯 НАСТУПНЕ = БОРГИ:** див. **`SESSION_HANDOFF_2026-07-10.md`** — (1) `getOrCreateConversation`
+> `?to=` null (messages.ts:141); (2) POM-rot оживити master-crud/studio + злити 18-marketing-дубль;
+> (3) опц. full-run contention. **+ repo-parity REPAIR — ЛИШЕ з OK founder** (незворотне на проді,
+> `REPO_PARITY.md §HALF#2`). Founder-дії: Vercel Pro крони · Monobank · домен bookit.com.ua.
+>
+> Нижче — історичний стан спринту (RECON-звірка 2026-07-08→09 вже виконана; ті «next task» рядки
+> застарілі, дивись цей банер).
+---
+
 **Спринт:** Sprint-05 — Загальний беклог (77 задач: Зона Майстра + Клієнтська Зона + Глобальне; +3 ad-hoc M-DASH-10/11/12)
 **Розпочато:** 2026-06-22
 **Прогрес:** 74/87 ✅ · 3 ↩️ скасовано (`M-DASH-11` + `M-MKT-01`/`M-MKT-02` поглинуто редизайном M-MKT-04, founder) — **Фаза 3: Analytics 7/7 ✅. Фаза 4: M-SET-01..05 ✅ · M-BILL-01/02 ✅ · M-PORT-01/02 ✅ · M-ORD-01 ✅ · M-DOC-01 ✅ · M-HELP-01/02 ✅ · M-CHAT-01 ✅ · C-MSG-03 ✅ (ad-hoc). Фаза 5: C-MSG-02 ✅ · C-NAV-01 ✅ · C-EXPL-01(+02) ✅.** Total 84→87. Батч до M-CHAT-01 задеплоєно; решта (M-HELP-02, C-MSG-02/03, C-NAV-01, C-EXPL-01) очікують деплою.
