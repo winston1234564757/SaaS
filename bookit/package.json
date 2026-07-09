@@ -13,7 +13,9 @@
     "test:e2e": "npx tsx scripts/seed-e2e-data.ts && playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:seed": "npx tsx scripts/seed-e2e-data.ts",
-    "test:e2e:only": "playwright test"
+    "test:e2e:only": "playwright test",
+    "test:e2e:half1": "playwright test --project=chromium --shard=1/2",
+    "test:e2e:half2": "playwright test --project=chromium --shard=2/2"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^18.0.1",

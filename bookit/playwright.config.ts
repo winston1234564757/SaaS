@@ -36,6 +36,11 @@ export default defineConfig({
   // then fail, and analytics/broadcast specs hit the 30s test timeout. The failing set shifts
   // run-to-run (contention, not a real defect); every borderline spec goes green at 2 workers.
   // Stability over speed — the full local run is slower but deterministic.
+  //
+  // On a loaded dev box even the full chromium run can accumulate pressure over its length and
+  // flake a borderline spec (e.g. 13-dynamic-pricing, green in isolation). Split it into two
+  // shorter batches with the native shards — seed once, then run both halves:
+  //   npm run test:e2e:seed && npm run test:e2e:half1 && npm run test:e2e:half2
   workers: 2,
 
   reporter: [['html', { open: 'never' }], ['list']],
