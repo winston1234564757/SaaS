@@ -55,8 +55,13 @@ export function MasterProvider({ children, initialUser, initialProfile, initialM
   const mountedRef = useRef(true);
   // Якщо сервер надав initial data — пропускаємо зайвий fetchProfile на INITIAL_SESSION
   const hasInitialData = useRef(!!initialUser);
+  // Завжди актуальний user для стабільних колбеків (refresh, visibility-recovery)
+  // без потрапляння user у deps ефекту / useCallback — інакше ефект переpідписувався б.
+  // Синхр. в ефекті (не в рендері) — консумери ref асинхронні, staleness не критичний.
+  const userRef = useRef<User | null>(initialUser ?? null);
+  useEffect(() => { userRef.current = user; }, [user]);
 
-  const fetchProfile = async (userId: string) => {
+  const fetchProfile = useCallback(async (userId: string) => {
     const impersonatedId = Cookies.get('impersonate_master_id');
     const role = Cookies.get('user_role');
     const activeImpersonating = role === 'admin' && !!impersonatedId;
@@ -96,11 +101,11 @@ export function MasterProvider({ children, initialUser, initialProfile, initialM
     } else {
       setRealAdminProfile(null);
     }
-  };
+  }, [supabase]);
 
-  const refresh = async () => {
-    if (user) await fetchProfile(user.id);
-  };
+  const refresh = useCallback(async () => {
+    if (userRef.current) await fetchProfile(userRef.current.id);
+  }, [fetchProfile]);
 
   // Відстежуємо час переходу в фон для visibility recovery
   const lastHiddenAt = useRef(0);
@@ -164,8 +169,8 @@ export function MasterProvider({ children, initialUser, initialProfile, initialM
       }
       const gap = Date.now() - lastHiddenAt.current;
       // Після 2+ хв у фоні — оновлюємо профіль (дані могли застаріти)
-      if (gap > 120_000 && user) {
-        fetchProfile(user.id);
+      if (gap > 120_000 && userRef.current) {
+        fetchProfile(userRef.current.id);
       }
     }
     document.addEventListener('visibilitychange', handleVisibilityChange);

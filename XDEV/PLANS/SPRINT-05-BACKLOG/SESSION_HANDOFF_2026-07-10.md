@@ -6,6 +6,17 @@
 
 ---
 
+## ⚡ НОВЕ: OPTIMIZATION-BACKLOG (2026-07-10) — окремий беклог оптимізації
+
+Глобальний аудит оптимізації → **`XDEV/PLANS/OPTIMIZATION-BACKLOG/`** (README + TRACKER + 18 брифів).
+18 задач `OPT-*`: 5 P0 · 6 P1 · 7 P2-кластери. Усі `file:line` верифіковані живим кодом. Всі DRAFT — чекають APPROVE перед виконанням.
+- **Топ-P0:** `OPT-RND-01` Sheet.tsx blur-під-scale (джанк у ВСІХ модалках) · `OPT-RND-02` MasterContext identity fan-out · `OPT-DB-01/02/03` unbounded/дубль-запити (продажі full-scan, CRM-пікер refetch-per-keystroke, analytics RPC ×2-4).
+- **Виключено як шум:** inline-prop re-renders (reactCompiler:true), staleTime (полагоджено), GSAP (code-split), P0-PERF-2 explore-RPC (не існує).
+- **⏸ `OPT-EXPL-01`** (/explore cache-shell, клас P0-PERF-1) — DEFERRED, НЕ форсити перед лончем (потребує `cacheComponents`).
+- MemPalace drawer: `drawer_bookit_audits_77cd62b2`.
+
+---
+
 ## 🔐 R2 SECURITY SWEEP 2026-07-10 (commit 857b98ba) + launch-readiness verdict
 
 **Верифіковано на ЖИВОМУ проді (Management API introspection), не за нотатками:**

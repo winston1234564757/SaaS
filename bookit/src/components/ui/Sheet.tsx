@@ -42,7 +42,7 @@ function DialogVariant({ open, onOpenChange, title, srTitle, children, maxWidth 
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.2 }}
-                className="fixed inset-0 z-[150] bg-black/20 backdrop-blur-[2px]"
+                className="fixed inset-0 z-[150] bg-black/20 backdrop-blur-xl saturate-150"
               />
             </Dialog.Overlay>
             <Dialog.Content asChild>
@@ -55,7 +55,7 @@ function DialogVariant({ open, onOpenChange, title, srTitle, children, maxWidth 
                   transition={SPRING}
                   className={cn(
                     'relative w-full overflow-hidden flex flex-col outline-none',
-                    'bg-secondary backdrop-blur-3xl saturate-150',
+                    'bg-secondary',
                     'border border-border shadow-2xl rounded-xl',
                     'h-auto max-h-[90vh]',
                     maxWidthClasses[maxWidth ?? 'xl'],
@@ -104,11 +104,11 @@ function BottomVariant({ open, onOpenChange, title, srTitle, children, className
       repositionInputs={false}
     >
       <Drawer.Portal>
-        <Drawer.Overlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-[2px]" />
+        <Drawer.Overlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xl saturate-150" />
         <Drawer.Content
           className={cn(
             'fixed bottom-0 left-0 right-0 z-[100] outline-none flex flex-col',
-            'bg-secondary backdrop-blur-3xl saturate-150 rounded-t-xl shadow-lg',
+            'bg-secondary rounded-t-xl shadow-lg',
             'border-t border-border',
             'max-h-[96dvh] will-change-transform',
             className,
