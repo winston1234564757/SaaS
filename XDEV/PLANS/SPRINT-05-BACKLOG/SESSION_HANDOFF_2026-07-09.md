@@ -109,11 +109,13 @@
    Залишок-борг (окремий pass): refresh POM master-crud/studio/18-marketing; investigate
    `getOrCreateConversation` (?to= повертав null); full-run 2-worker contention (half-split).
 
-### B. repo-parity Half #2 — schema_migrations desync (ОБЕРЕЖНО, перед будь-яким `db push`)
-Деталі + безпечна процедура: `XDEV/AUDIT/REPO_PARITY.md`. 179 repo-файлів vs 167 зареєстрованих;
-47 незареєстрованих + 35 orphan-рядків. `supabase migration repair --status applied` ЛИШЕ після
-per-migration звірки прод-стану (хибний applied → db push пропустить → прод назавжди без зміни).
-НЕ launch-блокер (деплой = vercel --prod + Management API, не db push).
+### B. repo-parity Half #2 — ✅ AUDIT ЗАВЕРШЕНО (2026-07-09), repair НЕ виконано
+Read-only звірка через Management API. Авторитетно: 183 файли/182 версії · 167 registered ·
+**50 unregistered** · **35 orphans** (повні переліки: `XDEV/AUDIT/REPO_PARITY.md` §HALF#2 AUDIT).
+Інтроспекція вибірки → всі об'єкти unregistered-міграцій ВЖЕ на проді = «applied-but-unregistered».
+**Висновок: `db push` зараз небезпечний** (переприкладе наявні → ERROR); фікс = `migration repair
+--status applied <50>`, НЕ push. План repair готовий — виконати ЛИШЕ з OK founder (+ точкове
+підтвердження решти ~41 або `supabase migration list`). НЕ launch-блокер.
 
 ### C. Дії founder (я не можу)
 - Vercel Pro → крони reminders/briefing daily→hourly (промахують ~95% доки Hobby) + check-uncompleted.
