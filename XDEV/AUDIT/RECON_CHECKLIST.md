@@ -8,6 +8,34 @@
 
 ---
 
+## ✅ ЗВІРКА ВИКОНАНА 2026-07-08 (сесія «все не закрите + День 4»)
+
+**SECURITY:**
+- **SEC-P1-1** ✅ **FIXED** — `PublicNavbar` + `PublicMobileHeader` переведено `getSession()`→`getUser()` (цю сесію). Решта getSession — by-design: `(master)/layout.tsx`+`my/layout.tsx` = getUser-primary + getSession лише timeout-fallback (cold-start) + роль з БД; `services/page.tsx` = свідомий perf-вибір, запит гардиться RLS + JWT-підпис на DB-шарі (злив неможливий); клієнтські (`MyBottomNav`/`StoryGenerator`/`TelegramProvider`) + `middleware.ts` = доречні. Не чіпано.
+- **SEC-P1-2** ✅ **FIXED** — `billing/mono-webhook/route.ts` юзає канонічний `createAdminClient` з `@/lib/supabase/admin` (не inline).
+- **SEC-P1-3** ➖ **N/A** — `send-story/route.ts` файл видалено.
+- **SEC-P1-4** ✅ **N/A** — TURBOSMS_TOKEN guard (send-sms:141) живий і коректний, не dead-код.
+
+**CODE QUALITY:**
+- **CQ-P0-1** ✅ **FIXED (хибна тривога)** — усі 28 admin `<button>` МАЮТЬ `type=` на наст. рядку (multiline-grep). Рядковий grep обманувся багаторядковим JSX.
+- **CQ-P0-2** 🟡 **PARTIAL** — admin тепер має 20 `aria-` атрибутів у 5 файлах (було «нуль»); повний aria-current/aria-label аудит — залишок, НЕ блокер.
+- **CQ-P0-3** 🟡 — `transition-all` ×2 ще в `components/public/ExplorePage.tsx` (файл /explore-роуту НЕ переписано C-EXPL-01; переписаний був інший `explore/*`). Дрібне.
+- **CQ-P1-4** ✅ **FIXED** — усі 8 TanStack-хуків мають `staleTime`.
+- **CQ-P2-4** 🟡 **≈N/A** — GSAP лише в `LandingPageContent.tsx` (landing-only, code-split у роут-чанк, не глобальний bloat).
+- **CQ-P2-5 / A8** ✅ **FIXED** — settings desktop (M-SET 10-col).
+
+**PERFORMANCE + TESTING:**
+- **P0-PERF-1** 🔴 **OPEN → арх-задача** — /explore досі force-dynamic + force-no-store + limit(120) nested-join. `cacheComponents` НЕ ввімкнено → `'use cache'` недоступний; фікс = cache-shell + Suspense-острів (той самий клас, що fully-dynamic `[slug]`). Робити з власним Task Gate + тестами, НЕ форсити перед запуском (деградація, не баг).
+- **P0-TEST-1/2/3** 🔴 **OPEN** — нема E2E для /my/messages, /explore (лише smoke), нема coverage-config у vitest.
+- **e2e seed guard** ⛔ — `.env.test` вказує на прод-ref → SAFETY-ABORT (за задумом). e2e green вимагає локального Supabase АБО авторизованого prod-seed override (SEC-01 interim). Рішення founder.
+- **webkit/mobile flakiness** 🔴 OPEN — окрема задача стабілізації.
+
+**Регресія baseline (День-4):** tsc ✅ 0 · build ✅ 0 · npm test ✅ 1030/1030 · e2e ⛔ (guard, див. вище).
+
+**UX/FEATURES A-блок:** A2/A3/A4/A8/A10 ✅ FIXED (підтверджено); A1/A9/A11-13 — низ, не блокери.
+
+---
+
 ## Домен 1 — SECURITY (`AUDIT/02_SECURITY.md`)
 
 | ID | Знахідка | Файл | Перевірка | Статус |

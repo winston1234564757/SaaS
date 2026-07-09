@@ -11,13 +11,19 @@
 ═══ ОБОВ'ЯЗКОВИЙ STARTUP (виконай ДО будь-чого іншого) ═══
 1. mempalace_status
 2. Read XDEV/MAPS/SYSTEM_MAP.md (останні 50 рядків, offset mode)
-3. Read XDEV/AUDIT/RECON_CHECKLIST.md — це НАСТУПНА задача (звірка аудиту)
-4. Відповісти: "STARTUP OK: Palace [N] drawers | Next: звірка аудиту (RECON_CHECKLIST)"
+3. Read XDEV/PLANS/SPRINT-05-BACKLOG/SESSION_HANDOFF_2026-07-09.md — стан + беклог + e2e runbook
+4. Відповісти: "STARTUP OK: Palace [N] drawers | Next: беклог (P1 perf / SEO / webkit-e2e)"
 
-═══ ПОТОЧНИЙ СТАН (оновлено 2026-07-08) ═══
-Sprint-05 ФІЧІ = 83/86 ✅ ЗАКРИТО+ЗАДЕПЛОЄНО (3 ↩️ скасовано), усі перевірені founder. Продукт готовий. Далі — Фаза 7 (тести/безпека) + звірка застарілого аудиту.
-🎯 НАСТУПНА ЗАДАЧА: **звірка аудиту** — пройти `XDEV/AUDIT/RECON_CHECKLIST.md` (готовий чеклист з командами перевірки), оновити AUDIT/*.md, видати чистий список «що реально ще відкрито». VERIFY-прохід, БЕЗ коду.
-Паралельні відкриті: SEC-01 ізольована e2e-БД (чекає рішення: vv-crm pause / Pro / Docker), TEST-M3 🔄 / TEST-M4 ⬜.
+═══ ПОТОЧНИЙ СТАН (оновлено 2026-07-09) ═══
+Sprint-05 ФІЧІ = 83/86 ✅ ЗАКРИТО+ЗАДЕПЛОЄНО. Продукт готовий.
+✅ 2026-07-09 (закомічено+запушено в origin): звірка аудиту (RECON) ЗАКРИТА · repo-parity — репо
+тепер БУДУЄТЬСЯ З НУЛЯ (5 orphan-дір: 131-guard, 4 OTP-таблиці, dup-версія, 21 IDOR-guard-тіло, 2 view)
+· CSP build-time фікс (249→0) · SEC-01 залишок ЗАКРИТО (локальний Supabase e2e) · e2e chromium
+**139/0 на 2 воркерах**. Деталі + runbook: SESSION_HANDOFF_2026-07-09.md.
+🎯 НАСТУПНА ЗАДАЧА: беклог (див. handoff §БЕКЛОГ) — P1 perf (fully-dynamic [slug] / explore cache /
+broadcast loop) · SEO P2/P3 · webkit/mobile e2e стабілізація · repo-parity Half#2 (schema_migrations
+repair ПЕРЕД будь-яким db push — REPO_PARITY.md).
+Дії founder: Vercel Pro (крони) · Monobank тест-транзакція · домен bookit.com.ua.
 
 ⚠️ ВІДКОЧЕНО 2026-07-02 (commit 0d07d6e4 revert 87b16079): спроба фіксу iOS-caret через position:fixed body ЗЛАМАЛА — при тапі композер влітав УГОРУ екрана (device-репорт founder «все зламав»). useChatViewport повернуто до робочої scrollTo(0,0) версії. ВІДОМИЙ дрібний баг лишився: тап → caret трохи вище інпута, перший символ → стрибає на місце (фокус коректний, косметика). Урок: position:fixed body під position:fixed ChatShell на iOS ламає прив'язку shell до viewport — композер їде вгору. НЕ чіпати viewport-механіку наосліп без реального iOS-девайса. Наступна спроба обережно з device-QA (не body-fixed).
 
