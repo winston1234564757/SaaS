@@ -5,6 +5,9 @@ export const metadata: Metadata = {
   title: 'Bookit — Система, яка сама генерує дохід для б\'юті-майстра',
   description:
     'Смарт-слоти, флеш-акції, програма лояльності та Telegram-сповіщення для б\'юті-майстрів. Безкоштовно для старту.',
+  alternates: {
+    canonical: '/',
+  },
 };
 
 export default function RootPage() {

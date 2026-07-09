@@ -12,6 +12,7 @@ import { CATEGORY_TEMPLATES } from '@/lib/constants/onboardingTemplates';
 import { getMaster, getMasterCached, getMasterExtras } from './data';
 import type { ProductRow, ReviewRow, ScheduleRow, LoyaltyRow, PartnerRow, PortfolioRow } from './data';
 import { computeOccupancy } from '@/lib/utils/occupancy';
+import { getBaseUrl } from '@/lib/utils/url';
 import type { ProductIconName } from '@/lib/product-icons';
 
 // ── Row types for the live (per-request) secondary queries ────────────────────
@@ -343,7 +344,7 @@ export default async function MasterPublicPage(
     name: master.name,
     description: master.bio,
     image: master.avatarUrl || undefined,
-    url: `https://bookit.com.ua/${master.slug}`,
+    url: `${getBaseUrl()}/${master.slug}`,
     address: {
       '@type': 'PostalAddress',
       addressLocality: data.city,

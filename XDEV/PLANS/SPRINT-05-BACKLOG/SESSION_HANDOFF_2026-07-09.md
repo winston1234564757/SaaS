@@ -82,8 +82,11 @@
      на `master.json` vs `master-*.json` (pre-existing auth-name mismatch, A.3/A.4) — верифіковано
      unit'ом + parity, не зеленою broadcast-e2e.
    **→ A.1 (P1 Perf) ЗАКРИТО ПОВНІСТЮ (3/3).**
-2. **SEO P2/P3 hardening**: canonical на explore/landing/legal (безпечно) · AI-crawler правила в
-   robots (**потрібне продуктове рішення founder** allow/block) · JSON-LD url звірка.
+2. ✅ **SEO P2/P3 hardening** — ЗАКРИТО (2026-07-09). Canonical додано per-page на home/explore/
+   legal (не в root layout — інакше все каноні­зується на '/'); JSON-LD [slug] url хардкод
+   `bookit.com.ua` → `getBaseUrl()`. AI-crawler: **founder обрав Варіант 1 «дозволити всі»** →
+   robots без змін (свідомий no-op). Верифіковано runtime curl (:3100): canonical на 4 поверхнях +
+   JSON-LD env-url. legal/[slug] noindex → canonical пропущено. Gate: tsc 0 · build ✓.
 3. **webkit/mobile e2e стабілізація**: зараз valяться цілими проєктами (rot, не регресія).
 4. **E2E gaps** (P0-TEST-1/2/3): нема специфікацій /my/messages, /explore category/sort/search,
    нема coverage-config у vitest.

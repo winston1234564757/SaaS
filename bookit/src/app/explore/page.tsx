@@ -6,6 +6,9 @@ import { getExploreMasters } from './data';
 export const metadata: Metadata = {
   title: 'Знайти майстра — Bookit',
   description: 'Знайди свого майстра краси: нігті, волосся, брови, макіяж та більше. Онлайн-запис одразу.',
+  alternates: {
+    canonical: '/explore',
+  },
 };
 
 export default async function Explore() {

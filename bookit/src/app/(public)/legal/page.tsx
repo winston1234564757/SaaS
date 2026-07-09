@@ -1,5 +1,13 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { LEGAL_DOCS } from '@/lib/constants/legal';
+
+export const metadata: Metadata = {
+  title: 'Юридичні документи',
+  alternates: {
+    canonical: '/legal',
+  },
+};
 
 export default function LegalIndexPage() {
   return (
