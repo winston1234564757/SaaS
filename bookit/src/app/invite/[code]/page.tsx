@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
 import {
   Sparkles, CalendarCheck, Gem,
@@ -157,7 +158,7 @@ export default async function InvitePage({ params }: Props) {
                 style={{ background: 'rgba(255, 210, 194, 0.55)' }}
               >
                 {avatarUrl ? (
-                  <img src={avatarUrl} alt={name || 'Майстер'} className="w-full h-full object-cover" />
+                  <Image src={avatarUrl} alt={name || 'Майстер'} width={80} height={80} className="w-full h-full object-cover" />
                 ) : (
                   <User size={32} className="text-primary/60" />
                 )}
@@ -237,7 +238,7 @@ export default async function InvitePage({ params }: Props) {
                     style={{ background: 'rgba(255, 210, 194, 0.55)', borderColor: 'rgba(120,154,153,0.25)' }}
                   >
                     {avatarUrl ? (
-                      <img src={avatarUrl} alt={name || 'Клієнт'} className="w-full h-full object-cover" />
+                      <Image src={avatarUrl} alt={name || 'Клієнт'} width={56} height={56} className="w-full h-full object-cover" />
                     ) : (
                       <User size={24} className="text-primary/60" />
                     )}
@@ -308,7 +309,7 @@ export default async function InvitePage({ params }: Props) {
               style={{ background: 'rgba(255, 210, 194, 0.55)' }}
             >
               {avatarUrl ? (
-                <img src={avatarUrl} alt={name || 'Аватар'} className="w-full h-full object-cover" />
+                <Image src={avatarUrl} alt={name || 'Аватар'} width={80} height={80} className="w-full h-full object-cover" />
               ) : (
                 <User size={32} className="text-primary/60" />
               )}

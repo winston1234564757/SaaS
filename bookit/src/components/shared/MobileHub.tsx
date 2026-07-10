@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -159,7 +160,7 @@ function NavBar({
             >
               <div className="relative">
                 {avatarUrl ? (
-                  <img src={avatarUrl} alt="" className="size-[22px] rounded-full object-cover" />
+                  <Image src={avatarUrl} alt="" width={22} height={22} className="size-[22px] rounded-full object-cover" />
                 ) : (
                   <User size={22} strokeWidth={2} />
                 )}

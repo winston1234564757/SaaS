@@ -1,6 +1,7 @@
 'use client';
 // src/components/shared/wizard/ServiceSelector.tsx
 import { useMemo, useRef, useState, useCallback, useEffect } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Clock, Check, Sparkles, ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
@@ -126,7 +127,7 @@ function CategoryCarousel({
               >
                 {/* Photo / placeholder */}
                 <div
-                  className="relative flex items-center justify-center overflow-hidden"
+                  className="relative shrink-0 flex items-center justify-center overflow-hidden"
                   style={{
                     minHeight: 108,
                     background: sel
@@ -135,10 +136,12 @@ function CategoryCarousel({
                   }}
                 >
                   {svc.image_url ? (
-                    <img
+                    <Image
                       src={svc.image_url}
                       alt={svc.name}
-                      className="absolute inset-0 w-full h-full object-cover"
+                      fill
+                      sizes="(min-width: 640px) 40vw, 67vw"
+                      className="object-cover"
                     />
                   ) : (
                     <ServiceIcon name={svc.icon_name} size={40} className="text-primary/30" />
@@ -342,7 +345,7 @@ export function ServiceSelector({
                 >
                   <div className="size-12 rounded-xl bg-secondary flex items-center justify-center flex-shrink-0 overflow-hidden relative">
                     {p.avatarUrl ? (
-                      <img src={p.avatarUrl} alt={p.name} className="w-full h-full object-cover" />
+                      <Image src={p.avatarUrl} alt={p.name} width={48} height={48} className="w-full h-full object-cover" />
                     ) : p.emoji ? (
                       <span className="text-2xl">{p.emoji}</span>
                     ) : (

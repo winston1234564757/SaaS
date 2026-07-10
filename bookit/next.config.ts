@@ -13,6 +13,19 @@ const localSupabaseCsp = isLocalSupabase && supabaseOrigin
   ? ` ${supabaseOrigin} ${supabaseOrigin.replace(/^http/, 'ws')}`
   : '';
 
+// next/image refuses any host absent from remotePatterns. The prod cloud is covered by the
+// *.supabase.co entry below; a local `supabase start` serves storage over plain http on
+// 127.0.0.1:54321, so e2e/own-eyes runs need it whitelisted too — same condition as the CSP above.
+const localSupabaseHost = (() => {
+  if (!isLocalSupabase || !supabaseUrl) return null;
+  try {
+    const { hostname, port } = new URL(supabaseUrl);
+    return { hostname, port };
+  } catch {
+    return null;
+  }
+})();
+
 // V-15: HTTP Security Headers (TMA-Compatible)
 const securityHeaders = [
   { key: 'X-Frame-Options',        value: 'SAMEORIGIN' }, // Allow framing for Telegram Mini Apps
@@ -38,6 +51,10 @@ const nextConfig: NextConfig = {
   reactCompiler: true,
   typescript: { ignoreBuildErrors: process.env.SKIP_TS_CHECK === 'true' },
   images: {
+    // Next refuses to fetch an image that resolves to a private IP (SSRF guard), which is
+    // exactly what a local `supabase start` is. Whitelisting the host is not enough — the
+    // guard runs after the pattern match. Scoped to local Supabase, so prod stays protected.
+    dangerouslyAllowLocalIP: isLocalSupabase,
     remotePatterns: [
       {
         protocol: 'https',
@@ -52,6 +69,14 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'api.qrserver.com',
       },
+      ...(localSupabaseHost
+        ? [{
+            protocol: 'http' as const,
+            hostname: localSupabaseHost.hostname,
+            port: localSupabaseHost.port,
+            pathname: '/storage/v1/object/public/**',
+          }]
+        : []),
     ],
   },
   experimental: {

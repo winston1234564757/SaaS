@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { Clock, Star, Check, Plus, PencilLine } from 'lucide-react';
 import { Sheet } from '@/components/ui/Sheet';
 import { ServiceIcon, type ServiceIconName } from '@/lib/service-icons';
@@ -73,8 +74,7 @@ export function ServiceDetailSheet({
       <div className="relative aspect-[16/10] w-full overflow-hidden bg-[var(--hero-card-bg)] flex items-end">
         {service.imageUrl ? (
           <>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={service.imageUrl} alt={service.name} className="absolute inset-0 w-full h-full object-cover" />
+            <Image src={service.imageUrl} alt={service.name} fill sizes="(min-width: 640px) 512px, 100vw" className="object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-[#0B1120]/92 via-[#0B1120]/35 to-transparent" />
           </>
         ) : (
