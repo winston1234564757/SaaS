@@ -5,7 +5,9 @@
 
 ---
 
-## Стан: 8/18 ✅ · 1 ↩️ · 10 лишилось (+1 нова: `ASSET-02b`)
+## Стан: 9/19 ✅ · 1 ↩️ · 9 лишилось
+
+> ⚠️ **Чекає на founder:** (1) apply двох міграцій `ASSET-02b` на прод; (2) `.env.production.local` → перейменовано в `.env.e2e-build.bak`, `npm run build` знову чесний прод-білд (`0098b30e`).
 
 | ID | Задача | Ст | Commit |
 |----|--------|----|--------|
@@ -17,9 +19,11 @@
 | `OPT-DB-07` | 2 необмежені запити обмежено | ✅ | `7caa2aee` |
 | `OPT-RND-05` | 3 бари → `scaleX/scaleY` | ✅ | `fa2123ea` |
 | `OPT-ASSET-02` | 5 raw `<img>` → `next/image` (з 9; 3 ↩️) | ✅ | `aa1a8ab9` |
+| `OPT-ASSET-02b` | вкладення чату + **фікс аплоаду DM** | ✅ | `66f06fb6` |
+| — | `npm run build` знову прод (+ `build:e2e`) | ✅ | `0098b30e` |
 | `OPT-ASSET-03` | recharts defer | ↩️ скасовано | — |
 
-**⚠️ 7 комітів коду НЕ запушено** (`main ahead`). Запушити або свідомо лишити локально.
+**⚠️ Коміти НЕ запушено** (`main ahead`). Запушити або свідомо лишити локально.
 
 ---
 
@@ -72,6 +76,26 @@ Next вантажить env у порядку `.env.production.local` → `.env.
 
 **Рішення founder:** видалити файл (він сам себе позначив як тимчасовий) чи лишити для e2e. Якщо лишати — e2e-рецепт має явно про нього казати, а pre-deploy перевірку робити з тимчасово прибраним файлом.
 
+### 4b. ✅ ВИРІШЕНО — `.env.production.local`
+Перейменовано в `.env.e2e-build.bak` (Next такої назви не вантажить). Додано `scripts/build-e2e.mjs` + `npm run build:e2e`, який **явно** вантажить `.env.test` і відмовляється будувати, якщо URL не локальний. Перевірено: `build` → `allowLocalIP=false, 0 локальних патернів`; `build:e2e` → `true, 1`. Коміт `0098b30e`.
+**Перед e2e тепер обовʼязково `npm run build:e2e`** — playwright `webServer` це `npm run start`, і на прод-білді він піде в **ПРОД-БД**.
+
+### 4c. 🔴 ПОЛАГОДЖЕНО — вкладення в DM-чаті ніколи не завантажувались
+Бакет `support_attachments` спільний для тікетів і DM. Його політики (міграція `20260529000000`) роблять `(regexp_split_to_array(name,'/'))[1]::uuid`, припускаючи, що перший сегмент шляху — id тікета. `DirectChatPage` вантажить у `dm/<conv_id>/…`, тож перший сегмент — літерал `dm`, а `'dm'::uuid` кидає `22P02` → INSERT відхиляється.
+
+Клієнт **ковтав** помилку storage і все одно писав рядок повідомлення, тож у чаті висіла бита картинка на неіснуючий обʼєкт. Raw `<img>` мовчить; `next/image` проявив це як 400 — власне тому баг і знайшовся.
+
+Фікс (міграція `20260710000001` + `DirectChatPage`): support-політики стали cast-safe через `is_uuid_text()`, додано `Insert/Select/Delete DM attachments` скоуповані на учасників розмови (`is_dm_participant`, SECURITY DEFINER), аплоад більше не ковтає помилку (toast). **Apply на прод за founder.**
+
+### 4d. ⚠️ CHECK-констрейнт із NULL — пастка, яку легко не помітити
+```sql
+-- ХИБНО: для w=100, h=NULL дає `false OR NULL` = NULL, а CHECK з NULL ПРОПУСКАЄ рядок
+CHECK ((w IS NULL AND h IS NULL) OR (w > 0 AND h > 0))
+-- ПРАВИЛЬНО:
+CHECK ((w IS NULL) = (h IS NULL) AND (w IS NULL OR (w > 0 AND h > 0)))
+```
+Доведено на живій БД (`20260710000000`). Половинчастий рядок пройшов би валідацію, яку констрейнт мав ловити.
+
 ### 5. Пре-існуючі eslint-`error` у двох файлах (не регресія)
 На `HEAD` до змін: `invite/[code]/page.tsx:8` — `no-restricted-imports` (`createAdminClient` у page.tsx, а не в `actions.ts`/`api/`); `ServiceSelector.tsx:385` — `react/no-unescaped-entities`. Обидва підтверджені `git stash` + повторним lint.
 
@@ -104,6 +128,9 @@ E2E_BASE_URL=http://localhost:3000 npx playwright test <spec> --project=chromium
 - `npm run dev | head -N` (будь-який пайп, що закриває стрім) **вбиває dev-сервер**. Не пайпити фоновий сервер.
 - `playwright.config.ts` має `webServer: npm run start` + `reuseExistingServer: true` на `E2E_BASE_URL`. Якщо `.next` зібрано без `.env.production.local`, `npm run start` піде **в ПРОД-БД**. Перед e2e — перезібрати з оверрайдом (див. §Знайдено попутно #4).
 - `.next/dev/types/routes.d.ts` від убитого dev-сервера ламає `npx tsc --noEmit` сотнею синтаксичних помилок. Лікується `rm -rf .next`.
+- 🔴 **`21-direct-messages` падає на `main` і без жодних змін.** `.env.test.runtime` має застарілий `E2E_CONVERSATION_ID` (`cce57727…`), а в локальній БД розмова інша. `npm run test:e2e:seed` при повторі падає на `booking_slot_collision` і **не переписує** runtime-файл. Перевірено A/B (`git stash` → той самий фейл). **Не приймати за регресію.**
+- **Прод-білд `.next` + `npm run start` = ПРОД-БД.** Перед e2e завжди `npm run build:e2e`.
+- Прямий `DELETE FROM storage.objects` заборонено тригером (`protect_delete`). Чистити через Storage API (`.storage.from(b).remove([...])`).
 - `testDir: './e2e/tests'` — спек у `e2e/inspect/` **не бачиться**. Класти тимчасові спеки в `e2e/tests/`.
 - У спеці: `test.use({ storageState: 'playwright/.auth/master-crm.json' })`. `globalSetup` сам перелогінює всі акаунти.
 - **`.env.local` → ПРОД.** `next build` не читає `.env.test` (лише NODE_ENV=test). Для прод-білда під тест потрібен env-swap (`.env.test.prod-bak` натякає на це) — **не робив, ризик для прод-env**. Тому e2e ганяв через **dev**-сервер.

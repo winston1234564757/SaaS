@@ -4,8 +4,9 @@
 > Статуси: `⬜` не почато · `🔄` в роботі · `✅` готово · `↩️` скасовано · `⏸` відкладено
 > Всі `file:line` верифіковані проти дерева на 2026-07-10.
 
-**Прогрес:** 8/18 ✅ · 1 ↩️ (ASSET-03 скасовано — передумова спростована)
-> ✅ RND-01, RND-02, RND-03, DB-06, ASSET-01, DB-07, RND-05, ASSET-02 · ↩️ ASSET-03
+**Прогрес:** 9/19 ✅ · 1 ↩️ (ASSET-03 скасовано — передумова спростована)
+> ✅ RND-01, RND-02, RND-03, DB-06, ASSET-01, DB-07, RND-05, ASSET-02, ASSET-02b · ↩️ ASSET-03
+> ⚠️ ASSET-02b містить 2 міграції — застосовані лише локально, **apply на прод за founder**
 
 ---
 
@@ -39,7 +40,7 @@
 |----|--------|---|----|------------------|--------|--------|
 | `OPT-ASSET-01` | Lazy-load важких drawer'ів: BookingDetailsModal (eager у DashboardLayout), ClientDetailSheet ×4, ImageCropper | P1 | ✅ | `react-best-practices` | **Sonnet** | `45a887a1` |
 | `OPT-ASSET-02` | Кластер: публічні raw `<img>` → `next/image` з `sizes` (зроблено 5 з 9; 2 QR + SVG скасовано; чат → `OPT-ASSET-02b`) | P2 | ✅ | `senior-frontend` | **Opus** | `aa1a8ab9` |
-| `OPT-ASSET-02b` | Вкладення чату → `next/image`: міграція `attachment_width/height` на `support_messages` + `direct_messages`, прошити через upload-флоу (4 місця) + 3 actions + 2 хуки; fallback raw `<img>` для старих рядків | P2 | ⬜ | `senior-frontend` `create-migration` | **Opus** | — |
+| `OPT-ASSET-02b` | Вкладення чату → `next/image` (розміри+blur у БД, fallback для legacy). **Попутно полагоджено пре-існуючий баг: аплоад вкладень у DM ніколи не працював** | P2 | ✅ | `senior-frontend` `create-migration` | **Opus** | `66f06fb6` |
 | `OPT-ASSET-03` | `RevenueLineChart` recharts статично в OverviewTab → defer within analytics | P2 | ↩️ | `react-best-practices` | **Sonnet** | — |
 
 ## ФАЗА CARRY — Перенесене зі старого аудиту (верифіковано)
