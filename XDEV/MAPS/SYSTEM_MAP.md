@@ -7,6 +7,7 @@
 > **⏮ Sprint-04:** закрито на 29/37 (commit `1b1bfb8b`, T30 — Розхідники UX/UI) | Skills: TOP 50 configured (settings.json v9.0.0)
 > **🎯 Launch:** 2026-06-22 (минув) | Sprint-05 у роботі
 > **🔍 Global Audit:** `XDEV/AUDIT/` — 5 files: 00_OVERVIEW · 01_CODE_QUALITY · 02_SECURITY · 03_PERFORMANCE_TESTING · 04_ARCHITECTURE · 05_UX_FEATURES | 7 P0 blockers found (2 security critical)
+> **⚡ Optimization Backlog (2026-07-10):** `XDEV/PLANS/OPTIMIZATION-BACKLOG/` — 7/18 ✅ · 1 ↩️. Архітектурні зміни: `ui/Sheet.tsx` — `backdrop-blur` знято з анімованих панелей (Dialog scale / vaul translateY) і перенесено на **статичні overlay-шари** (анімують лише opacity); `lib/supabase/context.tsx` — `MasterContext` value стабілізовано (`useCallback` + `userRef` useLatest; ефект `onAuthStateChange` тепер підписується РАЗ на mount, не щорендер); `master/DashboardLayout.tsx` — `BookingDetailsModal` тепер `next/dynamic` за `BookingDetailsModalGate` (монтується при першому `?bookingId`, лишається змонтованою заради exit-анімації). Деталі + знайдені баги (`--color-error` ×32, `${month}-31`): `OPTIMIZATION-BACKLOG/HANDOFF.md`
 > 
 > **LOCAL Skills (bookit/.claude/skills/):**
 > adversarial-reviewer · create-migration · diagnose · focused-fix · git-guardrails-claude-code · grill-me · grill-with-docs · handoff · improve-codebase-architecture · mark-as-read-on-close · react-doctor · self-improving-agent · ship-gate · spec-driven-workflow · tdd · tdd-guide · to-prd · triage · write-a-skill
@@ -29,7 +30,7 @@
 ### Layout & Auth Guard
 - `src/app/(master)/layout.tsx` — Server Component, server-side auth check; ініціює `MasterProvider`; **isOnboarding branch (2026-05-29)**: `<style>html,body{bg:#EFF2FF!important}</style>` + clean Frost div (no DashboardLayout chrome); MasterProvider wraps children
 - `src/app/layout.tsx` — Root layout; reads `x-pathname` header → forces `data-theme="frost"` on `<html>` for `/dashboard/onboarding` and `/onboarding` paths → inline `beforeInteractive` script sets `body.bg=#EFF2FF` server-side. **Frost-only (T01 2026-06-12):** `client_theme` cookie normalized — missing or `'default'` (Blossom wip) → `'frost'`; `client_profiles` has NO theme column (cookie-only)
-- `src/components/master/DashboardLayout.tsx` — shell: sidebar nav + `BentoBottomNav` (Mosaic Command Center); `ThemeApplier` client component sets `data-theme` per `mood_theme`
+- `src/components/master/DashboardLayout.tsx` — shell: sidebar nav + `BentoBottomNav` (Mosaic Command Center); `ThemeApplier` client component sets `data-theme` per `mood_theme`; **`BookingDetailsModalGate` (OPT-ASSET-01)** — `BookingDetailsModal` через `next/dynamic({ssr:false})`, монтується лише при першому `?bookingId` (`everOpened` виводиться в рендері, не в ефекті) і далі лишається змонтованою, бо модалка тримає `lastBooking` під час exit-анімації
 
 ### Routes → Компоненти → Server Actions
 

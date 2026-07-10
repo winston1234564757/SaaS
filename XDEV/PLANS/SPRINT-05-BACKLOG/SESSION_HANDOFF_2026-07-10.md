@@ -8,12 +8,20 @@
 
 ## ⚡ НОВЕ: OPTIMIZATION-BACKLOG (2026-07-10) — окремий беклог оптимізації
 
-Глобальний аудит оптимізації → **`XDEV/PLANS/OPTIMIZATION-BACKLOG/`** (README + TRACKER + 18 брифів).
-18 задач `OPT-*`: 5 P0 · 6 P1 · 7 P2-кластери. Усі `file:line` верифіковані живим кодом. Всі DRAFT — чекають APPROVE перед виконанням.
-- **Топ-P0:** `OPT-RND-01` Sheet.tsx blur-під-scale (джанк у ВСІХ модалках) · `OPT-RND-02` MasterContext identity fan-out · `OPT-DB-01/02/03` unbounded/дубль-запити (продажі full-scan, CRM-пікер refetch-per-keystroke, analytics RPC ×2-4).
-- **Виключено як шум:** inline-prop re-renders (reactCompiler:true), staleTime (полагоджено), GSAP (code-split), P0-PERF-2 explore-RPC (не існує).
-- **⏸ `OPT-EXPL-01`** (/explore cache-shell, клас P0-PERF-1) — DEFERRED, НЕ форсити перед лончем (потребує `cacheComponents`).
-- MemPalace drawer: `drawer_bookit_audits_77cd62b2`.
+Глобальний аудит оптимізації → **`XDEV/PLANS/OPTIMIZATION-BACKLOG/`** (README + TRACKER + HANDOFF + TRANSITION_PROMPT + 18 брифів).
+
+**Стан: 7/18 ✅ · 1 ↩️** · 6 комітів на `main` (**не запушено**). Деталі й наступний крок — `OPTIMIZATION-BACKLOG/HANDOFF.md`.
+- ✅ `7d66e4c4` RND-01 (Sheet blur→overlay) + RND-02 (MasterContext identity) · `6691b151` RND-03+DB-06 (ReviewsPage) · `45a887a1` ASSET-01 (lazy drawers) · `7caa2aee` DB-07 (bounds) · `fa2123ea` RND-05 (бари→scaleX)
+- ↩️ `ASSET-03` скасовано — передумова спростована живим кодом (recharts і так поза початковим бандлом; графік на дефолтному табі → виграш 0).
+- **Урок:** аудит писався статично і **тричі** виявився хибним/перебільшеним (ASSET-03 ↩️, DB-07 звужено 5→2, RND-05 звужено 6→3). Перевіряй передумову живим кодом ПЕРЕД виконанням.
+- **⏸ `OPT-EXPL-01`** (/explore cache-shell) — DEFERRED, НЕ форсити перед лончем.
+
+**🐞 Знайдено попутно (поза perf-скоупом, потребує рішення):**
+1. **`--color-error` не існує** → `text-error`/`bg-error` у Tailwind v4 не генеруються, **32 місця** рендеряться без червоного. Фікс: →`text-destructive`. Візуальна зміна, окрема BUGFIX-задача.
+2. **`${month}-31` — доведено на живій БД:** `'2026-02-31'::date` / `'2026-04-31'::date` → `date/time field value out of range`. Ламає 5 місяців із 12. Зараз недосяжно (мертві шляхи `expenses.actions:133`, `useExpenses:38`).
+3. **Hydration mismatch на `/dashboard`** — A/B-перевірено: **пре-існуючий**, НЕ від ASSET-01 lazy-gate.
+
+MemPalace: `drawer_bookit_audits_77cd62b2` + 5 drawer'ів `bookit/fixes` (див. HANDOFF).
 
 ---
 
