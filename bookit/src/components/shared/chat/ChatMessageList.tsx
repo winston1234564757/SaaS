@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, type ReactNode } from 'react';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, CheckCheck } from 'lucide-react';
 import { formatDayLabel, isNewDay, startsGroup, endsGroup } from '@/lib/utils/chatGrouping';
@@ -105,12 +106,28 @@ export function ChatMessageList({
                           rel="noopener noreferrer"
                           className={`overflow-hidden rounded-2xl border border-border/60 shadow-sm ${isOwn ? 'rounded-br-sm' : 'rounded-bl-sm'}`}
                         >
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={msg.attachment_url}
-                            alt="Вкладення"
-                            className="max-h-64 w-full object-cover transition hover:scale-[1.02] cursor-zoom-in"
-                          />
+                          {msg.attachment_width && msg.attachment_height ? (
+                            <Image
+                              src={msg.attachment_url}
+                              alt="Вкладення"
+                              width={msg.attachment_width}
+                              height={msg.attachment_height}
+                              sizes="(min-width: 640px) 480px, 80vw"
+                              {...(msg.attachment_blur
+                                ? { placeholder: 'blur' as const, blurDataURL: msg.attachment_blur }
+                                : {})}
+                              className="h-auto max-h-64 w-full object-cover transition hover:scale-[1.02] cursor-zoom-in"
+                            />
+                          ) : (
+                            // Rows written before migration 20260710000000 carry no dimensions,
+                            // and next/image cannot render without them.
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={msg.attachment_url}
+                              alt="Вкладення"
+                              className="max-h-64 w-full object-cover transition hover:scale-[1.02] cursor-zoom-in"
+                            />
+                          )}
                         </a>
                       )}
                       {msg.message && (

@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { NotificationOrchestrator } from '@/lib/notifications/NotificationOrchestrator';
+import type { ChatAttachment } from '@/lib/upload/chatAttachment';
 
 /**
  * Current state of the user's open support chat, for the hub + unified inbox.
@@ -40,7 +41,7 @@ export async function getSupportChatState(): Promise<{ status: string; hasReply:
 export async function createSupportTicketAction(
   type: 'feedback' | 'bug' | 'idea' | 'chat',
   message: string,
-  attachmentUrl?: string | null
+  attachment?: ChatAttachment | null
 ): Promise<{ error: string | null; ticketId?: string }> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -68,7 +69,10 @@ export async function createSupportTicketAction(
       ticket_id: ticket.id,
       sender_id: user.id,
       message,
-      attachment_url: attachmentUrl ?? null
+      attachment_url: attachment?.url ?? null,
+      attachment_width: attachment?.width ?? null,
+      attachment_height: attachment?.height ?? null,
+      attachment_blur: attachment?.blurDataURL ?? null
     });
 
   if (msgErr) {
@@ -120,13 +124,16 @@ export interface SupportMessageResult {
   sender_id: string;
   message: string;
   attachment_url: string | null;
+  attachment_width: number | null;
+  attachment_height: number | null;
+  attachment_blur: string | null;
   created_at: string;
 }
 
 export async function sendSupportMessageAction(
   ticketId: string,
   message: string,
-  attachmentUrl?: string | null
+  attachment?: ChatAttachment | null
 ): Promise<{ error: string | null; messageData?: SupportMessageResult }> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -150,9 +157,12 @@ export async function sendSupportMessageAction(
       ticket_id: ticketId,
       sender_id: user.id,
       message,
-      attachment_url: attachmentUrl ?? null
+      attachment_url: attachment?.url ?? null,
+      attachment_width: attachment?.width ?? null,
+      attachment_height: attachment?.height ?? null,
+      attachment_blur: attachment?.blurDataURL ?? null
     })
-    .select('id, ticket_id, sender_id, message, attachment_url, created_at')
+    .select('id, ticket_id, sender_id, message, attachment_url, attachment_width, attachment_height, attachment_blur, created_at')
     .single();
 
   if (msgErr || !newMsg) {

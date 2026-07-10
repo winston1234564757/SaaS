@@ -7,6 +7,9 @@ export interface SupportMessage {
   sender_id: string;
   message: string;
   attachment_url: string | null;
+  attachment_width: number | null;
+  attachment_height: number | null;
+  attachment_blur: string | null;
   created_at: string;
 }
 
@@ -34,7 +37,7 @@ export function useLiveChat(ticketId: string | null) {
     const fetchInitialMessages = async () => {
       const res = await supabase
         .from('support_messages')
-        .select('id, ticket_id, sender_id, message, attachment_url, created_at')
+        .select('id, ticket_id, sender_id, message, attachment_url, attachment_width, attachment_height, attachment_blur, created_at')
         .eq('ticket_id', ticketId)
         .order('created_at', { ascending: true });
 

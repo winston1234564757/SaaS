@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useId } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { buildChatAttachment, type ChatAttachment } from '@/lib/upload/imageMeta';
 import { useLiveChat } from '@/lib/hooks/useLiveChat';
 import { ChatMessageList } from '@/components/shared/chat/ChatMessageList';
 import { Sheet } from '@/components/ui/Sheet';
@@ -133,7 +134,7 @@ export function AdminSupportConsole({ adminId }: { adminId: string }) {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  const uploadFile = async (ticketId: string): Promise<string | null> => {
+  const uploadFile = async (ticketId: string): Promise<ChatAttachment | null> => {
     if (!selectedFile) return null;
     const fileExt = selectedFile.name.split('.').pop();
     const randomName = `${Date.now()}_${Math.floor(Math.random() * 1000)}`;
@@ -152,7 +153,8 @@ export function AdminSupportConsole({ adminId }: { adminId: string }) {
       .from('support_attachments')
       .getPublicUrl(path);
 
-    return data?.publicUrl || null;
+    if (!data?.publicUrl) return null;
+    return buildChatAttachment(data.publicUrl, selectedFile);
   };
 
   const handleSendMessage = async (e: React.FormEvent) => {
@@ -166,17 +168,17 @@ export function AdminSupportConsole({ adminId }: { adminId: string }) {
     setMessageText('');
 
     try {
-      let fileUrl: string | null = null;
+      let attachment: ChatAttachment | null = null;
       if (selectedFile) {
-        fileUrl = await uploadFile(activeTicketId);
+        attachment = await uploadFile(activeTicketId);
         removeFile();
       }
 
-      if (currentMsg.trim() || fileUrl) {
+      if (currentMsg.trim() || attachment) {
         const { error: sendErr } = await sendSupportMessageAction(
           activeTicketId,
           currentMsg.trim() || 'Зображення прикріплено',
-          fileUrl
+          attachment
         );
         if (sendErr) throw new Error(sendErr);
       }

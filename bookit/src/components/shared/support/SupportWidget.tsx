@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { useRouter, usePathname } from 'next/navigation';
 import { useMasterContext } from '@/lib/supabase/context';
 import { createClient } from '@/lib/supabase/client';
+import { buildChatAttachment, type ChatAttachment } from '@/lib/upload/imageMeta';
 import { Sheet } from '@/components/ui/Sheet';
 import {
   createSupportTicketAction
@@ -123,7 +124,7 @@ export function SupportWidget() {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  const uploadFile = async (ticketId: string): Promise<string | null> => {
+  const uploadFile = async (ticketId: string): Promise<ChatAttachment | null> => {
     if (!selectedFile) return null;
     const fileExt = selectedFile.name.split('.').pop();
     const randomName = `${Date.now()}_${Math.floor(Math.random() * 1000)}`;
@@ -142,7 +143,8 @@ export function SupportWidget() {
       .from('support_attachments')
       .getPublicUrl(path);
 
-    return data?.publicUrl || null;
+    if (!data?.publicUrl) return null;
+    return buildChatAttachment(data.publicUrl, selectedFile);
   };
 
   const handleSubmitTicket = async (e: React.FormEvent) => {
@@ -156,12 +158,12 @@ export function SupportWidget() {
       // Standard ticket flow (feedback, bug, idea)
       // Temporary ID to upload file safely
       const tempTicketId = crypto.randomUUID();
-      let finalFileUrl: string | null = null;
+      let attachment: ChatAttachment | null = null;
       if (selectedFile) {
-        finalFileUrl = await uploadFile(tempTicketId);
+        attachment = await uploadFile(tempTicketId);
       }
 
-      const { error } = await createSupportTicketAction(ticketType, messageText, finalFileUrl);
+      const { error } = await createSupportTicketAction(ticketType, messageText, attachment);
       if (error) throw new Error(error);
 
       setStep('success');

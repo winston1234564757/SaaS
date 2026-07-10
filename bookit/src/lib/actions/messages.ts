@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import type { ChatAttachment } from '@/lib/upload/chatAttachment';
 
 export type ConversationWithParticipant = {
   id: string;
@@ -271,7 +272,7 @@ export async function getConversations(): Promise<ConversationWithParticipant[]>
 export async function sendDirectMessage(
   conversationId: string,
   message: string,
-  attachmentUrl?: string,
+  attachment?: ChatAttachment | null,
 ): Promise<{ id: string } | null> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -283,7 +284,10 @@ export async function sendDirectMessage(
       conversation_id: conversationId,
       sender_id: user.id,
       message: message || null,
-      attachment_url: attachmentUrl ?? null,
+      attachment_url: attachment?.url ?? null,
+      attachment_width: attachment?.width ?? null,
+      attachment_height: attachment?.height ?? null,
+      attachment_blur: attachment?.blurDataURL ?? null,
     })
     .select('id')
     .single();

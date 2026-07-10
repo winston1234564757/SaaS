@@ -8,6 +8,7 @@ import { getSupportPresence } from '@/lib/utils/supportHours';
 import { createSupportTicketAction, sendSupportMessageAction } from '@/lib/actions/support';
 import { parseError } from '@/lib/utils/errors';
 import { createClient } from '@/lib/supabase/client';
+import { buildChatAttachment, type ChatAttachment } from '@/lib/upload/imageMeta';
 import { ScrollStrip } from '@/components/shared/ScrollStrip';
 import { ChatShell } from '@/components/shared/chat/ChatShell';
 import { ChatHeader } from '@/components/shared/chat/ChatHeader';
@@ -97,7 +98,7 @@ export function SupportChatPage({ user, userRole, initialTicketId, inPane = fals
     setFilePreview(null);
   };
 
-  const uploadFile = async (ticketId: string): Promise<string | null> => {
+  const uploadFile = async (ticketId: string): Promise<ChatAttachment | null> => {
     if (!selectedFile) return null;
     const fileExt = selectedFile.name.split('.').pop();
     const randomName = `${Date.now()}_${Math.floor(Math.random() * 1000)}`;
@@ -105,7 +106,8 @@ export function SupportChatPage({ user, userRole, initialTicketId, inPane = fals
     const { error: uploadError } = await supabase.storage.from('support_attachments').upload(path, selectedFile, { cacheControl: '3600', upsert: true });
     if (uploadError) { console.error('[SupportChatPage] Upload error:', uploadError.message); return null; }
     const { data } = supabase.storage.from('support_attachments').getPublicUrl(path);
-    return data?.publicUrl || null;
+    if (!data?.publicUrl) return null;
+    return buildChatAttachment(data.publicUrl, selectedFile);
   };
 
   const handleSend = async () => {
@@ -123,10 +125,10 @@ export function SupportChatPage({ user, userRole, initialTicketId, inPane = fals
         if (newTicketId) { ticketId = newTicketId; setActiveTicketId(newTicketId); }
       }
       if (ticketId) {
-        let fileUrl: string | null = null;
-        if (selectedFile) { fileUrl = await uploadFile(ticketId); removeFile(); }
-        if (activeTicketId || fileUrl) {
-          const { error, messageData } = await sendSupportMessageAction(ticketId, currentMsg.trim() || 'Файл прикріплено', fileUrl);
+        let attachment: ChatAttachment | null = null;
+        if (selectedFile) { attachment = await uploadFile(ticketId); removeFile(); }
+        if (activeTicketId || attachment) {
+          const { error, messageData } = await sendSupportMessageAction(ticketId, currentMsg.trim() || 'Файл прикріплено', attachment);
           if (error) throw new Error(error);
           if (messageData) {
             setMessages((prev) => {

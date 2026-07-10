@@ -6,6 +6,8 @@ import { X } from 'lucide-react';
 import { useDMChat } from '@/lib/hooks/useDMChat';
 import { sendDirectMessage, markConversationRead } from '@/lib/actions/messages';
 import { createClient } from '@/lib/supabase/client';
+import { buildChatAttachment, type ChatAttachment } from '@/lib/upload/imageMeta';
+import { useToast } from '@/lib/toast/context';
 import { ChatShell } from '@/components/shared/chat/ChatShell';
 import { ChatHeader } from '@/components/shared/chat/ChatHeader';
 import { ChatMessageList } from '@/components/shared/chat/ChatMessageList';
@@ -31,8 +33,9 @@ export function DirectChatPage({
   inPane = false,
 }: DirectChatPageProps) {
   const { messages, loading } = useDMChat(conversationId);
+  const { showToast } = useToast();
   const [text, setText] = useState('');
-  const [attachUrl, setAttachUrl] = useState<string | null>(null);
+  const [attachment, setAttachment] = useState<ChatAttachment | null>(null);
   const [attachLoading, setAttachLoading] = useState(false);
   const [, start] = useTransition();
 
@@ -46,9 +49,18 @@ export function DirectChatPage({
       const supabase = createClient();
       const ext = file.name.split('.').pop() ?? 'jpg';
       const path = `dm/${conversationId}/${Date.now()}.${ext}`;
-      await supabase.storage.from('support_attachments').upload(path, file, { upsert: false });
+      // Swallowing this used to attach a URL to an object that was never stored, so the
+      // message shipped with a permanently broken image.
+      const { error } = await supabase.storage
+        .from('support_attachments')
+        .upload(path, file, { upsert: false });
+      if (error) {
+        console.error('[DirectChatPage] Upload error:', error.message);
+        showToast({ type: 'error', title: 'Помилка', message: 'Фото не завантажилось. Спробуй ще раз' });
+        return;
+      }
       const { data } = supabase.storage.from('support_attachments').getPublicUrl(path);
-      setAttachUrl(data.publicUrl);
+      setAttachment(await buildChatAttachment(data.publicUrl, file));
     } finally {
       setAttachLoading(false);
     }
@@ -56,12 +68,12 @@ export function DirectChatPage({
 
   function handleSend() {
     const msg = text.trim();
-    if (!msg && !attachUrl) return;
-    const url = attachUrl;
+    if (!msg && !attachment) return;
+    const pending = attachment;
     setText('');
-    setAttachUrl(null);
+    setAttachment(null);
     start(async () => {
-      await sendDirectMessage(conversationId, msg, url ?? undefined);
+      await sendDirectMessage(conversationId, msg, pending);
     });
   }
 
@@ -98,13 +110,13 @@ export function DirectChatPage({
           onChange={setText}
           onSubmit={handleSend}
           onPickFile={handleFileUpload}
-          canSend={!!text.trim() || !!attachUrl}
+          canSend={!!text.trim() || !!attachment}
           submitting={attachLoading}
         >
-          {attachUrl && (
+          {attachment && (
             <div className="flex items-center gap-2">
               <Image
-                src={attachUrl}
+                src={attachment.url}
                 alt="Попередній перегляд"
                 width={48}
                 height={48}
@@ -113,7 +125,7 @@ export function DirectChatPage({
               <span className="text-xs text-foreground/60 flex-1">Фото готове до відправлення</span>
               <button
                 type="button"
-                onClick={() => setAttachUrl(null)}
+                onClick={() => setAttachment(null)}
                 aria-label="Видалити вкладення"
                 className="size-8 rounded-full bg-secondary flex items-center justify-center active:scale-90 transition-transform"
               >

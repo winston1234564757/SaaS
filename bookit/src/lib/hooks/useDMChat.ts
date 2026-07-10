@@ -10,6 +10,9 @@ export interface DirectMessage {
   sender_id: string;
   message: string | null;
   attachment_url: string | null;
+  attachment_width: number | null;
+  attachment_height: number | null;
+  attachment_blur: string | null;
   read_at: string | null;
   created_at: string;
 }
