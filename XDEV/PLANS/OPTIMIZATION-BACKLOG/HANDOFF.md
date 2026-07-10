@@ -5,7 +5,7 @@
 
 ---
 
-## Стан: 7/18 ✅ · 1 ↩️ · 10 лишилось
+## Стан: 8/18 ✅ · 1 ↩️ · 10 лишилось (+1 нова: `ASSET-02b`)
 
 | ID | Задача | Ст | Commit |
 |----|--------|----|--------|
@@ -16,15 +16,18 @@
 | `OPT-ASSET-01` | lazy BookingDetailsModal + ImageCropper | ✅ | `45a887a1` |
 | `OPT-DB-07` | 2 необмежені запити обмежено | ✅ | `7caa2aee` |
 | `OPT-RND-05` | 3 бари → `scaleX/scaleY` | ✅ | `fa2123ea` |
+| `OPT-ASSET-02` | 5 raw `<img>` → `next/image` (з 9; 3 ↩️) | ✅ | `aa1a8ab9` |
 | `OPT-ASSET-03` | recharts defer | ↩️ скасовано | — |
 
-**⚠️ 6 комітів НЕ запушено** (`main ahead 6`). Запушити або свідомо лишити локально.
+**⚠️ 7 комітів коду НЕ запушено** (`main ahead`). Запушити або свідомо лишити локально.
 
 ---
 
 ## Головне, що змінило картину (не повторювати помилок статичного аудиту)
 
-Аудит писався зі статичного читання. Жива перевірка **тричі** спростувала або звузила його. Наступна сесія має так само **перевіряти передумову перед виконанням**, а не виконувати беклог наосліп.
+Аудит писався зі статичного читання. Жива перевірка **чотири рази** спростувала або звузила його. Наступна сесія має так само **перевіряти передумову перед виконанням**, а не виконувати беклог наосліп.
+
+- **`OPT-ASSET-02` звужено 9 → 5.** Два «зображення» виявились QR із `api.qrserver.com`, що **вже** мають `width/height` (CLS=0) і важать 1–2 KB; один із них через `next/image` **зламався б** (`crossOrigin` не пробрасується → tainted canvas → `toDataURL()` кидає `SecurityError` → нема завантаження QR). Третє — локальний SVG, який `next/image` не оптимізує без `dangerouslyAllowSVG`. Чат винесено в `ASSET-02b` (тягне міграцію).
 
 - **`OPT-ASSET-03` ↩️ скасовано.** `RevenueLineChart` на **дефолтному** табі «Огляд», рендериться одразу при mount → `dynamic()` підтягнув би чанк негайно, виграш **нуль**, зате skeleton-спалах + ризик CLS. recharts і так поза початковим бандлом (`AnalyticsPage` вже `dynamic`).
 - **`OPT-DB-07` звужено 5 → 2.** `useProductTransactions` і `SystemLogsViewer` **вже** мали `.limit(50)`. `expenses.actions.ts getExpenses` — **мертвий код** (нуль консумерів).
@@ -55,6 +58,23 @@ SELECT '2026-01-31'::date;  -- ок
 Перевірено **контрольованим A/B**: відкат `DashboardLayout` до pre-`ASSET-01` дає ті самі 2 console-помилки. **Не** регресія від lazy-gate. Не полювати на неї як на наслідок ASSET-01.
 Третій issue у dev-оверлеї — `RefererNotAllowedMapError` (Google Maps на localhost), середовищне.
 
+### 4. 🔴 `.env.production.local` — забутий e2e-оверрайд ламає ЛОКАЛЬНИЙ `npm run build`
+Файл існує з **2026-07-08**, перший рядок у ньому: `# TEMP e2e override — local Supabase. Remove after e2e`. Його не прибрали.
+
+Next вантажить env у порядку `.env.production.local` → `.env.local`, тож **перший перемагає**. Наслідок: **будь-який `npm run build` на цій машині збирається проти локального Supabase**, а не проду — і CSP, і `remotePatterns` (обидва build-time) беруть локальні значення.
+
+Доказ (той самий комміт, різні env):
+```
+з файлом:  Environments: .env.production.local, .env.local  → dangerouslyAllowLocalIP: true,  4 remotePatterns
+без файлу: Environments: .env.local                          → dangerouslyAllowLocalIP: false, 3 remotePatterns  ✅
+```
+Він **gitignored** (`bookit/.gitignore:41`), тож на Vercel його немає — прод-збірка чиста. Але локальний «pre-deploy build check» **не перевіряє прод-конфіг**, і це тихо знецінює будь-яку build-time перевірку (CSP теж).
+
+**Рішення founder:** видалити файл (він сам себе позначив як тимчасовий) чи лишити для e2e. Якщо лишати — e2e-рецепт має явно про нього казати, а pre-deploy перевірку робити з тимчасово прибраним файлом.
+
+### 5. Пре-існуючі eslint-`error` у двох файлах (не регресія)
+На `HEAD` до змін: `invite/[code]/page.tsx:8` — `no-restricted-imports` (`createAdminClient` у page.tsx, а не в `actions.ts`/`api/`); `ServiceSelector.tsx:385` — `react/no-unescaped-entities`. Обидва підтверджені `git stash` + повторним lint.
+
 ---
 
 ## Own-eyes рig — робочий рецепт (перевірено)
@@ -78,6 +98,12 @@ E2E_BASE_URL=http://localhost:3000 npx playwright test <spec> --project=chromium
 ```
 
 **Пастки:**
+- 🔴 **`next/image` + локальний Supabase.** Next 16 має SSRF-гард приватних IP: він відхиляє `127.0.0.1` **після** успішного матчу `remotePatterns` і кидає **той самий текст** (`"url" parameter is not allowed`), що й провал whitelist. Тобто помилка бреше. Потрібні **обидва** гейти в `next.config.ts`: локальний `remotePattern` **і** `dangerouslyAllowLocalIP: isLocalSupabase`. Доказ у логах dev: `upstream image ... resolved to private ip ["127.0.0.1"]`. Уже зроблено в `aa1a8ab9`.
+- 🔴 **Сід не має зображень.** `scripts/seed-e2e-data.ts:260` ставить `avatar_url: null`, послуги без `image_url`. Перевірка `next/image` на голому сіді покаже самі fallback-іконки й **нічого не доведе**. Заливати реальний файл у локальний storage (`public/landing/dashboard.png` = 1.19 MB — добрий зразок) і привʼязувати до `services.image_url` / `profiles.avatar_url`.
+- 🔴 **Порт 3000 може тримати чужий/застарілий dev.** Він відповідатиме на `curl` (200), а спека мовчки битиме **не в твій сервер зі старим конфігом**. Перевіряти власником порту: `Get-NetTCPConnection -LocalPort 3000 -State Listen` → `Get-Process`. `TaskStop` вбиває шелл, але **не** дочірній `next dev` — гасити за PID.
+- `npm run dev | head -N` (будь-який пайп, що закриває стрім) **вбиває dev-сервер**. Не пайпити фоновий сервер.
+- `playwright.config.ts` має `webServer: npm run start` + `reuseExistingServer: true` на `E2E_BASE_URL`. Якщо `.next` зібрано без `.env.production.local`, `npm run start` піде **в ПРОД-БД**. Перед e2e — перезібрати з оверрайдом (див. §Знайдено попутно #4).
+- `.next/dev/types/routes.d.ts` від убитого dev-сервера ламає `npx tsc --noEmit` сотнею синтаксичних помилок. Лікується `rm -rf .next`.
 - `testDir: './e2e/tests'` — спек у `e2e/inspect/` **не бачиться**. Класти тимчасові спеки в `e2e/tests/`.
 - У спеці: `test.use({ storageState: 'playwright/.auth/master-crm.json' })`. `globalSetup` сам перелогінює всі акаунти.
 - **`.env.local` → ПРОД.** `next build` не читає `.env.test` (лише NODE_ENV=test). Для прод-білда під тест потрібен env-swap (`.env.test.prod-bak` натякає на це) — **не робив, ризик для прод-env**. Тому e2e ганяв через **dev**-сервер.
