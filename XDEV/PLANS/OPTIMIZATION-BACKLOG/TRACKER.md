@@ -4,8 +4,8 @@
 > Статуси: `⬜` не почато · `🔄` в роботі · `✅` готово · `↩️` скасовано · `⏸` відкладено
 > Всі `file:line` верифіковані проти дерева на 2026-07-10.
 
-**Прогрес:** 6/18 ✅ · 1 ↩️ (ASSET-03 скасовано — передумова спростована)
-> ✅ RND-01, RND-02, RND-03, DB-06, ASSET-01, DB-07 · ↩️ ASSET-03
+**Прогрес:** 7/18 ✅ · 1 ↩️ (ASSET-03 скасовано — передумова спростована)
+> ✅ RND-01, RND-02, RND-03, DB-06, ASSET-01, DB-07, RND-05 · ↩️ ASSET-03
 
 ---
 
@@ -30,7 +30,7 @@
 | `OPT-RND-02` | `context.tsx` MasterContext value міняє identity щорендер (refresh/fetchProfile без useCallback) | P0 | ✅ | `react-best-practices` `senior-frontend` | **Opus** | `7d66e4c4` |
 | `OPT-RND-03` | `ReviewsPage` `layout` на необмеженому списку під popLayout — thrash на фільтрі | P1 | ✅ | `fixing-motion-performance` | **Sonnet** | `6691b151` |
 | `OPT-RND-04` | Відсутня віртуалізація: `MastersDirectory` (admin), `ChatMessageList` (вся історія motion-nodes) | P1 | ⬜ | `senior-frontend` | **Sonnet** | — |
-| `OPT-RND-05` | Кластер: 6 progress-барів анімують `width/height` замість `scaleX/scaleY` | P2 | ⬜ | `fixing-motion-performance` | **Sonnet** | — |
+| `OPT-RND-05` | Кластер: 6 progress-барів анімують `width/height` замість `scaleX/scaleY` | P2 | ✅ | `fixing-motion-performance` | **Sonnet** | pending |
 | `OPT-RND-06` | Кластер: `height:0→auto` акордеони × 5 (layout-triggering) | P2 | ⬜ | `fixing-motion-performance` | **Sonnet** | — |
 
 ## ФАЗА ASSET — Бандл / Асети

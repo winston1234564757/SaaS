@@ -391,10 +391,10 @@ const FlashDealStarterProgress = React.memo(({ usedThisMonth, progressPct, barCo
     </div>
     <div className="w-full h-2.5 bg-accent/10 rounded-full overflow-hidden">
       <motion.div
-        className="h-full rounded-full"
+        className="h-full w-full origin-left"
         style={{ backgroundColor: barColor }}
-        initial={{ width: '0%' }}
-        animate={{ width: `${progressPct}%` }}
+        initial={{ scaleX: 0 }}
+        animate={{ scaleX: progressPct / 100 }}
         transition={{ duration: 0.9, ease: 'easeOut' }}
       />
     </div>

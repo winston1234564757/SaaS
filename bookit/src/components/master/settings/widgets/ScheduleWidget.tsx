@@ -191,9 +191,9 @@ export function ScheduleWidget({
               >
                 {isWorking && (
                   <motion.div
-                    initial={{ height: 0 }}
-                    animate={{ height: `${occupancy}%` }}
-                    className={cn('absolute bottom-0 inset-x-0 opacity-20', statusColor)}
+                    initial={{ scaleY: 0 }}
+                    animate={{ scaleY: occupancy / 100 }}
+                    className={cn('absolute bottom-0 inset-x-0 h-full origin-bottom opacity-20', statusColor)}
                   />
                 )}
               </div>
@@ -221,9 +221,9 @@ export function ScheduleWidget({
                 <div role="progressbar" aria-valuenow={data.rate} aria-valuemin={0} aria-valuemax={100} aria-label={`Завантаженість ${label}`}
                   className="h-1.5 rounded-full bg-secondary overflow-hidden">
                   <motion.div
-                    className={cn('h-full rounded-full', getBusynessBarColor(data.rate))}
-                    initial={{ width: 0 }}
-                    animate={{ width: `${data.rate}%` }}
+                    className={cn('h-full w-full origin-left', getBusynessBarColor(data.rate))}
+                    initial={{ scaleX: 0 }}
+                    animate={{ scaleX: data.rate / 100 }}
                     transition={{ duration: 0.8, ease: 'easeOut' }}
                   />
                 </div>

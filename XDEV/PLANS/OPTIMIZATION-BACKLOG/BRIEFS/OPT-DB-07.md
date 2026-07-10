@@ -48,7 +48,17 @@
 - `SystemLogsViewer.tsx:56` — вже `.limit(50)`.
 - `expenses.actions.ts:126` (`getExpenses`) — **мертвий код**, жодного консумера. Не чіпав.
 
-**Побічна підозра (НЕ підтверджено, поза скоупом):** `expenses.actions.ts:133` і мертва гілка `useExpenses` будують `lte('expense_date', \`${month}-31\`)` → для лютого це `2026-02-31`, невалідна дата (Postgres кине "date/time field value out of range"). Живу перевірку прогнати не вдалось (Docker відпав). У `useExpenses` шлях недосяжний; у `getExpenses` — мертвий. Варте перевірки, якщо ці шляхи оживлять.
+**Побічний баг — ДОВЕДЕНО на живій БД (поза скоупом, наразі недосяжний):**
+`expenses.actions.ts:133` і мертва гілка `useExpenses.ts:38` будують `lte('expense_date', \`${month}-31\`)`.
+Перевірено на локальному Postgres:
+```
+SELECT '2026-02-31'::date;  -- ERROR: date/time field value out of range
+SELECT '2026-04-31'::date;  -- ERROR: date/time field value out of range
+SELECT '2026-01-31'::date;  -- 2026-01-31  (ок)
+```
+Тобто запит впаде для **будь-якого місяця коротшого за 31 день** — лют/квіт/черв/вер/лист (5 з 12).
+Зараз **недосяжно**: `useExpenses()` завжди кличеться без `month`, а `getExpenses` не має консумерів. Це міна на майбутнє.
+Правильний патерн: `lt('expense_date', <1-ше число НАСТУПНОГО місяця>)` замість `lte(..., '${month}-31')`.
 
 **Файли:** `src/lib/supabase/hooks/useExpenses.ts`, `src/components/admin/ModerationHub.tsx`.
 **Верифікація:** TSC 0 · Build clean. ESLint: у `ModerationHub` 18 пре-існуючих проблем (unescaped entities, `<img>`), жодна не з цієї зміни.
