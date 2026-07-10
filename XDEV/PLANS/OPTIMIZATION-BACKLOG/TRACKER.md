@@ -19,7 +19,7 @@
 | `OPT-DB-04` | `useDashboardStats` тягне 5000 рядків для set-diff у JS (число нових клієнтів б'ється на межі) | P1 | ⬜ | `sql-query-optimization` | **Sonnet** | — |
 | `OPT-DB-05` | `get_finance_analytics` 8 окремих скан-проходів bookings+join | P1 | ⬜ | `supabase-postgres-best-practices` | **Opus** | — |
 | `OPT-DB-06` | `useReviews` unbounded + дубль-запит `reviews-pending` (підмножина) | P1 | ✅ | `tanstack-query` | **Sonnet** | `6691b151` |
-| `OPT-DB-07` | Кластер over-fetch: `select('*')`/no-bound × 5 (expenses, product_transactions, ModerationHub, SystemLogs) | P2 | ✅ | `database-optimizer` | **Sonnet** | pending |
+| `OPT-DB-07` | Кластер over-fetch: `select('*')`/no-bound × 5 (expenses, product_transactions, ModerationHub, SystemLogs) | P2 | ✅ | `database-optimizer` | **Sonnet** | `7caa2aee` |
 | `OPT-DB-08` | Кластер N+1/waterfall: loyalty per-master RPC, broadcast nested-await, 3 sequential-then-await хуки | P2 | ⬜ | `senior-backend` | **Sonnet** | — |
 
 ## ФАЗА RND — Рендер / Анімації
@@ -30,14 +30,14 @@
 | `OPT-RND-02` | `context.tsx` MasterContext value міняє identity щорендер (refresh/fetchProfile без useCallback) | P0 | ✅ | `react-best-practices` `senior-frontend` | **Opus** | `7d66e4c4` |
 | `OPT-RND-03` | `ReviewsPage` `layout` на необмеженому списку під popLayout — thrash на фільтрі | P1 | ✅ | `fixing-motion-performance` | **Sonnet** | `6691b151` |
 | `OPT-RND-04` | Відсутня віртуалізація: `MastersDirectory` (admin), `ChatMessageList` (вся історія motion-nodes) | P1 | ⬜ | `senior-frontend` | **Sonnet** | — |
-| `OPT-RND-05` | Кластер: 6 progress-барів анімують `width/height` замість `scaleX/scaleY` | P2 | ✅ | `fixing-motion-performance` | **Sonnet** | pending |
+| `OPT-RND-05` | Кластер: 6 progress-барів анімують `width/height` замість `scaleX/scaleY` (зроблено 3 — де є множник) | P2 | ✅ | `fixing-motion-performance` | **Sonnet** | `fa2123ea` |
 | `OPT-RND-06` | Кластер: `height:0→auto` акордеони × 5 (layout-triggering) | P2 | ⬜ | `fixing-motion-performance` | **Sonnet** | — |
 
 ## ФАЗА ASSET — Бандл / Асети
 
 | ID | Задача | P | Ст | Спеціаліст-скіли | Модель | Commit |
 |----|--------|---|----|------------------|--------|--------|
-| `OPT-ASSET-01` | Lazy-load важких drawer'ів: BookingDetailsModal (eager у DashboardLayout), ClientDetailSheet ×4, ImageCropper | P1 | ✅ | `react-best-practices` | **Sonnet** | pending |
+| `OPT-ASSET-01` | Lazy-load важких drawer'ів: BookingDetailsModal (eager у DashboardLayout), ClientDetailSheet ×4, ImageCropper | P1 | ✅ | `react-best-practices` | **Sonnet** | `45a887a1` |
 | `OPT-ASSET-02` | Кластер: публічні raw `<img>` → `next/image` з `sizes` (wizard, chat, invite) | P2 | ⬜ | `senior-frontend` | **Sonnet** | — |
 | `OPT-ASSET-03` | `RevenueLineChart` recharts статично в OverviewTab → defer within analytics | P2 | ↩️ | `react-best-practices` | **Sonnet** | — |
 
