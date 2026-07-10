@@ -31,4 +31,25 @@
 - [ ] Екрани (витрати, транзакції, модерація, логи) рендеряться без регресій.
 
 ## Відкриті питання до тебе
-1. Немає — кластер точкових правок, чекаю APPROVE.
+1. Немає.
+
+---
+
+## [Заповнюється після DONE]
+
+**Кластер виявився вужчим, ніж записано в аудиті.** Перевірка живим кодом: із 5 пунктів реальними були **2**.
+
+**Полагоджено:**
+- `useExpenses.ts:28-31` — був `select('*')` **без межі взагалі** (єдиний консумер `ExpensesTab.tsx:65` викликає `useExpenses()` БЕЗ `month`, тож гілка з date-фільтром мертва → запит завжди повністю необмежений). Замінено на явні 8 колонок (покривають увесь тип `MasterExpense`, каст лишається валідним) + доданий `.eq('master_id', masterId!)` (планувальнику, RLS і так є) + `.limit(500)`.
+- `ModerationHub.tsx:50` — `content_reports.select('*')` без `.limit()`, хоча сусідні запити мали `.limit(20)`. Додано `.limit(50)`.
+
+**Не потребували правки (спростовано):**
+- `useProductTransactions.ts:14` — вже `.eq('product_id')` + `.limit(50)`. Лишається лише over-fetch колонок на 50 рядках — не варте правки.
+- `SystemLogsViewer.tsx:56` — вже `.limit(50)`.
+- `expenses.actions.ts:126` (`getExpenses`) — **мертвий код**, жодного консумера. Не чіпав.
+
+**Побічна підозра (НЕ підтверджено, поза скоупом):** `expenses.actions.ts:133` і мертва гілка `useExpenses` будують `lte('expense_date', \`${month}-31\`)` → для лютого це `2026-02-31`, невалідна дата (Postgres кине "date/time field value out of range"). Живу перевірку прогнати не вдалось (Docker відпав). У `useExpenses` шлях недосяжний; у `getExpenses` — мертвий. Варте перевірки, якщо ці шляхи оживлять.
+
+**Файли:** `src/lib/supabase/hooks/useExpenses.ts`, `src/components/admin/ModerationHub.tsx`.
+**Верифікація:** TSC 0 · Build clean. ESLint: у `ModerationHub` 18 пре-існуючих проблем (unescaped entities, `<img>`), жодна не з цієї зміни.
+**Commit:** pending.

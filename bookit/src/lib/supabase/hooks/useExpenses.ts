@@ -27,8 +27,10 @@ export function useExpenses(month?: string) {
     queryFn: async () => {
       let q = createClient()
         .from('master_expenses')
-        .select('*')
-        .order('expense_date', { ascending: false });
+        .select('id, master_id, category, name, amount_kopecks, expense_date, note, created_at')
+        .eq('master_id', masterId!)
+        .order('expense_date', { ascending: false })
+        .limit(500);
 
       if (month) {
         q = q

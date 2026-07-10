@@ -47,7 +47,7 @@ export function ModerationHub() {
     setLoading(true);
     try {
       const [reportsRes, reviewsRes, portfolioRes] = await Promise.all([
-        supabase.from('content_reports').select('*').order('created_at', { ascending: false }),
+        supabase.from('content_reports').select('*').order('created_at', { ascending: false }).limit(50),
         supabase.from('reviews').select('*').order('created_at', { ascending: false }).limit(20),
         supabase.from('portfolio_items').select('*, portfolio_item_photos(url)').order('created_at', { ascending: false }).limit(20)
       ]);

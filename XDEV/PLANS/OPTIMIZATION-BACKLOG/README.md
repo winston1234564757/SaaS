@@ -25,6 +25,15 @@
 | P0-PERF-2 explore mega-query RPC | не актуально | RPC `get_explore_masters` не існує; підхід змінено на cached data-module `explore/data.ts` |
 | класичні inline-prop re-renders | шум | нейтралізовано `reactCompiler` |
 
+## Знайдено поза скоупом (не perf — окремий баг)
+
+**`--color-error` не існує → 32 місця рендеряться без кольору.**
+`globals.css` визначає сирий `--error` (per-theme) і `--color-destructive: var(--error)`, але **`--color-error` не визначений ніде**. У Tailwind v4 утиліти генеруються з `--color-*`, тож класи `text-error` / `bg-error` / `border-error` не існують і не дають кольору. Наслідок: негативні дельти й помилкові стани показуються без червоного.
+
+Підтверджено SYSTEM_MAP: M-ANL-04 зафіксував цей самий баг («латентний баг M-ANL-02 SourceTab DeltaChip `text-error`→`text-destructive`») і полагодив **одне** місце. Лишилось **32** усього: `RevenueLineChart.tsx:59`, `OverviewBriefing.tsx:72`, `OverviewTab.tsx:85`, `BookingCard.tsx:287`, `DashboardWidgets.tsx:349` та ін.
+
+Фікс: `text-error` → `text-destructive` (і `bg-error/N` → `bg-destructive/N`). Це **візуальна зміна** (з'явиться червоний там, де зараз його нема) — потребує окремої задачі + founder-ока, тому в цей беклог НЕ вносив.
+
 ## Топ-3 за leverage
 
 1. **OPT-RND-01** — `ui/Sheet.tsx` blur-під-scale: одна зміна б'є джанк у **кожній** модалці застосунку.
