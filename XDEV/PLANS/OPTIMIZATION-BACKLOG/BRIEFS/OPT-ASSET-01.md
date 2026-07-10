@@ -33,4 +33,17 @@
 - [ ] Відкриття кожного drawer'а працює (URL-екшен, кліки з віджетів, crop).
 
 ## Відкриті питання до тебе
-1. Немає — чекаю APPROVE.
+1. Немає.
+
+---
+
+## [Заповнюється після DONE]
+**Root cause / рішення:**
+- `BookingDetailsModal` — був статичним імпортом і **завжди змонтований** у шелі (`DashboardLayout.tsx:8,106`), тобто в чанку кожного входу в дашборд. Переведено на `next/dynamic({ssr:false})` + новий `BookingDetailsModalGate`: читає `?bookingId` і монтує модалку лише при ПЕРШОМУ відкритті. Ключовий нюанс — модалка тримає `lastBooking` під час exit-анімації, тож розмонтовувати одразу після зникнення `bookingId` не можна; gate лишає її змонтованою після першого відкриття. Прапорець `everOpened` виводиться в рендері (render-phase setState), а не в `useEffect` — щоб не тригерити `react-hooks/set-state-in-effect`.
+- `ImageCropper` — `react-easy-crop` переведено на `dynamic({ssr:false})` + `loading`-плейсхолдер; `Area`/`Point` лишились **type-only** імпортом (стираються). Обгортка `dynamic` втрачає `defaultProps` ліби (`aspect` ставав обов'язковим) → додано точний `LazyCropperProps` під фактичний виклик. Прибрано мертвий `useCallback`.
+
+**Свідомо НЕ зроблено — `ClientDetailSheet` (4 споживачі):** він page-scoped (рендериться на clients/dashboard-віджетах), а не eager у шелі на кожному вході — тобто виграш істотно менший за BookingDetailsModal. Коректний lazy потребує того ж `everOpened`-gate у 4 місцях (інакше зріжеться exit-анімація), а `ClientsPage` ще й re-export'ить його для зворотної сумісності. Ризик×4 проти малого виграшу — окрема задача.
+
+**Файли:** `src/components/master/DashboardLayout.tsx` (dynamic + `BookingDetailsModalGate`), `src/components/master/settings/components/ImageCropper.tsx` (dynamic Cropper + типізація).
+**Верифікація:** TSC 0 · Build clean · ESLint clean. Розділення чанку — структурне (dynamic + умовний монтаж); **байтова дельта не заміряна** (build-вивід Next не показує First Load JS). Own-eyes (відкриття модалки/кропера) не прогнано.
+**Commit:** pending.

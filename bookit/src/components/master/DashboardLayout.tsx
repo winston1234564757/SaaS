@@ -1,11 +1,11 @@
 'use client';
 
-import { Suspense, useEffect } from 'react';
-import { usePathname } from 'next/navigation';
+import { Suspense, useEffect, useState } from 'react';
+import { usePathname, useSearchParams } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import type { User } from '@supabase/supabase-js';
 import { MasterProvider, useMasterContext } from '@/lib/supabase/context';
 import { useRealtimeNotifications } from '@/lib/supabase/hooks/useRealtimeNotifications';
-import { BookingDetailsModal } from '@/components/master/bookings/BookingDetailsModal';
 import { FlashOnCancelConfirmSheet } from '@/components/master/bookings/FlashOnCancelConfirmSheet';
 import { DashboardTopBar } from '@/components/master/DashboardTopBar';
 import { MobileHub } from '@/components/shared/MobileHub';
@@ -14,6 +14,26 @@ import { ImpersonationBanner } from '@/components/admin/ImpersonationBanner';
 import { SupportWidget } from '@/components/shared/support/SupportWidget';
 import { GlassSafeArea } from '@/components/shared/GlassSafeArea';
 import type { Profile, MasterProfile } from '@/types/database';
+
+// Важка модалка деталей запису — окремим чанком. Вантажиться лише коли її вперше
+// відкрили (URL-driven `?bookingId=`), а не на кожному вході в дашборд.
+const BookingDetailsModal = dynamic(
+  () => import('@/components/master/bookings/BookingDetailsModal').then(m => ({ default: m.BookingDetailsModal })),
+  { ssr: false },
+);
+
+// Раз відкрита — лишається змонтованою: модалка тримає `lastBooking` під час exit-анімації,
+// тож розмонтування одразу після зникнення `bookingId` зрізало б анімацію закриття.
+function BookingDetailsModalGate() {
+  const searchParams = useSearchParams();
+  const hasBooking = !!searchParams.get('bookingId');
+  const [everOpened, setEverOpened] = useState(false);
+
+  if (hasBooking && !everOpened) setEverOpened(true);
+  if (!everOpened) return null;
+
+  return <BookingDetailsModal />;
+}
 
 function ThemeApplier() {
   const { masterProfile } = useMasterContext();
@@ -103,7 +123,7 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
         <SupportWidget />
 
         <Suspense>
-          <BookingDetailsModal />
+          <BookingDetailsModalGate />
         </Suspense>
 
         <FlashOnCancelConfirmSheet />

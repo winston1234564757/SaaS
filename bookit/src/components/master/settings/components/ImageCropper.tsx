@@ -1,7 +1,29 @@
 'use client';
 
-import { useState, useCallback } from 'react';
-import Cropper, { Area, Point } from 'react-easy-crop';
+import { useState } from 'react';
+import type { ComponentType } from 'react';
+import dynamic from 'next/dynamic';
+import type { Area, Point } from 'react-easy-crop';
+
+// react-easy-crop — важка ліба, потрібна лише всередині crop-дровера.
+// Типи вище стираються на компіляції, тож рантайм тягнеться тільки тут.
+// Обгортка `dynamic` втрачає defaultProps ліби (aspect стає обов'язковим),
+// тож типізуємо її під фактичний виклик нижче.
+type LazyCropperProps = {
+  image: string;
+  crop: Point;
+  zoom: number;
+  aspect?: number;
+  onCropChange: (crop: Point) => void;
+  onZoomChange: (zoom: number) => void;
+  onCropComplete: (croppedArea: Area, croppedAreaPixels: Area) => void;
+  classes?: { containerClassName?: string; mediaClassName?: string };
+};
+
+const Cropper = dynamic(() => import('react-easy-crop'), {
+  ssr: false,
+  loading: () => <div className="absolute inset-0 animate-pulse bg-secondary" />,
+}) as ComponentType<LazyCropperProps>;
 
 interface ImageCropperProps {
   image: string;
