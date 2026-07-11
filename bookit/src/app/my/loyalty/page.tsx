@@ -145,9 +145,9 @@ export default async function LoyaltyRoute() {
   }
 
   // Баланс — та сама формула, що в get_c2c_balance: GREATEST(0, earned − used)
-  const c2cMasters = Array.from(c2cByMaster.values()).map(({ earnedPct, ...m }) => ({
+  const c2cMasters = Array.from(c2cByMaster.values()).map((m) => ({
     ...m,
-    balance: Math.max(0, earnedPct - (usedByMaster.get(m.masterId) ?? 0)),
+    balance: Math.max(0, m.earnedPct - (usedByMaster.get(m.masterId) ?? 0)),
     shareLink: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://bookit.com.ua'}/${m.masterSlug}?ref=${c2cCode}`,
   }));
 

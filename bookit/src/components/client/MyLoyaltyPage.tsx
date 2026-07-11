@@ -66,9 +66,12 @@ interface C2cMasterStat {
   masterName: string;
   masterEmoji: string;
   masterAvatarUrl?: string | null;
+  /** Поточна знижка майстра для подруги — для тексту «Поділитись», не для нарахувань. */
   c2cDiscountPct: number;
   invited: number;
   completed: number;
+  /** Фактично нараховано: сума discount_pct по завершених рефералах (майстер міг міняти %). */
+  earnedPct: number;
   balance: number;
   shareLink: string;
 }
@@ -244,7 +247,7 @@ export function MyLoyaltyPage({ programs, c2cCode, c2bCode, totalMastersInvited,
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-semibold text-foreground">{m.masterName}</p>
                             <p className="text-xs text-text-sub">
-                              Запрошено: {m.invited} · Завершили: {m.completed} · Отримано: {m.completed * m.c2cDiscountPct}% · Баланс: {m.balance}%
+                              Запрошено: {m.invited} · Завершили: {m.completed} · Отримано: {m.earnedPct}% · Баланс: {m.balance}%
                             </p>
                           </div>
                           {m.balance > 0 && (
