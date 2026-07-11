@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useMemo, useReducer, useCallback } from 'react';
+import { useWindowVirtualizer } from '@tanstack/react-virtual';
 import Cookies from 'js-cookie';
 import { createClient } from '@/lib/supabase/client';
 import { Sheet } from '@/components/ui/Sheet';
@@ -141,7 +142,7 @@ export function MastersDirectory() {
     window.location.href = '/dashboard';
   };
 
-  const filteredMasters = masters.filter(m => {
+  const filteredMasters = useMemo(() => masters.filter(m => {
     const nameMatch = (m.profiles?.full_name || '').toLowerCase().includes(search.toLowerCase()) ||
       (m.business_name || '').toLowerCase().includes(search.toLowerCase()) ||
       (m.slug || '').toLowerCase().includes(search.toLowerCase()) ||
@@ -150,7 +151,40 @@ export function MastersDirectory() {
     const tierMatch = tierFilter === 'all' || m.subscription_tier === tierFilter;
 
     return nameMatch && tierMatch;
+  }), [masters, search, tierFilter]);
+
+  // ── Віртуалізація рядків таблиці (spacer-row технік) ──
+  // Таблиця нативна, тож абсолютне позиціювання <tr> ламало б колонки.
+  // Замість цього тримаємо рядки в потоці, а вікно зверху/знизу добиваємо
+  // порожніми <tr> зі spacer-висотою. Window-scroll — як і вся апка.
+  // scrollMargin рахуємо від верху <tbody> (там починаються віртуалізовані рядки),
+  // а не від верху <table> — інакше зсув на висоту <thead>.
+  const tbodyRef = useRef<HTMLTableSectionElement | null>(null);
+  const [, forceRerender] = useReducer((n: number) => n + 1, 0);
+  // Callback-ref: коли <tbody> монтується (після завантаження даних) — форсимо
+  // ререндер, щоб scrollMargin порахувався з реального DOM-rect. useLayoutEffect на
+  // mount тут не годиться: tbody схований за loading, ефект його ще не застане.
+  const setTbodyRef = useCallback((node: HTMLTableSectionElement | null) => {
+    tbodyRef.current = node;
+    if (node) forceRerender();
+  }, []);
+
+  const rowVirtualizer = useWindowVirtualizer({
+    count: filteredMasters.length,
+    estimateSize: () => 76, // ~44px контент + 32px py-4 padding; measureElement коригує
+    overscan: 10,
+    scrollMargin: tbodyRef.current
+      ? tbodyRef.current.getBoundingClientRect().top + window.scrollY
+      : 0,
   });
+
+  const virtualRows = rowVirtualizer.getVirtualItems();
+  const paddingTop = virtualRows.length > 0
+    ? virtualRows[0].start - rowVirtualizer.options.scrollMargin
+    : 0;
+  const paddingBottom = virtualRows.length > 0
+    ? rowVirtualizer.getTotalSize() - (virtualRows[virtualRows.length - 1].end - rowVirtualizer.options.scrollMargin)
+    : 0;
 
   return (
     <div className="space-y-6">
@@ -209,9 +243,21 @@ export function MastersDirectory() {
                   <th scope="col" className="px-6 py-4 text-right">Дії</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-150">
-                {filteredMasters.map((m) => (
-                  <tr key={m.id} className="hover:bg-slate-50/50 transition">
+              <tbody ref={setTbodyRef} className="divide-y divide-slate-150">
+                {paddingTop > 0 && (
+                  <tr aria-hidden="true">
+                    <td colSpan={6} style={{ height: paddingTop, padding: 0, border: 0 }} />
+                  </tr>
+                )}
+                {virtualRows.map((vRow) => {
+                  const m = filteredMasters[vRow.index];
+                  return (
+                  <tr
+                    key={m.id}
+                    data-index={vRow.index}
+                    ref={rowVirtualizer.measureElement}
+                    className="hover:bg-slate-50/50 transition"
+                  >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500">
@@ -272,7 +318,13 @@ export function MastersDirectory() {
                       </button>
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
+                {paddingBottom > 0 && (
+                  <tr aria-hidden="true">
+                    <td colSpan={6} style={{ height: paddingBottom, padding: 0, border: 0 }} />
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
