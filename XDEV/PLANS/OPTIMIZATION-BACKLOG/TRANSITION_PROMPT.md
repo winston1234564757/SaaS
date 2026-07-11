@@ -9,7 +9,7 @@
 Працюємо за окремим беклогом оптимізації: `XDEV/PLANS/OPTIMIZATION-BACKLOG/`.
 Прочитай спершу: `HANDOFF.md` (стан, блокери, own-eyes рецепт, пастки, знайдені баги) → `TRACKER.md` → бриф конкретної задачі в `BRIEFS/`.
 
-**Стан:** 9/19 ✅ · 2 ↩️ (ASSET-03, RND-06) · **коміти сесії 2026-07-10 не запушено** (точне число: `git log origin/main..HEAD --oneline`; від `aa1a8ab9` включно).
+**Стан:** 9/19 ✅ · 1 🔄 (RND-04 — ч.1 admin зроблено, ч.2 чат лишилась) · 2 ↩️ (ASSET-03, RND-06) · **коміти НЕ запушено** — свідоме рішення founder (точне число: `git log origin/main..HEAD --oneline`).
 
 ---
 
@@ -38,8 +38,9 @@
 ### A. `OPT-DB-08` — кластер N+1/waterfall
 Фронт + запити, без DDL. Loyalty per-master RPC, broadcast nested-await, 3 sequential-then-await хуки.
 
-### B. `OPT-RND-04` — віртуалізація
-Розбити: `MastersDirectory` (admin, простіше) окремо від `ChatMessageList` (ризиково: reverse-scroll, stick-to-bottom, `popLayout`). Для чату розглянути `content-visibility: auto` як низькоризикову альтернативу.
+### B. `OPT-RND-04` ч.2 — віртуалізація `ChatMessageList`
+**ч.1 (`MastersDirectory`) зроблено** — `34864d2c`, spacer-row + `useWindowVirtualizer`. Патерн і дві пастки (`scrollMargin` від `<tbody>`; callback-ref замість `useLayoutEffect` під `loading`-гейтом) описані в `HANDOFF.md`.
+Чат — ризиковий: reverse-scroll, stick-to-bottom, групування (`prev/next/isNewDay` inline у map), конфлікт з `AnimatePresence popLayout`. Розглянути `content-visibility: auto` як низькоризикову альтернативу.
 
 ### Фаза 2 (DB-міграції) — `OPT-DB-01/02/03/04/05`
 Пишу міграції + код; **apply на прод робить founder**. Для `OPT-DB-03` рішення вже прийняте: **варіант A — lazy per-tab**.

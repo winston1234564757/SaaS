@@ -5,7 +5,7 @@
 
 ---
 
-## Стан: 9/19 ✅ · 2 ↩️ · 8 лишилось
+## Стан: 9/19 ✅ · 1 🔄 (RND-04 наполовину) · 2 ↩️ · 7 лишилось
 
 > ⚠️ **Чекає на founder:** (1) apply двох міграцій `ASSET-02b` на прод; (2) `.env.production.local` → перейменовано в `.env.e2e-build.bak`, `npm run build` знову чесний прод-білд (`0098b30e`).
 
@@ -21,9 +21,20 @@
 | `OPT-ASSET-02` | 5 raw `<img>` → `next/image` (з 9; 3 ↩️) | ✅ | `aa1a8ab9` |
 | `OPT-ASSET-02b` | вкладення чату + **фікс аплоаду DM** | ✅ | `66f06fb6` |
 | — | `npm run build` знову прод (+ `build:e2e`) | ✅ | `0098b30e` |
+| `OPT-RND-04` ч.1 | віртуалізація `MastersDirectory` (spacer-row) | ✅ | `34864d2c` |
+| `OPT-RND-04` ч.2 | віртуалізація `ChatMessageList` | ⬜ | — |
 | `OPT-ASSET-03` | recharts defer | ↩️ скасовано | — |
 
-**⚠️ Коміти НЕ запушено** (`main ahead`). Запушити або свідомо лишити локально.
+**⚠️ Коміти НЕ запушено** (`main ahead`) — свідоме рішення founder (2026-07-11). Запушити або лишити локально.
+
+### `OPT-RND-04` ч.1 — як зроблено (2026-07-11)
+Референс `ClientsPage` віртуалізує **div-картки** абсолютним `translateY`. У `MastersDirectory` — нативна `<table>`, де абсолютне позиціювання `<tr>` ламає auto-width колонок. Тому **spacer-row технік**: рядки лишаються в потоці, вікно зверху/знизу добивається порожніми `<tr>` зі spacer-висотою. Розмітка/класи/дизайн/Sheet — **без змін**.
+
+Дві пастки, на які наступив і які варто знати для ч.2:
+- **`scrollMargin` — від верху `<tbody>`, не `<table>`.** Віртуалізовані рядки починаються після `<thead>`; міряти від таблиці = постійний зсув на висоту шапки.
+- **`useLayoutEffect` на mount тут НЕ працює.** `<tbody>` схований за `loading`-гейтом, тож на момент ефекту його ще нема в DOM → `scrollMargin` лишився б `0` і позиціювання зламалося б. Потрібен **callback-ref**, який форсить ререндер саме коли `<tbody>` монтується (і перемонтовується, коли фільтр дає 0 рядків і назад). `ClientsPage` цієї проблеми не має лише тому, що його контейнер рендериться завжди.
+
+⚠️ **Верифікація неповна:** `tsc` 0 + `build` clean + рев'ю діфа. **Живу scroll-поведінку не спостерігали** — founder дивиться сам у dev (admin-only, ризик низький).
 
 ---
 
@@ -145,7 +156,7 @@ E2E_BASE_URL=http://localhost:3000 npx playwright test <spec> --project=chromium
 
 ### Фаза 1 (фронтенд, верифіковне локально)
 - **`OPT-ASSET-02`** (P2) — 9× raw `<img>` → `next/image` з `sizes`. **Найкращий наступний крок:** реальний CLS/payload-виграш, рig готовий. Кожен випадок потребує перевірки `width/height` vs `fill` + `sizes`. **НЕ чіпати** blob/data-URL прев'ю (`StepBasic:89`, `StepProfile:96`, `StoryCanvas`, crop, `AdminSupportConsole:395`).
-- **`OPT-RND-04`** (P1) — віртуалізація `MastersDirectory` (admin, простіше) + `ChatMessageList` (**ризиково**: reverse-scroll, stick-to-bottom, групування повідомлень, конфлікт з `AnimatePresence popLayout`). Радив розбити на дві задачі; для чату розглянути `content-visibility: auto` як низькоризикову альтернативу.
+- **`OPT-RND-04` ч.2** (P1) — віртуалізація `ChatMessageList`. **ч.1 (`MastersDirectory`) зроблено** — `34864d2c`. Чат лишається **ризиковим**: reverse-scroll, stick-to-bottom, групування повідомлень (`prev/next/isNewDay` рахується inline у map → винести в мемо-derived масив), конфлікт з `AnimatePresence popLayout`. Розглянути `content-visibility: auto` як низькоризикову альтернативу повній віртуалізації.
 - **`OPT-RND-06`** (P2) — акордеони `height:0→auto`. Цінність низька; варті лише «множинні» місця (`FlashDealPage` ×2, `AllianceMap` per-node). Поодинокі лишити.
 
 ### Фаза 2 (DB/RPC — потребує прод-apply founder)

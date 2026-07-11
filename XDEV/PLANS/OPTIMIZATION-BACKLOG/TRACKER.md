@@ -4,8 +4,8 @@
 > Статуси: `⬜` не почато · `🔄` в роботі · `✅` готово · `↩️` скасовано · `⏸` відкладено
 > Всі `file:line` верифіковані проти дерева на 2026-07-10.
 
-**Прогрес:** 9/19 ✅ · 2 ↩️ (ASSET-03, RND-06 — передумови спростовані)
-> ✅ RND-01, RND-02, RND-03, DB-06, ASSET-01, DB-07, RND-05, ASSET-02, ASSET-02b · ↩️ ASSET-03, RND-06
+**Прогрес:** 9/19 ✅ · 1 🔄 (RND-04, зроблено половину) · 2 ↩️ (ASSET-03, RND-06 — передумови спростовані)
+> ✅ RND-01, RND-02, RND-03, DB-06, ASSET-01, DB-07, RND-05, ASSET-02, ASSET-02b · 🔄 RND-04 (ч.1 admin ✅) · ↩️ ASSET-03, RND-06
 > ⚠️ ASSET-02b містить 2 міграції — застосовані лише локально, **apply на прод за founder**
 
 ---
@@ -30,7 +30,7 @@
 | `OPT-RND-01` | `ui/Sheet.tsx` `backdrop-blur-3xl` під scale-анімацією — джанк у КОЖНІЙ модалці | P0 | ✅ | `fixing-motion-performance` | **Opus** | `7d66e4c4` |
 | `OPT-RND-02` | `context.tsx` MasterContext value міняє identity щорендер (refresh/fetchProfile без useCallback) | P0 | ✅ | `react-best-practices` `senior-frontend` | **Opus** | `7d66e4c4` |
 | `OPT-RND-03` | `ReviewsPage` `layout` на необмеженому списку під popLayout — thrash на фільтрі | P1 | ✅ | `fixing-motion-performance` | **Sonnet** | `6691b151` |
-| `OPT-RND-04` | Відсутня віртуалізація: `MastersDirectory` (admin), `ChatMessageList` (вся історія motion-nodes) | P1 | ⬜ | `senior-frontend` | **Sonnet** | — |
+| `OPT-RND-04` | Відсутня віртуалізація. **Розбито надвоє.** ч.1 `MastersDirectory` (admin) — ✅ spacer-row + `useWindowVirtualizer`. ч.2 `ChatMessageList` — ⬜ ризиково (reverse-scroll, stick-to-bottom, `popLayout`) | P1 | 🔄 | `senior-frontend` | **Sonnet** | `34864d2c` (ч.1) |
 | `OPT-RND-05` | Кластер: 6 progress-барів анімують `width/height` замість `scaleX/scaleY` (зроблено 3 — де є множник) | P2 | ✅ | `fixing-motion-performance` | **Sonnet** | `fa2123ea` |
 | `OPT-RND-06` | Кластер: `height:0→auto` акордеони × 6 — ↩️ **скасовано**: усі поодинокі user-toggle (Rule 2 дозволяє); grid-rows НЕ compositor; проєкт уже відкинув grid-rows | P2 | ↩️ | `fixing-motion-performance` | **Opus** | — |
 
