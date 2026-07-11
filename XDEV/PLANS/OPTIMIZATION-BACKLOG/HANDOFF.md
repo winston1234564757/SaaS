@@ -5,7 +5,7 @@
 
 ---
 
-## Стан: 9/19 ✅ · 1 🔄 (RND-04 наполовину) · 2 ↩️ · 7 лишилось
+## Стан: 10/19 ✅ · 1 🔄 (RND-04 наполовину) · 2 ↩️ · 6 лишилось
 
 > ⚠️ **Чекає на founder:** (1) apply двох міграцій `ASSET-02b` на прод; (2) `.env.production.local` → перейменовано в `.env.e2e-build.bak`, `npm run build` знову чесний прод-білд (`0098b30e`).
 
@@ -22,6 +22,7 @@
 | `OPT-ASSET-02b` | вкладення чату + **фікс аплоаду DM** | ✅ | `66f06fb6` |
 | — | `npm run build` знову прод (+ `build:e2e`) | ✅ | `0098b30e` |
 | `OPT-RND-04` ч.1 | віртуалізація `MastersDirectory` (spacer-row) | ✅ | `34864d2c` |
+| `OPT-DB-08` | N+1/waterfall кластер — **без міграції** | ✅ | `b5345ece` |
 | `OPT-RND-04` ч.2 | віртуалізація `ChatMessageList` | ⬜ | — |
 | `OPT-ASSET-03` | recharts defer | ↩️ скасовано | — |
 
@@ -35,6 +36,27 @@
 - **`useLayoutEffect` на mount тут НЕ працює.** `<tbody>` схований за `loading`-гейтом, тож на момент ефекту його ще нема в DOM → `scrollMargin` лишився б `0` і позиціювання зламалося б. Потрібен **callback-ref**, який форсить ререндер саме коли `<tbody>` монтується (і перемонтовується, коли фільтр дає 0 рядків і назад). `ClientsPage` цієї проблеми не має лише тому, що його контейнер рендериться завжди.
 
 ✅ **Верифіковано:** `tsc` 0 + `build` clean + рев'ю діфа + **жива поведінка перевірена founder'ом у dev** (2026-07-11). Агент рігу не піднімав — own-eyes зроблено на стороні founder. Борг верифікації закритий, ч.1 закрита.
+
+### `OPT-DB-08` — як зроблено (2026-07-11) · `b5345ece`
+
+**Головне: міграція виявилась непотрібною.** Бриф і TRANSITION попереджали, що loyalty-частина потягне новий set-returning RPC → знову хвіст під founder-apply. Живий код це спростував:
+
+`get_c2c_balance(referrer, master)` = `GREATEST(0, SUM(discount_pct) FILTER (completed) − SUM(discount_used))`. Перший доданок береться з `c2c_referrals`, які **сторінка вже тягне** (з `discount_pct` і `status` у select). Бракує лише `c2c_bonus_uses` — а на ній висить RLS `owner select USING (auth.uid() = referrer_id)`, тобто звичайний select зі server-клієнта її бачить. RPC був SECURITY DEFINER не тому, що дані закриті, а просто щоб інкапсулювати формулу. Підсумок: **N RPC → 1 select**, нуль DDL.
+
+- **loyalty** (`my/loyalty/page.tsx`): `Promise.all(masters.map(rpc))` → один `c2c_bonus_uses` select; `earned` рахується з уже завантажених рядків. Плюс promocodes + c2c_referrals + bonus_uses зведено в **один `Promise.all`** (було три послідовні round-trip — це поза брифом, апрув founder).
+- **broadcast** (`marketing/actions.ts`): вкладений awaited ownership-sub-query всередині `.in(...)` → `broadcasts!inner(master_id)` + `.eq('broadcasts.master_id', user.id)`. Один round-trip.
+- **3 хуки**: `useVacationImpact`, `useSourceAttribution`, `useReviewsMetrics` — незалежні запити з послідовних `await` у `Promise.all`.
+
+⚠️ **Пастка, на яку варто дивитись у DB-задачах:** `getBroadcastAnalytics` ходить **admin-клієнтом** (service-role) — RLS обійдено, тож ownership тримається **виключно** на моєму join-фільтрі. Якби `.eq()` по вкладеній колонці мовчки не фільтрував, це був би тихий IDOR (будь-який майстер читає чужу аналітику). Тому перевіряв обидва боки явно, а не лише happy-path.
+
+✅ **Верифіковано на локальному Supabase із засіяними edge-кейсами** (сід їх не має — без ручного сіду перевірка пройшла б ні про що):
+- баланс новим шляхом **=** `get_c2c_balance` на всіх майстрах (15/0/0) від імені **реально залогіненого клієнта** — тобто перевірено і арифметику, і що RLS не ховає `c2c_bonus_uses` (якби ховав, вийшло б 25 замість 15);
+- клемп `GREATEST(0, …)`: earned 10 − used 30 → 0 ✓; pending-реферали поза сумою ✓;
+- broadcast: owner → 2 отримувачі, чужий майстер → 0 (IDOR закрито), стата sent=2/clicked=1/booked=1;
+- `/my/loyalty` у браузері (`build:e2e` + storageState клієнта): «Баланс: 15%» / «Баланс: 0%».
+- `tsc` 0 · `build` clean (54/54).
+
+🐞 **Знайдено попутно (поза скоупом, не чіпав):** `MyLoyaltyPage.tsx:247` показує `Отримано: {completed × c2c_discount_pct}%` — це **поточний** відсоток майстра × кількість, а не фактично нарахований `SUM(discount_pct)`. На сіді видно розбіжність: «Отримано: 20%» при реальних 25% (реферали мали 10% і 15%). Розходиться, коли майстер міняв `c2c_discount_pct` між рефералами. Баланс рахується правильно — бита лише ця підпис-цифра.
 
 ---
 
@@ -160,7 +182,9 @@ E2E_BASE_URL=http://localhost:3000 npx playwright test <spec> --project=chromium
 - **`OPT-RND-06`** (P2) — акордеони `height:0→auto`. Цінність низька; варті лише «множинні» місця (`FlashDealPage` ×2, `AllianceMap` per-node). Поодинокі лишити.
 
 ### Фаза 2 (DB/RPC — потребує прод-apply founder)
-`OPT-DB-01` (useOrders full-scan) · `OPT-DB-02` (get_master_clients пагінація + refetch-per-keystroke) · `OPT-DB-03` (analytics eager mega-RPC — **обрано варіант A: lazy per-tab**) · `OPT-DB-04` (5000-row set-diff → SQL `NOT EXISTS`) · `OPT-DB-05` (get_finance_analytics 8 сканів → CTE) · `OPT-DB-08` (N+1/waterfall кластер).
+`OPT-DB-01` (useOrders full-scan) · `OPT-DB-02` (get_master_clients пагінація + refetch-per-keystroke) · `OPT-DB-03` (analytics eager mega-RPC — **обрано варіант A: lazy per-tab**) · `OPT-DB-04` (5000-row set-diff → SQL `NOT EXISTS`) · `OPT-DB-05` (get_finance_analytics 8 сканів → CTE).
+
+> `OPT-DB-08` ✅ **вийшов із Фази 2** — виявилось, що DDL не потрібен узагалі (див. секцію вище). **Урок для решти DB-задач: спершу перевір, чи справді потрібна міграція.** `DB-04`, наприклад, теж може закритись клієнтським/запитовим фіксом без нового RPC — не бери припущення брифу на віру.
 
 **Блокери Фази 2:** SQL-міграції застосовуються на прод через Management API, не `db push` (`AUDIT/REPO_PARITY.md`). Harness блокує мій прод-write → міграції пишу, **apply робить founder**. Локальна БД дозволяє перевірити SQL перед цим.
 

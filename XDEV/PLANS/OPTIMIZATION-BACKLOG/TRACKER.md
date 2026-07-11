@@ -4,8 +4,8 @@
 > Статуси: `⬜` не почато · `🔄` в роботі · `✅` готово · `↩️` скасовано · `⏸` відкладено
 > Всі `file:line` верифіковані проти дерева на 2026-07-10.
 
-**Прогрес:** 9/19 ✅ · 1 🔄 (RND-04, зроблено половину) · 2 ↩️ (ASSET-03, RND-06 — передумови спростовані)
-> ✅ RND-01, RND-02, RND-03, DB-06, ASSET-01, DB-07, RND-05, ASSET-02, ASSET-02b · 🔄 RND-04 (ч.1 admin ✅) · ↩️ ASSET-03, RND-06
+**Прогрес:** 10/19 ✅ · 1 🔄 (RND-04, зроблено половину) · 2 ↩️ (ASSET-03, RND-06 — передумови спростовані)
+> ✅ RND-01, RND-02, RND-03, DB-06, ASSET-01, DB-07, RND-05, ASSET-02, ASSET-02b, DB-08 · 🔄 RND-04 (ч.1 admin ✅) · ↩️ ASSET-03, RND-06
 > ⚠️ ASSET-02b містить 2 міграції — застосовані лише локально, **apply на прод за founder**
 
 ---
@@ -21,7 +21,7 @@
 | `OPT-DB-05` | `get_finance_analytics` 8 окремих скан-проходів bookings+join | P1 | ⬜ | `supabase-postgres-best-practices` | **Opus** | — |
 | `OPT-DB-06` | `useReviews` unbounded + дубль-запит `reviews-pending` (підмножина) | P1 | ✅ | `tanstack-query` | **Sonnet** | `6691b151` |
 | `OPT-DB-07` | Кластер over-fetch: `select('*')`/no-bound × 5 (expenses, product_transactions, ModerationHub, SystemLogs) | P2 | ✅ | `database-optimizer` | **Sonnet** | `7caa2aee` |
-| `OPT-DB-08` | Кластер N+1/waterfall: loyalty per-master RPC, broadcast nested-await, 3 sequential-then-await хуки | P2 | ⬜ | `senior-backend` | **Sonnet** | — |
+| `OPT-DB-08` | Кластер N+1/waterfall: loyalty per-master RPC → 1 select (**без міграції** — RLS owner-select на `c2c_bonus_uses` робить RPC зайвим), broadcast nested-await → inner-join, 3 хуки → `Promise.all`. Бонус: waterfall самої loyalty-сторінки | P2 | ✅ | `senior-backend` | **Sonnet** | `b5345ece` |
 
 ## ФАЗА RND — Рендер / Анімації
 

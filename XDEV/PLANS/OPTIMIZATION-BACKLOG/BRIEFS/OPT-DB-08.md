@@ -2,8 +2,14 @@
 
 **Тип:** DATA
 **Пріоритет:** P2
-**Статус:** DRAFT
+**Статус:** ✅ DONE — `b5345ece` (2026-07-11)
 **Спеціаліст-скіли:** `senior-backend`
+
+> ⚠️ **Бриф помилявся у двох місцях** (виправлено живим кодом перед виконанням):
+> 1. **«Новий set-returning RPC» не знадобився.** `c2c_bonus_uses` має RLS `owner select USING (auth.uid() = referrer_id)`, а `discount_pct`+`status` сторінка вже тягне з `c2c_referrals` → баланс рахується з одного звичайного select. Нуль DDL, нуль founder-apply.
+> 2. **Шляхи хуків неточні** — вони в `src/lib/supabase/hooks/`, не `src/lib/hooks/`.
+>
+> Як зроблено, чим верифіковано і який баг знайдено попутно — `HANDOFF.md §OPT-DB-08`.
 
 ---
 
