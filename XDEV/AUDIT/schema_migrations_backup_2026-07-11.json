@@ -1,0 +1,882 @@
+﻿[
+    {
+        "version":  "001",
+        "name":  "initial_schema"
+    },
+    {
+        "version":  "002",
+        "name":  "add_emoji_category"
+    },
+    {
+        "version":  "003",
+        "name":  "auth_trigger_and_grants"
+    },
+    {
+        "version":  "004",
+        "name":  "reviews_client_name"
+    },
+    {
+        "version":  "005",
+        "name":  "client_booking_link_policy"
+    },
+    {
+        "version":  "006",
+        "name":  "client_master_select_policy"
+    },
+    {
+        "version":  "007",
+        "name":  "media_fields"
+    },
+    {
+        "version":  "008",
+        "name":  "inventory_trigger"
+    },
+    {
+        "version":  "009",
+        "name":  "push_subscriptions"
+    },
+    {
+        "version":  "010",
+        "name":  "master_referrals"
+    },
+    {
+        "version":  "011",
+        "name":  "studios"
+    },
+    {
+        "version":  "012",
+        "name":  "killer_features"
+    },
+    {
+        "version":  "013",
+        "name":  "fix_trigger_security"
+    },
+    {
+        "version":  "014",
+        "name":  "portfolio"
+    },
+    {
+        "version":  "015",
+        "name":  "avatar_emoji"
+    },
+    {
+        "version":  "016",
+        "name":  "sms_otp_base_tables"
+    },
+    {
+        "version":  "017",
+        "name":  "master_telegram_chat_id"
+    },
+    {
+        "version":  "018",
+        "name":  "ip_rate_limiting"
+    },
+    {
+        "version":  "019",
+        "name":  "atomic_sms_rate_limit"
+    },
+    {
+        "version":  "020",
+        "name":  "working_hours"
+    },
+    {
+        "version":  "021",
+        "name":  "explore_rls"
+    },
+    {
+        "version":  "022",
+        "name":  "publish_existing_masters"
+    },
+    {
+        "version":  "023",
+        "name":  "update_auth_trigger"
+    },
+    {
+        "version":  "024",
+        "name":  "flash_deal_booking_ref"
+    },
+    {
+        "version":  "025",
+        "name":  "avatars_bucket"
+    },
+    {
+        "version":  "026",
+        "name":  "waitlists"
+    },
+    {
+        "version":  "027",
+        "name":  "atomic_sms_send_rate_limit"
+    },
+    {
+        "version":  "028",
+        "name":  "studio_invite_ttl"
+    },
+    {
+        "version":  "029",
+        "name":  "missing_indexes"
+    },
+    {
+        "version":  "030",
+        "name":  "drop_bookings_this_month"
+    },
+    {
+        "version":  "031",
+        "name":  "flash_deal_status_enum"
+    },
+    {
+        "version":  "032",
+        "name":  "jsonb_check_constraints"
+    },
+    {
+        "version":  "033",
+        "name":  "waitlists_fk_profiles"
+    },
+    {
+        "version":  "034",
+        "name":  "rls_payments_referrals"
+    },
+    {
+        "version":  "035",
+        "name":  "drop_booking_counter_trigger"
+    },
+    {
+        "version":  "036",
+        "name":  "payment_enums"
+    },
+    {
+        "version":  "037",
+        "name":  "check_constraints"
+    },
+    {
+        "version":  "038",
+        "name":  "missing_indexes_2"
+    },
+    {
+        "version":  "039",
+        "name":  "incremental_rating"
+    },
+    {
+        "version":  "040",
+        "name":  "studio_token_unique"
+    },
+    {
+        "version":  "041",
+        "name":  "fix_dead_counter_triggers"
+    },
+    {
+        "version":  "042",
+        "name":  "performance_indexes"
+    },
+    {
+        "version":  "043",
+        "name":  "product_indexes"
+    },
+    {
+        "version":  "044",
+        "name":  "booking_count_index"
+    },
+    {
+        "version":  "045",
+        "name":  "reapply_missing_indexes"
+    },
+    {
+        "version":  "046",
+        "name":  "schedule_indexes_and_rls"
+    },
+    {
+        "version":  "047",
+        "name":  "master_client_notes"
+    },
+    {
+        "version":  "048",
+        "name":  "get_master_clients_rpc"
+    },
+    {
+        "version":  "049",
+        "name":  "dynamic_pricing_trial"
+    },
+    {
+        "version":  "050",
+        "name":  "booking_dynamic_pricing_fields"
+    },
+    {
+        "version":  "051",
+        "name":  "master_time_off"
+    },
+    {
+        "version":  "052",
+        "name":  "portfolio_service_link"
+    },
+    {
+        "version":  "053",
+        "name":  "flash_deals_upgrade"
+    },
+    {
+        "version":  "054",
+        "name":  "fix_flash_deal_rpc"
+    },
+    {
+        "version":  "055",
+        "name":  "portfolio_bucket_10mb"
+    },
+    {
+        "version":  "056",
+        "name":  "drop_portfolio"
+    },
+    {
+        "version":  "057",
+        "name":  "referral_mvp"
+    },
+    {
+        "version":  "058",
+        "name":  "has_seen_tour"
+    },
+    {
+        "version":  "059",
+        "name":  "fix_handle_new_user_phone"
+    },
+    {
+        "version":  "060",
+        "name":  "profiles_phone_unique"
+    },
+    {
+        "version":  "061",
+        "name":  "normalize_phone_e164"
+    },
+    {
+        "version":  "062",
+        "name":  "normalize_phone_e164_fix"
+    },
+    {
+        "version":  "063",
+        "name":  "link_bookings_on_phone_set"
+    },
+    {
+        "version":  "064",
+        "name":  "fix_link_bookings_trigger"
+    },
+    {
+        "version":  "065",
+        "name":  "get_user_id_by_email"
+    },
+    {
+        "version":  "066",
+        "name":  "advanced_referrals"
+    },
+    {
+        "version":  "067",
+        "name":  "telegram_connect_token"
+    },
+    {
+        "version":  "068",
+        "name":  "get_master_clients_with_vip"
+    },
+    {
+        "version":  "069",
+        "name":  "master_profiles_timezone"
+    },
+    {
+        "version":  "070",
+        "name":  "reviews_master_policies"
+    },
+    {
+        "version":  "071",
+        "name":  "notifications"
+    },
+    {
+        "version":  "072",
+        "name":  "studio_invite_token_hash"
+    },
+    {
+        "version":  "073",
+        "name":  "seen_tours"
+    },
+    {
+        "version":  "074",
+        "name":  "master_location_details"
+    },
+    {
+        "version":  "075",
+        "name":  "billing_events"
+    },
+    {
+        "version":  "076",
+        "name":  "retention_status_rpc"
+    },
+    {
+        "version":  "077",
+        "name":  "retention_cycle_days"
+    },
+    {
+        "version":  "078",
+        "name":  "get_rebooking_due_clients"
+    },
+    {
+        "version":  "079",
+        "name":  "fix_rebooking_date_arithmetic"
+    },
+    {
+        "version":  "080",
+        "name":  "onboarding_persistence"
+    },
+    {
+        "version":  "081",
+        "name":  "fix_onboarding_index"
+    },
+    {
+        "version":  "082",
+        "name":  "fix_link_bookings_trigger_fk"
+    },
+    {
+        "version":  "083",
+        "name":  "legacy_onboarding_success"
+    },
+    {
+        "version":  "084",
+        "name":  "master_subscriptions"
+    },
+    {
+        "version":  "085",
+        "name":  "billing_events_v2"
+    },
+    {
+        "version":  "086",
+        "name":  "subscriptions_billing_engine"
+    },
+    {
+        "version":  "087",
+        "name":  "security_rls_hardening"
+    },
+    {
+        "version":  "088",
+        "name":  "portfolio_photos_published_filter"
+    },
+    {
+        "version":  "089",
+        "name":  "perf_indexes"
+    },
+    {
+        "version":  "090",
+        "name":  "retention_rpc"
+    },
+    {
+        "version":  "091",
+        "name":  "booking_slot_unique"
+    },
+    {
+        "version":  "092",
+        "name":  "reviews_moderation"
+    },
+    {
+        "version":  "093",
+        "name":  "referral_grants_idempotency"
+    },
+    {
+        "version":  "094",
+        "name":  "billing_events_status_check"
+    },
+    {
+        "version":  "095",
+        "name":  "professional_alliance"
+    },
+    {
+        "version":  "096",
+        "name":  "bounty_referral_model"
+    },
+    {
+        "version":  "097",
+        "name":  "discount_reserve"
+    },
+    {
+        "version":  "098",
+        "name":  "alliance_visibility_bounty_to_reserve"
+    },
+    {
+        "version":  "099",
+        "name":  "c2c_referral"
+    },
+    {
+        "version":  "100",
+        "name":  "fix_rating_count"
+    },
+    {
+        "version":  "101",
+        "name":  "products_and_orders"
+    },
+    {
+        "version":  "102",
+        "name":  "rebuild_products_schema"
+    },
+    {
+        "version":  "103",
+        "name":  "increment_stock_rpc"
+    },
+    {
+        "version":  "104",
+        "name":  "product_photos_bucket"
+    },
+    {
+        "version":  "105",
+        "name":  "product_service_links"
+    },
+    {
+        "version":  "106",
+        "name":  "product_links_rls_orders_anon"
+    },
+    {
+        "version":  "107",
+        "name":  "booking_products"
+    },
+    {
+        "version":  "108",
+        "name":  "restore_product_fks"
+    },
+    {
+        "version":  "109",
+        "name":  "order_pickup_at"
+    },
+    {
+        "version":  "110",
+        "name":  "order_pickup_at_fix"
+    },
+    {
+        "version":  "111",
+        "name":  "reload_cache"
+    },
+    {
+        "version":  "112",
+        "name":  "unified_reviews"
+    },
+    {
+        "version":  "113",
+        "name":  "fix_inventory_trigger_schema"
+    },
+    {
+        "version":  "114",
+        "name":  "portfolio_items"
+    },
+    {
+        "version":  "115",
+        "name":  "recreate_portfolios_bucket"
+    },
+    {
+        "version":  "116",
+        "name":  "broadcasts"
+    },
+    {
+        "version":  "117",
+        "name":  "add_soft_deletes"
+    },
+    {
+        "version":  "118",
+        "name":  "update_get_master_clients_rpc"
+    },
+    {
+        "version":  "119",
+        "name":  "safe_subscription_view"
+    },
+    {
+        "version":  "120",
+        "name":  "telegram_webhook_logs"
+    },
+    {
+        "version":  "125",
+        "name":  "add_in_app_channel"
+    },
+    {
+        "version":  "126",
+        "name":  "segment_config"
+    },
+    {
+        "version":  "130",
+        "name":  "sequential_services"
+    },
+    {
+        "version":  "131",
+        "name":  "fix_inventory_price_constraint"
+    },
+    {
+        "version":  "132",
+        "name":  "fix_last_service_name_rpc"
+    },
+    {
+        "version":  "133",
+        "name":  "fix_referral_status_trigger"
+    },
+    {
+        "version":  "134",
+        "name":  "fix_referral_grants_unique"
+    },
+    {
+        "version":  "135",
+        "name":  "lifetime_discount_checkpoint"
+    },
+    {
+        "version":  "136",
+        "name":  "notification_logs"
+    },
+    {
+        "version":  "137",
+        "name":  "client_health_notes"
+    },
+    {
+        "version":  "138",
+        "name":  "service_icon_name"
+    },
+    {
+        "version":  "139",
+        "name":  "products_full_fix"
+    },
+    {
+        "version":  "140",
+        "name":  "c2c_referrals_master_id_index"
+    },
+    {
+        "version":  "141",
+        "name":  "auto_flash_on_cancel"
+    },
+    {
+        "version":  "142",
+        "name":  "products_unit"
+    },
+    {
+        "version":  "143",
+        "name":  "product_links_qty_numeric"
+    },
+    {
+        "version":  "144",
+        "name":  "master_expenses"
+    },
+    {
+        "version":  "145",
+        "name":  "products_bulk_pricing"
+    },
+    {
+        "version":  "20260513051745",
+        "name":  "fix_get_master_clients_rpc"
+    },
+    {
+        "version":  "20260516000000",
+        "name":  "client_health_system_update"
+    },
+    {
+        "version":  "20260516000001",
+        "name":  "client_health_global"
+    },
+    {
+        "version":  "20260524124500",
+        "name":  "get_master_referral_history"
+    },
+    {
+        "version":  "20260529000000",
+        "name":  "admin_init"
+    },
+    {
+        "version":  "20260529000200",
+        "name":  "admin_overview_rpc"
+    },
+    {
+        "version":  "20260529024913",
+        "name":  "20260529000000_admin_init"
+    },
+    {
+        "version":  "20260529025153",
+        "name":  "20260529000200_admin_overview_rpc"
+    },
+    {
+        "version":  "20260604000000",
+        "name":  "booking_link_security"
+    },
+    {
+        "version":  "20260605000000",
+        "name":  "analytics_system"
+    },
+    {
+        "version":  "20260605000001",
+        "name":  "analytics_system_v2"
+    },
+    {
+        "version":  "20260605210919",
+        "name":  "20260605000001_analytics_system_v2"
+    },
+    {
+        "version":  "20260607000000",
+        "name":  "security_search_path_fix"
+    },
+    {
+        "version":  "20260609000000",
+        "name":  "beta_requests"
+    },
+    {
+        "version":  "20260609000001",
+        "name":  "frost_default_theme"
+    },
+    {
+        "version":  "20260609000002",
+        "name":  "partners_tokens"
+    },
+    {
+        "version":  "20260610000001",
+        "name":  "loyalty_dual_codes"
+    },
+    {
+        "version":  "20260611050410",
+        "name":  "simplify_flash_deal_eligible_clients"
+    },
+    {
+        "version":  "20260615000001",
+        "name":  "profile_social_fields"
+    },
+    {
+        "version":  "20260615000002",
+        "name":  "direct_messages"
+    },
+    {
+        "version":  "20260615123439",
+        "name":  "profile_social_fields"
+    },
+    {
+        "version":  "20260615123914",
+        "name":  "auto_flash_on_cancel"
+    },
+    {
+        "version":  "20260615134926",
+        "name":  "direct_messages"
+    },
+    {
+        "version":  "20260617045407",
+        "name":  "activation_tour_step"
+    },
+    {
+        "version":  "20260618000000",
+        "name":  "activation_tour_step"
+    },
+    {
+        "version":  "20260620000001",
+        "name":  "rls_enable_sensitive_tables"
+    },
+    {
+        "version":  "20260620000002",
+        "name":  "perf_missing_fk_indexes"
+    },
+    {
+        "version":  "20260620115009",
+        "name":  "security_search_path_fix"
+    },
+    {
+        "version":  "20260620115010",
+        "name":  "rls_enable_sensitive_tables"
+    },
+    {
+        "version":  "20260620115801",
+        "name":  "perf_missing_fk_indexes"
+    },
+    {
+        "version":  "20260620122653",
+        "name":  "atomic_stock_decrement_rpc"
+    },
+    {
+        "version":  "20260620172504",
+        "name":  "142_products_unit"
+    },
+    {
+        "version":  "20260620172506",
+        "name":  "143_product_links_qty_numeric"
+    },
+    {
+        "version":  "20260620172507",
+        "name":  "144_master_expenses"
+    },
+    {
+        "version":  "20260620173055",
+        "name":  "145_get_finance_analytics_operational_expenses"
+    },
+    {
+        "version":  "20260620181804",
+        "name":  "drop_duplicate_indexes"
+    },
+    {
+        "version":  "20260621024913",
+        "name":  "145_products_bulk_pricing"
+    },
+    {
+        "version":  "20260625000000",
+        "name":  "client_vibe_tags"
+    },
+    {
+        "version":  "20260625175602",
+        "name":  "client_vibe_tags"
+    },
+    {
+        "version":  "20260626000000",
+        "name":  "get_service_reviews"
+    },
+    {
+        "version":  "20260626100123",
+        "name":  "get_service_reviews"
+    },
+    {
+        "version":  "20260626171445",
+        "name":  "secure_products_anon_column_grants"
+    },
+    {
+        "version":  "20260626171446",
+        "name":  "product_transactions_master_select_policy"
+    },
+    {
+        "version":  "20260626174521",
+        "name":  "product_transactions_add_deduction_type"
+    },
+    {
+        "version":  "20260626174526",
+        "name":  "consumable_atomic_deduct_rpc"
+    },
+    {
+        "version":  "20260626174527",
+        "name":  "drop_permissive_order_insert_policies"
+    },
+    {
+        "version":  "20260627000001",
+        "name":  "secure_products_anon_column_grants"
+    },
+    {
+        "version":  "20260627000002",
+        "name":  "product_transactions_master_select_policy"
+    },
+    {
+        "version":  "20260627000003",
+        "name":  "product_transactions_add_deduction_type"
+    },
+    {
+        "version":  "20260627000004",
+        "name":  "consumable_atomic_deduct_rpc"
+    },
+    {
+        "version":  "20260627000005",
+        "name":  "drop_permissive_order_insert_policies"
+    },
+    {
+        "version":  "20260627000010",
+        "name":  "get_product_reviews"
+    },
+    {
+        "version":  "20260627173912",
+        "name":  "get_product_reviews"
+    },
+    {
+        "version":  "20260628000000",
+        "name":  "flash_eligible_clients_return_name"
+    },
+    {
+        "version":  "20260628000001",
+        "name":  "drop_flash_3arg_overload"
+    },
+    {
+        "version":  "20260628000002",
+        "name":  "flash_deal_recipients"
+    },
+    {
+        "version":  "20260628000003",
+        "name":  "get_pricing_rule_stats"
+    },
+    {
+        "version":  "20260628000004",
+        "name":  "get_pricing_rules_overview"
+    },
+    {
+        "version":  "20260628000005",
+        "name":  "dynamic_pricing_uplift_discounts"
+    },
+    {
+        "version":  "20260628000006",
+        "name":  "loyalty_redemption_tracking"
+    },
+    {
+        "version":  "20260628000007",
+        "name":  "loyalty_stats_rpcs"
+    },
+    {
+        "version":  "20260628000008",
+        "name":  "master_connections_merge"
+    },
+    {
+        "version":  "20260628030507",
+        "name":  "flash_eligible_clients_return_name"
+    },
+    {
+        "version":  "20260628041117",
+        "name":  "drop_flash_3arg_overload"
+    },
+    {
+        "version":  "20260628050638",
+        "name":  "flash_deal_recipients"
+    },
+    {
+        "version":  "20260628101531",
+        "name":  "get_pricing_rule_stats"
+    },
+    {
+        "version":  "20260628121535",
+        "name":  "get_pricing_rules_overview"
+    },
+    {
+        "version":  "20260628121537",
+        "name":  "dynamic_pricing_uplift_discounts"
+    },
+    {
+        "version":  "20260628151008",
+        "name":  "loyalty_redemption_tracking"
+    },
+    {
+        "version":  "20260628151023",
+        "name":  "loyalty_stats_rpcs"
+    },
+    {
+        "version":  "20260628170725",
+        "name":  "master_connections_merge"
+    },
+    {
+        "version":  "20260630000000",
+        "name":  "fix_analytics_extract_date_subtraction"
+    },
+    {
+        "version":  "20260706000000",
+        "name":  "orders_nova_poshta_fields"
+    },
+    {
+        "version":  "20260706120000",
+        "name":  "security_idor_analytics_guard"
+    },
+    {
+        "version":  "20260707130000",
+        "name":  "billing_recurring_reconciliation"
+    },
+    {
+        "version":  "20260707131000",
+        "name":  "notification_channel_in_app"
+    },
+    {
+        "version":  "20260707132000",
+        "name":  "notification_sms_budget"
+    },
+    {
+        "version":  "20260708000000",
+        "name":  "repo_parity_idor_bodies"
+    },
+    {
+        "version":  "20260708000001",
+        "name":  "repo_parity_views"
+    },
+    {
+        "version":  "20260710000000",
+        "name":  "chat_attachment_dimensions"
+    },
+    {
+        "version":  "20260710000001",
+        "name":  "fix_dm_attachment_storage_policies"
+    },
+    {
+        "version":  "20260710000002",
+        "name":  "lock_stock_rpcs_to_service_role"
+    }
+]
