@@ -42,7 +42,7 @@ export default async function LoyaltyRoute() {
     const mp = p.master_profiles;
     // Handle potential array from profiles join
     const profile = Array.isArray(mp?.profiles) ? mp.profiles[0] : mp?.profiles;
-    
+
     return {
       id: p.id as string,
       name: p.name as string,
@@ -67,18 +67,37 @@ export default async function LoyaltyRoute() {
   const c2cCode = c2cCodeRes.code || '';
   const c2bCode = c2bCodeRes.code || '';
 
-  // 5. Get client's barter promocodes
-  const { data: promocodes } = await supabase
-    .from('client_promocodes')
-    .select(`
-      id, discount_percentage, is_used, created_at,
-      master_profiles (
-        id, slug, avatar_emoji,
-        profiles ( full_name, avatar_url )
-      )
-    `)
-    .eq('client_id', user!.id)
-    .order('created_at', { ascending: false });
+  // 5. Promocodes + C2C referrals + spent C2C bonuses — незалежні запити, один round-trip.
+  //    c2c_bonus_uses замінює N викликів get_c2c_balance (по одному на кожного майстра):
+  //    RLS "c2c_bonus_uses: owner select" пропускає referrer_id = auth.uid().
+  const [{ data: promocodes }, { data: c2cRows }, { data: bonusUses }] = await Promise.all([
+    supabase
+      .from('client_promocodes')
+      .select(`
+        id, discount_percentage, is_used, created_at,
+        master_profiles (
+          id, slug, avatar_emoji,
+          profiles ( full_name, avatar_url )
+        )
+      `)
+      .eq('client_id', user!.id)
+      .order('created_at', { ascending: false }),
+    supabase
+      .from('c2c_referrals')
+      .select(`
+        id, status, discount_pct,
+        master_profiles (
+          id, slug, avatar_emoji, c2c_discount_pct,
+          profiles ( full_name, avatar_url )
+        )
+      `)
+      .eq('referrer_id', user!.id)
+      .order('created_at', { ascending: false }),
+    supabase
+      .from('c2c_bonus_uses')
+      .select('master_id, discount_used')
+      .eq('referrer_id', user!.id),
+  ]);
 
   // Map promocodes for UI
   const promoItems = (promocodes ?? []).map((pc: any) => {
@@ -96,23 +115,10 @@ export default async function LoyaltyRoute() {
     };
   });
 
-  // 6. C2C referrals (as referrer) — group by master
-  const { data: c2cRows } = await supabase
-    .from('c2c_referrals')
-    .select(`
-      id, status, discount_pct,
-      master_profiles (
-        id, slug, avatar_emoji, c2c_discount_pct,
-        profiles ( full_name, avatar_url )
-      )
-    `)
-    .eq('referrer_id', user!.id)
-    .order('created_at', { ascending: false });
-
-  // Build per-master C2C stats
+  // 6. Build per-master C2C stats (+ earned bonus — SUM(discount_pct) по завершених рефералах)
   const c2cByMaster = new Map<string, {
     masterId: string; masterSlug: string; masterName: string; masterEmoji: string; masterAvatarUrl: string | null;
-    c2cDiscountPct: number; invited: number; completed: number;
+    c2cDiscountPct: number; invited: number; completed: number; earnedPct: number;
   }>();
 
   for (const row of (c2cRows ?? []) as any[]) {
@@ -122,27 +128,28 @@ export default async function LoyaltyRoute() {
     const existing = c2cByMaster.get(mp.id) ?? {
       masterId: mp.id, masterSlug: mp.slug, masterName: profile?.full_name || 'Майстер',
       masterEmoji: mp.avatar_emoji || '💅', masterAvatarUrl: profile?.avatar_url || null, c2cDiscountPct: mp.c2c_discount_pct ?? 10,
-      invited: 0, completed: 0,
+      invited: 0, completed: 0, earnedPct: 0,
     };
     existing.invited += 1;
-    if (row.status === 'completed') existing.completed += 1;
+    if (row.status === 'completed') {
+      existing.completed += 1;
+      existing.earnedPct += Number(row.discount_pct ?? 0);
+    }
     c2cByMaster.set(mp.id, existing);
   }
 
-  const c2cMasters = await Promise.all(
-    Array.from(c2cByMaster.values()).map(async (m) => {
-      const { data: balance } = await supabase.rpc('get_c2c_balance', {
-        p_referrer_id: user!.id,
-        p_master_id: m.masterId,
-      });
+  // Витрачені бонуси по майстрах
+  const usedByMaster = new Map<string, number>();
+  for (const u of (bonusUses ?? []) as { master_id: string; discount_used: number | null }[]) {
+    usedByMaster.set(u.master_id, (usedByMaster.get(u.master_id) ?? 0) + Number(u.discount_used ?? 0));
+  }
 
-      return {
-        ...m,
-        balance: typeof balance === 'number' ? balance : 0,
-        shareLink: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://bookit.com.ua'}/${m.masterSlug}?ref=${c2cCode}`,
-      };
-    })
-  );
+  // Баланс — та сама формула, що в get_c2c_balance: GREATEST(0, earned − used)
+  const c2cMasters = Array.from(c2cByMaster.values()).map(({ earnedPct, ...m }) => ({
+    ...m,
+    balance: Math.max(0, earnedPct - (usedByMaster.get(m.masterId) ?? 0)),
+    shareLink: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://bookit.com.ua'}/${m.masterSlug}?ref=${c2cCode}`,
+  }));
 
   return (
     <MyLoyaltyPage

@@ -82,7 +82,12 @@ export function useReviewsMetrics({
         return (data ?? []) as Row[];
       };
 
-      const rows = await fetchRows(start, end);
+      // Попередній період (Δ-тренд) від поточного не залежить → паралельно
+      const prevWindow = compareTrend ? previousWindow(start, end) : null;
+      const [rows, prevRows] = await Promise.all([
+        fetchRows(start, end),
+        prevWindow ? fetchRows(prevWindow.prevStart, prevWindow.prevEnd) : Promise.resolve([] as Row[]),
+      ]);
       const totalCount = rows.length;
 
       const distribution: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
@@ -94,14 +99,10 @@ export function useReviewsMetrics({
 
       let deltaAvg: number | null = null;
       let deltaNps: number | null = null;
-      if (compareTrend) {
-        const { prevStart, prevEnd } = previousWindow(start, end);
-        const prevRows = await fetchRows(prevStart, prevEnd);
-        if (prevRows.length > 0) {
-          const prev = aggregate(prevRows);
-          deltaAvg = Math.round((cur.avg - prev.avg) * 10) / 10;
-          deltaNps = cur.nps - prev.nps;
-        }
+      if (compareTrend && prevRows.length > 0) {
+        const prev = aggregate(prevRows);
+        deltaAvg = Math.round((cur.avg - prev.avg) * 10) / 10;
+        deltaNps = cur.nps - prev.nps;
       }
 
       return {

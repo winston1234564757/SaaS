@@ -30,25 +30,27 @@ export function useVacationImpact({ start, end }: { start: string; end: string }
     queryFn: async (): Promise<VacationImpact> => {
       const supabase = createClient();
 
-      // 1. Отримуємо відпустки
-      const { data: timeOffData, error: timeOffError } = await supabase
-        .from('master_time_off')
-        .select('type, start_date, end_date, start_time, end_time')
-        .eq('master_id', masterId!)
-        .gte('end_date', start)
-        .lte('start_date', end);
+      // 1+2. Відпустки і дохід за період — незалежні запити, тягнемо паралельно
+      const [
+        { data: timeOffData, error: timeOffError },
+        { data: bookingsData, error: bookingsError },
+      ] = await Promise.all([
+        supabase
+          .from('master_time_off')
+          .select('type, start_date, end_date, start_time, end_time')
+          .eq('master_id', masterId!)
+          .gte('end_date', start)
+          .lte('start_date', end),
+        supabase
+          .from('bookings')
+          .select('date, total_price')
+          .eq('master_id', masterId!)
+          .eq('status', 'completed')
+          .gte('date', start)
+          .lte('date', end),
+      ]);
 
       if (timeOffError) throw timeOffError;
-
-      // 2. Отримуємо середній дохід за робочі дні у періоді
-      const { data: bookingsData, error: bookingsError } = await supabase
-        .from('bookings')
-        .select('date, total_price')
-        .eq('master_id', masterId!)
-        .eq('status', 'completed')
-        .gte('date', start)
-        .lte('date', end);
-
       if (bookingsError) throw bookingsError;
 
       const timeOffRows = (timeOffData ?? []) as TimeOffRow[];

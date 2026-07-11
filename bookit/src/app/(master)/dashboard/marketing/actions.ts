@@ -434,14 +434,13 @@ export async function getBroadcastAnalytics(broadcastId: string) {
 
   const admin = createAdminClient();
 
+  // Ownership — через inner-join на broadcasts (FK broadcast_id → broadcasts.id),
+  // один round-trip замість вкладеного awaited sub-query.
   const { data: recipients } = await admin
     .from('broadcast_recipients')
-    .select('push_sent, telegram_sent, sms_sent, clicked_at, booked_at, discount_used_at')
+    .select('push_sent, telegram_sent, sms_sent, clicked_at, booked_at, discount_used_at, broadcasts!inner(master_id)')
     .eq('broadcast_id', broadcastId)
-    .in('broadcast_id',
-      (await admin.from('broadcasts').select('id').eq('master_id', user.id).eq('id', broadcastId))
-        .data?.map(b => b.id) ?? []
-    );
+    .eq('broadcasts.master_id', user.id);
 
   if (!recipients) return null;
 

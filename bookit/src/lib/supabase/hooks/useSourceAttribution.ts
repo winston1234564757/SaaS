@@ -70,18 +70,18 @@ export function useSourceAttribution({
         return (data ?? []) as Row[];
       };
 
-      const rows = await fetchRows(start, end);
+      // Попередній період — лише для Pro (Δ-тренд); від поточного не залежить → паралельно
+      const prevWindow = compareTrend ? previousWindow(start, end) : null;
+      const [rows, prevRows] = await Promise.all([
+        fetchRows(start, end),
+        prevWindow ? fetchRows(prevWindow.prevStart, prevWindow.prevEnd) : Promise.resolve([] as Row[]),
+      ]);
 
-      // Попередній період — лише для Pro (Δ-тренд)
-      let prevCounts = new Map<string, number>();
-      if (compareTrend) {
-        const { prevStart, prevEnd } = previousWindow(start, end);
-        const prevRows = await fetchRows(prevStart, prevEnd);
-        prevRows.forEach((r) => {
-          const key = normalizeSource(r.source);
-          prevCounts.set(key, (prevCounts.get(key) ?? 0) + 1);
-        });
-      }
+      const prevCounts = new Map<string, number>();
+      prevRows.forEach((r) => {
+        const key = normalizeSource(r.source);
+        prevCounts.set(key, (prevCounts.get(key) ?? 0) + 1);
+      });
 
       const totalCount = rows.length;
       const agg = new Map<string, { count: number; completedCount: number; revenue: number }>();
