@@ -47,9 +47,8 @@ export function useDashboardStats(): DashboardStatsWithLoading {
 
       type TodayRow = { status: string; total_price: string | number };
       type WeekRow  = { client_phone: string | null; client_name: string | null; date: string | null };
-      type PhoneRow = { client_phone: string | null };
 
-      const [todayRes, weekRes, monthRes, yesterdayRes, prevClientsRes] = await Promise.all([
+      const [todayRes, weekRes, monthRes, yesterdayRes, newPhonesRes] = await Promise.all([
         supabase
           .from('bookings')
           .select('status, total_price')
@@ -74,13 +73,15 @@ export function useDashboardStats(): DashboardStatsWithLoading {
           .select('status, total_price')
           .eq('master_id', masterId!)
           .eq('date', yesterday),
-        supabase
-          .from('bookings')
-          .select('client_phone')
-          .eq('master_id', masterId!)
-          .lt('date', weekStart)
-          .neq('status', 'cancelled')
-          .limit(5000),
+        // Set-diff «нових клієнтів тижня» рахує база (OPT-DB-04). Раніше сюди
+        // тягнулось до 5000 історичних телефонів, а `.limit()` без `ORDER BY`
+        // не гарантує, ЯКІ саме рядки повернуться — щойно історія переросла б
+        // межу, давній клієнт мовчки порахувався б як новий.
+        supabase.rpc('get_week_new_client_phones', {
+          p_master_id:  masterId!,
+          p_week_start: weekStart,
+          p_week_end:   weekEnd,
+        }),
       ]);
 
       if (todayRes.error) throw todayRes.error;
@@ -109,18 +110,10 @@ export function useDashboardStats(): DashboardStatsWithLoading {
         }
       }
 
-      const norm = (p: string) => p.replace(/\D/g, '');
-
-      const weekPhones = new Set(
-        weekRows2.map(b => b.client_phone).filter((p): p is string => !!p).map(norm)
-      );
-      const prevPhones = new Set(
-        ((prevClientsRes.data ?? []) as PhoneRow[])
-          .map(r => r.client_phone)
-          .filter((p): p is string => !!p)
-          .map(norm)
-      );
-      const weekNewPhones  = [...weekPhones].filter(p => !prevPhones.has(p));
+      // Телефони приходять уже нормалізованими (RPC робить `regexp_replace(…, '\D', '', 'g')`
+      // — той самий формат, що й `norm` у StatsModals, який звіряє їх через
+      // `newPhones.has(norm(b.client_phone))`).
+      const weekNewPhones  = (newPhonesRes.data ?? []) as string[];
       const weekNewClients = weekNewPhones.length;
 
       return {
