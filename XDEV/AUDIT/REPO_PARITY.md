@@ -237,16 +237,25 @@ CLI сортує локальні міграції **за іменем файл�
    прода не чіпає; їхній DDL уже back-portовано в репо-файли (Half#1).
    **Бекап реєстру перед операцією:** `XDEV/AUDIT/schema_migrations_backup_2026-07-11.json` (220 рядків).
 
-### Залишок (не блокує)
+### Залишок — ✅ закрито 2026-07-12 (`5dad6eaa`)
 
-- **`137a_product_type_and_emoji.sql`** — CLI **скіпає** його («file name must match pattern», літера
-  в префіксі). Тобто він не виконується ніде: ні `db push`, ні `db reset`. Це не проблема — його
-  зміст перекрито `139_products_full_fix.sql`. Але файл — мертвий вантаж і щоразу дає WARN.
-  Рішення (видалити / перейменувати) — за founder.
-- **`master_profiles.mood_theme` DEFAULT = `'default'::text`.** Міграція `20260609000001_frost_default_theme`
-  зробила одноразовий UPDATE, але дефолт колонки лишила → **кожен новий майстер реєструється з
-  не-frost темою** (на проді вже 3 такі, створені 11–17 червня, тобто ПІСЛЯ міграції). Продуктовий
-  баг, не проблема реєстру. Не чіпав — потребує рішення founder.
+- **`137a_product_type_and_emoji.sql` — ВИДАЛЕНО.** CLI скіпав його **завжди** («file name must match
+  pattern» — літера в префіксі), тобто він не виконувався ніде: ні `db push`, ні `db reset`. Зміст
+  дослівно перекрито `139_products_full_fix.sql` (той самий `product_type` + `icon_name`, ті самі
+  `NOT NULL DEFAULT` і `CHECK`; сам 139 прямо пише «міграція 137 не застосована»). WARN зник.
+
+- **`master_profiles.mood_theme` DEFAULT `'default'` → `'frost'`** (`20260712000000_mood_theme_default_frost`).
+  **Винна була НЕ реєстрація** (`register/actions` явно ставить `'frost'` ще з першого коміту), а
+  **Google OAuth**: `src/app/auth/callback/route.ts` робить upsert `master_profiles` лише з
+  `{id, slug, referral_code, subscription_tier}` → спрацьовує DEFAULT колонки → `'default'`.
+  Тобто **кожен, хто заходив через Google, отримував не-frost тему**.
+  Чому це ламає: `ThemeApplier` мапить у `data-theme` лише `frost` і `studio`/`dark`; на будь-що інше
+  атрибут **не ставиться** → голий легасі-вигляд. Замасковано тим, що starter примусово переводиться
+  на frost — усі 3 постраждалі саме starter, тому виглядали нормально. Вистрелило б у мить апгрейду
+  на pro/studio.
+  **Фікс у DEFAULT колонки, а не в колбеку** — закриває всі insert-шляхи одразу і діє з **уже
+  задеплоєним кодом**, без редеплою. Back-fill звужено до `IS NULL OR = 'default'` (не `<> 'frost'`),
+  щоб не затерти свідомий вибір теми. Прод: 11/11 майстрів на frost.
 
 ### Статус
 ✅ **ЗАКРИТО.** `db push` тепер безпечний (чистий no-op). Деплой-флоу можна лишати як є
