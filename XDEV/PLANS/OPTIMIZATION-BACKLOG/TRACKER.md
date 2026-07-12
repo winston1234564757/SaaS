@@ -4,10 +4,14 @@
 > Статуси: `⬜` не почато · `🔄` в роботі · `✅` готово · `↩️` скасовано · `⏸` відкладено
 > Всі `file:line` верифіковані проти дерева на 2026-07-10.
 
-**Прогрес:** 11/19 ✅ · 0 🔄 · 2 ↩️ (ASSET-03, RND-06 — передумови спростовані) · 1 ⏸ (EXPL-01)
-> ✅ RND-01, RND-02, RND-03, DB-06, ASSET-01, DB-07, RND-05, ASSET-02, ASSET-02b, DB-08, RND-04 · ↩️ ASSET-03, RND-06
-> ✅ ASSET-02b: обидві міграції **застосовано на прод** (2026-07-11, Management API, версії в реєстрі)
-> **Залишилось: ФАЗА DB — `OPT-DB-01/02/03/04/05`.** Прод-apply через Management API відпрацьований, реєстр міграцій чистий — Фазу 2 можна закривати повністю самому.
+## ✅ БЕКЛОГ ЗАКРИТО (2026-07-12) — 13/19 ✅ · 5 ↩️ · 1 ⏸
+
+> ✅ RND-01, RND-02, RND-03, DB-06, ASSET-01, DB-07, RND-05, ASSET-02, ASSET-02b, DB-08, RND-04, DB-03, DB-04
+> ↩️ ASSET-03, RND-06, DB-01, DB-02, DB-05 (+ RND-04 ч.2) — **передумови спростовані живим кодом і замірами прода**
+> ⏸ EXPL-01 — after-launch, не форсити перед лончем
+> ✅ Усі міграції **застосовано на прод** (Management API, версії в реєстрі, стан перевірено запитами ПІСЛЯ apply)
+
+**🔴 Головний підсумок беклогу: із 19 задач аудиту 6 виявились неіснуючими або перебільшеними.** Аудит писався зі статичного читання коду. Він добре знаходить, ЩО СТАНЕТЬСЯ при великому N, і нічого не каже про те, ЧИ ІСНУЄ велике N. Фаза DB закрилась не кодом, а `count(*)` на проді: жодна з п'яти задач не тримала свій пріоритет на живих даних. Але той самий замір знайшов **два справжні баги**, яких у беклозі не було — обидва про коректність, не про швидкість.
 
 ---
 
@@ -15,11 +19,11 @@
 
 | ID | Задача | P | Ст | Спеціаліст-скіли | Модель | Commit |
 |----|--------|---|----|------------------|--------|--------|
-| `OPT-DB-01` | `useOrders` full-scan orders + УСІХ bookings без date-window/limit | P0 | ⬜ | `sql-query-optimization` `database-optimizer` | **Opus** | — |
-| `OPT-DB-02` | `get_master_clients` RPC без пагінації + refetch на кожен keystroke у marketing/actions | P0 | ⬜ | `supabase-postgres-best-practices` `senior-backend` | **Opus** | — |
-| `OPT-DB-03` | Analytics eager `get_analytics_extras{all}` (~14 fn) + дубль-обчислення у табах (кеш keyed на scope) | P0 | ⬜ | `database-optimizer` `tanstack-query` | **Opus** | — |
-| `OPT-DB-04` | `useDashboardStats` тягне 5000 рядків для set-diff у JS (число нових клієнтів б'ється на межі) | P1 | ⬜ | `sql-query-optimization` | **Sonnet** | — |
-| `OPT-DB-05` | `get_finance_analytics` 8 окремих скан-проходів bookings+join | P1 | ⬜ | `supabase-postgres-best-practices` | **Opus** | — |
+| `OPT-DB-01` | ~~`useOrders` full-scan orders + УСІХ bookings~~ → ↩️ **замір прода: 5 замовлень + 13 бронювань із товарами.** «Вся історія» = 18 рядків. Обсягу нема | P0 | ↩️ | — | — | — |
+| `OPT-DB-02` | ~~`get_master_clients` без пагінації + refetch на кожен keystroke~~ → ↩️ **дебаунс 300мс ВЖЕ Є** (`BroadcastEditor.tsx:145-153`) + React Query staleTime 30с. Клієнтів max **5** на майстра | P0 | ↩️ | — | — | — |
+| `OPT-DB-03` | Analytics eager `get_analytics_extras{all}` — **перф-частина ↩️** (прогрітий `all` = 18мс, lazy per-tab дав би ~6мс). **Але знайдено баг:** `scope IN ('all','finances','stock')` рахував finances І stock для ОБОХ scope | P0 | ✅ | `database-optimizer` | **Opus** | `51555a37` |
+| `OPT-DB-04` | `useDashboardStats` — `.limit(5000)` **без `ORDER BY`** → число нових клієнтів МОВЧКИ хибне за межею. Set-diff → SQL (`get_week_new_client_phones`). **Фікс коректності, не перфу** | P1 | ✅ | `sql-query-optimization` `create-migration` | **Opus** | `51555a37` |
+| `OPT-DB-05` | ~~`get_finance_analytics` 8 скан-проходів~~ → ↩️ **замір: 7.8мс на 283 бронюваннях.** Переписувати робочий RPC у CTE = ризик зламати цифри заради мілісекунд | P1 | ↩️ | — | — | — |
 | `OPT-DB-06` | `useReviews` unbounded + дубль-запит `reviews-pending` (підмножина) | P1 | ✅ | `tanstack-query` | **Sonnet** | `6691b151` |
 | `OPT-DB-07` | Кластер over-fetch: `select('*')`/no-bound × 5 (expenses, product_transactions, ModerationHub, SystemLogs) | P2 | ✅ | `database-optimizer` | **Sonnet** | `7caa2aee` |
 | `OPT-DB-08` | Кластер N+1/waterfall: loyalty per-master RPC → 1 select (**без міграції** — RLS owner-select на `c2c_bonus_uses` робить RPC зайвим), broadcast nested-await → inner-join, 3 хуки → `Promise.all`. Бонус: waterfall самої loyalty-сторінки | P2 | ✅ | `senior-backend` | **Sonnet** | `b5345ece` |
