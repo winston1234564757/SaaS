@@ -48,7 +48,12 @@ export async function generateMetadata(
 ): Promise<Metadata> {
   const { slug } = await params;
   const master = await getMasterCached(slug);
-  if (!master) return { title: 'Майстер не знайдений' };
+  // Сторінка неіснуючого майстра віддає HTTP 200, а не 404: кореневий layout читає
+  // headers()/cookies(), тож кожен роут динамічний і стрімиться — статус іде в мережу
+  // раніше, ніж спрацює notFound(). Полагодити статус можна лише перебудувавши
+  // кореневий layout (ризик на весь застосунок), а SEO-шкода тут одна: індексація.
+  // Її й вимикаємо явно — на noindex Google реагує однозначно, без огляду на статус.
+  if (!master) return { title: 'Майстер не знайдений', robots: { index: false, follow: false } };
 
   const profile = master.profiles;
   const displayName = master.business_name || profile.full_name;

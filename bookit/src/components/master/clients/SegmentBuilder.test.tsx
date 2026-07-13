@@ -166,20 +166,27 @@ describe('склейка умов', () => {
     expect(evaluateCustomSegment(c, s)).toBe(true);
   });
 
-  it('🔴 ХАРАКТЕРИЗАЦІЙНИЙ: склейка йде ЗЛІВА НАПРАВО, без пріоритету AND над OR', () => {
-    // Майстер читає умови як «A або B і C», де «і» природно зв'язує сильніше:
-    //   очікування:  A OR (B AND C)  → true  (бо A справджується)
-    //   фактично:   (A OR B) AND C   → false (бо C не справджується)
-    // Тобто клієнт, якого майстер очікує побачити в сегменті, туди НЕ потрапить.
-    // Стріляє лише на 3+ умовах із міксом «і»/«або» — усі вбудовані пресети
-    // мають по 2 умови, тож вони не зачеплені.
+  it('режим один на весь сегмент: «будь-яка умова» бере join першої, мікс ігнорується', () => {
+    // Раніше склейка йшла зліва направо і «A або B і C» рахувалось як (A OR B) AND C —
+    // клієнт, якого майстер очікував побачити, у сегмент не потрапляв. Тепер міксу не
+    // існує: білдер проставляє однаковий join усім умовам, а evaluator читає join
+    // ПЕРШОЇ умови. Старий запис зі змішаними join'ами оцінюється однозначно.
     const c = makeClient({ is_vip: true, total_visits: 0, total_spent: 0 });
     const s = seg(
       { field: 'is_vip',       operator: 'eq',  value: 'true', joinNext: 'OR' },  // A: true
-      { field: 'total_visits', operator: 'gte', value: 10,     joinNext: 'AND' }, // B: false
+      { field: 'total_visits', operator: 'gte', value: 10,     joinNext: 'AND' }, // B: false (join ігнорується)
       { field: 'total_spent',  operator: 'gte', value: 15_000 },                  // C: false
     );
-    expect(evaluateCustomSegment(c, s)).toBe(false); // ← сьогодні так; природне читання дало б true
+    expect(evaluateCustomSegment(c, s)).toBe(true); // OR на весь сегмент → досить A
+  });
+
+  it('режим «усі умови»: досить однієї хибної, щоб клієнт не потрапив', () => {
+    const c = makeClient({ is_vip: true, total_visits: 0 });
+    const s = seg(
+      { field: 'is_vip',       operator: 'eq',  value: 'true', joinNext: 'AND' },
+      { field: 'total_visits', operator: 'gte', value: 10 },
+    );
+    expect(evaluateCustomSegment(c, s)).toBe(false);
   });
 });
 

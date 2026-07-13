@@ -12,7 +12,7 @@ import { ScrollStrip } from '@/components/shared/ScrollStrip';
 import { cn } from '@/lib/utils/cn';
 import type { ClientRow } from './ClientsPage';
 import type {
-  CustomSegment, SegmentCondition, SegmentField, SegmentOperator,
+  CustomSegment, SegmentCondition, SegmentField, SegmentOperator, ConditionJoin,
 } from '@/lib/types/segments';
 import {
   SEGMENT_FIELD_LABELS, SEGMENT_OPERATOR_LABELS,
@@ -48,13 +48,16 @@ export function getSegmentIcon(name: string, size = 14): React.ReactElement {
 // ── Client evaluator ──────────────────────────────────────────────────────────
 export function evaluateCustomSegment(client: ClientRow, segment: CustomSegment): boolean {
   if (!segment.conditions.length) return false;
-  let result = evalCond(client, segment.conditions[0]);
-  for (let i = 1; i < segment.conditions.length; i++) {
-    const join = segment.conditions[i - 1].joinNext ?? 'AND';
-    const next = evalCond(client, segment.conditions[i]);
-    result = join === 'AND' ? result && next : result || next;
-  }
-  return result;
+  // Один режим на ВЕСЬ сегмент: або всі умови, або будь-яка з них.
+  // Раніше join брався з кожної умови окремо і склеювався зліва направо, тож
+  // «A або B і C» рахувалось як (A OR B) AND C. Майстер читає умови як природну
+  // мову, де «і» зв'язує сильніше, і чекає A OR (B AND C) — тобто бачив у сегменті
+  // не тих клієнтів. Замість пріоритету операторів прибрано сам мікс: білдер
+  // проставляє однаковий join усім умовам, а тут читається join першої — тож
+  // навіть старий запис зі змішаними join'ами оцінюється однозначно.
+  const join = segment.conditions[0].joinNext ?? 'AND';
+  const results = segment.conditions.map(c => evalCond(client, c));
+  return join === 'AND' ? results.every(Boolean) : results.some(Boolean);
 }
 
 function evalCond(client: ClientRow, cond: SegmentCondition): boolean {
@@ -199,13 +202,13 @@ const STATUS_OPTIONS = [
 
 // ── Condition row ─────────────────────────────────────────────────────────────
 function ConditionRow({
-  cond, index, total,
-  onChange, onRemove, onToggleJoin,
+  cond, index, total, join,
+  onChange, onRemove,
 }: {
   cond: SegmentCondition; index: number; total: number;
+  join: ConditionJoin;
   onChange: (c: SegmentCondition) => void;
   onRemove: () => void;
-  onToggleJoin: () => void;
 }) {
   const operators   = OPERATORS_FOR_FIELD[cond.field];
   const isStatus    = cond.field === 'retention_status';
@@ -339,17 +342,14 @@ function ConditionRow({
         </div>
       </div>
 
-      {/* AND/OR connector */}
+      {/* Звʼязка між умовами — підпис, а не кнопка: режим один на весь сегмент
+          і перемикається вгорі, щоб не було міксу «і» з «або» */}
       {index < total - 1 && (
         <div className="flex items-center gap-3 px-2 my-0.5">
           <div className="h-px flex-1 bg-secondary" />
-          <button
-            type="button"
-            onClick={onToggleJoin}
-            className="px-3.5 py-1.5 rounded-xl bg-accent/10 text-accent text-[10px] font-bold hover:bg-accent/20 active:scale-[0.88] transition-all"
-          >
-            {cond.joinNext === 'OR' ? 'або' : 'і'}
-          </button>
+          <span className="px-3.5 py-1.5 rounded-xl bg-accent/10 text-accent text-[10px] font-bold">
+            {join === 'OR' ? 'або' : 'і'}
+          </span>
           <div className="h-px flex-1 bg-secondary" />
         </div>
       )}
@@ -411,10 +411,11 @@ export function SegmentBuilder({
   const updateCondition = (i: number, c: SegmentCondition) =>
     setConditions(prev => prev.map((x, idx) => idx === i ? c : x));
 
-  const toggleJoin = (i: number) =>
-    setConditions(prev => prev.map((c, idx) =>
-      idx === i ? { ...c, joinNext: c.joinNext === 'AND' ? 'OR' : 'AND' } : c
-    ));
+  // Режим один на весь сегмент. Читаємо з першої умови (старий запис міг мати мікс —
+  // тоді перемога за першою), а пишемо одразу в усі, щоб мікс не міг виникнути знову.
+  const join: ConditionJoin = conditions[0]?.joinNext ?? 'AND';
+  const setJoin = (mode: ConditionJoin) =>
+    setConditions(prev => prev.map(c => ({ ...c, joinNext: mode })));
 
   const handleSave = () => {
     if (!name.trim()) return;
@@ -593,6 +594,31 @@ export function SegmentBuilder({
                 </div>
               </div>
 
+              {conditions.length > 1 && (
+                <div className="flex items-center gap-2 mb-3">
+                  <p className="text-[10px] text-text-sub shrink-0">Показувати клієнтів, що відповідають</p>
+                  <div className="flex gap-1 p-0.5 rounded-xl bg-secondary">
+                    {([
+                      { mode: 'AND' as const, label: 'усім умовам' },
+                      { mode: 'OR'  as const, label: 'будь-якій умові' },
+                    ]).map(({ mode, label }) => (
+                      <button
+                        key={mode}
+                        type="button"
+                        onClick={() => setJoin(mode)}
+                        aria-pressed={join === mode}
+                        className={cn(
+                          'px-3 py-2 rounded-lg text-[10px] font-bold transition-all active:scale-[0.88]',
+                          join === mode ? 'bg-accent/15 text-accent' : 'text-text-sub hover:text-text',
+                        )}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div className="flex flex-col gap-1">
                 <AnimatePresence initial={false}>
                   {conditions.map((cond, i) => (
@@ -604,10 +630,9 @@ export function SegmentBuilder({
                       transition={{ ...SPRING, duration: 0.15 }}
                     >
                       <ConditionRow
-                        cond={cond} index={i} total={conditions.length}
+                        cond={cond} index={i} total={conditions.length} join={join}
                         onChange={c => updateCondition(i, c)}
                         onRemove={() => setConditions(prev => prev.filter((_, idx) => idx !== i))}
-                        onToggleJoin={() => toggleJoin(i)}
                       />
                     </motion.div>
                   ))}
@@ -615,7 +640,7 @@ export function SegmentBuilder({
 
                 <button
                   type="button"
-                  onClick={() => setConditions(prev => [...prev, blankCondition()])}
+                  onClick={() => setConditions(prev => [...prev, { ...blankCondition(), joinNext: join }])}
                   className="flex items-center gap-2 px-4 py-2.5 rounded-2xl border border-dashed border-accent/25 text-accent text-xs font-bold hover:bg-accent/5 active:scale-[0.88] transition-all mt-1"
                 >
                   <Plus size={13} /> Додати умову
