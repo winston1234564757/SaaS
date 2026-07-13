@@ -583,7 +583,27 @@ describe('createBooking() — server action integration', () => {
         }) as any,
       );
       const result = await createBooking(buildPayload());
-      expect(result.error).toBe('Цей час вже заброньований. Оберіть інший час.');
+      expect(result.error).toBe('Цей час уже зайнятий. Оберіть інший.');
+      expect(result.bookingId).toBeNull();
+    });
+
+    // 23P01 = exclusion_violation від `bookings_no_overlap`: запис не збігається
+    // початком з чужим, але ПЕРЕТИНАЄТЬСЯ з ним (09:15-10:05 проти 10:00-10:50).
+    // Unique-індекс такого не ловив — саме так на прод потрапили перекриті записи.
+    // Для клієнта це той самий випадок, що й точний збіг: час не вільний.
+    it('returns the same "slot taken" message when DB responds with 23P01 (bookings_no_overlap)', async () => {
+      mockAnonClient();
+      vi.mocked(createAdminClient).mockReturnValue(
+        makeAdmin({
+          master_profiles:  [{ data: BASE_MASTER }],
+          services:         [{ data: [BASE_SERVICE] }],
+          bookings:         [{ count: 0 }, { error: { code: '23P01', message: 'conflicting key value violates exclusion constraint "bookings_no_overlap"' } }],
+          loyalty_programs: [{ data: [] }],
+          phone_discounts:  [{ data: null }],
+        }) as any,
+      );
+      const result = await createBooking(buildPayload());
+      expect(result.error).toBe('Цей час уже зайнятий. Оберіть інший.');
       expect(result.bookingId).toBeNull();
     });
 
