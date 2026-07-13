@@ -7,7 +7,28 @@
 > ✅ **G-LAND-03 + G-LAND-01 DONE (commit `ff6e91e7`, НЕ задеплоєно):** impeccable full-audit редизайн лендингу (анти-slop + баги) + нова секція «Для кого». П0: CountUp/LandingSplitHeading/WordLine — прибрано клипінг кириличних виносних (overflow:hidden mask рвав у/д/ц/щ/ї при leading<1) + reveal більше не гейтить контент у порожнечу (headless/reduced/повільний IO завжди показують). Форма (кожна секція свій світ, copy збережено): Features→темний флагман+hairline-список; Agitation→hairline-болі featured-перший; ClientFlow→горизонтальний connected-степер (🔴 `overlap:false` в SECTIONS проти card-rise перекриття короткого контенту); Process→вертикальний spine; Magic→редакційні pull-stat рядки; Bento→stat-strip+тижнева сітка-герой. Eyebrow-граматика знята з усіх 13 (лишився Hero-бейдж=бренд-голос). Economy: мертва зона (WordLine-фікс) + mobile-клип картки. dashboard.png: артефакт «F11» замальовано sharp. G-LAND-01: `LandingForWhom.tsx` типографічний індекс спеціалізацій. Own-eyes усі секції mobile+desktop. TSC:0 Build:clean. Уроки: (1) card-rise `overlap:true` з'їдає ~22vh+тінь низу секції → короткий горизонтальний контент виводити `overlap:false` (як Process); (2) per-word overflow:hidden mask-reveal ріже кириличні виносні при tight line-height — фатально для UA-заголовків; (3) reveal мусить підсилювати вже-видиме, не гейтити.
 > ✅ **СПРИНТ-ФІЧІ ЗАКРИТО (звірка 2026-07-12): 83/86 ✅ + 3 ↩️ = усі 86.** C-DESK-01 і M-SHOP-05 (MVP) зроблені й задеплоєні; ключ NP — у Vercel env. Стара проза «Лишилось 2» була застарілою.
 > **🔓 SEC-01 (P0) ЗАКРИТО 2026-07-12** — залишок («repoint `.env.test`») виявився вже виконаним. Звірено живими даними: `.env.test` цілить на `127.0.0.1:54321`, `E2E_ALLOW_REMOTE` відсутній, коміт `41bf5b69` **у `main`** (доки казали «не змержено»). **Guard перевірено наживо:** підмінив `.env.test` на прод-реф + `E2E_ALLOW_REMOTE=true` → `SAFETY ABORT (HARD)`, exit 1, виконання не дійшло до «Resolving auth users» — нуль записів. Ключ у `.env.test` — локальний demo (`iss=supabase-demo`), не прод; `.env.test` у `.gitignore` і **ніколи не комітився** → прод service-role не витікав, ротація не потрібна.
-> **▶ Лишилось справді відкритого:** `TEST-M3` (P1, 🔄 load/concurrency races) · `TEST-M4` (P1, ⬜ integration+unit gaps). Це єдині незакриті пункти всього спринту.
+> **▶ Лишилось справді відкритого:** `TEST-M4` (P1, ⬜ integration+unit gaps). Єдиний незакритий пункт спринту.
+>
+> ## 🔴 TEST-M3 (2026-07-12) — аудит замість load-тестів, і він знайшов справжній баг
+>
+> **Спершу аудит гарантій, потім тести** (п.28 PLAYBOOK). Виявилось, що **всі чотири race-вектори TEST-M3 уже закриті декларативно** — писати load-тести не було чого:
+>
+> | вектор | що його закриває |
+> |---|---|
+> | склад (overselling) | `decrement_product_stock_atomic` = `UPDATE … WHERE stock_qty >= p_qty` — один statement, рядковий лок |
+> | подвійний C2C-бонус | `c2c_bonus_uses.booking_id` UNIQUE + `c2c_referrals.booking_id` UNIQUE |
+> | dunning | `get_pending_subscriptions_for_billing` = `FOR UPDATE SKIP LOCKED` |
+> | подвійне бронювання | ~~unique-індекс~~ → **тут і була діра** ↓ |
+>
+> **🔴 Знайдено реальний баг, якого не було в жодному беклозі: 15 пар ПЕРЕКРИТИХ записів на проді** (2 — живі клієнти: 2026-04-20 і 2026-03-22, обидві `completed`). Двоє людей на один час у майстра.
+>
+> **Root cause — `rescheduleBooking`** (перетягування в таймлайні): робив `UPDATE date/start_time/end_time` **без жодної перевірки перекриття**. Єдиний захист — unique-індекс `booking_slot_collision (master_id, date, start_time)` — ловить **лише точний збіг початку**, тож `09:15-10:05` і `10:00-10:50` проходили обидві. `source` при переносі не змінюється, тому перекриття виглядали як «клієнт забронював з публічної».
+> **Це НЕ race:** броні створені з різницею **21 година** і **4 дні**. Load-тест його не спіймав би в принципі.
+>
+> **Фікс — `bookings_no_overlap`** (`20260712000004`, ✅ на проді): `EXCLUDE USING gist (master_id WITH =, tsrange(date+start_time, date+end_time, '[)') WITH &&)`. Закриває одразу `createBooking`, `rescheduleBooking`, прямий REST і будь-який race.
+> ⚠️ **Дві пастки EXCLUDE:** діапазон мусить бути напіввідкритий `'[)'`, інакше **суміжні** записи (11:00 після 10:00-11:00) вважались би перекриттям і БД ламала б нормальний графік. Предикат — з **літеральною** датою: 30 історичних рядків уже порушують правило, а EXCLUDE **не підтримує `NOT VALID`**, `current_date` же не IMMUTABLE.
+>
+> ⚠️ **Чесно про хибний хід:** спершу я діагностував це як «RLS ховає броні від публічної сторінки» (anon → `bookings` = `[]`) і почав писати міграцію `get_master_busy_slots`. **Діагноз хибний:** візард читає в'юху `booking_slots` (без ПД), і anon через неї броні **бачить**. Міграцію видалено. Урок — у `HANDOFF`.
 **✅ УСІ 74 ЗРОБЛЕНІ ЗАДАЧІ ПЕРЕВІРЕНО founder (2026-07-03).** QA-гейт закрито по всьому спринту. ⏳ Деплой на прод — окремим батчем `vercel --prod` за командою founder (частина комітів ще «НЕ задеплоєно» — це операційний факт, не відкрита задача).
 > Total 84→86: +M-SHOP-05 (Нова Пошта, реальна NP API) +M-CLI-07 (CSV-експорт), додані під час M-BILL-02 як чесні борги (заявлялись у копі, але не реалізовані).
 **🚀 ЗАДЕПЛОЄНО НА ПРОД 2026-07-05 (v3, ФІНАЛ)** (`vercel --prod`, deploy `dpl_Lyn29Bji25CYddJthAwYM2wYza5h` READY): G-LAND-01 «Для кого» **фінал = крафтовий бенто** (іконка+ніша+2-словний опис, темний featured-анкер, delight hover), commit `c4b151b0`. Ітерації секції: типографічний індекс → gridless breathing word-field → бенто (founder обрав бенто). Live=`bookit-winston1234564757s-projects.vercel.app`. ⚠️ PWA SW → повний реоупен.
@@ -219,7 +240,7 @@
 | `TEST-M0` | Runtime-guard: console-guard + real-login smoke + hook unit | P0 | ✅ | writing-plans | **Opus** | `06a4be24` |
 | `TEST-M1` | Латентні realtime-міни (useLiveChat/useDMChat/AdminSupportConsole) | P0 | ✅ | bugfix | **Opus** | `437a7ec0` |
 | `TEST-M2` | RLS cross-tenant suite (8/8 verified проти живої БД) | P0 | ✅ | writing-plans | **Opus** | `c92a48af` |
-| `TEST-M3` | Load/concurrency (booking/stock/C2C/dunning races) | P1 | 🔄 | — | — | — |
+| `TEST-M3` | Load/concurrency — **закрито аудитом гарантій БД, а не load-тестами.** Усі 4 вектори виявились закритими декларативно (див. нижче), але аудит знайшов **реальний баг поза беклогом**: перекриті записи (`bookings_no_overlap`) | P1 | ✅ | `database-optimizer` `create-migration` | **Opus** | `86ac9b2e` |
 | `TEST-M4` | Integration + unit gaps (CRM segments, ROI, onboarding persist) | P1 | ⬜ | — | — | — |
 | `TEST-M5` | Anti-drift: TESTING_MAP звірено з живим `find` (47 unit / 36 e2e) + виправлено небезпечний seed-опис + proxy.ts→middleware.ts у живих мапах | P2 | ✅ | doc-anti-drift | **Opus** | `41bf5b69` |
 | `TEST-M6` | E2E suite stabilization — 35→~0 код-фейлів; повний chromium 123 passed / 2 env-flake / 42 skipped | P1 | ✅ | **Opus** | `b4fda8c9` |
