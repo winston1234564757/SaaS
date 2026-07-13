@@ -7,10 +7,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://bookit.com.ua';
   const admin = createAdminClient();
 
+  // Та сама умова, що й у /explore: у sitemap потрапляють лише майстри, у яких є
+  // хоч одна активна послуга. Інакше Google індексує сторінки, де нема чого бронювати.
   const { data: masters } = await admin
     .from('master_profiles')
-    .select('slug, updated_at')
+    .select('slug, updated_at, services!inner(id)')
     .eq('is_published', true)
+    .eq('services.is_active', true)
     .not('slug', 'is', null);
 
   const masterUrls: MetadataRoute.Sitemap = (masters ?? []).map(m => ({

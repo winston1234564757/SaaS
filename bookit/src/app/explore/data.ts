@@ -18,6 +18,10 @@ export interface ExploreData {
 async function fetchExploreMasters(): Promise<ExploreData> {
   const supabase = createPublicClient();
 
+  // `services!inner` + фільтр по is_active відсікає майстрів, у яких нема жодної
+  // активної послуги: онбординг ставить is_published=true ще до створення послуг,
+  // тож без цього у вітрині висять сторінки, на яких нема чого бронювати.
+  // Особисте посилання /<slug> при цьому працює — з каталогу зникає лише порожній профіль.
   const { data } = await supabase
     .from('master_profiles')
     .select(`
@@ -25,11 +29,12 @@ async function fetchExploreMasters(): Promise<ExploreData> {
       categories, subscription_tier, created_at,
       latitude, longitude,
       profiles ( full_name, avatar_url ),
-      services ( is_active, price, name, is_popular ),
+      services!inner ( is_active, price, name, is_popular ),
       schedule_templates ( day_of_week, is_working ),
       portfolio_items ( is_published, portfolio_item_photos ( url, display_order ) )
     `)
     .eq('is_published', true)
+    .eq('services.is_active', true)
     .order('rating_count', { ascending: false })
     .limit(120);
 
