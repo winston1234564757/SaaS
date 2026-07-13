@@ -192,11 +192,30 @@ describe('брудні дані не ламають фільтр', () => {
     expect(evaluateCustomSegment(c, seg({ field: 'total_spent', operator: 'gte', value: 100 }))).toBe(false);
   });
 
-  it('🔴 ХАРАКТЕРИЗАЦІЙНИЙ: null у числовому полі не матчить і зворотні оператори', () => {
-    // Number(null) = 0, тож `lte 100` дає true — клієнт без суми потрапляє
-    // в сегмент «середній чек до 100». Для average_check це реальний ризик:
-    // «чутливі до ціни» збере й тих, у кого просто немає даних.
+  it('клієнт без даних про чек НЕ падає в «Чутливі до ціни»', () => {
+    // Раніше Number(null) = 0 → `lte 500` давало true, і клієнт, у якого просто
+    // ще немає завершеного візиту, потрапляв у вбудований пресет «Чутливі до ціни».
     const c = makeClient({ average_check: null as never });
+    expect(evaluateCustomSegment(c, seg({ field: 'average_check', operator: 'lte', value: 500 }))).toBe(false);
+  });
+
+  it('немає даних → умова хибна за будь-якого оператора, включно зі зворотними', () => {
+    const c = makeClient({ average_check: null as never });
+    for (const operator of ['gt', 'gte', 'lt', 'lte', 'eq', 'neq'] as const) {
+      expect(evaluateCustomSegment(c, seg({ field: 'average_check', operator, value: 500 })))
+        .toBe(false);
+    }
+  });
+
+  it('справжній нуль — це значення, а не «немає даних»', () => {
+    // Межа, яку легко зламати guard'ом: клієнт із чеком 0 має матчити `lte 500`.
+    const c = makeClient({ average_check: 0 });
     expect(evaluateCustomSegment(c, seg({ field: 'average_check', operator: 'lte', value: 500 }))).toBe(true);
+    expect(evaluateCustomSegment(c, seg({ field: 'average_check', operator: 'eq',  value: 0   }))).toBe(true);
+  });
+
+  it('зіпсований поріг у конфізі сегмента не матчить нікого', () => {
+    const c = makeClient({ average_check: 300 });
+    expect(evaluateCustomSegment(c, seg({ field: 'average_check', operator: 'lte', value: 'абищо' as never }))).toBe(false);
   });
 });

@@ -76,6 +76,12 @@ function evalCond(client: ClientRow, cond: SegmentCondition): boolean {
     clientVal = client[field as keyof ClientRow] as number;
   }
   const threshold = Number(value);
+  // «Немає даних» — це не «нуль». Раніше Number(null) = 0 тягнув клієнта без
+  // жодного завершеного візиту в умову `average_check <= 500`, тобто прямо у
+  // вбудований пресет «Чутливі до ціни» — досить було броні без візиту.
+  // Немає значення (або зіпсований поріг) → умова хибна за БУДЬ-ЯКОГО оператора,
+  // включно зі зворотними: інакше клієнт без чека матчив би ще й `neq`.
+  if (!Number.isFinite(clientVal) || !Number.isFinite(threshold)) return false;
   switch (operator) {
     case 'gt':  return clientVal > threshold;
     case 'gte': return clientVal >= threshold;
