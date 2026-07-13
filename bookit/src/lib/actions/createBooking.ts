@@ -557,8 +557,14 @@ export async function createBooking(
 
   if (bErr) {
     console.error('[createBooking] bookings insert [ERROR CODE]:', bErr.code, ' [MESSAGE]:', bErr.message);
-    if (bErr.code === '23505' && bErr.message.includes('booking_slot_collision')) {
-      return { bookingId: null, error: 'Цей час вже заброньований. Оберіть інший час.' };
+    // 23505 = точний збіг start_time (booking_slot_collision).
+    // 23P01 = ПЕРЕТИН із сусідньою бронею (bookings_no_overlap) — той самий випадок
+    // для клієнта: час не вільний. Розрізняти їх у копії немає сенсу.
+    const slotTaken =
+      (bErr.code === '23505' && bErr.message.includes('booking_slot_collision')) ||
+      (bErr.code === '23P01' && bErr.message.includes('bookings_no_overlap'));
+    if (slotTaken) {
+      return { bookingId: null, error: 'Цей час уже зайнятий. Оберіть інший.' };
     }
     return { bookingId: null, error: 'Не вдалося створити запис. Спробуйте ще раз.' };
   }

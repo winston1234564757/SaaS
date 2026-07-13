@@ -278,6 +278,16 @@ export async function rescheduleBooking(
       .update({ date, start_time: startTime, end_time: endTime, updated_at: new Date().toISOString() })
       .eq('id', bookingId);
 
+    // Перенос — головне джерело перекритих записів: до `bookings_no_overlap` цей UPDATE
+    // не перевірявся НІЧИМ (unique-індекс ловить лише точний збіг start_time), тож
+    // перетягування накладало один запис на інший мовчки. Тепер відмовляє БД.
+    if (error?.code === '23P01' && error.message.includes('bookings_no_overlap')) {
+      return { error: 'Тут уже є запис. Перетягніть на вільний час.' };
+    }
+    if (error?.code === '23505' && error.message.includes('booking_slot_collision')) {
+      return { error: 'Тут уже є запис. Перетягніть на вільний час.' };
+    }
+
     if (error) throw error;
 
     revalidatePath('/dashboard/bookings');
