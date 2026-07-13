@@ -622,7 +622,7 @@ All numbered sections (Agitation, Process, ClientFlow) and feature rows (Magic) 
 | `get_dynamic_pricing_uplift` | Аналітика динамічних цін за період. **M-REV-05 фікс:** `rule_counts` матч по ТИПУ (було по повному лейблу + markup-only), +`saved_slots` — міграція 20260628000005. UI: `DynamicPricingUplift.tsx` (аналітика) |
 
 ### Міграції
-141+ міграцій застосовано в продакшн.
+**188 записів у реєстрі прода** (`supabase_migrations.schema_migrations`, станом на 2026-07-12). Репо і прод синхронні: `db push --dry-run` → no-op.
 Місце: `supabase/migrations/*.sql`
 
 Останні ключові:
@@ -637,12 +637,19 @@ All numbered sections (Agitation, Process, ClientFlow) and feature rows (Magic) 
 - `139_products_full_fix.sql` — Повний фікс `products`: `product_type`, `icon_name`, `is_archived`, `cost_kopecks`, `auto_deduct`; `stock_qty` numeric→integer; `product_service_links.quantity`; partial index; оновлення тригера списання (consumable + auto_deduct only) with category-based backfill
 - `20260524124500_get_master_referral_history.sql` — `get_master_referral_history` RPC function
 - `20260605000000_analytics_system.sql` — Mega analytics functions and orchestrator `get_analytics_extras` RPC
-- `20260607000000_security_search_path_fix.sql` — 19 RPC `SET search_path = public` fixes (⚠️ pending `npx supabase db push` або Dashboard SQL Editor)
+- `20260607000000_security_search_path_fix.sql` — RPC `SET search_path = public` fixes. ✅ **застосовано й перевірено на проді 2026-07-12: 59/59 SECURITY DEFINER функцій мають `search_path`, жодної без.** (Стара позначка «pending db push» була застарілою.)
 - `20260614000000_auto_flash_on_cancel.sql` — `auto_flash_on_cancel BOOLEAN`, `auto_flash_discount_pct INT` на `master_profiles` (T32 migration 141)
 - `20260618000000_activation_tour_step.sql` — `activation_tour_step smallint DEFAULT NULL` на `master_profiles` + sparse index; Activation Tour persistence (T23-impl 2026-06-18)
 - `20260628000003_get_pricing_rule_stats.sql` — RPC `get_pricing_rule_stats` per-rule стата динамічних цін (auth.uid, без IDOR) — M-REV-04 follow-up
 - `20260628000004_get_pricing_rules_overview.sql` — RPC `get_pricing_rules_overview` огляд усіх 4 правил (auth.uid) — M-REV-05 ч.1
 - `20260628000005_dynamic_pricing_uplift_discounts.sql` — фікс `get_dynamic_pricing_uplift` (матч по типу + saved_slots) — M-REV-05 ч.2
 - `20260706000000_orders_nova_poshta_fields.sql` — orders +`np_city_ref/name` +`np_warehouse_ref/name` (M-SHOP-05, additive nullable). ✅ **ЗАСТОСОВАНО на прод-БД 2026-07-06** через Supabase Management API. CLI залінковано (`sqlrxsopllgztvgrerqk`, `SUPABASE_ACCESS_TOKEN` у `.env.local`) — надалі `supabase db push` / Management API `/database/query` доступні
-- `20260710000000_chat_attachment_dimensions.sql` — `attachment_width/height/blur` на `support_messages` + `direct_messages` (additive nullable) для `next/image` без CLS. CHECK: розміри або обидва є і додатні, або обидва NULL (⚠️ порівняння `IS NULL`-предикатів — наївне `(w IS NULL AND h IS NULL) OR (w>0 AND h>0)` дає NULL і **пропускає** half-measured рядок). OPT-ASSET-02b · ⚠️ **застосовано лише локально, apply на прод за founder**
-- `20260710000001_fix_dm_attachment_storage_policies.sql` — 🔴 фікс пре-існуючого бага: вкладення в DM ніколи не завантажувались. Політики `support_attachments` робили `(regexp_split_to_array(name,'/'))[1]::uuid`, а DM-шлях `dm/<conv>/…` → `'dm'::uuid` кидав 22P02 → INSERT відхилявся, клієнт ковтав помилку. Додано `public.is_uuid_text()` guard + `public.is_dm_participant()` (SECURITY DEFINER) і політики `Insert/Select/Delete DM attachments`. ⚠️ **застосовано лише локально, apply на прод за founder**
+- `20260710000000_chat_attachment_dimensions.sql` — `attachment_width/height/blur` на `support_messages` + `direct_messages` (additive nullable) для `next/image` без CLS. CHECK: розміри або обидва є і додатні, або обидва NULL (⚠️ порівняння `IS NULL`-предикатів — наївне `(w IS NULL AND h IS NULL) OR (w>0 AND h>0)` дає NULL і **пропускає** half-measured рядок). OPT-ASSET-02b · ✅ **застосовано на прод 2026-07-11**
+- `20260710000001_fix_dm_attachment_storage_policies.sql` — 🔴 фікс пре-існуючого бага: вкладення в DM ніколи не завантажувались. Політики `support_attachments` робили `(regexp_split_to_array(name,'/'))[1]::uuid`, а DM-шлях `dm/<conv>/…` → `'dm'::uuid` кидав 22P02 → INSERT відхилявся, клієнт ковтав помилку. Додано `public.is_uuid_text()` guard + `public.is_dm_participant()` (SECURITY DEFINER) і політики `Insert/Select/Delete DM attachments`. ✅ **застосовано на прод 2026-07-11** (баг був у політиках БД, тож фікс запрацював уже зі старим задеплоєним кодом)
+- `20260710000002_lock_stock_rpcs_to_service_role.sql` — 🔴 **закрито діру:** `EXECUTE` на `decrement_product_stock_atomic`/`increment_stock` лишався в `PUBLIC` → **anon-ключем можна було обнулити склад майстра** через `/rest/v1/rpc/…`. ✅ застосовано на прод 2026-07-11
+- `20260604000000_booking_link_security.sql` — 🔴 **закрито діру:** таблиці `link_attempts` на проді **не існувало** → rate-limit «5 спроб / 15 хв» на прив'язку бронювання **не працював узагалі** (`count` = undefined → `0 >= 5` = false). ✅ застосовано на прод 2026-07-11
+- `20260712000000_mood_theme_default_frost.sql` — `master_profiles.mood_theme` DEFAULT `'default'` → `'frost'`. Джерело не-frost тем — **Google OAuth** (`auth/callback` upsert-ить профіль без теми → спрацьовує DEFAULT колонки), а не реєстрація. Фікс у DEFAULT діє з **уже задеплоєним кодом**. ✅ прод: 11/11 майстрів на frost
+- `20260712000001_split_analytics_extras_scope.sql` — **OPT-DB-03:** розділено `scope` `'finances'` / `'stock'` у `get_analytics_extras` (спільна умова рахувала обидві секції для обох scope). ✅ застосовано на прод 2026-07-12
+- `20260712000002_get_week_new_client_phones.sql` — **OPT-DB-04:** новий RPC замість `.limit(5000)` без `ORDER BY` (тиха хибність числа «нових клієнтів» за межею). ✅ застосовано на прод 2026-07-12
+
+> ✅ **Реєстр міграцій вирівняно** (2026-07-11/12): `db push --dry-run` → чистий no-op; 185 спарено / 0 local-only / 0 orphans. Стара заборона «`db push` не запускати» **знята**. `137a_product_type_and_emoji.sql` видалено — CLI скіпав його завжди (літера в префіксі), зміст перекрито `139`. Розбір: `XDEV/AUDIT/REPO_PARITY.md`.

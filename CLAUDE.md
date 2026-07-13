@@ -41,7 +41,7 @@ Path: `C:\Users\Vitos\SaaS\XDEV\`. Read before any task.
 
 | File | Contents |
 |------|----------|
-| [PLAYBOOK.md](file:///C:/Users/Vitos/SaaS/XDEV/PLAYBOOK.md) | **Дистиляція найкращих рішень** — дизайн-закони founder + процес + 12 інженерних патернів + **27 загальних патернів роботи й логіки дій** (розуміння перед дією, коли питати/вирішувати, верифікація, чесність, скоуп, незворотність, відновлення після збою, темп, передача) |
+| [PLAYBOOK.md](file:///C:/Users/Vitos/SaaS/XDEV/PLAYBOOK.md) | **Дистиляція найкращих рішень** — дизайн-закони founder + процес + 12 інженерних патернів + **30 загальних патернів роботи й логіки дій** (розуміння перед дією, коли питати/вирішувати, верифікація, чесність, скоуп, незворотність, відновлення після збою, темп, передача, **обсяг: міряй, не виводь із коду**) |
 | [AI_MASTER_GUIDE.md](file:///C:/Users/Vitos/SaaS/XDEV/AI_MASTER_GUIDE.md) | Tech stack, coding standards, RLS, three themes, pre-deploy checklist |
 | [SKILL_PROTOCOL.md](file:///C:/Users/Vitos/SaaS/XDEV/SKILL_PROTOCOL.md) | Decision Tree for skill selection, Clarification Framework |
 | [UX_STANDARDS.md](file:///C:/Users/Vitos/SaaS/XDEV/UX_STANDARDS.md) | No-Emoji Policy, Vaul BottomSheets, Emil Kowalski animation rules |
