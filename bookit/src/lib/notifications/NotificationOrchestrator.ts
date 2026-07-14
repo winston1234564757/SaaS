@@ -134,8 +134,12 @@ export class NotificationOrchestrator {
       if (def.telegram && telegramChatId) {
         const { text, buttons } = def.telegram(data);
         const replyMarkup = buttons ? { inline_keyboard: buttons } : undefined;
-        const sent = await sendTelegramMessage(telegramChatId, text, replyMarkup).catch(() => false);
-        log('telegram', sent ? 'success' : 'failed');
+        let tgError: string | undefined;
+        const sent = await sendTelegramMessage(telegramChatId, text, replyMarkup).catch((e: unknown) => {
+          tgError = e instanceof Error ? e.message : String(e);
+          return false;
+        });
+        log('telegram', sent ? 'success' : 'failed', sent ? undefined : (tgError ?? 'Telegram API не підтвердив відправку'));
         result.telegram = sent;
       } else if (def.telegram && !telegramChatId) {
         log('telegram', 'skipped');
@@ -146,8 +150,20 @@ export class NotificationOrchestrator {
     const freeDelivered = pushDelivered || result.telegram;
     if (!freeDelivered && def.isCritical && def.sms && phone) {
       const text = def.sms(data);
-      const smsResult = await sendTurboSMS(phone, text).catch(() => ({ ok: false }));
-      log('sms', smsResult.ok ? 'success' : 'failed');
+      let thrown: string | undefined;
+      const smsResult = await sendTurboSMS(phone, text).catch((e: unknown) => {
+        thrown = e instanceof Error ? e.message : String(e);
+        return { ok: false, code: undefined as number | undefined };
+      });
+      // Без причини провал SMS не діагностується взагалі: код повертається, але раніше
+      // губився, і в notification_logs лишався голий 'failed' з порожнім error_text.
+      // Окремо розрізняємо збій провайдера і свідоме придушення за денним лімітом (-1).
+      const smsError = smsResult.ok
+        ? undefined
+        : thrown ?? (smsResult.code === -1
+            ? 'suppressed: вичерпано денний ліміт SMS'
+            : `TurboSMS response_code=${smsResult.code ?? 'невідомий'}`);
+      log('sms', smsResult.ok ? 'success' : 'failed', smsError);
       result.sms = smsResult.ok;
     } else if (def.sms) {
       log('sms', 'skipped');

@@ -76,6 +76,42 @@ Redirect-и в коді будуються з `window.location.origin` (`PhoneOt
   - **Redirect URLs** → додати `<DOMAIN>/auth/callback` (старі не прибирати одразу — dev/preview).
 - Без цього кроку **Google OAuth і magic-link відваляться на новому домені**.
 
+### 3.5. 🔴 Telegram webhook — НЕ переїжджає сам
+
+**Telegram не знає, що ти змінив домен.** Вебхук лишиться на старій адресі, поки не викличеш
+`setWebhook` руками — і бот тихо оніміє: не працюватиме привʼязка, кнопки під повідомленнями
+й команди. Вихідні повідомлення при цьому йтимуть, тож поломку легко не помітити.
+
+Саме так і було до 2026-07-14: вебхук вказував на мертвий `bookit-five-psi.vercel.app` (404),
+тому Telegram привʼязали лише **1 майстер з 11**.
+
+```bash
+BOT=<TELEGRAM_BOT_TOKEN>
+SECRET=<TELEGRAM_WEBHOOK_SECRET з Vercel production>
+
+curl -X POST "https://api.telegram.org/bot$BOT/setWebhook" \
+  -H "Content-Type: application/json" \
+  -d "{\"url\":\"<DOMAIN>/api/telegram/webhook\",\"secret_token\":\"$SECRET\",
+       \"allowed_updates\":[\"message\",\"callback_query\",\"my_chat_member\"]}"
+```
+
+Перевірка (обовʼязково **обидва** боки):
+```bash
+curl "https://api.telegram.org/bot$BOT/getWebhookInfo"     # url = новий; last_error порожній
+# правильний секрет → 200
+curl -o /dev/null -w "%{http_code}\n" -X POST "<DOMAIN>/api/telegram/webhook" \
+  -H "x-telegram-bot-api-secret-token: $SECRET" -d '{"update_id":1}'
+# чужий секрет → 403
+curl -o /dev/null -w "%{http_code}\n" -X POST "<DOMAIN>/api/telegram/webhook" \
+  -H "x-telegram-bot-api-secret-token: wrong" -d '{"update_id":1}'
+```
+
+⚠️ **`TELEGRAM_WEBHOOK_SECRET` мусить бути НЕПОРОЖНІЙ.** Роут (`webhook/route.ts:48`) робить
+`if (!process.env.TELEGRAM_WEBHOOK_SECRET || ...) return 403` — при порожньому рядку він
+відповідає **403 на кожен апдейт**, тобто бот мертвий навіть із правильним URL. У проді
+змінна довго стояла як `""` саме так. Vercel CLI на Windows не читає значення зі stdin
+(`vercel env add` створює порожнє) — писати через REST API `/v10/projects/{id}/env`.
+
 ### 4. Локальні env-файли (щоб не розповзалось)
 `bookit/.env.local`, `bookit/.env.vercel`, `bookit/.env.prod` — там теж `bookit-five-psi` / `localhost:3000`.
 
