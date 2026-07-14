@@ -206,12 +206,33 @@ export async function POST(req: NextRequest) {
       // (R2 security P2 notification-hijack). NULL-or-same guard removes that harm.
       // Residual (pre-empting a not-yet-connected profile) needs a per-client connect
       // token — tracked as a follow-up; see HANDOFF.
-      const { data: updated, error } = await admin
+      // ⚠️ НЕ повертати сюди `.or(...)`: на `profiles` комбінація UPDATE + or-фільтр
+      // падає з 42703 («column profiles.<col> does not exist») — на SELECT і на DELETE
+      // той самий or працює, на інших таблицях UPDATE + or теж працює. Через це
+      // прив'язка Telegram була мертвою: запит завжди повертав помилку, код мовчки
+      // виходив, користувач не отримував нічого, а вебхук віддавав ok:true.
+      // Той самий NULL-or-same guard, але двома простими фільтрами.
+      const { data: fresh, error } = await admin
         .from('profiles')
         .update({ telegram_chat_id: String(chatId) })
         .eq('id', param)
-        .or(`telegram_chat_id.is.null,telegram_chat_id.eq.${chatId}`)
+        .is('telegram_chat_id', null)
         .select('id');
+
+      // Повторне підключення того самого чату — ідемпотентне, теж вважаємо успіхом.
+      const { data: sameChat } = (!error && (!fresh || fresh.length === 0))
+        ? await admin
+            .from('profiles')
+            .select('id')
+            .eq('id', param)
+            .eq('telegram_chat_id', String(chatId))
+        : { data: null };
+
+      const updated = (fresh && fresh.length > 0) ? fresh : sameChat;
+
+      if (error) {
+        console.error('[TG-WEBHOOK] Не вдалося прив\'язати профіль:', error.message);
+      }
 
       if (!error && updated && updated.length > 0) {
         await sendTelegramMessage(
