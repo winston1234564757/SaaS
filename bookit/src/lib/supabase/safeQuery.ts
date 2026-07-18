@@ -53,15 +53,6 @@ export async function safeQuery<T>(label: string, builder: QueryBuilder<T>): Pro
       details: typeof e.details === 'string' ? e.details : '',
       hint: typeof e.hint === 'string' ? e.hint : '',
       code: typeof e.code === 'string' ? e.code : 'unknown',
-      toJSON() {
-        return {
-          name: this.name,
-          message: this.message,
-          details: this.details,
-          hint: this.hint,
-          code: this.code,
-        };
-      },
     };
 
     const { isRlsError, message } = classifyError(fallback);
