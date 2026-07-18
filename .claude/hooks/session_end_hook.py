@@ -17,9 +17,9 @@ if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
 STATE_FILE = Path(__file__).parent / "state" / "session_state.json"
-REPO_DIR   = Path("C:/Users/Vitos/SaaS")
-BOOKIT_DIR = Path("C:/Users/Vitos/SaaS/bookit")
-TRACKER_FILE = Path("C:/Users/Vitos/SaaS/XDEV/PLANS/SPRINT-04-BACKLOG/TRACKER.md")
+REPO_DIR   = Path(__file__).resolve().parents[2]
+BOOKIT_DIR = (Path(__file__).resolve().parents[2] / "bookit")
+TRACKER_FILE = (Path(__file__).resolve().parents[2] / "XDEV/PLANS/SPRINT-04-BACKLOG/TRACKER.md")
 
 
 def load_state() -> dict:

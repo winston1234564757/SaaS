@@ -19,8 +19,8 @@ STATE_FILE      = Path(__file__).parent / "state" / "session_state.json"
 COMPACT_STATE   = Path(__file__).parent / "state" / "compact_state.json"
 COMPACT_HANDOFF = Path(__file__).parent / "state" / "compact_handoff.md"
 
-HANDOFF_FILE  = Path("C:/Users/Vitos/SaaS/XDEV/PLANS/SPRINT-04-BACKLOG/HANDOFF.md")
-TRACKER_FILE  = Path("C:/Users/Vitos/SaaS/XDEV/PLANS/SPRINT-04-BACKLOG/TRACKER.md")
+HANDOFF_FILE  = (Path(__file__).resolve().parents[2] / "XDEV/PLANS/SPRINT-04-BACKLOG/HANDOFF.md")
+TRACKER_FILE  = (Path(__file__).resolve().parents[2] / "XDEV/PLANS/SPRINT-04-BACKLOG/TRACKER.md")
 
 
 def load_state() -> dict:

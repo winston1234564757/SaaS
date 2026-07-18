@@ -117,7 +117,7 @@ def main():
     except Exception as e:
         # Debug: log raw input for diagnosis
         try:
-            debug_path = Path("C:/Users/Vitos/SaaS/graphify-out/debug_last.json")
+            debug_path = (Path(__file__).resolve().parents[2] / "graphify-out/debug_last.json")
             debug_path.parent.mkdir(parents=True, exist_ok=True)
             debug_path.write_text(
                 json.dumps({"error": str(e), "raw": raw.decode("utf-8", errors="replace")[:2000]}, ensure_ascii=False, indent=2),

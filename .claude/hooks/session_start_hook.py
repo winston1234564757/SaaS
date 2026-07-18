@@ -18,9 +18,9 @@ from pathlib import Path
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
-GRAPH_INDEX   = Path("C:/Users/Vitos/SaaS/graphify-out/graph-index.json")
-HANDOFF_FILE  = Path("C:/Users/Vitos/SaaS/XDEV/PLANS/SPRINT-04-BACKLOG/HANDOFF.md")
-TRACKER_FILE  = Path("C:/Users/Vitos/SaaS/XDEV/PLANS/SPRINT-04-BACKLOG/TRACKER.md")
+GRAPH_INDEX   = (Path(__file__).resolve().parents[2] / "graphify-out/graph-index.json")
+HANDOFF_FILE  = (Path(__file__).resolve().parents[2] / "XDEV/PLANS/SPRINT-04-BACKLOG/HANDOFF.md")
+TRACKER_FILE  = (Path(__file__).resolve().parents[2] / "XDEV/PLANS/SPRINT-04-BACKLOG/TRACKER.md")
 STATE_FILE    = Path(__file__).parent / "state" / "session_state.json"
 
 
@@ -139,7 +139,7 @@ def get_tracker_progress() -> str:
         return ""
 
 
-MAPS_DIR = Path("C:/Users/Vitos/SaaS/XDEV/MAPS")
+MAPS_DIR = (Path(__file__).resolve().parents[2] / "XDEV/MAPS")
 
 MAP_KEYWORD_ROUTES: dict[str, str] = {
     "billing": "BILLING_FLOW_MAP.md",

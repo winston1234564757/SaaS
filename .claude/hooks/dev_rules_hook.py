@@ -11,7 +11,7 @@ from pathlib import Path
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
-TASK_FILE = Path("C:/Users/Vitos/SaaS/XDEV/TASK.md")
+TASK_FILE = (Path(__file__).resolve().parents[2] / "XDEV/TASK.md")
 MAX_TASK_CHARS = 1400
 
 TASK_KEYWORDS = [

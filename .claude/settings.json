@@ -1,4 +1,4 @@
-﻿{
+{
   "permissions": {
     "allow": [
       "Bash(npx tsc --noEmit)",
@@ -90,7 +90,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python C:/Users/Vitos/SaaS/.claude/hooks/session_start_hook.py"
+            "command": "python $CLAUDE_PROJECT_DIR/.claude/hooks/session_start_hook.py"
           }
         ]
       }
@@ -100,7 +100,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python C:/Users/Vitos/SaaS/.claude/hooks/dev_rules_hook.py"
+            "command": "python $CLAUDE_PROJECT_DIR/.claude/hooks/dev_rules_hook.py"
           }
         ]
       },
@@ -108,7 +108,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python C:/Users/Vitos/SaaS/.claude/hooks/context7_hint_hook.py",
+            "command": "python $CLAUDE_PROJECT_DIR/.claude/hooks/context7_hint_hook.py",
             "statusMessage": "Checking library hints..."
           }
         ]
@@ -120,7 +120,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python C:/Users/Vitos/SaaS/.claude/hooks/read_limit_hook.py",
+            "command": "python $CLAUDE_PROJECT_DIR/.claude/hooks/read_limit_hook.py",
             "statusMessage": "Tracking read efficiency..."
           }
         ]
@@ -130,7 +130,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python C:/Users/Vitos/SaaS/.claude/hooks/startup_gate_hook.py",
+            "command": "python $CLAUDE_PROJECT_DIR/.claude/hooks/startup_gate_hook.py",
             "statusMessage": "Startup gate check..."
           }
         ]
@@ -140,7 +140,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python C:/Users/Vitos/SaaS/.claude/hooks/graphify_hook.py"
+            "command": "python $CLAUDE_PROJECT_DIR/.claude/hooks/graphify_hook.py"
           }
         ]
       },
@@ -149,17 +149,17 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python C:/Users/Vitos/SaaS/.claude/hooks/qa_gate_guard_hook.py",
+            "command": "python $CLAUDE_PROJECT_DIR/.claude/hooks/qa_gate_guard_hook.py",
             "statusMessage": "QA Gate check..."
           },
           {
             "type": "command",
-            "command": "python C:/Users/Vitos/SaaS/.claude/hooks/env_guard_hook.py",
+            "command": "python $CLAUDE_PROJECT_DIR/.claude/hooks/env_guard_hook.py",
             "statusMessage": "Checking sensitive file protection..."
           },
 {
             "type": "command",
-            "command": "python C:/Users/Vitos/SaaS/.claude/hooks/edit_counter_guard.py",
+            "command": "python $CLAUDE_PROJECT_DIR/.claude/hooks/edit_counter_guard.py",
             "statusMessage": "Tracking edit count..."
           }
         ]
@@ -170,7 +170,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python C:/Users/Vitos/SaaS/.claude/hooks/startup_tracker_hook.py"
+            "command": "python $CLAUDE_PROJECT_DIR/.claude/hooks/startup_tracker_hook.py"
           }
         ]
       },
@@ -179,7 +179,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python C:/Users/Vitos/SaaS/.claude/hooks/skill_tracker_hook.py",
+            "command": "python $CLAUDE_PROJECT_DIR/.claude/hooks/skill_tracker_hook.py",
             "statusMessage": "Tracking skill call..."
           }
         ]
@@ -189,7 +189,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python C:/Users/Vitos/SaaS/.claude/hooks/graphify_post_hook.py"
+            "command": "python $CLAUDE_PROJECT_DIR/.claude/hooks/graphify_post_hook.py"
           }
         ]
       },
@@ -198,11 +198,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python C:/Users/Vitos/SaaS/.claude/hooks/post_edit_hook.py"
+            "command": "python $CLAUDE_PROJECT_DIR/.claude/hooks/post_edit_hook.py"
           },
           {
             "type": "command",
-            "command": "python C:/Users/Vitos/SaaS/.claude/hooks/a11y_hook.py",
+            "command": "python $CLAUDE_PROJECT_DIR/.claude/hooks/a11y_hook.py",
             "statusMessage": "Checking a11y colors..."
           }
         ]
@@ -213,7 +213,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python C:/Users/Vitos/SaaS/.claude/hooks/pre_compact_hook.py",
+            "command": "python $CLAUDE_PROJECT_DIR/.claude/hooks/pre_compact_hook.py",
             "statusMessage": "Saving state before compaction..."
           }
         ]
@@ -224,7 +224,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python C:/Users/Vitos/SaaS/.claude/hooks/post_compact_hook.py",
+            "command": "python $CLAUDE_PROJECT_DIR/.claude/hooks/post_compact_hook.py",
             "statusMessage": "Restoring context after compaction..."
           }
         ]
@@ -235,7 +235,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python C:/Users/Vitos/SaaS/.claude/hooks/self_improving_hook.py",
+            "command": "python $CLAUDE_PROJECT_DIR/.claude/hooks/self_improving_hook.py",
             "statusMessage": "Session-end protocol..."
           }
         ]
@@ -244,7 +244,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python C:/Users/Vitos/SaaS/.claude/hooks/skill_guard_hook.py",
+            "command": "python $CLAUDE_PROJECT_DIR/.claude/hooks/skill_guard_hook.py",
             "statusMessage": "Skill enforcement check..."
           }
         ]
